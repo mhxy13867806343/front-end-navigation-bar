@@ -15,6 +15,27 @@ const showAuthorDropdown = ref(false)
 const showOnlineWorksDropdown = ref(false)
 const authorWorks = ref(authorWorksList)
 const onlineWorks = ref(onlineWorksList)
+const likedItems = ref(new Set())
+const isLikedValue = ref(false)
+
+const toggleLike = (itemId) => {
+  if (likedItems.value.has(itemId)) {
+    likedItems.value.delete(itemId)
+  } else {
+    likedItems.value.add(itemId)
+  }
+  // 添加果冻动画效果
+  const heart = document.querySelector(`.heart-icon-${itemId}`)
+  heart.classList.add('jelly')
+  setTimeout(() => {
+    heart.classList.remove('jelly')
+  }, 600)
+}
+
+// 检查是否已点赞
+const isLiked = (itemId) => {
+  return likedItems.value.has(itemId)
+}
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
@@ -287,15 +308,27 @@ onMounted(() => {
           <div v-for="(tool, index) in filteredTools" :key="tool.id" class="tool-wrapper">
             <div class="tool-card" 
                 :title="`${tool.name} - ${tool.desc}`" 
-                @click="openLink(tool.link)"
+                
                 @contextmenu="(event) => handleRightClick(event, tool)">
-              <div class="tool-icon">{{ tool.icon || tool.logo }}</div>
+              <div class="tool-header" @click="openLink(tool.link)">
+                <span class="tool-icon" >{{ tool.icon }}</span>
+                <h3 class="tool-name">{{ tool.name }}</h3>
+                <!-- 爱心图标 -->
+               
+              </div>
+              <div 
+                  :class="['heart-icon', `heart-icon-${tool.id}`, { 'liked': isLiked(tool.id) }]" 
+                  @click.stop="toggleLike(tool.id)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </div>
               <div class="tool-info">
-                <h3>{{ tool.name }}</h3>
                 <p>{{ tool.desc }}</p>
                 <div v-if="tool.needVPN" class="vpn-tag">需要VPN</div>
               </div>
-              <div class="tool-link" :title="'点击跳转: ' + tool.link">
+              <div class="tool-link" :title="'点击跳转: ' + tool.link" @click="openLink(tool.link)">
                 <span class="link-icon">🔗</span>
               </div>
             </div>
@@ -341,10 +374,79 @@ onMounted(() => {
       <i class="el-icon-message"></i>
       📧
     </a>
+    <!-- 爱心图标 -->
+    <div class="heart-icon" :class="{ liked: isLikedValue }" @click="toggleLike">
+      ❤️
+    </div>
   </div>
 </template>
 
 <style scoped>
-
 @import url('@/style/style.css');
+
+.heart-icon {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, color 0.3s ease;
+  color: #999;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heart-icon.liked {
+  color: #ff4757;
+  opacity: 1;
+}
+
+.heart-icon.liked svg {
+  fill: currentColor;
+}
+
+.heart-icon:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.tool-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.heart-icon {
+  position: absolute;
+  right: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.3s ease, color 0.3s ease;
+  color: #999;
+  opacity: 0.6;
+}
+
+.heart-icon.liked {
+  color: #ff4757;
+  opacity: 1;
+}
+
+.heart-icon:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+@keyframes jelly {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.2); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.jelly {
+  animation: jelly 0.6s ease;
+}
 </style>
