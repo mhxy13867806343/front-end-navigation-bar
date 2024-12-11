@@ -55,6 +55,7 @@ body {
   left: 0;
   top: 0;
   border-right: 1px solid var(--border-color);
+  z-index: 99;
 }
 
 .logo {

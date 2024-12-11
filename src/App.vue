@@ -185,6 +185,27 @@ const openGame = (work) => {
   }
 }
 
+// 添加历史记录弹窗状态
+const showLikeHistory = ref(false)
+
+// 获取已点赞的工具列表
+const likedToolsList = computed(() => {
+  const allTools = menuItems.value.reduce((acc, item) => {
+    return acc.concat(item.tools || [])
+  }, [])
+  return allTools.filter(tool => likedItems.value.has(tool.id))
+})
+
+// 打开历史记录
+const openLikeHistory = () => {
+  showLikeHistory.value = true
+}
+
+// 关闭历史记录
+const closeLikeHistory = () => {
+  showLikeHistory.value = false
+}
+
 onMounted(() => {
   const theme = localStorage.getItem('theme')
   if (theme) {
@@ -291,6 +312,9 @@ onMounted(() => {
           </div>
         </div>
         
+        <button class="dropdown-trigger like-history-btn" @click="openLikeHistory">
+          ❤️ 历史爱心记录
+        </button>
       </div>
       <div class="search-wrapper">
           <input 
@@ -320,7 +344,7 @@ onMounted(() => {
                 
                 @contextmenu="(event) => handleRightClick(event, tool)">
               <div class="tool-header" @click="openLink(tool.link)">
-                <span class="tool-icon" >{{ tool.icon }}</span>
+                <span class="tool-icon">{{ tool.icon }}</span>
                 <h3 class="tool-name">{{ tool.name }}</h3>
                 <!-- 爱心图标 -->
                
@@ -383,6 +407,41 @@ onMounted(() => {
       <i class="el-icon-message"></i>
       📧
     </a>
+    <!-- 历史爱心记录弹窗 -->
+    <el-dialog
+      v-model="showLikeHistory"
+      title="历史爱心记录"
+      width="60%"
+      destroy-on-close
+      class="like-history-dialog"
+    >
+      <div class="liked-tools-list" :class="{ 'scrollable': likedToolsList.length > 10 }">
+        <div v-if="likedToolsList.length === 0" class="no-likes">
+          <p>还没有点赞过任何工具哦~ 💝</p>
+        </div>
+        <div v-else v-for="tool in likedToolsList" :key="tool.id" class="liked-tool-item">
+          <div class="liked-tool-info" @click="openLink(tool.link)">
+            <span class="tool-icon">{{ tool.icon }}</span>
+            <div class="tool-details">
+              <h4>{{ tool.name }}</h4>
+              <p>{{ tool.desc }}</p>
+            </div>
+          </div>
+          <div class="liked-tool-actions">
+            <button class="link-btn" @click="openLink(tool.link)" title="访问链接">
+              🔗
+            </button>
+            <button 
+              class="unlike-btn" 
+              @click="toggleLike(tool.id)" 
+              title="取消点赞"
+            >
+              ❤️
+            </button>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -454,5 +513,141 @@ onMounted(() => {
 
 .jelly {
   animation: jelly 0.6s ease;
+}
+
+.like-history-btn {
+  margin-left: 10px;
+}
+
+.liked-tools-list {
+  padding: 10px;
+  max-height: none;
+  overflow-y: hidden;
+}
+
+.liked-tools-list.scrollable {
+  max-height: 70vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+.liked-tools-list.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.liked-tools-list.scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.liked-tools-list.scrollable::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.liked-tools-list.scrollable::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 暗色模式下的滚动条样式 */
+.dark .liked-tools-list.scrollable {
+  scrollbar-color: #666 #2c2c2c;
+}
+
+.dark .liked-tools-list.scrollable::-webkit-scrollbar-track {
+  background: #2c2c2c;
+}
+
+.dark .liked-tools-list.scrollable::-webkit-scrollbar-thumb {
+  background: #666;
+}
+
+.dark .liked-tools-list.scrollable::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.like-history-dialog {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.no-likes {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.liked-tool-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+
+.liked-tool-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dark .liked-tool-item:hover {
+  background-color: #2c2c2c;
+}
+
+.liked-tool-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.tool-details {
+  margin-left: 15px;
+}
+
+.tool-details h4 {
+  margin: 0 0 5px 0;
+}
+
+.tool-details p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.dark .tool-details p {
+  color: #999;
+}
+
+.liked-tool-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.liked-tool-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: transform 0.2s;
+}
+
+.liked-tool-actions button:hover {
+  transform: scale(1.1);
+}
+
+.unlike-btn {
+  color: #ff4757;
+}
+
+.link-btn {
+  color: #2196f3;
+}
+
+.dark .link-btn {
+  color: #64b5f6;
 }
 </style>
