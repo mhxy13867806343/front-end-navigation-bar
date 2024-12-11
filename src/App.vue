@@ -7,7 +7,8 @@ import ImageEditor from './components/image/ImageEditor.vue'
 
 const menuItems = ref(menuItemsList)
 
-const activeItem = ref(1)
+// 从本地存储初始化激活的菜单项
+const activeItem = ref(parseInt(localStorage.getItem('activeItem')) || 1)
 const isSidebarOpen = ref(false)
 const isDarkMode = ref(localStorage.getItem('theme') === 'dark')
 const showThemeDropdown = ref(false)
@@ -49,6 +50,8 @@ const toggleSidebar = () => {
 
 const selectItem = (itemId) => {
   activeItem.value = itemId
+  // 保存选中状态到本地存储
+  localStorage.setItem('activeItem', itemId.toString())
 }
 
 const getCurrentTools = () => {
