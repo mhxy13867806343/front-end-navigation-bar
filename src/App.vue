@@ -217,10 +217,13 @@ onMounted(() => {
             </div>
           </div>
         </template>
-        <div v-else class="no-results">
-          <span>暂无搜索结果</span>
-          <p>试试其他关键词吧</p>
-        </div>
+        <template v-else>
+          <div class="no-results">
+            <span>🔍</span>
+            <p>暂无搜索结果</p>
+            <p>试试其他关键词吧</p>
+          </div>
+        </template>
       </div>
     </main>
     <!-- 自定义右键菜单 -->
