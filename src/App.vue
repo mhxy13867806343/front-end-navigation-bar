@@ -336,6 +336,11 @@ onMounted(() => {
     >
       <component :is="currentGame" v-if="currentGame" />
     </el-dialog>
+    <!-- 邮箱图标 -->
+    <a href="mailto:869710179@qq.com" class="email-icon" title="联系我">
+      <i class="el-icon-message"></i>
+      📧
+    </a>
   </div>
 </template>
 

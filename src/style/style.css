@@ -741,3 +741,18 @@ button {
 .dark .context-menu-item:hover {
   background-color: #3d3d3d;
 }
+.email-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-size: 24px;
+  color: #409EFF;
+  cursor: pointer;
+  z-index: 1000;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.email-icon:hover {
+  transform: scale(1.1);
+}
