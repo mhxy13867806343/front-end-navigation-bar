@@ -1358,6 +1358,13 @@ export const onlineWorksList = [
     logo: '🎮',
     component: 'dialog',
     type:'game'
+  },
+  {
+    name: '音乐播放器',
+    desc: '音乐播放器',
+    logo: '🎮',
+    component: 'dialog',
+    type:'video'
   }
 ]
 

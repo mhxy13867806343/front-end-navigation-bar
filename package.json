@@ -13,7 +13,8 @@
     "element-plus": "2.9.0",
     "vue": "3.2.45",
     "vue-advanced-cropper": "^2.8.9",
-    "vue-router": "4.5.0"
+    "vue-router": "4.5.0",
+    "axios": "^1.6.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "4.6.2",

@@ -4,6 +4,7 @@ import { menuItemsList, authorWorksList, onlineWorksList } from '@/utlis/menuIte
 import { ElDialog, ElMessageBox } from 'element-plus'
 import SokobanGame from './components/games/SokobanGame.vue'
 import ImageEditor from './components/image/ImageEditor.vue'
+import MusicPlayer from "./components/MusicPlayer.vue";
 
 // 判断是否为生产环境
 const isProd = import.meta.env.PROD
@@ -224,6 +225,9 @@ const openGame = (work) => {
         break
       case '图片处理工具':
         currentGame.value = ImageEditor
+        break
+      case '音乐播放器':
+        currentGame.value = MusicPlayer
         break
       default:
         currentGame.value = null
