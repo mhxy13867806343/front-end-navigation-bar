@@ -15,7 +15,9 @@ const showAuthorDropdown = ref(false)
 const showOnlineWorksDropdown = ref(false)
 const authorWorks = ref(authorWorksList)
 const onlineWorks = ref(onlineWorksList)
-const likedItems = ref(new Set())
+
+// 从本地存储初始化点赞集合
+const likedItems = ref(new Set(JSON.parse(localStorage.getItem('likedItems') || '[]')))
 const isLikedValue = ref(false)
 
 const toggleLike = (itemId) => {
@@ -24,6 +26,10 @@ const toggleLike = (itemId) => {
   } else {
     likedItems.value.add(itemId)
   }
+  
+  // 保存到本地存储
+  localStorage.setItem('likedItems', JSON.stringify(Array.from(likedItems.value)))
+
   // 添加果冻动画效果
   const heart = document.querySelector(`.heart-icon-${itemId}`)
   heart.classList.add('jelly')
