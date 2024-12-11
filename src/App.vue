@@ -116,7 +116,21 @@ const currentGame = shallowRef(null)
 const gameTitle = ref('')
 
 const handleCloseDialog = (done) => {
-  ElMessageBox.confirm('确定要退出游戏吗？')
+  const currentItem = menuItems.value.find(item => item.id === activeItem.value)
+  let message = '确定要退出吗？'
+  
+  // 根据type显示不同的提示信息
+  if (currentItem.type === 'game') {
+    message = '确定要退出游戏吗？'
+  } else if (currentItem.type === 'image') {
+    message = '确定要退出图片操作吗？'
+  }
+
+  ElMessageBox.confirm(message, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
     .then(() => {
       done()
     })
