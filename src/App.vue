@@ -17,19 +17,27 @@ const showOnlineWorksDropdown = ref(false)
 const authorWorks = ref(authorWorksList)
 const onlineWorks = ref(onlineWorksList)
 
-// 从本地存储初始化点赞集合
-const likedItems = ref(new Set(JSON.parse(localStorage.getItem('likedItems') || '[]')))
-const isLikedValue = ref(false)
+// 从本地存储初始化点赞信息
+const likedItemsInfo = ref(JSON.parse(localStorage.getItem('likedItemsInfo') || '{}'))
 
 const toggleLike = (itemId) => {
-  if (likedItems.value.has(itemId)) {
-    likedItems.value.delete(itemId)
-  } else {
-    likedItems.value.add(itemId)
+  // 找到当前工具所属的菜单
+  const currentMenu = menuItems.value.find(menu => 
+    menu.tools && menu.tools.some(tool => tool.id === itemId)
+  )
+  
+  if (likedItemsInfo.value[itemId]) {
+    delete likedItemsInfo.value[itemId]
+  } else if (currentMenu) {
+    likedItemsInfo.value[itemId] = {
+      menuName: currentMenu.name,
+      menuIcon: currentMenu.icon,
+      timestamp: new Date().getTime()
+    }
   }
   
   // 保存到本地存储
-  localStorage.setItem('likedItems', JSON.stringify(Array.from(likedItems.value)))
+  localStorage.setItem('likedItemsInfo', JSON.stringify(likedItemsInfo.value))
 
   // 添加果冻动画效果
   const heart = document.querySelector(`.heart-icon-${itemId}`)
@@ -41,12 +49,9 @@ const toggleLike = (itemId) => {
 
 // 检查是否已点赞
 const isLiked = (itemId) => {
-  return likedItems.value.has(itemId)
+  return !!likedItemsInfo.value[itemId]
 }
 
-const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value
-}
 
 const selectItem = (itemId) => {
   activeItem.value = itemId
@@ -137,10 +142,49 @@ const filteredTools = computed(() => {
   )
 })
 
-// 判断是否为生产环境
-const isProd = process.env.NODE_ENV === 'production'
+// 获取已点赞的工具列表（包含菜单信息）
+const likedToolsList = computed(() => {
+  const allTools = menuItems.value.reduce((acc, item) => {
+    return acc.concat(item.tools || [])
+  }, [])
+  return allTools
+    .filter(tool => likedItemsInfo.value[tool.id])
+    .map(tool => ({
+      ...tool,
+      menuInfo: likedItemsInfo.value[tool.id]
+    }))
+})
 
-// 游戏对话框相关
+// 打开历史记录
+const openLikeHistory = () => {
+  showLikeHistory.value = true
+}
+
+// 关闭历史记录
+const closeLikeHistory = () => {
+  showLikeHistory.value = false
+}
+
+// 清空所有点赞
+const clearAllLikes = () => {
+  ElMessageBox.confirm(
+    `确定要清空历史爱心记录<span style="color: #ff4757; font-weight: bold; font-size: 16px; margin: 0 4px; font-weight: 800; font-stretch: expanded;">${likedToolsList.value.length}</span>条点赞记录吗？`,
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+      dangerouslyUseHTMLString: true,
+      customClass: 'custom-message-box'
+    }
+  )
+    .then(() => {
+      likedItemsInfo.value = {}
+      localStorage.setItem('likedItemsInfo', '{}')
+    })
+    .catch(() => {})
+}
+
 const showGameDialog = ref(false)
 const currentGame = shallowRef(null)
 const gameTitle = ref('')
@@ -187,24 +231,6 @@ const openGame = (work) => {
 
 // 添加历史记录弹窗状态
 const showLikeHistory = ref(false)
-
-// 获取已点赞的工具列表
-const likedToolsList = computed(() => {
-  const allTools = menuItems.value.reduce((acc, item) => {
-    return acc.concat(item.tools || [])
-  }, [])
-  return allTools.filter(tool => likedItems.value.has(tool.id))
-})
-
-// 打开历史记录
-const openLikeHistory = () => {
-  showLikeHistory.value = true
-}
-
-// 关闭历史记录
-const closeLikeHistory = () => {
-  showLikeHistory.value = false
-}
 
 onMounted(() => {
   const theme = localStorage.getItem('theme')
@@ -410,11 +436,23 @@ onMounted(() => {
     <!-- 历史爱心记录弹窗 -->
     <el-dialog
       v-model="showLikeHistory"
-      title="历史爱心记录"
+      :title="`历史爱心记录(${likedToolsList.length})`"
       width="60%"
       destroy-on-close
       class="like-history-dialog"
     >
+    
+      <div class="like-history-header">
+        <div class="like-history-title">历史记录</div>
+        <button 
+          v-if="likedToolsList.length > 0"
+          class="clear-all-btn" 
+          @click="clearAllLikes"
+          title="清空所有点赞"
+        >
+          🗑️ 清空记录
+        </button>
+      </div>
       <div class="liked-tools-list" :class="{ 'scrollable': likedToolsList.length > 10 }">
         <div v-if="likedToolsList.length === 0" class="no-likes">
           <p>还没有点赞过任何工具哦~ 💝</p>
@@ -424,11 +462,15 @@ onMounted(() => {
             <span class="tool-icon">{{ tool.icon }}</span>
             <div class="tool-details">
               <h4>{{ tool.name }}</h4>
-              <p>{{ tool.desc }}</p>
+              <p>
+                <span class="menu-info">{{ tool.menuInfo.menuIcon }} {{ tool.menuInfo.menuName }}</span>
+                {{ tool.desc }}
+              </p>
             </div>
           </div>
           <div class="liked-tool-actions">
-            <button class="link-btn" @click="openLink(tool.link)" title="访问链接">
+
+            <button class="link-btn" @click="openLink(tool.link)" :title="`访问链接${tool.link}`">
               🔗
             </button>
             <button 
@@ -438,6 +480,7 @@ onMounted(() => {
             >
               ❤️
             </button>
+            <span class="menu-info menu-menuName">来自{{ tool.menuInfo?.menuName}}</span>
           </div>
         </div>
       </div>
@@ -649,5 +692,82 @@ onMounted(() => {
 
 .dark .link-btn {
   color: #64b5f6;
+}
+
+.like-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.dark .like-history-header {
+  border-bottom-color: #333;
+}
+
+.like-history-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.clear-all-btn {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.clear-all-btn:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+  color: #333;
+}
+
+.dark .clear-all-btn {
+  border-color: #444;
+  color: #999;
+}
+
+.dark .clear-all-btn:hover {
+  background-color: #2c2c2c;
+  border-color: #555;
+  color: #fff;
+}
+
+/* 自定义消息框样式 */
+:deep(.custom-message-box) {
+  .el-message-box__message {
+    p {
+      line-height: 1.8;
+      font-size: 14px;
+    }
+  }
+}
+
+.menu-info {
+  color: #666;
+  font-size: 0.85em;
+  margin-right: 8px;
+  padding: 2px 6px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.menu-menuName{
+  padding: 3px;
+  font-size: 12px;
+}
+.dark .menu-info {
+  color: #999;
+  background-color: #2c2c2c;
 }
 </style>
