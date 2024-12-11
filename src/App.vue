@@ -1,9 +1,12 @@
 <script setup>
 import { ref, onMounted, computed, shallowRef } from 'vue'
-import{menuItemsList,authorWorksList,onlineWorksList} from '@/utlis/menuItems'
+import { menuItemsList, authorWorksList, onlineWorksList } from '@/utlis/menuItems'
 import { ElDialog, ElMessageBox } from 'element-plus'
 import SokobanGame from './components/games/SokobanGame.vue'
 import ImageEditor from './components/image/ImageEditor.vue'
+
+// 判断是否为生产环境
+const isProd = import.meta.env.PROD
 
 const menuItems = ref(menuItemsList)
 
@@ -260,7 +263,7 @@ onMounted(() => {
   // 添加全局右键事件监听
   document.addEventListener('contextmenu', (event) => {
     const toolCard = event.target.closest('.tool-card')
-    if (!toolCard && isProd) {  // 只在生产环境下跳转空白页
+    if (!toolCard && isProd) {
       event.preventDefault()
       window.open('about:blank', '_blank')
     }
