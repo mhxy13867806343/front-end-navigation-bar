@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import{menuItemsList} from '@/utlis/menuItems'
 const menuItems = ref(menuItemsList)
 
@@ -91,6 +91,19 @@ const toggleThemeDropdown = () => {
   showAuthorDropdown.value = false
 }
 
+const searchQuery = ref('')
+const clearSearch = () => {
+  searchQuery.value = ''
+}
+const filteredTools = computed(() => {
+  if (!searchQuery.value) return getCurrentTools()
+  const query = searchQuery.value.toLowerCase()
+  return getCurrentTools().filter(tool => 
+    tool.name.toLowerCase().includes(query) || 
+    tool.desc.toLowerCase().includes(query)
+  )
+})
+
 onMounted(() => {
   const theme = localStorage.getItem('theme')
   if (theme) {
@@ -130,6 +143,7 @@ onMounted(() => {
 
     <!-- 主内容区域 -->
     <main class="main-content">
+     
       <div class="header-actions">
         <div class="dropdown" ref="themeDropdown">
           <button class="dropdown-trigger" @click="toggleThemeDropdown">
@@ -162,20 +176,47 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
+      <div class="search-wrapper">
+          <input 
+            type="text" 
+            v-model="searchQuery"
+            placeholder="搜索工具..."
+            class="search-input"
+          >
+          <button 
+            v-show="searchQuery" 
+            @click="clearSearch" 
+            class="clear-button"
+            title="清除搜索"
+          >
+            ✕
+          </button>
+        </div>
       <div class="tools-grid">
-        <div v-for="(tool, index) in getCurrentTools()" :key="tool.id" class="tool-wrapper">
-          <div class="tool-card" 
-               :title="`${tool.name} - ${tool.desc}`"
-               @click="openLink(tool.link)">
-            <div class="tool-icon">{{ tool.icon || tool.logo }}</div>
-            <div class="tool-info">
-              <h3>{{ tool.name }}</h3>
-              <p>{{ tool.desc }}</p>
-              <div v-if="tool.needVPN" class="vpn-tag">需要VPN</div>
+        <!-- 搜索框 -->
+    
+        
+        <!-- 工具卡片列表 -->
+        <template v-if="filteredTools.length > 0">
+          <div v-for="(tool, index) in filteredTools" :key="tool.id" class="tool-wrapper">
+            <div class="tool-card" 
+                :title="`${tool.name} - ${tool.desc}`" 
+                @click="openLink(tool.link)">
+              <div class="tool-icon">{{ tool.icon || tool.logo }}</div>
+              <div class="tool-info">
+                <h3>{{ tool.name }}</h3>
+                <p>{{ tool.desc }}</p>
+                <div v-if="tool.needVPN" class="vpn-tag">需要VPN</div>
+              </div>
+              <div class="tool-link" :title="'点击跳转: ' + tool.link">
+                <span class="link-icon">🔗</span>
+              </div>
             </div>
-            <div class="tool-link" :title="`点击跳转: ${tool.link}`" @click.stop="openLink(tool.link)">🔗</div>
           </div>
+        </template>
+        <div v-else class="no-results">
+          <span>暂无搜索结果</span>
+          <p>试试其他关键词吧</p>
         </div>
       </div>
     </main>
