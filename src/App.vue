@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, shallowRef } from 'vue'
 import{menuItemsList,authorWorksList,onlineWorksList} from '@/utlis/menuItems'
-import { ElDialog } from 'element-plus'
+import { ElDialog, ElMessageBox } from 'element-plus'
 import SokobanGame from './components/games/SokobanGame.vue'
 
 const menuItems = ref(menuItemsList)
@@ -113,6 +113,14 @@ const isProd = process.env.NODE_ENV === 'production'
 const showGameDialog = ref(false)
 const currentGame = shallowRef(null)
 const gameTitle = ref('')
+
+const handleCloseDialog = (done) => {
+  ElMessageBox.confirm('确定要退出游戏吗？')
+    .then(() => {
+      done()
+    })
+    .catch(() => {})
+}
 
 const openGame = (work) => {
   if (work.component === 'dialog') {
@@ -306,6 +314,7 @@ onMounted(() => {
       width="80%"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
+      :before-close="handleCloseDialog"
       destroy-on-close
     >
       <component :is="currentGame" v-if="currentGame" />
