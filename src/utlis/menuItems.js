@@ -461,3 +461,50 @@ export const menuItemsList = [
     ]
   },
 ]
+export  const authorWorksList=[
+  {
+    name: '群团集市',
+    link: 'https://m.hzszqt.com/#/',
+    desc: '(请在微信中打开)'
+  },
+  {
+    name: '就业码学生端',
+    link: 'https://em-h5.redcross668.com/#/',
+    desc: '(请在微信中打开)'
+  },
+  {
+    name: '就业码企业端',
+    link: 'https://em-h5-company.redcross668.com/#/',
+    desc: '(请在微信中打开)'
+  },
+  {
+    name: '绍红捐赠',
+    link: 'https://yhby.redcross668.com/#/',
+    desc: '(请在微信中打开)'
+  },
+  {
+    name: '生命教育',
+    link: '#',
+    desc: '(请在微信小程序中搜索)'
+  },
+  {
+    name: '浙里博爱',
+    link: 'https://zlba.shaoxingredcross.org.cn/#/login',
+    desc: '(请在微信中打开)或在浙里办中搜索访问'
+  },
+  {
+    name: '200s\'s 个人博客',
+    link: 'https://mhxy13867806343.github.io/vuepressBlogDemo/',
+    desc: 'VuePress 博客'
+  },
+  {
+    name: 'GitHub',
+    link: 'https://github.com/mhxy13867806343',
+    desc: '开源代码仓库'
+  },
+  {
+    name: '掘金主页',
+    link: 'https://juejin.cn/user/1310273588955581',
+    desc: '技术文章分享'
+  }
+]

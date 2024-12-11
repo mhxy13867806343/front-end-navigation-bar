@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import{menuItemsList} from '@/utlis/menuItems'
+import{menuItemsList,authorWorksList} from '@/utlis/menuItems'
 const menuItems = ref(menuItemsList)
 
 const activeItem = ref(1)
@@ -8,48 +8,7 @@ const isSidebarOpen = ref(false)
 const isDarkMode = ref(localStorage.getItem('theme') === 'dark')
 const showThemeDropdown = ref(false)
 const showAuthorDropdown = ref(false)
-const authorWorks = ref([
-  { 
-    name: '群团集市', 
-    link: 'https://m.hzszqt.com/#/',
-    desc: '(请在微信中打开)'
-  },
-  { 
-    name: '就业码学生端', 
-    link: 'https://em-h5.redcross668.com/#/',
-    desc: '(请在微信中打开)'
-  },
-  { 
-    name: '就业码企业端', 
-    link: 'https://em-h5-company.redcross668.com/#/',
-    desc: '(请在微信中打开)'
-  },
-  { 
-    name: '生命教育', 
-    link: '#',
-    desc: '(请在微信小程序中搜索)'
-  },
-  { 
-    name: '浙里博爱', 
-    link: 'https://zlba.shaoxingredcross.org.cn/#/login',
-    desc: '(请在微信中打开)或在浙里办中搜索访问'
-  },
-  { 
-    name: '200s\'s 个人博客', 
-    link: 'https://mhxy13867806343.github.io/vuepressBlogDemo/',
-    desc: 'VuePress 博客'
-  },
-  { 
-    name: 'GitHub', 
-    link: 'https://github.com/mhxy13867806343',
-    desc: '开源代码仓库'
-  },
-  { 
-    name: '掘金主页', 
-    link: 'https://juejin.cn/user/1310273588955581',
-    desc: '技术文章分享'
-  }
-])
+const authorWorks = ref(authorWorksList)
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
@@ -76,9 +35,39 @@ const toggleTheme = () => {
   document.documentElement.classList.toggle('dark', isDarkMode.value)
 }
 
-const handleRightClick = (event) => {
-  event.preventDefault();
-  window.open('about:blank', '_blank');
+const contextMenu = ref({
+  show: false,
+  x: 0,
+  y: 0,
+  tool: null
+})
+
+const handleRightClick = (event, tool) => {
+  event.preventDefault()
+  contextMenu.value = {
+    show: true,
+    x: event.clientX,
+    y: event.clientY,
+    tool
+  }
+}
+
+const closeContextMenu = () => {
+  contextMenu.value.show = false
+}
+
+const copyLink = () => {
+  if (contextMenu.value.tool) {
+    navigator.clipboard.writeText(contextMenu.value.tool.link)
+    closeContextMenu()
+  }
+}
+
+const openInNewTab = () => {
+  if (contextMenu.value.tool) {
+    window.open(contextMenu.value.tool.link, '_blank')
+    closeContextMenu()
+  }
 }
 
 const toggleAuthorDropdown = () => {
@@ -104,6 +93,9 @@ const filteredTools = computed(() => {
   )
 })
 
+// 判断是否为生产环境
+const isProd = process.env.NODE_ENV === 'production'
+
 onMounted(() => {
   const theme = localStorage.getItem('theme')
   if (theme) {
@@ -121,6 +113,16 @@ onMounted(() => {
     }
     if (!authorDropdownEl?.contains(e.target)) {
       showAuthorDropdown.value = false
+    }
+    closeContextMenu()
+  })
+
+  // 添加全局右键事件监听
+  document.addEventListener('contextmenu', (event) => {
+    const toolCard = event.target.closest('.tool-card')
+    if (!toolCard && isProd) {  // 只在生产环境下跳转空白页
+      event.preventDefault()
+      window.open('about:blank', '_blank')
     }
   })
 })
@@ -201,7 +203,8 @@ onMounted(() => {
           <div v-for="(tool, index) in filteredTools" :key="tool.id" class="tool-wrapper">
             <div class="tool-card" 
                 :title="`${tool.name} - ${tool.desc}`" 
-                @click="openLink(tool.link)">
+                @click="openLink(tool.link)"
+                @contextmenu="(event) => handleRightClick(event, tool)">
               <div class="tool-icon">{{ tool.icon || tool.logo }}</div>
               <div class="tool-info">
                 <h3>{{ tool.name }}</h3>
@@ -220,6 +223,19 @@ onMounted(() => {
         </div>
       </div>
     </main>
+    <!-- 自定义右键菜单 -->
+    <div v-if="contextMenu.show" 
+         class="context-menu" 
+         :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }">
+      <div class="context-menu-item" @click="openInNewTab">
+        <span class="context-menu-icon">🔗</span>
+        新标签页打开
+      </div>
+      <div class="context-menu-item" @click="copyLink">
+        <span class="context-menu-icon">📋</span>
+        复制链接
+      </div>
+    </div>
   </div>
 </template>
 
