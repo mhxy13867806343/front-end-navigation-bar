@@ -461,7 +461,18 @@ export const menuItemsList = [
     ]
   },
 ]
-export  const authorWorksList=[
+
+export const onlineWorksList = [
+  {
+    name: '推箱子游戏',
+    link: '#',
+    desc: '经典推箱子小游戏',
+    logo: '📦',
+    component:"dialog"
+  }
+]
+
+export const authorWorksList=[
   {
     name: '群团集市',
     link: 'https://m.hzszqt.com/#/',

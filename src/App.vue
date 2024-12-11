@@ -1,6 +1,9 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import{menuItemsList,authorWorksList} from '@/utlis/menuItems'
+import { ref, onMounted, computed, shallowRef } from 'vue'
+import{menuItemsList,authorWorksList,onlineWorksList} from '@/utlis/menuItems'
+import { ElDialog } from 'element-plus'
+import SokobanGame from './components/games/SokobanGame.vue'
+
 const menuItems = ref(menuItemsList)
 
 const activeItem = ref(1)
@@ -8,7 +11,9 @@ const isSidebarOpen = ref(false)
 const isDarkMode = ref(localStorage.getItem('theme') === 'dark')
 const showThemeDropdown = ref(false)
 const showAuthorDropdown = ref(false)
+const showOnlineWorksDropdown = ref(false)
 const authorWorks = ref(authorWorksList)
+const onlineWorks = ref(onlineWorksList)
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
@@ -73,10 +78,18 @@ const openInNewTab = () => {
 const toggleAuthorDropdown = () => {
   showAuthorDropdown.value = !showAuthorDropdown.value
   showThemeDropdown.value = false
+  showOnlineWorksDropdown.value = false
 }
 
 const toggleThemeDropdown = () => {
   showThemeDropdown.value = !showThemeDropdown.value
+  showAuthorDropdown.value = false
+  showOnlineWorksDropdown.value = false
+}
+
+const toggleOnlineWorksDropdown = () => {
+  showOnlineWorksDropdown.value = !showOnlineWorksDropdown.value
+  showThemeDropdown.value = false
   showAuthorDropdown.value = false
 }
 
@@ -96,6 +109,27 @@ const filteredTools = computed(() => {
 // 判断是否为生产环境
 const isProd = process.env.NODE_ENV === 'production'
 
+// 游戏对话框相关
+const showGameDialog = ref(false)
+const currentGame = shallowRef(null)
+const gameTitle = ref('')
+
+const openGame = (work) => {
+  if (work.component === 'dialog') {
+    gameTitle.value = work.name
+    // 根据游戏名称加载对应组件
+    switch (work.name) {
+      case '推箱子游戏':
+        currentGame.value = SokobanGame
+        break
+      // 可以添加更多游戏
+      default:
+        currentGame.value = null
+    }
+    showGameDialog.value = true
+  }
+}
+
 onMounted(() => {
   const theme = localStorage.getItem('theme')
   if (theme) {
@@ -107,12 +141,16 @@ onMounted(() => {
   document.addEventListener('click', (e) => {
     const themeDropdownEl = document.querySelector('.dropdown')
     const authorDropdownEl = document.querySelectorAll('.dropdown')[1]
+    const onlineWorksDropdownEl = document.querySelectorAll('.dropdown')[2]
 
     if (!themeDropdownEl?.contains(e.target)) {
       showThemeDropdown.value = false
     }
     if (!authorDropdownEl?.contains(e.target)) {
       showAuthorDropdown.value = false
+    }
+    if (!onlineWorksDropdownEl?.contains(e.target)) {
+      showOnlineWorksDropdown.value = false
     }
     closeContextMenu()
   })
@@ -168,15 +206,36 @@ onMounted(() => {
             👨‍💻 作者作品集
             <span class="arrow">▼</span>
           </button>
-          <div class="dropdown-menu" v-show="showAuthorDropdown">
-            <div class="dropdown-item dropdown-item-left-01" v-for="work in authorWorks" :key="work.name" @click="openLink(work.link)">
-              <div class="word-name">
-                {{ work.name }}
+          <div v-if="showAuthorDropdown" class="dropdown-menu">
+            <div v-for="work in authorWorks" :key="work.name" class="dropdown-item">
+              <div class="dropdown-item-left-01">
+                <div class="word-name">{{ work.name }}</div>
+                <div class="work-desc">{{ work.desc }}</div>
               </div>
-              <span class="work-desc">{{ work.desc }}</span>
             </div>
           </div>
         </div>
+
+        <div class="dropdown" ref="onlineWorksDropdown">
+          <button class="dropdown-trigger" @click="toggleOnlineWorksDropdown">
+            🎨 在线作品查看
+            <span class="arrow">▼</span>
+          </button>
+          <div v-if="showOnlineWorksDropdown" class="dropdown-menu">
+            <a v-for="work in onlineWorks" 
+               :key="work.name" 
+               :href="work.component === 'dialog' ? '#' : work.link"
+               @click.prevent="work.component === 'dialog' && openGame(work)"
+               target="_blank"
+               class="dropdown-item">
+              <div class="dropdown-item-left-01">
+                <div class="word-name">{{ work.name }}</div>
+                <div class="work-desc">{{ work.desc }}</div>
+              </div>
+            </a>
+          </div>
+        </div>
+        
       </div>
       <div class="search-wrapper">
           <input 
@@ -239,6 +298,18 @@ onMounted(() => {
         复制链接
       </div>
     </div>
+
+    <!-- 游戏对话框 -->
+    <el-dialog
+      v-model="showGameDialog"
+      :title="gameTitle"
+      width="80%"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      destroy-on-close
+    >
+      <component :is="currentGame" v-if="currentGame" />
+    </el-dialog>
   </div>
 </template>
 
