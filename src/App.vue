@@ -374,10 +374,6 @@ onMounted(() => {
       <i class="el-icon-message"></i>
       📧
     </a>
-    <!-- 爱心图标 -->
-    <div class="heart-icon" :class="{ liked: isLikedValue }" @click="toggleLike">
-      ❤️
-    </div>
   </div>
 </template>
 
@@ -395,6 +391,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 99;
 }
 
 .heart-icon.liked {
