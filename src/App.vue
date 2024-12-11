@@ -3,6 +3,7 @@ import { ref, onMounted, computed, shallowRef } from 'vue'
 import{menuItemsList,authorWorksList,onlineWorksList} from '@/utlis/menuItems'
 import { ElDialog, ElMessageBox } from 'element-plus'
 import SokobanGame from './components/games/SokobanGame.vue'
+import ImageEditor from './components/image/ImageEditor.vue'
 
 const menuItems = ref(menuItemsList)
 
@@ -130,7 +131,9 @@ const openGame = (work) => {
       case '推箱子游戏':
         currentGame.value = SokobanGame
         break
-      // 可以添加更多游戏
+      case '图片处理工具':
+        currentGame.value = ImageEditor
+        break
       default:
         currentGame.value = null
     }

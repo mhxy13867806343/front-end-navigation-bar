@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cropperjs": "^1.6.2",
+    "element-plus": "2.9.0",
     "vue": "3.2.45",
-    "vue-router": "4.5.0",
-    "element-plus": "2.9.0"
+    "vue-advanced-cropper": "^2.8.9",
+    "vue-router": "4.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "4.6.2",
-    "vite": "4.5.5"
+    "vite": "4.5.1"
   }
 }

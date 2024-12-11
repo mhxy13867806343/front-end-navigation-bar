@@ -464,11 +464,16 @@ export const menuItemsList = [
 
 export const onlineWorksList = [
   {
+    name: '图片处理工具',
+    desc: '支持图片裁剪、旋转、缩放等功能',
+    logo: '🖼️',
+    component: 'dialog'
+  },
+  {
     name: '推箱子游戏',
-    link: '#',
-    desc: '经典推箱子小游戏',
-    logo: '📦',
-    component:"dialog"
+    desc: '经典推箱子游戏，支持多个关卡',
+    logo: '🎮',
+    component: 'dialog'
   }
 ]
 
