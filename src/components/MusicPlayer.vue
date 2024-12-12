@@ -2,23 +2,23 @@
   <div class="music-player" :class="{ 'dark': isDark }">
     <div class="player-container">
       <div class="search-box">
-        <input 
-          type="text" 
-          v-model="searchQuery" 
+        <input
+          type="text"
+          v-model="searchQuery"
           @input="debounceSearch"
           placeholder="输入歌曲名称搜索..."
           class="search-input"
           :disabled="isLoading"
         >
-        <button 
-          @click="searchMusic" 
+        <button
           class="search-btn"
-          :disabled="isLoading"
+          :disabled="isLoading || !searchQuery.trim()"
+          @click="searchMusic"
         >
           {{ isLoading ? '搜索中...' : '🔍' }}
         </button>
-        <button 
-          @click="clearHistory" 
+        <button
+          @click="searchQuery=''"
           class="clear-history-btn"
           title="清空历史记录"
         >
@@ -27,10 +27,19 @@
       </div>
 
       <div class="search-history" v-if="searchHistory.length > 0">
-        <h4>搜索历史</h4>
+        <div class="history-header">
+          <h4>搜索历史</h4>
+          <button
+            class="clear-btn"
+            @click="clearHistory"
+            title="清空历史记录"
+          >
+            清空
+          </button>
+        </div>
         <div class="history-list">
-          <div 
-            v-for="(query, index) in searchHistory" 
+          <div
+            v-for="(query, index) in searchHistory"
             :key="index"
             @click="searchFromHistory(query)"
             class="history-item"
@@ -41,8 +50,8 @@
       </div>
 
       <div class="search-results" v-if="searchResults.length > 0">
-        <div 
-          v-for="(song, index) in searchResults" 
+        <div
+          v-for="(song, index) in searchResults"
           :key="song.id"
           @click="addToPlaylist(song)"
           class="search-result-item"
@@ -52,8 +61,8 @@
             <div class="song-artist">{{ song.artist }}</div>
             <div class="song-album">专辑：{{ song.album }}</div>
           </div>
-          <button 
-            class="add-btn" 
+          <button
+            class="add-btn"
             title="添加到播放列表"
             :disabled="!song.url"
           >
@@ -66,7 +75,7 @@
         <div class="song-title">{{ currentSong.name || '未选择歌曲' }}</div>
         <div class="song-artist">{{ currentSong.artist || '未知歌手' }}</div>
       </div>
-      
+
       <div class="progress-container" v-if="currentSong.url">
         <div class="time-display">{{ formatTime(audio.currentTime || 0) }}</div>
         <div class="progress-bar" ref="progressBar" @click="seek" @mousedown="startDragging" @mousemove="onDrag" @mouseup="stopDragging" @mouseleave="stopDragging">
@@ -75,7 +84,7 @@
         </div>
         <div class="time-display">{{ formatTime(audio.duration || 0) }}</div>
       </div>
-      
+
       <div class="controls" v-if="currentSong.url">
         <button @click="prev" :disabled="!hasPrev" class="control-btn">
           ⏮️
@@ -88,48 +97,58 @@
         </button>
         <div class="volume-control">
           🔊
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            v-model="volume" 
+          <input
+            type="range"
+            min="0"
+            max="100"
+            v-model="volume"
             @input="updateVolume"
             class="volume-slider"
           >
         </div>
       </div>
 
-      <div class="playlist" v-if="playlist.length > 0">
+      <div class="playlist-container">
         <div class="playlist-header">
           <h3>播放列表</h3>
-          <button 
-            @click="clearPlaylist" 
+          <button
             class="clear-btn"
+            @click="clearPlaylist"
+            v-if="playlist.length"
             title="清空播放列表"
           >
-            ✕
+            清空
           </button>
         </div>
-        <div 
-          v-for="(song, index) in playlist" 
-          :key="index"
-          @click="playSong(index)"
-          :class="['playlist-item', { active: currentIndex === index }]"
-        >
-          <span class="song-index">{{ index + 1 }}</span>
-          <div class="song-info">
-            <div class="song-name">{{ song.name }}</div>
-            <div class="song-artist">{{ song.artist }}</div>
-          </div>
-          <button 
-            class="remove-btn" 
-            @click.stop="removeFromPlaylist(index)"
-            title="从播放列表中移除"
+
+        <div class="playlist" v-if="playlist.length > 0">
+          <div
+            v-for="(song, index) in playlist"
+            :key="index"
+            @click="playSong(index)"
+            :class="['playlist-item', { active: currentIndex === index }]"
           >
-            ✕
-          </button>
+            <span class="song-index">{{ index + 1 }}</span>
+            <div class="song-info">
+              <div class="song-name">{{ song.name }}</div>
+              <div class="song-artist">{{ song.artist }}</div>
+            </div>
+            <button
+              class="remove-btn"
+              @click.stop="removeFromPlaylist(index)"
+              title="从播放列表中移除"
+            >
+              ✕
+            </button>
+          </div>
         </div>
-        <div v-if="playlist.length === 0" class="empty-state">播放列表为空</div>
+
+        <!-- 空状态提示 -->
+        <div class="empty-state" v-else>
+          <div class="empty-icon">🎵</div>
+          <p>暂无歌曲</p>
+          <p class="empty-tip">快去搜索添加喜欢的音乐吧～</p>
+        </div>
       </div>
     </div>
   </div>
@@ -137,7 +156,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import axios from 'axios'
 
 const searchQuery = ref('')
@@ -164,8 +183,8 @@ const props = defineProps({
 })
 
 const currentSong = computed(() => playlist.value[currentIndex.value] || {})
-const hasPrev = computed(() => currentIndex.value > 0)
-const hasNext = computed(() => currentIndex.value < playlist.value.length - 1)
+const hasNext = computed(() => playlist.value.length > 1)
+const hasPrev = computed(() => playlist.value.length > 1)
 
 // API基础URL
 const API_BASE = 'https://ncm.nekogan.com'
@@ -194,7 +213,7 @@ const debounceSearch = debounce(() => {
 const searchMusic = async () => {
   if (!searchQuery.value.trim()) return
   isLoading.value = true
-  
+
   try {
     const response = await axios.get(`${API_BASE}/search`, {
       params: {
@@ -256,21 +275,23 @@ const addToPlaylist = async (song) => {
     ElMessage.warning('该歌曲暂时无法播放')
     return
   }
-  
+
   const exists = playlist.value.some(item => item.id === song.id)
   if (exists) {
     ElMessage.warning('该歌曲已在播放列表中')
     return
   }
-  
+
   const songWithUrl = { ...song, url }
-  playlist.value.push(songWithUrl)
+  playlist.value.unshift(songWithUrl)
   saveToStorage()
-  
+
   if (playlist.value.length === 1) {
     playSong(0)
+  } else {
+    currentIndex.value++
   }
-  
+
   searchResults.value = []
   searchQuery.value = ''
   ElMessage.success('已添加到播放列表')
@@ -279,27 +300,44 @@ const addToPlaylist = async (song) => {
 // 从播放列表移除
 const removeFromPlaylist = (index) => {
   if (index === currentIndex.value) {
+    // 如果删除的是当前播放的歌曲
     audio.pause()
     isPlaying.value = false
-    if (index === playlist.value.length - 1) {
-      currentIndex.value = Math.max(0, index - 1)
+    
+    // 删除该歌曲
+    playlist.value.splice(index, 1)
+    
+    if (playlist.value.length === 0) {
+      // 如果删除后列表为空
+      audio.src = ''
+      currentIndex.value = 0
+      progress.value = 0
+      ElMessage.info('播放列表已清空')
+    } else {
+      // 如果列表还有歌曲，继续播放
+      // 如果删除的是最后一首，播放第一首
+      if (index >= playlist.value.length) {
+        currentIndex.value = 0
+      }
+      // 否则保持当前索引播放下一首
+      playSong(currentIndex.value)
     }
-  } else if (index < currentIndex.value) {
-    currentIndex.value--
+  } else {
+    // 如果删除的不是当前播放的歌曲
+    playlist.value.splice(index, 1)
+    // 如果删除的歌曲在当前播放歌曲之前，需要调整当前索引
+    if (index < currentIndex.value) {
+      currentIndex.value--
+    }
   }
-  
-  playlist.value.splice(index, 1)
+
   saveToStorage()
-  
-  if (playlist.value.length === 0) {
-    audio.src = ''
-  }
 }
 
 // 播放控制
 const togglePlay = () => {
   if (!currentSong.value.url) return
-  
+
   if (isPlaying.value) {
     audio.pause()
     isPlaying.value = false
@@ -318,36 +356,40 @@ const togglePlay = () => {
 
 const playSong = async (index) => {
   try {
+    if (playlist.value.length === 0) {
+      return
+    }
+
     currentIndex.value = index
     const song = playlist.value[index]
-    
+
     if (!song) {
       throw new Error('找不到歌曲')
     }
-    
+
     // 重置错误提示状态
     hasShownError.value = false
-    
+
     // 停止当前播放
     audio.pause()
     isPlaying.value = false
-    
+
     // 获取音乐URL
     const newUrl = await getMusicUrl(song.id)
     if (!newUrl) {
       throw new Error('获取音乐地址失败')
     }
-    
+
     song.url = newUrl
     audio.src = newUrl
-    
+
     try {
       await audio.play()
       isPlaying.value = true
     } catch (playError) {
       throw new Error('播放失败')
     }
-    
+
   } catch (error) {
     console.error('播放失败:', error)
     isPlaying.value = false
@@ -356,7 +398,7 @@ const playSong = async (index) => {
       hasShownError.value = true
     }
     removeFromPlaylist(index)
-    
+
     // 如果还有下一首歌，自动播放下一首
     if (hasNext.value && error.message !== '找不到歌曲') {
       next()
@@ -365,15 +407,13 @@ const playSong = async (index) => {
 }
 
 const prev = () => {
-  if (hasPrev.value) {
-    playSong(currentIndex.value - 1)
-  }
+  if (!hasPrev.value) return
+  playSong(currentIndex.value === 0 ? playlist.value.length - 1 : currentIndex.value - 1)
 }
 
 const next = () => {
-  if (hasNext.value) {
-    playSong(currentIndex.value + 1)
-  }
+  if (!hasNext.value) return
+  playSong((currentIndex.value + 1) % playlist.value.length)
 }
 
 const seek = (event) => {
@@ -422,7 +462,7 @@ const formatTime = (seconds) => {
 // 事件监听
 onMounted(() => {
   loadFromStorage()
-  
+
   audio.addEventListener('timeupdate', () => {
     progress.value = (audio.currentTime / audio.duration) * 100
   })
@@ -439,7 +479,7 @@ onMounted(() => {
   audio.addEventListener('error', (e) => {
     // 组件卸载时不显示错误
     if (isUnmounting.value) return
-    
+
     console.error('音频加载错误:', e)
     isPlaying.value = false
     if (!hasShownError.value) {
@@ -453,7 +493,7 @@ onMounted(() => {
 // 组件卸载时清理
 onUnmounted(() => {
   isUnmounting.value = true
-  
+
   // 停止播放
   if (audio) {
     audio.pause()
@@ -462,12 +502,12 @@ onUnmounted(() => {
     audio.src = ''
     isPlaying.value = false
   }
-  
+
   // 移除所有事件监听器
   audio.removeEventListener('timeupdate', null)
   audio.removeEventListener('ended', null)
   audio.removeEventListener('error', null)
-  
+
   // 保存数据
   saveToStorage()
 })
@@ -477,11 +517,22 @@ const loadFromStorage = () => {
   try {
     const savedPlaylist = localStorage.getItem('music_player_playlist')
     const savedHistory = localStorage.getItem('music_player_history')
-    
+
     if (savedPlaylist) {
       playlist.value = JSON.parse(savedPlaylist)
+      // 如果有播放列表，尝试继续播放上次的歌曲
+      if (playlist.value.length > 0) {
+        const lastIndex = localStorage.getItem('last_playing_index')
+        if (lastIndex !== null) {
+          currentIndex.value = parseInt(lastIndex) || 0
+          // 异步加载音频，避免阻塞
+          setTimeout(() => {
+            playSong(currentIndex.value)
+          }, 100)
+        }
+      }
     }
-    
+
     if (savedHistory) {
       searchHistory.value = JSON.parse(savedHistory)
     }
@@ -495,6 +546,8 @@ const saveToStorage = () => {
   try {
     localStorage.setItem('music_player_playlist', JSON.stringify(playlist.value))
     localStorage.setItem('music_player_history', JSON.stringify(searchHistory.value))
+    // 保存当前播放的索引
+    localStorage.setItem('last_playing_index', currentIndex.value.toString())
   } catch (error) {
     console.error('保存数据失败:', error)
   }
@@ -503,7 +556,7 @@ const saveToStorage = () => {
 // 添加搜索历史
 const addToHistory = (query) => {
   if (!query.trim()) return
-  
+
   // 移除重复项
   searchHistory.value = searchHistory.value.filter(item => item !== query)
   // 添加到开头
@@ -523,18 +576,46 @@ const searchFromHistory = (query) => {
 
 // 清空历史记录
 const clearHistory = () => {
-  searchHistory.value = []
-  saveToStorage()
+  ElMessageBox.confirm(
+    '确定要清空所有搜索历史吗？',
+    '清空历史记录',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    searchHistory.value = []
+    saveToStorage()
+    ElMessage.success('历史记录已清空')
+  }).catch(() => {})
 }
 
 // 清空播放列表
 const clearPlaylist = () => {
-  playlist.value = []
-  currentIndex.value = 0
-  audio.pause()
-  audio.src = ''
-  isPlaying.value = false
-  saveToStorage()
+  ElMessageBox.confirm(
+    '确定要清空播放列表吗？当前播放将停止。',
+    '清空播放列表',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    // 停止播放
+    audio.pause()
+    audio.src = ''
+    isPlaying.value = false
+
+    // 清空列表
+    playlist.value = []
+    currentIndex.value = 0
+
+    // 保存状态
+    saveToStorage()
+
+    ElMessage.success('播放列表已清空')
+  }).catch(() => {})
 }
 </script>
 
@@ -798,15 +879,28 @@ const clearPlaylist = () => {
   height: 4px;
 }
 
-.playlist {
+.playlist-container {
   margin-top: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
 }
 
 .playlist-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.playlist-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.dark .playlist-header h3 {
+  color: #fff;
 }
 
 .clear-btn {
@@ -823,6 +917,12 @@ const clearPlaylist = () => {
 .clear-btn:hover {
   background: rgba(255, 0, 0, 0.1);
   color: #ff4d4f;
+}
+
+.playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .playlist-item {
@@ -882,69 +982,30 @@ const clearPlaylist = () => {
   color: #ff4d4f;
 }
 
-.search-result-item .song-album {
-  font-size: 0.8em;
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
   color: #999;
 }
 
-.dark .search-result-item .song-album {
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-tip {
+  font-size: 0.9em;
+  margin-top: 8px;
   color: #666;
 }
 
-.search-history {
-  margin: 10px 0;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-}
-
-.history-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.history-item {
-  padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  cursor: pointer;
-  font-size: 0.9em;
-  transition: all 0.3s;
-}
-
-.history-item:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.dark .search-history {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.dark .history-item {
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
-}
-
-.dark .history-item:hover {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.dark .clear-btn {
+.dark .empty-tip {
   color: #999;
-}
-
-.dark .clear-btn:hover {
-  background: rgba(255, 0, 0, 0.2);
-  color: #ff4d4f;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 20px;
-  color: #999;
-  font-size: 0.9em;
 }
 
 /* 滚动条样式 */
@@ -983,5 +1044,70 @@ const clearPlaylist = () => {
 .dark .search-results::-webkit-scrollbar-thumb:hover,
 .dark .playlist::-webkit-scrollbar-thumb:hover {
   background: #888;
+}
+
+.search-history {
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.history-header h4 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.dark .history-header h4 {
+  color: #fff;
+}
+
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.history-item {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.3s;
+}
+
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dark .search-history {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark .history-item {
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+.dark .history-item:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.dark .clear-btn {
+  color: #999;
+}
+
+.dark .clear-btn:hover {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff4d4f;
 }
 </style>
