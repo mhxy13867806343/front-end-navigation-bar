@@ -1,5 +1,5 @@
 <template>
-  <div class="music-player" :style="playerStyle" :class="{ 'dark': isDark }">
+  <div class="music-player" :class="{ 'dark': isDark }">
     <div class="background-layer" v-if="currentSongBg">
       <img :src="currentSongBg" alt="background" class="background-image" />
       <div class="background-overlay"></div>
@@ -58,7 +58,7 @@
           <div
             v-for="(song, index) in searchResults"
             :key="song.id"
-            @click="addToPlaylist(song)"
+            @click="handleSearchResultClick(song)"
             class="search-result-item"
           >
             <div class="song-info">
@@ -66,13 +66,6 @@
               <div class="song-artist">{{ song.artist }}</div>
               <div class="song-album">专辑：{{ song.album }}</div>
             </div>
-            <button
-              class="add-btn"
-              title="添加到播放列表"
-              :disabled="!song.url"
-            >
-              {{ song.url ? '➕' : '🚫' }}
-            </button>
           </div>
         </div>
 
@@ -103,7 +96,7 @@
             ⏭️
           </button>
           <div class="volume-control">
-            🔊
+            <i class="volume-icon" @click="toggleMute">{{ volumeIcon }}</i>
             <input
               type="range"
               min="0"
@@ -111,7 +104,8 @@
               v-model="volume"
               @input="updateVolume"
               class="volume-slider"
-            >
+            />
+            <span class="volume-percentage">{{ volume }}%</span>
           </div>
           <el-dropdown v-if="showPlayMode" @command="changePlayMode" trigger="click">
             <el-button>
@@ -462,38 +456,47 @@ const playSong = async (index) => {
   }
 }
 
+const getNextIndex = () => {
+  if (!playlist.value.length) return -1
+  
+  switch (playMode.value) {
+    case 'random': // 随机播放
+      return Math.floor(Math.random() * playlist.value.length)
+    case 'single': // 单曲循环
+      return currentIndex.value
+    case 'sequence': // 顺序播放
+    default:
+      return currentIndex.value >= playlist.value.length - 1 ? 0 : currentIndex.value + 1
+  }
+}
+
+const getPrevIndex = () => {
+  if (!playlist.value.length) return -1
+  
+  switch (playMode.value) {
+    case 'random': // 随机播放
+      return Math.floor(Math.random() * playlist.value.length)
+    case 'single': // 单曲循环
+      return currentIndex.value
+    case 'sequence': // 顺序播放
+    default:
+      return currentIndex.value <= 0 ? playlist.value.length - 1 : currentIndex.value - 1
+  }
+}
+
 const prev = () => {
-  if (!hasPrev.value) return
-  playSong(currentIndex.value === 0 ? playlist.value.length - 1 : currentIndex.value - 1)
+  if (!playlist.value.length) return
+  const index = getPrevIndex()
+  if (index !== -1) {
+    playSong(index)
+  }
 }
 
 const next = () => {
-  if (playlist.value.length === 0) return
-
-  // 如果播放列表只有一首歌
-  if (playlist.value.length === 1) {
-    playSong(0)
-    return
-  }
-
-  // 根据播放模式选择下一首歌
-  switch (playMode.value) {
-    case 'sequence':
-      // 顺序播放：播放下一首，如果是最后一首则回到第一首
-      playSong((currentIndex.value + 1) % playlist.value.length)
-      break
-    case 'single':
-      // 单曲播放：重新播放当前歌曲
-      playSong(currentIndex.value)
-      break
-    case 'random':
-      // 随机播放：随机选择一首（避免重复播放当前歌曲）
-      let nextIndex
-      do {
-        nextIndex = Math.floor(Math.random() * playlist.value.length)
-      } while (nextIndex === currentIndex.value && playlist.value.length > 1)
-      playSong(nextIndex)
-      break
+  if (!playlist.value.length) return
+  const index = getNextIndex()
+  if (index !== -1) {
+    playSong(index)
   }
 }
 
@@ -768,63 +771,9 @@ const singlePlayCount = ref(-1) // 单曲播放次数，-1表示无限循环
 
 // 处理音乐播放结束
 const handleEnded = () => {
-  // 如果播放列表为空，不做任何处理
-  if (playlist.value.length === 0) return
-
-  // 如果是单曲播放模式且设置了播放次数
-  if (playMode.value === 'single' && singlePlayCount.value > 0) {
-    singlePlayCount.value--
-    if (singlePlayCount.value === 0) {
-      singlePlayCount.value = -1
-      ElMessage.info('已切换到无限循环模式')
-    } else {
-      ElMessage.info(`剩余播放次数：${singlePlayCount.value}次`)
-    }
-  }
-
-  // 如果播放列表只有一首歌
-  if (playlist.value.length === 1) {
-    playSong(0) // 重新播放当前歌曲
-    return
-  }
-
-  // 根据播放模式选择下一首歌
-  switch (playMode.value) {
-    case 'sequence':
-      // 顺序播放：播放下一首，如果是最后一首则回到第一首
-      playSong((currentIndex.value + 1) % playlist.value.length)
-      break
-    case 'single':
-      // 单曲播放：重新播放当前歌曲
-      playSong(currentIndex.value)
-      break
-    case 'random':
-      // 随机播放：随机选择一首（避免重复播放当前歌曲）
-      let nextIndex
-      do {
-        nextIndex = Math.floor(Math.random() * playlist.value.length)
-      } while (nextIndex === currentIndex.value && playlist.value.length > 1)
-      playSong(nextIndex)
-      break
-  }
-}
-
-// 修改 next 函数
-const getNextSong = () => {
-  if (playlist.value.length === 0) return -1
-  
-  switch (playMode.value) {
-    case 'sequence':
-      return (currentIndex.value + 1) % playlist.value.length
-    case 'single':
-      return currentIndex.value
-    case 'random':
-      // 避免随机到当前播放的歌曲
-      let nextIndex
-      do {
-        nextIndex = Math.floor(Math.random() * playlist.value.length)
-      } while (nextIndex === currentIndex.value && playlist.value.length > 1)
-      return nextIndex
+  const nextIndex = getNextIndex()
+  if (nextIndex !== -1) {
+    playSong(nextIndex)
   }
 }
 
@@ -901,6 +850,43 @@ const seekToLyric = (time) => {
   }
 }
 
+// 处理搜索结果点击
+const handleSearchResultClick = async (song) => {
+  try {
+    // 获取音乐URL
+    const musicUrl = await getMusicUrl(song.id)
+    if (!musicUrl) {
+      ElMessage.error('无法播放该歌曲')
+      return
+    }
+    
+    // 添加到播放列表
+    addToPlaylist({
+      ...song,
+      url: musicUrl
+    })
+    
+    // 获取歌词
+    await getLyrics(song.id)
+    
+    // 获取歌曲详情（背景图等）
+    await getSongDetail(song.id)
+    
+    // 播放歌曲
+    const index = playlist.value.findIndex(item => item.id === song.id)
+    if (index !== -1) {
+      playSong(index)
+    }
+    
+    // 清空搜索结果
+    searchResults.value = []
+    searchQuery.value = ''
+  } catch (error) {
+    console.error('播放歌曲失败:', error)
+    ElMessage.error('播放失败，请重试')
+  }
+}
+
 // 动态计算播放器高度
 const windowHeight = ref(window.innerHeight)
 
@@ -917,6 +903,35 @@ const playerStyle = computed(() => {
 const handleResize = () => {
   windowHeight.value = window.innerHeight
 }
+
+// 音量图标计算属性
+const volumeIcon = computed(() => {
+  if (volume.value === 0) {
+    return '🔇' // 静音
+  } else if (volume.value < 30) {
+    return '🔈' // 低音量
+  } else if (volume.value < 70) {
+    return '🔉' // 中等音量
+  } else {
+    return '🔊' // 高音量
+  }
+})
+
+// 切换静音
+const toggleMute = () => {
+  if (volume.value === 0) {
+    // 如果当前是静音，恢复到上次的音量
+    volume.value = lastVolume.value || 50
+  } else {
+    // 保存当前音量并设置为静音
+    lastVolume.value = volume.value
+    volume.value = 0
+  }
+  updateVolume()
+}
+
+// 保存上次的音量值
+const lastVolume = ref(50)
 </script>
 
 <style scoped>
@@ -1004,6 +1019,7 @@ const handleResize = () => {
   align-items: center;
   padding: 10px;
   cursor: pointer;
+  border-radius: 5px;
   transition: background-color 0.2s;
 }
 
@@ -1072,6 +1088,7 @@ const handleResize = () => {
   position: relative;
   padding: 20px;
   background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
 }
 
 .lyrics-wrapper {
@@ -1088,7 +1105,7 @@ const handleResize = () => {
   text-align: center;
   transition: all 0.3s ease;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .lyric-line.active {
@@ -1212,12 +1229,34 @@ const handleResize = () => {
 .volume-control {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  margin: 0 15px;
+}
+
+.volume-icon {
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.volume-icon:hover {
+  transform: scale(1.1);
 }
 
 .volume-slider {
   width: 60px;
   height: 4px;
+}
+
+.volume-percentage {
+  min-width: 45px;
+  color: #666;
+  font-size: 14px;
+}
+
+.dark .volume-percentage {
+  color: #fff;
 }
 
 .playlist-container {
@@ -1389,6 +1428,7 @@ const handleResize = () => {
   padding: 20px;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
   display: flex;
+  overflow: scroll;
 }
 
 .dark .content-container {
