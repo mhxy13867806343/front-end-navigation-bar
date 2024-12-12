@@ -1,184 +1,207 @@
 <template>
   <div class="music-player" :class="{ 'dark': isDark }">
-    <div class="player-container">
-      <div class="search-box">
-        <input
-          type="text"
-          v-model="searchQuery"
-          @input="debounceSearch"
-          placeholder="输入歌曲名称搜索..."
-          class="search-input"
-          :disabled="isLoading"
-        >
-        <button v-if="searchQuery.length"
-          class="search-btn"
-          :disabled="isLoading || !searchQuery.trim()"
-          @click="searchMusic"
-        >
-          {{ isLoading ? '搜索中...' : '🔍' }}
-        </button>
-        <button v-if="searchQuery.length>0"
-          @click="searchQuery=''"
-          class="clear-history-btn"
-          title="清空历史记录"
-        >
-          ✕
-        </button>
-      </div>
-
-      <div class="search-history" v-if="searchHistory.length > 0">
-        <div class="history-header">
-          <h4>搜索历史</h4>
-          <button
-            class="clear-btn"
-            @click="clearHistory"
+    <div class="background-layer" v-if="currentSongBg">
+      <img :src="currentSongBg" alt="background" class="background-image" />
+      <div class="background-overlay"></div>
+    </div>
+    <div class="content-container">
+      <div class="player-container">
+        <div class="search-box">
+          <input
+            type="text"
+            v-model="searchQuery"
+            @input="debounceSearch"
+            placeholder="输入歌曲名称搜索..."
+            class="search-input"
+            :disabled="isLoading"
+          >
+          <button v-if="searchQuery.length"
+            class="search-btn"
+            :disabled="isLoading || !searchQuery.trim()"
+            @click="searchMusic"
+          >
+            {{ isLoading ? '搜索中...' : '🔍' }}
+          </button>
+          <button v-if="searchQuery.length>0"
+            @click="searchQuery=''"
+            class="clear-history-btn"
             title="清空历史记录"
           >
-            清空
+            ✕
           </button>
         </div>
-        <div class="history-list">
-          <div
-            v-for="(query, index) in searchHistory"
-            :key="index"
-            @click="searchFromHistory(query)"
-            class="history-item"
-          >
-            {{ query }}
+
+        <div class="search-history" v-if="searchHistory.length > 0">
+          <div class="history-header">
+            <h4>搜索历史</h4>
+            <button
+              class="clear-btn"
+              @click="clearHistory"
+              title="清空历史记录"
+            >
+              清空
+            </button>
+          </div>
+          <div class="history-list">
+            <div
+              v-for="(query, index) in searchHistory"
+              :key="index"
+              @click="searchFromHistory(query)"
+              class="history-item"
+            >
+              {{ query }}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="search-results" v-if="searchResults.length > 0">
-        <div
-          v-for="(song, index) in searchResults"
-          :key="song.id"
-          @click="addToPlaylist(song)"
-          class="search-result-item"
-        >
-          <div class="song-info">
-            <div class="song-name">{{ song.name }}</div>
-            <div class="song-artist">{{ song.artist }}</div>
-            <div class="song-album">专辑：{{ song.album }}</div>
-          </div>
-          <button
-            class="add-btn"
-            title="添加到播放列表"
-            :disabled="!song.url"
-          >
-            {{ song.url ? '➕' : '🚫' }}
-          </button>
-        </div>
-      </div>
-
-      <div class="music-info" v-if="currentSong.url">
-        <div class="song-title">{{ currentSong.name || '未选择歌曲' }}</div>
-        <div class="song-artist">{{ currentSong.artist || '未知歌手' }}</div>
-      </div>
-
-      <div class="progress-container" v-if="currentSong.url">
-        <div class="time-display">{{ formatTime(audio.currentTime || 0) }}</div>
-        <div class="progress-bar" ref="progressBar" @click="seek" @mousedown="startDragging" @mousemove="onDrag" @mouseup="stopDragging" @mouseleave="stopDragging">
-          <div class="progress" :style="{ width: progress + '%' }"></div>
-          <div class="progress-handle" :style="{ left: progress + '%' }"></div>
-        </div>
-        <div class="time-display">{{ formatTime(audio.duration || 0) }}</div>
-      </div>
-
-      <div class="controls" v-if="currentSong.url">
-        <button @click="prev" :disabled="!hasPrev" class="control-btn">
-          ⏮️
-        </button>
-        <button @click="togglePlay" class="control-btn play-btn">
-          {{ isPlaying ? '⏸️' : '▶️' }}
-        </button>
-        <button @click="next" :disabled="!hasNext" class="control-btn">
-          ⏭️
-        </button>
-        <div class="volume-control">
-          🔊
-          <input
-            type="range"
-            min="0"
-            max="100"
-            v-model="volume"
-            @input="updateVolume"
-            class="volume-slider"
-          >
-        </div>
-        <el-dropdown v-if="showPlayMode" @command="changePlayMode" trigger="click">
-          <el-button>
-            <el-icon class="play-mode-icon">
-              <component :is="playMode === 'sequence' ? List : playMode === 'single' ? Refresh : Switch" />
-            </el-icon>
-            <span class="play-mode-text">
-              {{ playMode === 'sequence' ? '顺序播放' : 
-                 playMode === 'single' ? `单曲播放${singlePlayCount === -1 ? '' : '(' + singlePlayCount + '次)'}` : 
-                 '随机播放' }}
-            </span>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item :command="'sequence'">
-                <el-icon class="play-mode-icon"><List /></el-icon>
-                <span class="play-mode-text">顺序播放</span>
-              </el-dropdown-item>
-              <el-dropdown-item :command="'single'" @click.native.stop="setSinglePlayCount">
-                <el-icon class="play-mode-icon"><Refresh /></el-icon>
-                <span class="play-mode-text">
-                  单曲播放{{ singlePlayCount === -1 ? '' : '(' + singlePlayCount + '次)' }}
-                </span>
-              </el-dropdown-item>
-              <el-dropdown-item :command="'random'">
-                <el-icon class="play-mode-icon"><Switch /></el-icon>
-                <span class="play-mode-text">随机播放</span>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
-
-      <div class="playlist-container">
-        <div class="playlist-header">
-          <h3>播放列表</h3>
-          <button
-            class="clear-btn"
-            @click="clearPlaylist"
-            v-if="playlist.length"
-            title="清空播放列表"
-          >
-            清空
-          </button>
-        </div>
-
-        <div class="playlist" v-if="playlist.length > 0">
+        <div class="search-results" v-if="searchResults.length > 0">
           <div
-            v-for="(song, index) in playlist"
-            :key="index"
-            @click="playSong(index)"
-            :class="['playlist-item', { active: currentIndex === index }]"
+            v-for="(song, index) in searchResults"
+            :key="song.id"
+            @click="addToPlaylist(song)"
+            class="search-result-item"
           >
-            <span class="song-index">{{ index + 1 }}</span>
             <div class="song-info">
               <div class="song-name">{{ song.name }}</div>
               <div class="song-artist">{{ song.artist }}</div>
+              <div class="song-album">专辑：{{ song.album }}</div>
             </div>
             <button
-              class="remove-btn"
-              @click.stop="removeFromPlaylist(index)"
-              title="从播放列表中移除"
+              class="add-btn"
+              title="添加到播放列表"
+              :disabled="!song.url"
             >
-              ✕
+              {{ song.url ? '➕' : '🚫' }}
             </button>
           </div>
         </div>
 
-        <!-- 空状态提示 -->
-        <div class="empty-state" v-else>
-          <div class="empty-icon">🎵</div>
-          <p>暂无歌曲</p>
-          <p class="empty-tip">快去搜索添加喜欢的音乐吧～</p>
+        <div class="music-info" v-if="currentSong.url">
+          <div class="song-title">{{ currentSong.name || '未选择歌曲' }}</div>
+          <div class="song-artist">{{ currentSong.artist || '未知歌手' }}</div>
         </div>
+
+
+
+        <div class="progress-container" v-if="currentSong.url">
+          <div class="time-display">{{ formatTime(audio.currentTime || 0) }}</div>
+          <div class="progress-bar" ref="progressBar" @click="seek" @mousedown="startDragging" @mousemove="onDrag" @mouseup="stopDragging" @mouseleave="stopDragging">
+            <div class="progress" :style="{ width: progress + '%' }"></div>
+            <div class="progress-handle" :style="{ left: progress + '%' }"></div>
+          </div>
+          <div class="time-display">{{ formatTime(audio.duration || 0) }}</div>
+        </div>
+
+        <div class="controls" v-if="currentSong.url">
+          <button @click="prev" :disabled="!hasPrev" class="control-btn">
+            ⏮️
+          </button>
+          <button @click="togglePlay" class="control-btn play-btn">
+            {{ isPlaying ? '⏸️' : '▶️' }}
+          </button>
+          <button @click="next" :disabled="!hasNext" class="control-btn">
+            ⏭️
+          </button>
+          <div class="volume-control">
+            🔊
+            <input
+              type="range"
+              min="0"
+              max="100"
+              v-model="volume"
+              @input="updateVolume"
+              class="volume-slider"
+            >
+          </div>
+          <el-dropdown v-if="showPlayMode" @command="changePlayMode" trigger="click">
+            <el-button>
+              <el-icon class="play-mode-icon">
+                <component :is="playMode === 'sequence' ? List : playMode === 'single' ? Refresh : Switch" />
+              </el-icon>
+              <span class="play-mode-text">
+                {{ playMode === 'sequence' ? '顺序播放' : 
+                   playMode === 'single' ? `单曲播放${singlePlayCount === -1 ? '' : '(' + singlePlayCount + '次)'}` : 
+                   '随机播放' }}
+              </span>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item :command="'sequence'">
+                  <el-icon class="play-mode-icon"><List /></el-icon>
+                  <span class="play-mode-text">顺序播放</span>
+                </el-dropdown-item>
+                <el-dropdown-item :command="'single'" @click.native.stop="setSinglePlayCount">
+                  <el-icon class="play-mode-icon"><Refresh /></el-icon>
+                  <span class="play-mode-text">
+                    单曲播放{{ singlePlayCount === -1 ? '' : '(' + singlePlayCount + '次)' }}
+                  </span>
+                </el-dropdown-item>
+                <el-dropdown-item :command="'random'">
+                  <el-icon class="play-mode-icon"><Switch /></el-icon>
+                  <span class="play-mode-text">随机播放</span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+
+        <div class="playlist-container">
+          <div class="playlist-header">
+            <h3>播放列表</h3>
+            <button
+              class="clear-btn"
+              @click="clearPlaylist"
+              v-if="playlist.length"
+              title="清空播放列表"
+            >
+              清空
+            </button>
+          </div>
+
+          <div class="playlist" v-if="playlist.length > 0">
+            <div
+              v-for="(song, index) in playlist"
+              :key="index"
+              @click="playSong(index)"
+              :class="['playlist-item', { active: currentIndex === index }]"
+            >
+              <span class="song-index">{{ index + 1 }}</span>
+              <div class="song-info">
+                <div class="song-name">{{ song.name }}</div>
+                <div class="song-artist">{{ song.artist }}</div>
+              </div>
+              <button
+                class="remove-btn"
+                @click.stop="removeFromPlaylist(index)"
+                title="从播放列表中移除"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- 空状态提示 -->
+          <div class="empty-state" v-else>
+            <div class="empty-icon">🎵</div>
+            <p>暂无歌曲</p>
+            <p class="empty-tip">快去搜索添加喜欢的音乐吧～</p>
+          </div>
+        </div>
+      </div>
+      <div class="lyrics-container" v-if="lyrics.length">
+        <div class="lyrics-wrapper" :style="{ transform: `translateY(${-currentLyricIndex * 30}px)` }">
+          <div
+              v-for="(lyric, index) in lyrics"
+              :key="index"
+              class="lyric-line"
+              :class="{ 'active': index === currentLyricIndex }"
+          >
+            {{ lyric.text }}
+          </div>
+        </div>
+      </div>
+      <div v-else class="no-lyrics">
+        暂无歌词
       </div>
     </div>
   </div>
@@ -205,6 +228,11 @@ const progressBar = ref(null)
 const isDragging = ref(false)
 const hasShownError = ref(false)
 const isUnmounting = ref(false)
+const currentSongBg = ref('')
+
+// 歌词相关
+const lyrics = ref([])
+const currentLyricIndex = ref(-1)
 
 // 接收dark mode prop
 const props = defineProps({
@@ -411,6 +439,12 @@ const playSong = async (index) => {
       throw new Error('播放失败')
     }
 
+    // 获取歌词
+    await getLyrics(song.id)
+
+    // 获取歌曲背景图片
+    await getSongDetail(song.id)
+
   } catch (error) {
     console.error('播放失败:', error)
     isPlaying.value = false
@@ -441,9 +475,24 @@ const next = () => {
     return
   }
 
-  const nextIndex = getNextSong()
-  if (nextIndex !== -1) {
-    playSong(nextIndex)
+  // 根据播放模式选择下一首歌
+  switch (playMode.value) {
+    case 'sequence':
+      // 顺序播放：播放下一首，如果是最后一首则回到第一首
+      playSong((currentIndex.value + 1) % playlist.value.length)
+      break
+    case 'single':
+      // 单曲播放：重新播放当前歌曲
+      playSong(currentIndex.value)
+      break
+    case 'random':
+      // 随机播放：随机选择一首（避免重复播放当前歌曲）
+      let nextIndex
+      do {
+        nextIndex = Math.floor(Math.random() * playlist.value.length)
+      } while (nextIndex === currentIndex.value && playlist.value.length > 1)
+      playSong(nextIndex)
+      break
   }
 }
 
@@ -490,27 +539,81 @@ const formatTime = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
+// 获取歌词
+const getLyrics = async (id) => {
+  try {
+    const response = await axios.get(`${API_BASE}/lyric?id=${id}`)
+    if (response.data.lrc?.lyric) {
+      // 解析歌词
+      const lyricText = response.data.lrc.lyric
+      const lyricLines = lyricText.split('\n')
+      const parsedLyrics = lyricLines
+        .map(line => {
+          const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/
+          const match = line.match(timeRegex)
+          if (match) {
+            const [_, minutes, seconds, milliseconds] = match
+            const time = parseInt(minutes) * 60 + parseInt(seconds) + parseInt(milliseconds) / 1000
+            const text = line.replace(timeRegex, '').trim()
+            if (text) {
+              return { time, text }
+            }
+          }
+          return null
+        })
+        .filter(item => item !== null)
+      
+      lyrics.value = parsedLyrics
+    } else {
+      lyrics.value = []
+    }
+  } catch (error) {
+    console.error('获取歌词失败:', error)
+    lyrics.value = []
+  }
+}
+
+// 更新当前歌词
+const updateCurrentLyric = () => {
+  if (!lyrics.value.length) return
+  
+  const currentTime = audio.currentTime
+  let index = lyrics.value.findIndex(lyric => lyric.time > currentTime)
+  if (index === -1) {
+    index = lyrics.value.length
+  }
+  currentLyricIndex.value = index - 1
+}
+
 // 事件监听
 onMounted(() => {
   loadFromStorage()
 
-  audio.addEventListener('timeupdate', () => {
-    progress.value = (audio.currentTime / audio.duration) * 100
+  // 添加音频事件监听器
+  audio.addEventListener('play', () => {
+    isPlaying.value = true
+  })
+
+  audio.addEventListener('pause', () => {
+    isPlaying.value = false
   })
 
   audio.addEventListener('ended', handleEnded)
 
-  audio.addEventListener('error', (e) => {
-    // 组件卸载时不显示错误
-    if (isUnmounting.value) return
+  audio.addEventListener('timeupdate', () => {
+    if (!isDragging.value) {
+      progress.value = (audio.currentTime / audio.duration) * 100 || 0
+      updateCurrentLyric()
+    }
+  })
 
-    console.error('音频加载错误:', e)
+  audio.addEventListener('error', (e) => {
+    console.error('音频播放错误:', e)
     isPlaying.value = false
     if (!hasShownError.value) {
-      ElMessage.error('音频加载失败，请尝试其他歌曲')
+      ElMessage.error('播放失败，请尝试其他歌曲')
       hasShownError.value = true
     }
-    removeFromPlaylist(currentIndex.value)
   })
 })
 
@@ -528,8 +631,10 @@ onUnmounted(() => {
   }
 
   // 移除所有事件监听器
-  audio.removeEventListener('timeupdate', null)
+  audio.removeEventListener('play', null)
+  audio.removeEventListener('pause', null)
   audio.removeEventListener('ended', null)
+  audio.removeEventListener('timeupdate', null)
   audio.removeEventListener('error', null)
 
   // 保存数据
@@ -757,15 +862,29 @@ const setSinglePlayCount = () => {
     }
   }).catch(() => {})
 }
+
+// 获取歌曲背景图片
+const getSongDetail = async (id) => {
+  try {
+    const response = await axios.get(`${API_BASE}/song/detail?ids=${id}`)
+    if (response.data.songs && response.data.songs[0]) {
+      const song = response.data.songs[0]
+      // 获取专辑图片作为背景
+      currentSongBg.value = song.al?.picUrl || ''
+    }
+  } catch (error) {
+    console.error('获取歌曲详情失败:', error)
+  }
+}
 </script>
 
 <style scoped>
 .music-player {
+  position: relative;
   width: 100%;
-  max-width: 500px;
   padding: 20px;
   border-radius: 10px;
-  background: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -904,6 +1023,49 @@ const setSinglePlayCount = () => {
 
 .dark .song-artist {
   color: #999;
+}
+
+.lyrics-container {
+  flex: 1;
+  height: 300px;
+  overflow: hidden;
+  margin: 20px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lyrics-wrapper {
+  transition: transform 0.3s ease;
+  overflow-y: scroll;
+}
+
+.lyric-line {
+  padding: 8px 0;
+  text-align: center;
+  transition: all 0.3s ease;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.dark .lyric-line {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.lyric-line.active {
+  color: #1890ff;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.no-lyrics {
+  text-align: center;
+  color: rgba(0, 0, 0, 0.4);
+  padding: 20px;
+}
+
+.dark .no-lyrics {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .progress-container {
@@ -1148,42 +1310,95 @@ const setSinglePlayCount = () => {
   color: #999;
 }
 
-/* 滚动条样式 */
-.search-results::-webkit-scrollbar,
-.playlist::-webkit-scrollbar {
-  width: 4px;
+.background-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
 }
 
-.search-results::-webkit-scrollbar-track,
-.playlist::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 2px;
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(20px);
+  transform: scale(1.1);
 }
 
-.search-results::-webkit-scrollbar-thumb,
-.playlist::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 2px;
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.search-results::-webkit-scrollbar-thumb:hover,
-.playlist::-webkit-scrollbar-thumb:hover {
-  background: #555;
+.content-container {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  display: flex;
 }
 
-.dark .search-results::-webkit-scrollbar-track,
-.dark .playlist::-webkit-scrollbar-track {
-  background: #2c2c2c;
+.dark .content-container {
+  background: rgba(44, 44, 44, 0.1);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
-.dark .search-results::-webkit-scrollbar-thumb,
-.dark .playlist::-webkit-scrollbar-thumb {
-  background: #666;
+/* 确保所有内容在毛玻璃效果上层 */
+.search-container,
+.player-controls,
+.playlist-container {
+  position: relative;
+  z-index: 2;
 }
 
-.dark .search-results::-webkit-scrollbar-thumb:hover,
-.dark .playlist::-webkit-scrollbar-thumb:hover {
-  background: #888;
+/* 调整文字颜色，确保在背景上清晰可见 */
+.song-title,
+.artist-name {
+  color: #333;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* 调整控件样式，使其在背景上更加突出 */
+.el-button,
+.el-slider,
+.el-input {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 播放列表样式调整 */
+.playlist {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.playlist-item {
+  background: rgba(255, 255, 255, 0.5);
+  transition: background-color 0.3s;
+}
+
+.playlist-item:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.playlist-item.active {
+  background: rgba(64, 158, 255, 0.2);
 }
 
 .search-history {
