@@ -1027,35 +1027,41 @@ const getSongDetail = async (id) => {
 
 .lyrics-container {
   flex: 1;
-  height: 300px;
+  height: 100%;
   overflow: hidden;
-  margin: 20px 0;
+  margin-left: 20px;
+  padding: 15px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .lyrics-wrapper {
   transition: transform 0.3s ease;
-  overflow-y: scroll;
+  text-align: center;
+  width: 100%;
+  max-height: 500px;
 }
 
 .lyric-line {
-  padding: 8px 0;
+  height: 30px;
+  line-height: 30px;
   text-align: center;
   transition: all 0.3s ease;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.dark .lyric-line {
   color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  margin: 8px 0;
 }
 
 .lyric-line.active {
-  color: #1890ff;
-  font-size: 1.1em;
+  color: #ff4757;
+  font-size: 16px;
   font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
 }
 
 .no-lyrics {
