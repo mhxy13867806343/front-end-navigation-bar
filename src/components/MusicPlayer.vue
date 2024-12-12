@@ -1,5 +1,5 @@
 <template>
-  <div class="music-player" :class="{ 'dark': isDark }">
+  <div class="music-player" :style="playerStyle" :class="{ 'dark': isDark }">
     <div class="background-layer" v-if="currentSongBg">
       <img :src="currentSongBg" alt="background" class="background-image" />
       <div class="background-overlay"></div>
@@ -189,12 +189,13 @@
         </div>
       </div>
       <div class="lyrics-container" v-if="lyrics.length">
-        <div class="lyrics-wrapper" :style="{ transform: `translateY(${-currentLyricIndex * 30}px)` }">
+        <div class="lyrics-wrapper" :style="{ transform: `translateY(${-currentLyricIndex * 24}px)` }" style="overflow-y: auto;">
           <div
               v-for="(lyric, index) in lyrics"
               :key="index"
               class="lyric-line"
-              :class="{ 'active': index === currentLyricIndex }"
+              :class="{ active: currentLyricIndex === index }"
+              @click="seekToLyric(lyric.time)"
           >
             {{ lyric.text }}
           </div>
@@ -525,6 +526,8 @@ const updateProgress = (event) => {
   percent = Math.max(0, Math.min(1, percent))
   const time = percent * audio.duration
   audio.currentTime = time
+  // 立即更新歌词位置
+  updateCurrentLyric()
 }
 
 const updateVolume = () => {
@@ -553,10 +556,15 @@ const getLyrics = async (id) => {
           const match = line.match(timeRegex)
           if (match) {
             const [_, minutes, seconds, milliseconds] = match
-            const time = parseInt(minutes) * 60 + parseInt(seconds) + parseInt(milliseconds) / 1000
+            // 将毫秒标准化为3位数
+            const ms = milliseconds.padEnd(3, '0')
+            // 计算总毫秒数
+            const timeInMs = (parseInt(minutes) * 60 * 1000) + 
+                           (parseInt(seconds) * 1000) + 
+                           parseInt(ms)
             const text = line.replace(timeRegex, '').trim()
             if (text) {
-              return { time, text }
+              return { time: timeInMs, text }
             }
           }
           return null
@@ -578,7 +586,7 @@ const updateCurrentLyric = () => {
   if (!lyrics.value.length) return
   
   const currentTime = audio.currentTime
-  let index = lyrics.value.findIndex(lyric => lyric.time > currentTime)
+  let index = lyrics.value.findIndex(lyric => lyric.time > currentTime * 1000)
   if (index === -1) {
     index = lyrics.value.length
   }
@@ -615,6 +623,9 @@ onMounted(() => {
       hasShownError.value = true
     }
   })
+
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleResize)
 })
 
 // 组件卸载时清理
@@ -636,6 +647,9 @@ onUnmounted(() => {
   audio.removeEventListener('ended', null)
   audio.removeEventListener('timeupdate', null)
   audio.removeEventListener('error', null)
+
+  // 移除窗口大小变化事件监听器
+  window.removeEventListener('resize', handleResize)
 
   // 保存数据
   saveToStorage()
@@ -876,16 +890,43 @@ const getSongDetail = async (id) => {
     console.error('获取歌曲详情失败:', error)
   }
 }
+
+// 歌词点击跳转
+const seekToLyric = (time) => {
+  if (audio && time >= 0) {
+    audio.currentTime = time / 1000 // 将毫秒转换为秒
+    if (!isPlaying.value) {
+      togglePlay() // 如果当前未播放，则开始播放
+    }
+  }
+}
+
+// 动态计算播放器高度
+const windowHeight = ref(window.innerHeight)
+
+const playerStyle = computed(() => {
+  const calculatedHeight = (windowHeight.value / 2) + 100
+  const maxHeight = 1500
+  const finalHeight = Math.min(calculatedHeight, maxHeight)
+  return {
+    height: `${finalHeight}px`
+  }
+})
+
+// 监听窗口大小变化
+const handleResize = () => {
+  windowHeight.value = window.innerHeight
+}
 </script>
 
 <style scoped>
 .music-player {
   position: relative;
   width: 100%;
-  padding: 20px;
-  border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  transition: all 0.3s ease;
 }
 
 .dark.music-player {
@@ -1027,41 +1068,33 @@ const getSongDetail = async (id) => {
 
 .lyrics-container {
   flex: 1;
-  height: 100%;
   overflow: hidden;
-  margin-left: 20px;
-  padding: 15px;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .lyrics-wrapper {
-  transition: transform 0.3s ease;
-  text-align: center;
+  position: absolute;
   width: 100%;
-  max-height: 500px;
+  left: 0;
+  transition: transform 0.3s ease;
+  padding: 0 20px;
+  overflow-y: auto;
 }
 
 .lyric-line {
-  height: 30px;
-  line-height: 30px;
+  padding: 6px 0;
   text-align: center;
   transition: all 0.3s ease;
+  cursor: pointer;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  margin: 8px 0;
 }
 
 .lyric-line.active {
-  color: #ff4757;
-  font-size: 16px;
+  color: #e40b0b;
   font-weight: bold;
-  text-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+  transform: scale(1.1);
 }
 
 .no-lyrics {
@@ -1085,7 +1118,7 @@ const getSongDetail = async (id) => {
 
 .time-display {
   font-size: 12px;
-  color: #666;
+  color: #333;
   min-width: 45px;
   text-align: center;
 }
