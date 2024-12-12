@@ -10,14 +10,14 @@
           class="search-input"
           :disabled="isLoading"
         >
-        <button
+        <button v-if="searchQuery.length"
           class="search-btn"
           :disabled="isLoading || !searchQuery.trim()"
           @click="searchMusic"
         >
           {{ isLoading ? '搜索中...' : '🔍' }}
         </button>
-        <button
+        <button v-if="searchQuery.length>0"
           @click="searchQuery=''"
           class="clear-history-btn"
           title="清空历史记录"
@@ -106,6 +106,36 @@
             class="volume-slider"
           >
         </div>
+        <el-dropdown v-if="showPlayMode" @command="changePlayMode" trigger="click">
+          <el-button>
+            <el-icon class="play-mode-icon">
+              <component :is="playMode === 'sequence' ? List : playMode === 'single' ? Refresh : Switch" />
+            </el-icon>
+            <span class="play-mode-text">
+              {{ playMode === 'sequence' ? '顺序播放' : 
+                 playMode === 'single' ? `单曲播放${singlePlayCount === -1 ? '' : '(' + singlePlayCount + '次)'}` : 
+                 '随机播放' }}
+            </span>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item :command="'sequence'">
+                <el-icon class="play-mode-icon"><List /></el-icon>
+                <span class="play-mode-text">顺序播放</span>
+              </el-dropdown-item>
+              <el-dropdown-item :command="'single'" @click.native.stop="setSinglePlayCount">
+                <el-icon class="play-mode-icon"><Refresh /></el-icon>
+                <span class="play-mode-text">
+                  单曲播放{{ singlePlayCount === -1 ? '' : '(' + singlePlayCount + '次)' }}
+                </span>
+              </el-dropdown-item>
+              <el-dropdown-item :command="'random'">
+                <el-icon class="play-mode-icon"><Switch /></el-icon>
+                <span class="play-mode-text">随机播放</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
 
       <div class="playlist-container">
@@ -157,7 +187,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { List, Refresh, Switch } from '@element-plus/icons-vue'
 import axios from 'axios'
+import debounce from 'lodash/debounce'
 
 const searchQuery = ref('')
 const searchResults = ref([])
@@ -190,17 +222,6 @@ const hasPrev = computed(() => playlist.value.length > 1)
 const API_BASE = 'https://ncm.nekogan.com'
 
 // 防抖函数
-const debounce = (fn, delay) => {
-  let timer = null
-  return function (...args) {
-    if (timer) clearTimeout(timer)
-    timer = setTimeout(() => {
-      fn.apply(this, args)
-    }, delay)
-  }
-}
-
-// 创建防抖的搜索函数
 const debounceSearch = debounce(() => {
   if (searchQuery.value.trim()) {
     searchMusic()
@@ -412,8 +433,18 @@ const prev = () => {
 }
 
 const next = () => {
-  if (!hasNext.value) return
-  playSong((currentIndex.value + 1) % playlist.value.length)
+  if (playlist.value.length === 0) return
+
+  // 如果播放列表只有一首歌
+  if (playlist.value.length === 1) {
+    playSong(0)
+    return
+  }
+
+  const nextIndex = getNextSong()
+  if (nextIndex !== -1) {
+    playSong(nextIndex)
+  }
 }
 
 const seek = (event) => {
@@ -467,14 +498,7 @@ onMounted(() => {
     progress.value = (audio.currentTime / audio.duration) * 100
   })
 
-  audio.addEventListener('ended', () => {
-    if (hasNext.value) {
-      next()
-    } else {
-      isPlaying.value = false
-      progress.value = 0
-    }
-  })
+  audio.addEventListener('ended', handleEnded)
 
   audio.addEventListener('error', (e) => {
     // 组件卸载时不显示错误
@@ -615,6 +639,122 @@ const clearPlaylist = () => {
     saveToStorage()
 
     ElMessage.success('播放列表已清空')
+  }).catch(() => {})
+}
+
+// 播放模式相关
+const playMode = ref('sequence') // 默认顺序播放
+const showPlayMode = ref(false) // 控制下拉菜单显示
+const singlePlayCount = ref(-1) // 单曲播放次数，-1表示无限循环
+
+// 处理音乐播放结束
+const handleEnded = () => {
+  // 如果播放列表为空，不做任何处理
+  if (playlist.value.length === 0) return
+
+  // 如果是单曲播放模式且设置了播放次数
+  if (playMode.value === 'single' && singlePlayCount.value > 0) {
+    singlePlayCount.value--
+    if (singlePlayCount.value === 0) {
+      singlePlayCount.value = -1
+      ElMessage.info('已切换到无限循环模式')
+    } else {
+      ElMessage.info(`剩余播放次数：${singlePlayCount.value}次`)
+    }
+  }
+
+  // 如果播放列表只有一首歌
+  if (playlist.value.length === 1) {
+    playSong(0) // 重新播放当前歌曲
+    return
+  }
+
+  // 根据播放模式选择下一首歌
+  switch (playMode.value) {
+    case 'sequence':
+      // 顺序播放：播放下一首，如果是最后一首则回到第一首
+      playSong((currentIndex.value + 1) % playlist.value.length)
+      break
+    case 'single':
+      // 单曲播放：重新播放当前歌曲
+      playSong(currentIndex.value)
+      break
+    case 'random':
+      // 随机播放：随机选择一首（避免重复播放当前歌曲）
+      let nextIndex
+      do {
+        nextIndex = Math.floor(Math.random() * playlist.value.length)
+      } while (nextIndex === currentIndex.value && playlist.value.length > 1)
+      playSong(nextIndex)
+      break
+  }
+}
+
+// 修改 next 函数
+const getNextSong = () => {
+  if (playlist.value.length === 0) return -1
+  
+  switch (playMode.value) {
+    case 'sequence':
+      return (currentIndex.value + 1) % playlist.value.length
+    case 'single':
+      return currentIndex.value
+    case 'random':
+      // 避免随机到当前播放的歌曲
+      let nextIndex
+      do {
+        nextIndex = Math.floor(Math.random() * playlist.value.length)
+      } while (nextIndex === currentIndex.value && playlist.value.length > 1)
+      return nextIndex
+  }
+}
+
+// 监听播放模式变化
+watch(playMode, (newMode) => {
+  if (newMode !== 'single') {
+    // 切换到其他模式时重置播放次数
+    singlePlayCount.value = -1
+  }
+})
+
+// 监听播放列表变化
+watch(playlist, (newVal) => {
+  showPlayMode.value = newVal.length > 0
+  saveToStorage()
+}, { deep: true })
+
+// 切换播放模式
+const changePlayMode = (mode) => {
+  playMode.value = mode
+  let message = ''
+  switch (mode) {
+    case 'sequence':
+      message = '顺序播放'
+      break
+    case 'single':
+      message = '单曲循环'
+      break
+    case 'random':
+      message = '随机播放'
+      break
+  }
+  ElMessage.success(message)
+}
+
+// 设置单曲播放次数
+const setSinglePlayCount = () => {
+  ElMessageBox.prompt('请输入播放次数（1-99，-1表示无限循环）', '设置播放次数', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputPattern: /^(-1|[1-9][0-9]?)$/,
+    inputErrorMessage: '请输入-1或1-99的数字',
+    inputValue: singlePlayCount.value.toString()
+  }).then(({ value }) => {
+    const count = parseInt(value)
+    if (count >= -1 && (count === -1 || count <= 99)) {
+      singlePlayCount.value = count
+      ElMessage.success(`已设置播放次数：${count === -1 ? '无限循环' : count + '次'}`)
+    }
   }).catch(() => {})
 }
 </script>
@@ -1109,5 +1249,38 @@ const clearPlaylist = () => {
 .dark .clear-btn:hover {
   background: rgba(255, 0, 0, 0.2);
   color: #ff4d4f;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.el-dropdown {
+  margin-left: 10px;
+}
+
+.play-mode-icon {
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.play-mode-text {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.el-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.el-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 </style>
