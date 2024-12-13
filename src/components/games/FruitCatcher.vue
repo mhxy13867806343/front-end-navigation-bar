@@ -10,10 +10,10 @@
     <div class="game-area">
       <div v-for="fruit in fruits" :key="fruit.id" 
            class="fruit" 
-           :class="{ 'caught': fruit.caught }"
-           :style="{ left: fruit.x + 'px', top: fruit.y + 'px' }"
-           :data-id="fruit.id">
+           :class="{ 'caught': fruit.caught, 'exploding': fruit.exploding }"
+           :style="{ left: fruit.x + 'px', top: fruit.y + 'px' }">
         {{ getFruitEmoji(fruit.type) }}
+        <div v-if="fruit.exploding" class="explosion">💥</div>
       </div>
       
       <div class="basket" :style="{ left: basketX + 'px' }" ref="basket">🧺</div>
@@ -220,7 +220,8 @@ const createFruitBatch = () => {
       y: -30,
       speed: baseSpeed,
       type,
-      caught: false
+      caught: false,
+      exploding: false
     })
     return
   }
@@ -244,7 +245,8 @@ const createFruitBatch = () => {
       y: -30,
       speed: baseSpeed,
       type,
-      caught: false
+      caught: false,
+      exploding: false
     })
   }
 }
@@ -306,6 +308,8 @@ const updateGame = (timestamp) => {
       fruit.caught = true
       
       if (fruit.type === 'bomb') {
+        // 炸弹爆炸效果
+        fruit.exploding = true
         // 炸弹只减星星
         if (stars.value > 0) {
           stars.value--
@@ -313,6 +317,13 @@ const updateGame = (timestamp) => {
             gameOver()
           }
         }
+        // 延迟移除炸弹，等待爆炸动画完成
+        setTimeout(() => {
+          const idx = fruits.value.findIndex(f => f.id === fruit.id)
+          if (idx !== -1) {
+            fruits.value.splice(idx, 1)
+          }
+        }, 500) // 与动画时长匹配
       } else {
         // 水果加分
         const fruitScore = getFruitScore(fruit.type)
@@ -327,15 +338,15 @@ const updateGame = (timestamp) => {
           }
           nextStarScore.value = calculateNextStarScore()
         }
+        
+        // 延迟移除已接住的水果
+        setTimeout(() => {
+          const idx = fruits.value.findIndex(f => f.id === fruit.id)
+          if (idx !== -1) {
+            fruits.value.splice(idx, 1)
+          }
+        }, 300)
       }
-      
-      // 延迟移除已接住的水果
-      setTimeout(() => {
-        const idx = fruits.value.findIndex(f => f.id === fruit.id)
-        if (idx !== -1) {
-          fruits.value.splice(idx, 1)
-        }
-      }, 300)
     }
     
     // 检查是否错过水果
@@ -463,20 +474,49 @@ onMounted(() => {
 
 .fruit {
   position: absolute;
+  font-size: 24px;
   width: 40px;
   height: 40px;
   text-align: center;
   line-height: 40px;
-  font-size: 32px;
-  transition: transform 0.2s, opacity 0.2s;
-  will-change: transform, top, left;
+  transition: transform 0.3s;
 }
 
 .fruit.caught {
-  transform: scale(0);
+  transform: scale(1.2);
   opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s ease-out;
+  transition: all 0.3s;
+}
+
+.fruit.exploding {
+  transform: scale(1.5);
+  opacity: 0;
+  transition: all 0.5s;
+}
+
+.explosion {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  animation: explode 0.5s ease-out;
+  z-index: 100;
+}
+
+@keyframes explode {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
 }
 
 .basket {
