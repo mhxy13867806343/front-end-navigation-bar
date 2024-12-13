@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted, computed, shallowRef } from 'vue'
+import { ref, onMounted, computed, shallowRef,onUnmounted } from 'vue'
 import { menuItemsList, authorWorksList, onlineWorksList } from '@/utlis/menuItems'
 import { ElDialog, ElMessageBox } from 'element-plus'
+import { Message, Timer } from '@element-plus/icons-vue'
 import SokobanGame from './components/games/SokobanGame.vue'
 import ImageEditor from './components/image/ImageEditor.vue'
 import MusicPlayer from "./components/MusicPlayer.vue";
 import DyForm from './views/DyForm.vue'
+import AnalogClock from './components/AnalogClock.vue'
 
 // 判断是否为生产环境
 const isProd = import.meta.env.PROD
@@ -243,6 +245,17 @@ const openGame = (work) => {
 // 添加历史记录弹窗状态
 const showLikeHistory = ref(false)
 
+const currentTime = ref('')
+let timer = null
+
+const updateTime = () => {
+  const now = new Date()
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  currentTime.value = `${hours}:${minutes}:${seconds}`
+}
+
 onMounted(() => {
   const theme = localStorage.getItem('theme')
   if (theme) {
@@ -276,6 +289,15 @@ onMounted(() => {
       window.open('about:blank', '_blank')
     }
   })
+
+  updateTime()
+  timer = setInterval(updateTime, 1000)
+})
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer)
+  }
 })
 </script>
 
@@ -285,7 +307,7 @@ onMounted(() => {
     <nav class="sidebar">
       <div class="logo">HooksVue</div>
       <ul class="nav-list">
-        <li v-for="item in menuItems" :key="item.id" 
+        <li v-for="item in menuItems" :key="item.id"
             :class="{ 'active': activeItem === item.id }"
             @click="selectItem(item.id)">
           <span class="nav-icon">{{ item.icon }}</span>
@@ -297,6 +319,12 @@ onMounted(() => {
     <!-- 主内容区域 -->
     <main class="main-content">
       <div class="header-actions">
+        <div class="header-icons">
+          <AnalogClock class="clock-component" />
+          <a href="mailto:869710179@qq.com" class="email-icon" title="联系我">
+            <el-icon><Message /></el-icon>
+          </a>
+        </div>
         <div class="dropdown" ref="themeDropdown">
           <button class="dropdown-trigger" @click="toggleThemeDropdown">
             {{ !isDarkMode ? '☀️' : '🌙' }} 主题
@@ -307,7 +335,7 @@ onMounted(() => {
               🌙 深色模式
             </div>
             <div class="dropdown-item" @click="() => { isDarkMode = true; toggleTheme() }">
-              
+
               ☀️ 浅色模式
             </div>
           </div>
@@ -334,8 +362,8 @@ onMounted(() => {
             <span class="arrow">▼</span>
           </button>
           <div v-if="showOnlineWorksDropdown" class="dropdown-menu">
-            <a v-for="work in onlineWorks" 
-               :key="work.name" 
+            <a v-for="work in onlineWorks"
+               :key="work.name"
                :href="work.component === 'dialog' ? '#' : work.link"
                @click.prevent="work.component === 'dialog' && openGame(work)"
                target="_blank"
@@ -347,21 +375,21 @@ onMounted(() => {
             </a>
           </div>
         </div>
-        
+
         <button class="dropdown-trigger like-history-btn" @click="openLikeHistory">
           ❤️ 历史爱心记录
         </button>
       </div>
       <div class="search-wrapper">
-          <input 
-            type="text" 
+          <input
+            type="text"
             v-model="searchQuery"
             placeholder="搜索工具..."
             class="search-input"
           >
-          <button 
-            v-show="searchQuery" 
-            @click="clearSearch" 
+          <button
+            v-show="searchQuery"
+            @click="clearSearch"
             class="clear-button"
             title="清除搜索"
           >
@@ -370,23 +398,23 @@ onMounted(() => {
         </div>
       <div class="tools-grid">
         <!-- 搜索框 -->
-    
-        
+
+
         <!-- 工具卡片列表 -->
         <template v-if="filteredTools.length > 0">
           <div v-for="(tool, index) in filteredTools" :key="tool.id" class="tool-wrapper">
-            <div class="tool-card" 
-                :title="`${tool.name} - ${tool.desc}`" 
-                
+            <div class="tool-card"
+                :title="`${tool.name} - ${tool.desc}`"
+
                 @contextmenu="(event) => handleRightClick(event, tool)">
               <div class="tool-header" @click="openLink(tool.link)">
                 <span class="tool-icon">{{ tool.icon }}</span>
                 <h3 class="tool-name">{{ tool.name }}</h3>
                 <!-- 爱心图标 -->
-               
+
               </div>
-              <div 
-                  :class="['heart-icon', `heart-icon-${tool.id}`, { 'liked': isLiked(tool.id) }]" 
+              <div
+                  :class="['heart-icon', `heart-icon-${tool.id}`, { 'liked': isLiked(tool.id) }]"
                   @click.stop="toggleLike(tool.id)"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -413,8 +441,8 @@ onMounted(() => {
       </div>
     </main>
     <!-- 自定义右键菜单 -->
-    <div v-if="contextMenu.show" 
-         class="context-menu" 
+    <div v-if="contextMenu.show"
+         class="context-menu"
          :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }">
       <div class="context-menu-item" @click="openInNewTab">
         <span class="context-menu-icon">🔗</span>
@@ -451,12 +479,12 @@ onMounted(() => {
       destroy-on-close
       class="like-history-dialog"
     >
-    
+
       <div class="like-history-header">
         <div class="like-history-title">历史记录</div>
-        <button 
+        <button
           v-if="likedToolsList.length > 0"
-          class="clear-all-btn" 
+          class="clear-all-btn"
           @click="clearAllLikes"
           title="清空所有点赞"
         >
@@ -483,9 +511,9 @@ onMounted(() => {
             <button class="link-btn" @click="openLink(tool.link)" :title="`访问链接${tool.link}`">
               🔗
             </button>
-            <button 
-              class="unlike-btn" 
-              @click="toggleLike(tool.id)" 
+            <button
+              class="unlike-btn"
+              @click="toggleLike(tool.id)"
               title="取消点赞"
             >
               ❤️
@@ -787,5 +815,61 @@ onMounted(() => {
 .dark .menu-info {
   color: #999;
   background-color: #2c2c2c;
+}
+
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 10px 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #dcdfe6;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.clock-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #909399;
+}
+
+.time-icon {
+  font-size: 16px;
+}
+
+.time-text {
+  font-size: 14px;
+}
+
+.mail-icon {
+  font-size: 20px;
+  color: #909399;
+  cursor: pointer;
+}
+
+.clock-component {
+  margin-right: 5px;
+}
+
+.email-icon {
+  color: #909399;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.email-icon .el-icon {
+  font-size: 20px;
 }
 </style>

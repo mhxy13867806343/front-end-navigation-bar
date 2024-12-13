@@ -1017,8 +1017,8 @@ export const menuItemsList = [
       {
         id: 'github-30',
         name: 'wasm-bindgen',
-        desc: 'Rust和WebAssembly交互',
         icon: '🕸️',
+        desc: 'Rust和WebAssembly交互',
         link: 'https://github.com/rustwasm/wasm-bindgen',
         stars: '8k+'
       }
@@ -1355,14 +1355,14 @@ export const onlineWorksList = [
   {
     name: '推箱子游戏',
     desc: '经典推箱子游戏，支持多个关卡',
-    logo: '🎮',
+    logo: '🎲',
     component: 'dialog',
     type:'game'
   },
   {
     name: '音乐播放器',
     desc: '音乐播放器',
-    logo: '🎮',
+    logo: '🎵',
     component: 'dialog',
     type:'video'
   },

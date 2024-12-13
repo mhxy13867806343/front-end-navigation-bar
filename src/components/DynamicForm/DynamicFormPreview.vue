@@ -108,11 +108,20 @@
           <template v-else-if="item.type === 'button'">
             <el-button
               :type="getButtonType(item.buttonType)"
-              :style="getButtonStyle(item)"
-              :disabled="item.props?.disabled"
-              :size="item.props?.size"
+              :icon="item.icon"
+              :disabled="item.disabled"
+              :size="item.size"
+              :style="{
+                width: item.style?.width,
+                backgroundColor: item.style?.backgroundColor,
+                color: item.style?.color,
+                borderStyle: item.style?.borderStyle,
+                borderColor: item.style?.borderColor,
+                borderRadius: item.style?.borderRadius + 'px',
+                fontSize: item.style?.fontSize + 'px'
+              }"
             >
-              {{ item.props?.text || '按钮' }}
+              {{ item.text || '按钮' }}
             </el-button>
           </template>
         </el-form-item>
@@ -140,38 +149,6 @@ const props = defineProps({
 
 const formRef = ref(null)
 const formData = reactive({})
-
-// 获取按钮类型
-const getButtonType = (buttonType) => {
-  const typeMap = {
-    '主要按钮': 'primary',
-    '成功按钮': 'success',
-    '警告按钮': 'warning',
-    '危险按钮': 'danger',
-    '信息按钮': 'info',
-    '自定义': ''
-  }
-  return typeMap[buttonType] || ''
-}
-
-// 获取按钮样式
-const getButtonStyle = (item) => {
-  if (item.buttonType === '自定义' && item.style) {
-    return {
-      width: item.style.width || 'auto',
-      backgroundColor: item.style.backgroundColor,
-      color: item.style.color,
-      borderStyle: item.style.borderStyle,
-      borderColor: item.style.borderStyle !== 'none' ? item.style.borderColor : 'transparent',
-      borderRadius: item.style.borderRadius ? `${item.style.borderRadius}px` : '4px',
-      fontSize: item.style.fontSize ? `${item.style.fontSize}px` : '14px',
-      padding: '8px 15px',
-      cursor: 'pointer',
-      transition: 'all 0.3s'
-    }
-  }
-  return {}
-}
 
 // 监听表单项变化，初始化表单数据
 watch(
@@ -221,6 +198,19 @@ const resetForm = () => {
   if (!formRef.value) return
   formRef.value.resetFields()
 }
+
+// 获取按钮类型
+const getButtonType = (buttonType) => {
+  const typeMap = {
+    '主要按钮': 'primary',
+    '成功按钮': 'success',
+    '警告按钮': 'warning',
+    '危险按钮': 'danger',
+    '信息按钮': 'info',
+    '文本按钮': 'text'
+  }
+  return typeMap[buttonType] || 'default'
+}
 </script>
 
 <style scoped>
@@ -237,17 +227,11 @@ const resetForm = () => {
   width: 100%;
 }
 
-.el-button {
-  margin-right: 10px;
-}
-
-.el-upload {
+:deep(.el-upload) {
   width: 100%;
 }
 
-.el-upload__tip {
-  line-height: 1.2;
-  margin-top: 5px;
-  color: #909399;
+:deep(.el-upload-dragger) {
+  width: 100%;
 }
 </style>
