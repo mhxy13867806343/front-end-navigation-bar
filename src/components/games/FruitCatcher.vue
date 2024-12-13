@@ -1,11 +1,20 @@
 <template>
-  <div class="game-container" ref="gameContainer" @mousemove="moveBasket">
+  <div class="game-container" ref="gameContainer" @mousemove="moveBasket" @keydown="handleKeyPress" tabindex="0">
     <div class="game-header">
       <div class="stars">
         <span v-for="i in maxStars" :key="i" :class="{ 'active': i <= stars }">⭐</span>
       </div>
       <div class="info">
         <div class="score">得分: {{ score }}</div>
+        <el-button 
+          type="primary" 
+          @click="togglePause" 
+          :icon="isPaused ? 'el-icon-video-play' : 'el-icon-video-pause'" 
+          size="small"
+          :disabled="!isPlaying">
+          {{ isPaused ? '继续' : '暂停' }}
+          <span class="shortcut-hint">[空格]</span>
+        </el-button>
         <div class="bomb-count" v-if="bombHits > 0">炸弹: {{ bombHits }}/3</div>
         <div class="speed-control">
           <el-input-number 
@@ -37,7 +46,7 @@
       </div>
     </div>
 
-    <div class="game-area">
+    <div class="game-area" ref="gameArea">
       <div v-for="fruit in fruits" :key="fruit.id" 
            class="game-item"
            :class="{ 
@@ -57,6 +66,8 @@
       
       <div class="basket" :style="{ left: basketPosition + 'px' }">🧺</div>
 
+
+
       <div class="game-controls" v-if="!isPlaying">
         <div class="game-over" v-if="gameOver">
           <h2>游戏结束</h2>
@@ -68,6 +79,11 @@
           {{ gameOver ? '重新开始' : '开始游戏' }}
         </button>
       </div>
+    </div>
+
+    <div v-if="isPaused" class="pause-overlay">
+      <h2>游戏暂停</h2>
+      <el-button type="primary" @click="togglePause">继续游戏</el-button>
     </div>
   </div>
 </template>
@@ -111,6 +127,11 @@ const customSpeedMultiplier = ref(0.5)
 const speedPreset = ref('auto')
 const isAutoSpeed = ref(true)
 const showSettings = ref(false)
+
+// 暂停状态
+const isPaused = ref(false)
+const lastTimestamp = ref(0)
+const pausedFruits = ref([])
 
 // 难度设置
 const difficultySettings = {
@@ -243,50 +264,74 @@ const checkGameOver = () => {
   }
 }
 
+// 处理键盘事件
+const handleKeyPress = (event) => {
+  if (event.code === 'Space' && isPlaying.value) {
+    event.preventDefault()
+    togglePause()
+  }
+}
+
+// 暂停/继续游戏
+const togglePause = () => {
+  isPaused.value = !isPaused.value
+  
+  if (!isPaused.value) {
+    // 继续游戏时，恢复动画循环
+    lastTimestamp.value = performance.now()
+    requestAnimationFrame(updateGame)
+  }
+}
+
 // 更新游戏状态
 const updateGame = (timestamp) => {
   if (!isPlaying.value) return
   
-  // 获取当前速度倍率
-  const speedMultiplier = getSpeedMultiplier(score.value)
+  // 如果游戏暂停，不更新游戏状态
+  if (isPaused.value) {
+    return
+  }
+
+  const deltaTime = timestamp - lastTimestamp.value
+  lastTimestamp.value = timestamp
   
-  // 创建新一批水果
+  const speedMultiplier = getSpeedMultiplier(score.value)
   const interval = 2000 / speedMultiplier
+  
   if (timestamp - lastFruitBatchTime.value > interval) {
     createFruitBatch()
     lastFruitBatchTime.value = timestamp
   }
 
-  // 获取容器宽度，用于边界检查
+  // 获取容器和篮子的尺寸
   const containerWidth = gameContainer.value.clientWidth
   const containerHeight = gameContainer.value.clientHeight
-  const basketWidth = 50 // 篮子实际宽度
-  
+  const basketWidth = 80 // 增加篮子的碰撞宽度
+  const basketHeight = 50 // 篮子高度
+
+  // 篮子的碰撞区域
   const basketRect = {
     left: basketPosition.value,
     right: basketPosition.value + basketWidth,
-    top: containerHeight - 60,
+    top: containerHeight - basketHeight - 10,
     bottom: containerHeight - 10
   }
 
-  // 更新水果位置
-  for (let i = fruits.value.length - 1; i >= 0; i--) {
-    const fruit = fruits.value[i]
-    
-    if (fruit.caught || fruit.exploding) continue
-    
-    // 更新水果位置，应用速度倍率
+  // 更新所有水果
+  fruits.value.forEach((fruit, index) => {
+    if (fruit.caught || fruit.exploding) return
+
+    // 更新位置
     fruit.y += fruit.speed * speedMultiplier
-    
+
     // 龙卷风效果
     if (difficultySettings[difficulty.value].pattern === 'tornado') {
       fruit.angle += 0.03 * speedMultiplier
       fruit.x += Math.sin(fruit.angle) * (fruit.amplitude / 15)
-      // 确保水果不会超出边界
       fruit.x = Math.max(0, Math.min(containerWidth - 30, fruit.x))
     }
-    
-    // 检查碰撞
+
+    // 水果的碰撞区域
     const fruitSize = 30
     const fruitRect = {
       left: fruit.x,
@@ -294,52 +339,56 @@ const updateGame = (timestamp) => {
       top: fruit.y,
       bottom: fruit.y + fruitSize
     }
-    
-    // 使用更宽松的碰撞检测
-    const horizontalOverlap = (fruitRect.right >= basketRect.left - 10 && 
-                             fruitRect.left <= basketRect.right + 10)
-    const verticalOverlap = (fruitRect.bottom >= basketRect.top && 
-                           fruitRect.top <= basketRect.bottom)
-    
-    // 检查是否与篮子碰撞
-    if (horizontalOverlap && verticalOverlap) {
+
+    // 改进的碰撞检测
+    const isColliding = !(
+      fruitRect.right < basketRect.left ||
+      fruitRect.left > basketRect.right ||
+      fruitRect.bottom < basketRect.top ||
+      fruitRect.top > basketRect.bottom
+    )
+
+    // 如果发生碰撞且水果还没有被捕获
+    if (isColliding && !fruit.caught) {
+      fruit.caught = true // 标记为已捕获
+
       if (fruit.isBomb) {
-        // 炸弹效果
-        fruit.caught = true
         fruit.exploding = true
         stars.value = Math.max(0, stars.value - 1)
         bombHits.value++
         
         setTimeout(() => {
-          fruits.value = fruits.value.filter(f => f.id !== fruit.id)
+          fruits.value = fruits.value.filter(f => f !== fruit)
           checkGameOver()
         }, 500)
       } else {
-        // 接住水果
-        fruit.caught = true
+        // 接住普通水果
         score.value += 10
+        
+        // 每200分奖励一颗星
         if (score.value > 0 && score.value % 200 === 0) {
           stars.value = Math.min(maxStars, stars.value + 1)
         }
+        
+        // 移除已捕获的水果
         setTimeout(() => {
-          fruits.value = fruits.value.filter(f => f.id !== fruit.id)
+          fruits.value = fruits.value.filter(f => f !== fruit)
         }, 200)
       }
+      return // 碰撞后直接返回，避免重复处理
     }
-    
+
     // 检查是否落地
-    if (fruit.y > containerHeight) {
+    if (fruit.y > containerHeight && !fruit.caught) {
       if (!fruit.isBomb) {
         stars.value = Math.max(0, stars.value - 1)
-        setTimeout(() => {
-          checkGameOver()
-        }, 0)
+        checkGameOver()
       }
-      fruits.value = fruits.value.filter(f => f.id !== fruit.id)
+      fruits.value = fruits.value.filter(f => f !== fruit)
     }
-  }
+  })
 
-  if (isPlaying.value) {
+  if (isPlaying.value && !isPaused.value) {
     requestAnimationFrame(updateGame)
   }
 }
@@ -360,13 +409,12 @@ watch(() => showSettings.value, (show) => {
 
 // 移动篮子
 const moveBasket = (event) => {
-  if (!isPlaying.value) return
+  if (!isPlaying.value || isPaused.value) return
   
   const rect = gameContainer.value.getBoundingClientRect()
   const x = event.clientX - rect.left
-  const basketWidth = 50 // 篮子实际宽度
+  const basketWidth = 80 // 篮子宽度
   
-  // 使用 requestAnimationFrame 优化性能
   requestAnimationFrame(() => {
     basketPosition.value = Math.max(0, Math.min(rect.width - basketWidth, x - basketWidth / 2))
   })
@@ -378,37 +426,28 @@ const startGame = () => {
   
   resetGame()
   isPlaying.value = true
+  score.value = 0
+  stars.value = 3
+  bombHits.value = 0
+  fruits.value = []
+  isPaused.value = false
+  lastTimestamp.value = performance.now()
   lastFruitBatchTime.value = performance.now()
+  
   requestAnimationFrame(updateGame)
+  
+  // 添加键盘事件监听
+  gameContainer.value?.focus()
 }
 
 // 组件挂载和卸载
 onMounted(() => {
-  gameContainer.value.focus()
-  window.addEventListener('keydown', handleKeyDown)
+  window.addEventListener('keydown', handleKeyPress)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown)
+  window.removeEventListener('keydown', handleKeyPress)
 })
-
-// 处理键盘事件
-const handleKeyDown = (event) => {
-  if (!isPlaying.value) return
-  
-  const step = 20
-  switch(event.key) {
-    case 'ArrowLeft':
-      basketPosition.value = Math.max(0, basketPosition.value - step)
-      break
-    case 'ArrowRight':
-      basketPosition.value = Math.min(
-        gameContainer.value.clientWidth - 100,
-        basketPosition.value + step
-      )
-      break
-  }
-}
 
 // 处理设置应用
 const handleApplySettings = () => {
@@ -519,13 +558,40 @@ const handleApplySettings = () => {
   font-size: 40px;
   transform: translateX(-50%);
   cursor: move;
-  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
+  transition: left 0.1s ease;
+  pointer-events: none;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .basket:active {
   transform: translateX(-50%) scale(1.1);
+}
+
+.game-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+}
+
+.pause-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 99;
+}
+
+.pause-overlay h2 {
+  color: white;
+  font-size: 32px;
+  margin-bottom: 20px;
 }
 
 .game-controls {
@@ -602,5 +668,11 @@ const handleApplySettings = () => {
   100% {
     transform: scale(1);
   }
+}
+
+/* 确保游戏容器可以接收键盘事件 */
+.game-container {
+  outline: none;
+  position: relative;
 }
 </style>
