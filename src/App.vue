@@ -5,6 +5,7 @@ import { ElDialog, ElMessageBox } from 'element-plus'
 import SokobanGame from './components/games/SokobanGame.vue'
 import ImageEditor from './components/image/ImageEditor.vue'
 import MusicPlayer from "./components/MusicPlayer.vue";
+import DyForm from './views/DyForm.vue'
 
 // 判断是否为生产环境
 const isProd = import.meta.env.PROD
@@ -229,6 +230,9 @@ const openGame = (work) => {
       case '音乐播放器':
         currentGame.value = MusicPlayer
         break
+      case '动态表单':
+        currentGame.value = DyForm
+        break
       default:
         currentGame.value = null
     }
@@ -292,7 +296,6 @@ onMounted(() => {
 
     <!-- 主内容区域 -->
     <main class="main-content">
-     
       <div class="header-actions">
         <div class="dropdown" ref="themeDropdown">
           <button class="dropdown-trigger" @click="toggleThemeDropdown">
@@ -497,6 +500,14 @@ onMounted(() => {
 
 <style scoped>
 @import url('@/style/style.css');
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+  background: var(--el-bg-color);
+}
 
 .heart-icon {
   position: absolute;

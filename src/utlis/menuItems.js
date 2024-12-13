@@ -1365,6 +1365,13 @@ export const onlineWorksList = [
     logo: '🎮',
     component: 'dialog',
     type:'video'
+  },
+  {
+    name: '动态表单',
+    desc: '可视化表单设计器',
+    logo: '📝',
+    component: 'dialog',
+    type:'dyform'
   }
 ]
 
