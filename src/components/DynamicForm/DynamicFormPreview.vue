@@ -107,7 +107,7 @@
           <!-- 按钮 -->
           <template v-else-if="item.type === 'button'">
             <el-button
-              :type="getButtonType(item.buttonType)"
+              :type="item.buttonType"
               :icon="item.icon"
               :disabled="item.disabled"
               :size="item.size"
@@ -197,19 +197,6 @@ const submitForm = async () => {
 const resetForm = () => {
   if (!formRef.value) return
   formRef.value.resetFields()
-}
-
-// 获取按钮类型
-const getButtonType = (buttonType) => {
-  const typeMap = {
-    '主要按钮': 'primary',
-    '成功按钮': 'success',
-    '警告按钮': 'warning',
-    '危险按钮': 'danger',
-    '信息按钮': 'info',
-    '文本按钮': 'text'
-  }
-  return typeMap[buttonType] || 'default'
 }
 </script>
 

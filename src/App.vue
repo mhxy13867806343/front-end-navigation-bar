@@ -257,7 +257,9 @@ const updateTime = () => {
   const seconds = String(now.getSeconds()).padStart(2, '0')
   currentTime.value = `${hours}:${minutes}:${seconds}`
 }
-
+const onClickWork=item=>{
+  window.open(item.link)
+}
 onMounted(() => {
   const theme = localStorage.getItem('theme')
   if (theme) {
@@ -349,7 +351,9 @@ onUnmounted(() => {
             <span class="arrow">▼</span>
           </button>
           <div v-if="showAuthorDropdown" class="dropdown-menu">
-            <div v-for="work in authorWorks" :key="work.name" class="dropdown-item">
+            <div v-for="work in authorWorks" :key="work.name" class="dropdown-item"
+            @click="onClickWork(work)"
+            >
               <div class="dropdown-item-left-01">
                 <div class="word-name">{{ work.name }}</div>
                 <div class="work-desc">{{ work.desc }}</div>
