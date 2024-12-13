@@ -6,32 +6,48 @@
         <el-tabs v-model="activeTab">
           <el-tab-pane label="基础组件" name="basic">
             <div class="components-list">
-              <div
-                v-for="item in basicComponents"
-                :key="item.type"
-                class="component-item"
-                @click="addComponent(item)"
+              <draggable
+                :list="basicComponents"
+                :group="{ name: 'form-items', pull: 'clone', put: false }"
+                :sort="false"
+                :clone="cloneComponent"
+                item-key="type"
               >
-                <el-icon>
-                  <component :is="item.icon" />
-                </el-icon>
-                <span>{{ item.label }}</span>
-              </div>
+                <template #item="{ element }">
+                  <div 
+                    class="component-item"
+                    @click="addComponent(element)"
+                  >
+                    <el-icon>
+                      <component :is="element.icon" />
+                    </el-icon>
+                    <span>{{ element.label }}</span>
+                  </div>
+                </template>
+              </draggable>
             </div>
           </el-tab-pane>
           <el-tab-pane label="高级组件" name="advanced">
             <div class="components-list">
-              <div
-                v-for="item in advancedComponents"
-                :key="item.type"
-                class="component-item"
-                @click="addComponent(item)"
+              <draggable
+                :list="advancedComponents"
+                :group="{ name: 'form-items', pull: 'clone', put: false }"
+                :sort="false"
+                :clone="cloneComponent"
+                item-key="type"
               >
-                <el-icon>
-                  <component :is="item.icon" />
-                </el-icon>
-                <span>{{ item.label }}</span>
-              </div>
+                <template #item="{ element }">
+                  <div 
+                    class="component-item"
+                    @click="addComponent(element)"
+                  >
+                    <el-icon>
+                      <component :is="element.icon" />
+                    </el-icon>
+                    <span>{{ element.label }}</span>
+                  </div>
+                </template>
+              </draggable>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -39,67 +55,66 @@
 
       <!-- 中间设计区域 -->
       <el-main>
-        <el-card class="design-area">
+        <el-card class="form-card">
           <template #header>
-            <div class="design-header">
+            <div class="card-header">
               <span>表单设计</span>
-              <div class="button-group">
-                <el-button type="primary" size="small" @click="previewForm">预览</el-button>
-                <el-button type="success" size="small" @click="saveForm">保存</el-button>
-                <el-button type="danger" size="small" @click="clearForm">清空</el-button>
+              <div class="header-actions">
+                <el-button type="primary" @click="previewForm">预览</el-button>
+                <el-button type="success" @click="saveForm">保存</el-button>
+                <el-button @click="clearForm">清空</el-button>
               </div>
             </div>
           </template>
 
-          <el-empty v-if="formItems.length === 0" description="从左侧拖入或点击添加组件" />
-
-          <el-form v-else :model="formData" label-width="100px">
-            <div
-              v-for="(item, index) in formItems"
-              :key="item.id"
-              class="form-item-wrapper"
-              :class="{ active: currentItem?.id === item.id }"
-              @click="selectItem(item)"
+          <div class="form-design-area" @click.stop="handleDesignAreaClick">
+            <draggable
+              v-model="formItems"
+              :group="{ name: 'form-items', pull: true, put: true }"
+              item-key="id"
+              :animation="200"
+              class="form-items-container"
+              :class="{ 'is-empty': formItems.length === 0 }"
             >
-              <div class="form-item-actions">
-                <el-button-group>
-                  <el-button 
-                    type="primary" 
-                    link 
-                    :icon="ArrowUp"
-                    @click.stop="moveItem(index, 'up')"
-                    :disabled="index === 0"
-                  />
-                  <el-button 
-                    type="primary" 
-                    link 
-                    :icon="ArrowDown"
-                    @click.stop="moveItem(index, 'down')"
-                    :disabled="index === formItems.length - 1"
-                  />
-                  <el-button 
-                    type="primary" 
-                    link 
-                    :icon="CopyDocument"
-                    @click.stop="copyItem(item)"
-                  />
-                  <el-button 
-                    type="danger" 
-                    link 
-                    :icon="Delete"
-                    @click.stop="deleteItem(index)"
-                  />
-                </el-button-group>
-              </div>
+              <template #header v-if="formItems.length === 0">
+                <div class="empty-placeholder">
+                  <el-empty description="从左侧拖入或点击添加组件" />
+                </div>
+              </template>
+              
+              <template #item="{ element, index }">
+                <div
+                  class="form-item-wrapper"
+                  :class="{ 'is-selected': currentItem?.id === element.id }"
+                  @click.stop="selectItem(element)"
+                >
+                  <div class="form-item-actions">
+                    <el-button-group>
+                      <el-button 
+                        type="primary" 
+                        link 
+                        :icon="CopyDocument"
+                        @click.stop="copyItem(element)"
+                      />
+                      <el-button 
+                        type="danger" 
+                        link 
+                        :icon="Delete"
+                        @click.stop="deleteItem(index)"
+                      />
+                    </el-button-group>
+                  </div>
 
-              <component
-                :is="getComponentType(item)"
-                v-model="formData[item.field]"
-                v-bind="item.props"
-                :label="item.label"
-              />
-            </div>
-          </el-form>
+                  <component
+                    :is="getComponentType(element)"
+                    v-model="formData[element.field]"
+                    v-bind="element.props"
+                    :label="element.label"
+                  />
+                </div>
+              </template>
+            </draggable>
+          </div>
         </el-card>
       </el-main>
 
@@ -225,6 +240,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import draggable from 'vuedraggable/src/vuedraggable'
 import DynamicFormPreview from './DynamicFormPreview.vue'
 import {
   Document,
@@ -241,7 +257,8 @@ import {
   CopyDocument,
   ArrowUp,
   ArrowDown,
-  Plus
+  Plus,
+  Rank
 } from '@element-plus/icons-vue'
 
 // 基础组件列表
@@ -336,12 +353,43 @@ const formData = reactive({})
 const currentItem = ref(null)
 const previewVisible = ref(false)
 
+// 处理设计区域的点击
+const handleDesignAreaClick = (event) => {
+  // 如果点击的是设计区域本身（而不是其中的组件），取消选中
+  if (event.target.classList.contains('form-design-area')) {
+    currentItem.value = null;
+  }
+}
+
+// 克隆组件
+const cloneComponent = (item) => {
+  try {
+    const newItem = JSON.parse(JSON.stringify(item))
+    newItem.id = Date.now()
+    newItem.field = `field_${newItem.id}`
+    // 确保数字输入组件有正确的初始值
+    if (newItem.type === 'number') {
+      newItem.props = {
+        ...newItem.props,
+        modelValue: Number(newItem.props.min || 0),
+        min: Number(newItem.props.min || 0),
+        max: Number(newItem.props.max || 100),
+        step: Number(newItem.props.step || 1),
+        precision: Number(newItem.props.precision || 0)
+      }
+    }
+    return newItem
+  } catch (error) {
+    console.error('克隆组件失败:', error)
+    return null
+  }
+}
+
 // 添加组件
 const addComponent = (component) => {
   try {
-    const newItem = JSON.parse(JSON.stringify(component))
-    newItem.id = Date.now()
-    newItem.field = `field_${newItem.id}`
+    const newItem = cloneComponent(component)
+    if (!newItem) return
     formItems.value.push(newItem)
     currentItem.value = newItem
     ElMessage.success('添加成功')
@@ -359,9 +407,8 @@ const selectItem = (item) => {
 // 复制组件
 const copyItem = (item) => {
   try {
-    const newItem = JSON.parse(JSON.stringify(item))
-    newItem.id = Date.now()
-    newItem.field = `field_${newItem.id}`
+    const newItem = cloneComponent(item)
+    if (!newItem) return
     const index = formItems.value.findIndex(i => i.id === item.id)
     formItems.value.splice(index + 1, 0, newItem)
     currentItem.value = newItem
@@ -534,21 +581,58 @@ const getComponentType = (item) => {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s;
+  user-select: none;
 }
 
 .component-item:hover {
   background-color: #f5f7fa;
   border-color: var(--el-color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.design-area {
+.component-item:active {
+  transform: translateY(0);
+}
+
+.form-card {
   height: 100%;
   overflow-y: auto;
 }
 
-.design-header {
+.card-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+}
+
+.form-design-area {
+  padding: 20px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  min-height: 400px;
+  overflow-y: auto;
+}
+
+.form-items-container {
+  min-height: 400px;
+  padding: 10px;
+}
+
+.form-items-container.is-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  border: 2px dashed #dcdfe6;
+  border-radius: 4px;
+}
+
+.empty-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
 
@@ -556,18 +640,25 @@ const getComponentType = (item) => {
   position: relative;
   padding: 10px;
   margin-bottom: 10px;
-  border: 1px dashed #dcdfe6;
+  background-color: #fff;
+  border: 1px solid #dcdfe6;
   border-radius: 4px;
+  transition: all 0.3s;
 }
 
-.form-item-wrapper.active {
-  border: 1px solid var(--el-color-primary);
+.form-item-wrapper:hover {
+  border-color: var(--el-color-primary);
+}
+
+.form-item-wrapper.is-selected {
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 2px var(--el-color-primary-light-9);
 }
 
 .form-item-actions {
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 8px;
+  top: 8px;
   display: none;
 }
 
@@ -590,7 +681,7 @@ const getComponentType = (item) => {
   margin-bottom: 10px;
 }
 
-.button-group {
+.header-actions {
   display: flex;
   gap: 10px;
 }

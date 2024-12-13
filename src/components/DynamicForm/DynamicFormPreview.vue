@@ -1,35 +1,111 @@
 <template>
-  <div class="form-preview">
+  <div class="dynamic-form-preview">
     <el-form
       ref="formRef"
       :model="formData"
       label-width="100px"
+      class="preview-form"
     >
       <template v-for="item in formItems" :key="item.id">
         <el-form-item
           :label="item.label"
           :prop="item.field"
-          :rules="item.props.required ? [{ required: true, message: getPlaceholder(item), trigger: getTrigger(item.type) }] : []"
+          :rules="item.props.required ? [{ required: true, message: `请输入${item.label}`, trigger: 'blur' }] : []"
         >
-          <component
-            :is="getComponentType(item.type)"
-            v-model="formData[item.field]"
-            v-bind="item.props"
-            @update:modelValue="(val) => handleInputChange(item.field, val, item.type)"
-          >
-            <template v-if="['select', 'radio', 'checkbox'].includes(item.type)">
-              <component
+          <!-- 单行文本 -->
+          <template v-if="item.type === 'input'">
+            <el-input
+              v-model="formData[item.field]"
+              :placeholder="item.props.placeholder"
+              :maxlength="item.props.maxlength"
+              :show-word-limit="item.props.showWordLimit"
+              :clearable="item.props.clearable"
+            />
+          </template>
+
+          <!-- 多行文本 -->
+          <template v-else-if="item.type === 'textarea'">
+            <el-input
+              v-model="formData[item.field]"
+              type="textarea"
+              :placeholder="item.props.placeholder"
+              :maxlength="item.props.maxlength"
+              :show-word-limit="item.props.showWordLimit"
+              :autosize="item.props.autosize"
+              :clearable="item.props.clearable"
+            />
+          </template>
+
+          <!-- 数字输入 -->
+          <template v-else-if="item.type === 'number'">
+            <el-input-number
+              v-model="formData[item.field]"
+              :min="item.props.min"
+              :max="item.props.max"
+              :step="item.props.step"
+              :precision="item.props.precision"
+              :placeholder="item.props.placeholder"
+              :controls="item.props.controls"
+            />
+          </template>
+
+          <!-- 下拉选择 -->
+          <template v-else-if="item.type === 'select'">
+            <el-select
+              v-model="formData[item.field]"
+              :placeholder="item.props.placeholder"
+              :clearable="item.props.clearable"
+              class="full-width"
+            >
+              <el-option
                 v-for="option in item.props.options"
                 :key="option.value"
-                :is="getOptionComponent(item.type)"
-                :label="option.value"
-              >
-                {{ option.label }}
-              </component>
-            </template>
-          </component>
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </template>
+
+          <!-- 日期选择 -->
+          <template v-else-if="item.type === 'date'">
+            <el-date-picker
+              v-model="formData[item.field]"
+              :type="item.props.type"
+              :placeholder="item.props.placeholder"
+              :clearable="item.props.clearable"
+              class="full-width"
+            />
+          </template>
+
+          <!-- 时间选择 -->
+          <template v-else-if="item.type === 'time'">
+            <el-time-picker
+              v-model="formData[item.field]"
+              :placeholder="item.props.placeholder"
+              :clearable="item.props.clearable"
+              class="full-width"
+            />
+          </template>
+
+          <!-- 文件上传 -->
+          <template v-else-if="item.type === 'upload'">
+            <el-upload
+              :action="item.props.action"
+              :multiple="item.props.multiple"
+              :accept="item.props.accept"
+              class="full-width"
+            >
+              <el-button type="primary">点击上传</el-button>
+              <template #tip>
+                <div class="el-upload__tip">
+                  支持的文件类型: {{ item.props.accept || '所有文件' }}
+                </div>
+              </template>
+            </el-upload>
+          </template>
         </el-form-item>
       </template>
+
       <el-form-item>
         <el-button type="primary" @click="submitForm">提交</el-button>
         <el-button @click="resetForm">重置</el-button>
@@ -45,6 +121,7 @@ import { ElMessage } from 'element-plus'
 const props = defineProps({
   formItems: {
     type: Array,
+    required: true,
     default: () => []
   }
 })
@@ -52,150 +129,34 @@ const props = defineProps({
 const formRef = ref(null)
 const formData = reactive({})
 
-// 处理输入值变化
-const handleInputChange = (field, value, type) => {
-  try {
-    if (!field) return
-
-    if (type === 'number') {
-      const item = props.formItems.find(item => item.field === field)
-      if (item) {
-        const min = Number(item.props.min ?? 0)
-        const max = Number(item.props.max ?? 100)
-        formData[field] = Math.max(min, Math.min(value, max))
-      }
-    } else {
-      formData[field] = value
-    }
-  } catch (error) {
-    console.error('处理输入值变化失败:', error)
-  }
-}
-
-// 初始化表单数据
-const initFormData = () => {
-  try {
-    // 清空旧数据
+// 监听表单项变化，初始化表单数据
+watch(
+  () => props.formItems,
+  (items) => {
+    // 清理不存在的字段
     Object.keys(formData).forEach(key => {
-      delete formData[key]
-    })
-    
-    // 设置新数据
-    props.formItems.forEach(item => {
-      if (!item || !item.field) return
-
-      // 根据组件类型设置初始值
-      switch(item.type) {
-        case 'checkbox':
-          formData[item.field] = []
-          break
-        case 'number':
-          const min = Number(item.props?.min ?? 0)
-          formData[item.field] = min
-          break
-        case 'switch':
-          formData[item.field] = false
-          break
-        case 'slider':
-          formData[item.field] = Number(item.props?.min ?? 0)
-          break
-        case 'select':
-          formData[item.field] = item.props?.multiple ? [] : ''
-          break
-        case 'date':
-        case 'time':
-          formData[item.field] = null
-          break
-        default:
-          formData[item.field] = ''
+      if (!items.some(item => item.field === key)) {
+        delete formData[key]
       }
     })
-  } catch (error) {
-    console.error('初始化表单数据失败:', error)
-  }
-}
 
-// 监听表单项变化
-watch(() => props.formItems, () => {
-  initFormData()
-}, { deep: true })
-
-// 根据组件类型获取对应的Element Plus组件
-const getComponentType = (type) => {
-  try {
-    const componentMap = {
-      input: 'el-input',
-      textarea: 'el-input',
-      number: 'el-input-number',
-      select: 'el-select',
-      radio: 'el-radio-group',
-      checkbox: 'el-checkbox-group',
-      date: 'el-date-picker',
-      time: 'el-time-picker',
-      switch: 'el-switch',
-      upload: 'el-upload',
-      image: 'el-upload',
-      url: 'el-input',
-      slider: 'el-slider',
-      cascader: 'el-cascader'
-    }
-    return componentMap[type] || 'el-input'
-  } catch (error) {
-    console.error('获取组件类型失败:', error)
-    return 'el-input'
-  }
-}
-
-// 获取选项组件类型
-const getOptionComponent = (type) => {
-  try {
-    const componentMap = {
-      select: 'el-option',
-      radio: 'el-radio',
-      checkbox: 'el-checkbox'
-    }
-    return componentMap[type]
-  } catch (error) {
-    console.error('获取选项组件类型失败:', error)
-    return null
-  }
-}
-
-// 获取验证触发方式
-const getTrigger = (type) => {
-  try {
-    return ['select', 'radio', 'checkbox', 'date', 'time', 'switch', 'upload', 'slider', 'cascader'].includes(type) 
-      ? 'change' 
-      : 'blur'
-  } catch (error) {
-    console.error('获取验证触发方式失败:', error)
-    return 'blur'
-  }
-}
-
-// 获取placeholder提示
-const getPlaceholder = (item) => {
-  try {
-    if (!item || !item.type || !item.label) return '请输入'
-
-    const actionMap = {
-      input: '输入',
-      textarea: '输入',
-      number: '输入',
-      select: '选择',
-      radio: '选择',
-      checkbox: '选择',
-      date: '选择',
-      time: '选择',
-      url: '输入',
-      cascader: '选择'
-    }
-    return `请${actionMap[item.type] || '输入'}${item.label}`
-  } catch (error) {
-    console.error('获取placeholder失败:', error)
-    return '请输入'
-  }
-}
+    // 初始化新字段
+    items.forEach(item => {
+      if (!(item.field in formData)) {
+        if (item.type === 'number') {
+          formData[item.field] = item.props.min || 0
+        } else if (item.type === 'select') {
+          formData[item.field] = ''
+        } else if (item.type === 'date' || item.type === 'time') {
+          formData[item.field] = null
+        } else {
+          formData[item.field] = ''
+        }
+      }
+    })
+  },
+  { immediate: true, deep: true }
+)
 
 // 提交表单
 const submitForm = async () => {
@@ -203,30 +164,40 @@ const submitForm = async () => {
   
   try {
     await formRef.value.validate()
-    console.log('表单数据：', formData)
+    console.log('表单数据:', formData)
     ElMessage.success('提交成功')
   } catch (error) {
-    console.error('表单验证失败：', error)
-    ElMessage.error('表单验证失败')
+    console.error('表单验证失败:', error)
+    ElMessage.error('请检查表单填写是否正确')
   }
 }
 
 // 重置表单
 const resetForm = () => {
-  try {
-    if (formRef.value) {
-      formRef.value.resetFields()
-      initFormData()
-    }
-  } catch (error) {
-    console.error('重置表单失败:', error)
-    ElMessage.error('重置失败')
-  }
+  if (!formRef.value) return
+  formRef.value.resetFields()
 }
 </script>
 
 <style scoped>
-.form-preview {
+.dynamic-form-preview {
   padding: 20px;
+}
+
+.preview-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.full-width {
+  width: 100%;
+}
+
+:deep(.el-upload) {
+  width: 100%;
+}
+
+:deep(.el-upload-dragger) {
+  width: 100%;
 }
 </style>
