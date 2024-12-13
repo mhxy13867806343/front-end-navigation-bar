@@ -60,9 +60,29 @@
             <div class="card-header">
               <span>表单设计</span>
               <div class="header-actions">
-                <el-button type="primary" @click="previewForm">预览</el-button>
-                <el-button type="success" @click="saveForm">保存</el-button>
-                <el-button @click="clearForm">清空</el-button>
+                <el-button 
+                  type="primary" 
+                  @click="previewForm"
+                  :disabled="isFormEmpty"
+                >
+                  <el-icon><View /></el-icon>
+                  预览
+                </el-button>
+                <el-button 
+                  type="success" 
+                  @click="saveForm"
+                  :disabled="isFormEmpty"
+                >
+                  <el-icon><Download /></el-icon>
+                  保存
+                </el-button>
+                <el-button 
+                  @click="clearForm"
+                  :disabled="isFormEmpty"
+                >
+                  <el-icon><Delete /></el-icon>
+                  清空
+                </el-button>
               </div>
             </div>
           </template>
@@ -130,38 +150,143 @@
           <el-tabs>
             <!-- 基础属性 -->
             <el-tab-pane label="基础属性">
-              <el-form label-position="top">
-                <el-form-item label="标签">
+              <el-form label-position="top" size="small">
+                <el-form-item label="组件名称">
                   <el-input v-model="currentItem.label" />
                 </el-form-item>
-                <el-form-item label="字段名">
+                <el-form-item label="字段标识">
                   <el-input v-model="currentItem.field" />
                 </el-form-item>
-                <el-form-item label="占位文本">
-                  <el-input v-model="currentItem.props.placeholder" />
-                </el-form-item>
+                
+                <!-- 按钮特有属性 -->
+                <template v-if="currentItem.type === 'button'">
+                  <el-divider>按钮属性</el-divider>
+                  <el-form-item label="按钮文本">
+                    <el-input v-model="currentItem.props.text" />
+                  </el-form-item>
+                  <el-form-item label="按钮类型">
+                    <el-radio-group v-model="currentItem.props.type">
+                      <el-radio-button label="primary">主要按钮</el-radio-button>
+                      <el-radio-button label="success">成功按钮</el-radio-button>
+                      <el-radio-button label="warning">警告按钮</el-radio-button>
+                      <el-radio-button label="danger">危险按钮</el-radio-button>
+                      <el-radio-button label="info">信息按钮</el-radio-button>
+                    </el-radio-group>
+                  </el-form-item>
+                </template>
+
+                <!-- 输入框特有属性 -->
+                <template v-else-if="currentItem.type === 'input'">
+                  <el-divider>输入属性</el-divider>
+                  <el-form-item label="占位提示">
+                    <el-input v-model="currentItem.props.placeholder" />
+                  </el-form-item>
+                  <el-form-item label="默认值">
+                    <el-input v-model="currentItem.props.defaultValue" />
+                  </el-form-item>
+                  <el-form-item label="最大长度">
+                    <el-input-number v-model="currentItem.props.maxlength" :min="0" />
+                  </el-form-item>
+                </template>
+
+                <!-- 数字输入框特有属性 -->
+                <template v-else-if="currentItem.type === 'number'">
+                  <el-divider>数字属性</el-divider>
+                  <el-form-item label="最小值">
+                    <el-input-number v-model="currentItem.props.min" />
+                  </el-form-item>
+                  <el-form-item label="最大值">
+                    <el-input-number v-model="currentItem.props.max" />
+                  </el-form-item>
+                  <el-form-item label="步长">
+                    <el-input-number v-model="currentItem.props.step" :min="0" :precision="2" />
+                  </el-form-item>
+                </template>
+
+                <!-- 选择器特有属性 -->
+                <template v-else-if="currentItem.type === 'select'">
+                  <el-divider>选择属性</el-divider>
+                  <el-form-item label="选项列表">
+                    <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
+                      <el-input v-model="option.label" placeholder="选项名" class="option-label" />
+                      <el-input v-model="option.value" placeholder="选项值" class="option-value" />
+                      <el-button type="danger" link @click="currentItem.props.options.splice(index, 1)">
+                        <el-icon><Delete /></el-icon>
+                      </el-button>
+                    </div>
+                    <el-button type="primary" link @click="currentItem.props.options.push({ label: '', value: '' })">
+                      添加选项
+                    </el-button>
+                  </el-form-item>
+                  <el-form-item>
+                    <el-checkbox v-model="currentItem.props.multiple">允许多选</el-checkbox>
+                  </el-form-item>
+                </template>
+
+                <!-- 单选框组特有属性 -->
+                <template v-else-if="currentItem.type === 'radio'">
+                  <el-divider>单选属性</el-divider>
+                  <el-form-item label="选项列表">
+                    <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
+                      <el-input v-model="option.label" placeholder="选项名" class="option-label" />
+                      <el-input v-model="option.value" placeholder="选项值" class="option-value" />
+                      <el-button type="danger" link @click="currentItem.props.options.splice(index, 1)">
+                        <el-icon><Delete /></el-icon>
+                      </el-button>
+                    </div>
+                    <el-button type="primary" link @click="currentItem.props.options.push({ label: '', value: '' })">
+                      添加选项
+                    </el-button>
+                  </el-form-item>
+                </template>
+
+                <!-- 多选框组特有属性 -->
+                <template v-else-if="currentItem.type === 'checkbox'">
+                  <el-divider>多选属性</el-divider>
+                  <el-form-item label="选项列表">
+                    <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
+                      <el-input v-model="option.label" placeholder="选项名" class="option-label" />
+                      <el-input v-model="option.value" placeholder="选项值" class="option-value" />
+                      <el-button type="danger" link @click="currentItem.props.options.splice(index, 1)">
+                        <el-icon><Delete /></el-icon>
+                      </el-button>
+                    </div>
+                    <el-button type="primary" link @click="currentItem.props.options.push({ label: '', value: '' })">
+                      添加选项
+                    </el-button>
+                  </el-form-item>
+                  <el-form-item label="最少选择">
+                    <el-input-number v-model="currentItem.props.min" :min="0" />
+                  </el-form-item>
+                  <el-form-item label="最多选择">
+                    <el-input-number v-model="currentItem.props.max" :min="0" />
+                  </el-form-item>
+                </template>
+
+                <!-- 公共属性 -->
+                <el-divider>基础设置</el-divider>
                 <el-form-item>
                   <el-checkbox v-model="currentItem.props.required">必填</el-checkbox>
-                  <el-checkbox v-model="currentItem.props.clearable">可清除</el-checkbox>
                   <el-checkbox v-model="currentItem.props.disabled">禁用</el-checkbox>
+                  <el-checkbox v-model="currentItem.props.clearable" v-if="['input', 'number', 'select'].includes(currentItem.type)">
+                    可清除
+                  </el-checkbox>
                 </el-form-item>
               </el-form>
             </el-tab-pane>
 
             <!-- 样式设置 -->
             <el-tab-pane label="样式设置">
-              <el-form label-position="top">
-                <!-- 尺寸 -->
-                <el-form-item label="尺寸">
+              <el-form label-position="top" size="small">
+                <el-form-item label="组件大小">
                   <el-radio-group v-model="currentItem.props.size">
-                    <el-radio-button label="large">大</el-radio-button>
-                    <el-radio-button label="default">中</el-radio-button>
-                    <el-radio-button label="small">小</el-radio-button>
+                    <el-radio-button label="large">大号</el-radio-button>
+                    <el-radio-button label="default">默认</el-radio-button>
+                    <el-radio-button label="small">小号</el-radio-button>
                   </el-radio-group>
                 </el-form-item>
 
-                <!-- 宽度设置 -->
-                <el-form-item label="宽度">
+                <el-form-item label="宽度设置">
                   <el-input-number 
                     v-model="currentItem.style.width" 
                     :min="0" 
@@ -172,101 +297,111 @@
                   </el-input-number>
                 </el-form-item>
 
-                <!-- 文字颜色 -->
+                <el-form-item label="外边距">
+                  <el-input-number 
+                    v-model="currentItem.style.marginBottom" 
+                    :min="0"
+                    :max="100"
+                  >
+                    <template #suffix>px</template>
+                  </el-input-number>
+                </el-form-item>
+
                 <el-form-item label="文字颜色">
                   <el-color-picker v-model="currentItem.style.color" />
                 </el-form-item>
 
-                <!-- 背景颜色 -->
                 <el-form-item label="背景颜色">
                   <el-color-picker v-model="currentItem.style.backgroundColor" />
                 </el-form-item>
 
-                <!-- 边框样式 -->
-                <el-form-item label="边框">
+                <el-form-item label="边框样式">
                   <el-select v-model="currentItem.style.borderStyle">
-                    <el-option label="无" value="none" />
+                    <el-option label="无边框" value="none" />
                     <el-option label="实线" value="solid" />
                     <el-option label="虚线" value="dashed" />
                     <el-option label="点线" value="dotted" />
                   </el-select>
+                </el-form-item>
+
+                <el-form-item label="边框颜色" v-if="currentItem.style.borderStyle !== 'none'">
                   <el-color-picker v-model="currentItem.style.borderColor" />
                 </el-form-item>
 
-                <!-- 圆角 -->
                 <el-form-item label="圆角">
-                  <el-input-number 
+                  <el-slider 
                     v-model="currentItem.style.borderRadius" 
                     :min="0" 
                     :max="20"
-                  >
-                    <template #suffix>px</template>
-                  </el-input-number>
+                    :step="1"
+                  />
                 </el-form-item>
               </el-form>
             </el-tab-pane>
 
             <!-- 高级设置 -->
             <el-tab-pane label="高级设置">
-              <el-form label-position="top">
-                <!-- 动画效果 -->
+              <el-form label-position="top" size="small">
                 <el-form-item label="动画效果">
                   <el-select v-model="currentItem.animation.type">
-                    <el-option label="无" value="none" />
+                    <el-option label="无动画" value="none" />
                     <el-option label="淡入淡出" value="fade" />
                     <el-option label="滑动" value="slide" />
-                    <el-option label="弹性" value="bounce" />
+                    <el-option label="缩放" value="scale" />
                   </el-select>
-                  <el-input-number 
+                </el-form-item>
+
+                <el-form-item label="动画持续时间" v-if="currentItem.animation.type !== 'none'">
+                  <el-slider 
                     v-model="currentItem.animation.duration" 
-                    :min="0" 
+                    :min="100" 
                     :max="2000"
                     :step="100"
                   >
                     <template #suffix>ms</template>
-                  </el-input-number>
+                  </el-slider>
                 </el-form-item>
 
-                <!-- 事件处理 -->
-                <el-form-item label="点击事件">
-                  <el-select v-model="currentItem.events.click.type">
-                    <el-option label="无" value="none" />
-                    <el-option label="页面跳转" value="navigate" />
-                    <el-option label="打开链接" value="link" />
-                    <el-option label="自定义函数" value="function" />
-                  </el-select>
-                  <el-input 
-                    v-if="currentItem.events.click.type !== 'none'"
-                    v-model="currentItem.events.click.value"
-                    :placeholder="getEventPlaceholder(currentItem.events.click.type)"
-                  />
+                <el-divider>验证规则</el-divider>
+                <el-form-item label="验证提示">
+                  <el-input v-model="currentItem.validation.message" placeholder="请输入验证失败时的提示信息" />
                 </el-form-item>
-
-                <!-- 验证规则 -->
                 <el-form-item label="验证规则">
-                  <el-checkbox v-model="currentItem.validation.required">必填</el-checkbox>
-                  <el-input 
-                    v-if="currentItem.validation.required"
-                    v-model="currentItem.validation.message"
-                    placeholder="必填提示文字"
-                  />
-                  <el-select 
-                    v-model="currentItem.validation.pattern"
-                    placeholder="选择验证规则"
-                  >
-                    <el-option label="无" value="" />
+                  <el-select v-model="currentItem.validation.type">
+                    <el-option label="无" value="none" />
                     <el-option label="邮箱" value="email" />
                     <el-option label="手机号" value="phone" />
-                    <el-option label="URL" value="url" />
-                    <el-option label="自定义正则" value="custom" />
+                    <el-option label="身份证" value="idcard" />
+                    <el-option label="自定义正则" value="pattern" />
                   </el-select>
-                  <el-input 
-                    v-if="currentItem.validation.pattern === 'custom'"
-                    v-model="currentItem.validation.regex"
-                    placeholder="输入正则表达式"
-                  />
+                </el-form-item>
+                <el-form-item label="正则表达式" v-if="currentItem.validation.type === 'pattern'">
+                  <el-input v-model="currentItem.validation.pattern" placeholder="请输入正则表达式" />
                 </el-form-item>
               </el-form>
+            </el-tab-pane>
+
+            <!-- JSON结构 -->
+            <el-tab-pane label="JSON结构">
+              <div class="json-viewer">
+                <div class="json-viewer-header">
+                  <span>组件配置</span>
+                  <el-button 
+                    type="primary" 
+                    link 
+                    @click="copyJson"
+                  >
+                    复制配置
+                  </el-button>
+                </div>
+                <el-input
+                  v-model="formattedJson"
+                  type="textarea"
+                  :autosize="{ minRows: 20 }"
+                  readonly
+                  resize="none"
+                />
+              </div>
             </el-tab-pane>
           </el-tabs>
         </el-card>
@@ -293,19 +428,22 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { Delete, Plus, CopyDocument } from '@element-plus/icons-vue'
+import { ref, reactive, computed } from 'vue'
+import { Delete, Plus, CopyDocument, Download, Upload } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Document,
   Edit,
   Select,
   Calendar,
   Timer,
-  Upload,
-  Histogram
+  Upload as UploadIcon,
+  Histogram,
+  Check,
+  CircleCheck,
+  Position
 } from '@element-plus/icons-vue'
 import draggable from 'vuedraggable'
-import { ElMessage } from 'element-plus'
 import DynamicFormPreview from './DynamicFormPreview.vue'
 
 const formItems = ref([])
@@ -364,6 +502,54 @@ const basicComponents = reactive([
         { label: '选项2', value: '2' }
       ]
     }
+  },
+  {
+    type: 'radio',
+    label: '单选框组',
+    icon: 'Check',
+    props: {
+      options: [
+        { label: '选项1', value: '1' },
+        { label: '选项2', value: '2' },
+        { label: '选项3', value: '3' }
+      ]
+    }
+  },
+  {
+    type: 'checkbox',
+    label: '多选框组',
+    icon: 'CircleCheck',
+    props: {
+      options: [
+        { label: '选项1', value: '1' },
+        { label: '选项2', value: '2' },
+        { label: '选项3', value: '3' }
+      ]
+    }
+  },
+  {
+    type: 'button',
+    label: '按钮',
+    icon: 'Position',
+    props: {
+      type: 'primary',
+      text: '点击按钮',
+      nativeType: 'button',
+      icon: '',
+      loading: false,
+      disabled: false,
+      plain: false,
+      round: false,
+      circle: false,
+      link: false,
+      autofocus: false,
+      dark: false,
+      size: 'default',
+      style: {
+        width: 'auto',
+        marginBottom: '18px'
+      }
+    }
   }
 ])
 
@@ -391,7 +577,7 @@ const advancedComponents = reactive([
   {
     type: 'upload',
     label: '文件上传',
-    icon: 'Upload',
+    icon: 'UploadIcon',
     props: {
       action: '',
       multiple: false,
@@ -399,6 +585,11 @@ const advancedComponents = reactive([
     }
   }
 ])
+
+// 计算属性：表单是否为空
+const isFormEmpty = computed(() => {
+  return formItems.value.length === 0
+})
 
 // 克隆组件
 const cloneComponent = (component) => {
@@ -478,7 +669,7 @@ const selectItem = (item) => {
 
 // 预览表单
 const previewForm = () => {
-  if (formItems.value.length === 0) {
+  if (isFormEmpty.value) {
     ElMessage.warning('请先添加表单组件')
     return
   }
@@ -487,19 +678,55 @@ const previewForm = () => {
 
 // 保存表单
 const saveForm = () => {
-  if (formItems.value.length === 0) {
+  if (isFormEmpty.value) {
     ElMessage.warning('请先添加表单组件')
     return
   }
-  console.log('保存表单配置：', formItems.value)
-  ElMessage.success('保存成功')
+
+  ElMessageBox.confirm(
+    '请选择保存方式',
+    '保存表单',
+    {
+      confirmButtonText: '保存到本地',
+      cancelButtonText: '上传到服务器',
+      distinguishCancelAndClose: true,
+      type: 'info',
+      showClose: true,
+      icon: Download
+    }
+  )
+  .then(() => {
+    saveToLocal()
+  })
+  .catch((action) => {
+    if (action === 'cancel') {
+      uploadToServer()
+    }
+  })
 }
 
 // 清空表单
 const clearForm = () => {
-  formItems.value = []
-  currentItem.value = null
-  ElMessage.success('已清空表单')
+  if (isFormEmpty.value) {
+    ElMessage.warning('表单已经是空的了')
+    return
+  }
+
+  ElMessageBox.confirm(
+    '确定要清空所有组件吗？',
+    '清空确认',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+  .then(() => {
+    formItems.value = []
+    currentItem.value = null
+    ElMessage.success('已清空表单')
+  })
+  .catch(() => {})
 }
 
 // 处理设计区域的点击
@@ -536,6 +763,8 @@ const getComponentType = (element) => {
       return 'el-rate'
     case 'upload':
       return 'el-upload'
+    case 'button':
+      return 'el-button'
     default:
       return 'el-input'
   }
@@ -543,75 +772,130 @@ const getComponentType = (element) => {
 
 // 初始化组件时的默认配置
 const getDefaultProps = (type) => {
-  const commonProps = {
-    placeholder: '',
-    required: false,
-    clearable: true,
-    disabled: false,
-    size: 'default'
-  }
-
-  const commonStyle = {
+  // 基础样式配置
+  const baseStyle = {
     width: 100,
+    marginBottom: 18,
     color: '',
     backgroundColor: '',
-    borderStyle: 'solid',
+    borderStyle: 'none',
     borderColor: '',
-    borderRadius: 4
+    borderRadius: 0
   }
 
-  const commonAnimation = {
+  // 基础动画配置
+  const baseAnimation = {
     type: 'none',
     duration: 300
   }
 
-  const commonEvents = {
-    click: {
-      type: 'none',
-      value: ''
-    }
-  }
-
-  const commonValidation = {
-    required: false,
+  // 基础验证配置
+  const baseValidation = {
+    type: 'none',
     message: '',
-    pattern: '',
-    regex: ''
+    pattern: ''
   }
 
-  // 根据组件类型添加特定属性
+  // 组件特有属性
   const specificProps = {
     input: {
+      placeholder: '请输入',
+      defaultValue: '',
       maxlength: undefined,
-      showWordLimit: false,
-      type: 'text'
-    },
-    textarea: {
-      maxlength: undefined,
-      showWordLimit: false,
-      autosize: { minRows: 2, maxRows: 4 }
+      required: false,
+      disabled: false,
+      clearable: true,
+      size: 'default',
+      style: { ...baseStyle }
     },
     number: {
-      min: 0,
-      max: 100,
+      placeholder: '请输入数字',
+      min: undefined,
+      max: undefined,
       step: 1,
       precision: 0,
-      controls: true
+      required: false,
+      disabled: false,
+      clearable: true,
+      size: 'default',
+      style: { ...baseStyle }
     },
     select: {
-      options: [],
+      placeholder: '请选择',
+      options: [
+        { label: '选项1', value: '1' },
+        { label: '选项2', value: '2' }
+      ],
       multiple: false,
-      filterable: false
+      required: false,
+      disabled: false,
+      clearable: true,
+      size: 'default',
+      style: { ...baseStyle }
+    },
+    radio: {
+      options: [
+        { label: '选项1', value: '1' },
+        { label: '选项2', value: '2' },
+        { label: '选项3', value: '3' }
+      ],
+      required: false,
+      disabled: false,
+      size: 'default',
+      style: { ...baseStyle }
+    },
+    checkbox: {
+      options: [
+        { label: '选项1', value: '1' },
+        { label: '选项2', value: '2' },
+        { label: '选项3', value: '3' }
+      ],
+      min: 0,
+      max: undefined,
+      required: false,
+      disabled: false,
+      size: 'default',
+      style: { ...baseStyle }
+    },
+    button: {
+      text: '按钮',
+      type: 'primary',
+      nativeType: 'button',
+      icon: '',
+      loading: false,
+      disabled: false,
+      plain: false,
+      round: false,
+      circle: false,
+      link: false,
+      autofocus: false,
+      dark: false,
+      size: 'default',
+      style: {
+        ...baseStyle,
+        width: 'auto'
+      }
     }
   }
 
   return {
-    props: { ...commonProps, ...(specificProps[type] || {}) },
-    style: { ...commonStyle },
-    animation: { ...commonAnimation },
-    events: { ...commonEvents },
-    validation: { ...commonValidation }
+    props: specificProps[type] || {},
+    style: baseStyle,
+    animation: baseAnimation,
+    validation: baseValidation
   }
+}
+
+// JSON格式化显示
+const formattedJson = computed(() => {
+  if (!currentItem.value) return ''
+  return JSON.stringify(currentItem.value, null, 2)
+})
+
+// 复制JSON
+const copyJson = () => {
+  navigator.clipboard.writeText(formattedJson.value)
+  ElMessage.success('复制成功')
 }
 
 // 获取事件占位符文本
@@ -638,7 +922,8 @@ const getComponentLabel = (type) => {
     switch: '开关',
     slider: '滑块',
     rate: '评分',
-    upload: '上传'
+    upload: '上传',
+    button: '按钮'
   }
   return labels[type] || type
 }
@@ -647,154 +932,143 @@ const getComponentLabel = (type) => {
 <style scoped>
 .dynamic-form-designer {
   height: 100vh;
-  padding: 20px;
   background-color: #f5f7fa;
 }
 
-.el-container {
-  height: calc(100% - 40px);
+.property-panel {
+  border-left: 1px solid #dcdfe6;
+  background-color: #fff;
 }
 
-.el-aside {
-  background-color: #fff;
-  border-radius: 4px;
-  margin: 0 10px;
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.option-label,
+.option-value {
+  flex: 1;
+}
+
+:deep(.el-divider--horizontal) {
+  margin: 16px 0;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+:deep(.el-form-item__label) {
+  padding-bottom: 4px;
+}
+
+:deep(.el-tabs__content) {
+  padding: 8px;
+}
+
+:deep(.el-radio-group) {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+:deep(.el-checkbox) {
+  margin-right: 16px;
 }
 
 .components-list {
-  padding: 10px;
+  padding: 8px;
 }
 
 .component-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #dcdfe6;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  border: 1px dashed #dcdfe6;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s;
-  user-select: none;
 }
 
 .component-item:hover {
-  background-color: #f5f7fa;
-  border-color: var(--el-color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.component-item:active {
-  transform: translateY(0);
-}
-
-.form-card {
-  height: 100%;
-  overflow-y: auto;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-color: #409eff;
+  background-color: #ecf5ff;
 }
 
 .form-design-area {
+  min-height: 500px;
   padding: 20px;
-  background-color: #f5f7fa;
+  border: 1px dashed #dcdfe6;
   border-radius: 4px;
-  min-height: 400px;
-  overflow-y: auto;
 }
 
 .form-items-container {
-  min-height: 400px;
-  padding: 10px;
-}
-
-.form-items-container.is-empty {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #fff;
-  border: 2px dashed #dcdfe6;
-  border-radius: 4px;
-}
-
-.empty-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  min-height: 100%;
 }
 
 .form-item-wrapper {
   position: relative;
-  padding: 10px;
-  margin-bottom: 10px;
-  background-color: #fff;
-  border: 1px solid #dcdfe6;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px dashed transparent;
   border-radius: 4px;
-  transition: all 0.3s;
 }
 
-.form-item-wrapper:hover {
-  border-color: var(--el-color-primary);
-}
-
+.form-item-wrapper:hover,
 .form-item-wrapper.is-selected {
-  border-color: var(--el-color-primary);
-  box-shadow: 0 0 0 2px var(--el-color-primary-light-9);
+  border-color: #409eff;
 }
 
 .form-item-actions {
+  display: none;
   position: absolute;
   right: 8px;
   top: 8px;
-  display: none;
+  z-index: 10;
 }
 
 .form-item-wrapper:hover .form-item-actions {
   display: block;
 }
 
-.property-panel {
-  border-left: 1px solid #dcdfe6;
-  background-color: #fff;
-  overflow-y: auto;
-}
-
-.panel-header {
-  font-weight: bold;
-}
-
-.option-item {
+.empty-placeholder {
+  height: 200px;
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  align-items: center;
+  justify-content: center;
 }
 
-.header-actions {
+.json-viewer {
+  height: 100%;
+  padding: 8px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.json-viewer-header {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 4px;
 }
 
-:deep(.el-form-item__label) {
-  font-weight: bold;
-}
-
-:deep(.el-divider__text) {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-:deep(.el-tabs__content) {
-  padding: 15px 0;
-}
-
-:deep(.el-color-picker) {
-  width: 100%;
+:deep(.el-textarea__inner) {
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  word-break: break-all;
 }
 </style>
