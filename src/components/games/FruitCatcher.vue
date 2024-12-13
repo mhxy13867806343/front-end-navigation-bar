@@ -6,6 +6,14 @@
       </div>
       <div class="info">
         <div class="score">得分: {{ score }}</div>
+        <div :class="['difficulty', difficulty]" @click="cycleDifficulty">
+          难度: {{ 
+            difficulty === 'beginner' ? '初级' : 
+            difficulty === 'intermediate' ? '中级' : 
+            difficulty === 'advanced' ? '高级' : 
+            difficulty === 'expert' ? '专家' : '未知'
+          }}
+        </div>
         <el-button 
           type="primary" 
           @click="togglePause" 
@@ -24,12 +32,14 @@
             :step="0.1"
             size="small"
             @change="onSpeedChange"
+            :disabled="isPlaying"
           />
           <el-select 
             v-model="speedPreset" 
             size="small" 
             placeholder="预设速度"
             @change="onPresetChange"
+            :disabled="isPlaying"
           >
             <el-option label="自动" value="auto" />
             <el-option label="0.5x" value="0.5" />
@@ -39,7 +49,7 @@
             <el-option label="2.5x" value="2.5" />
             <el-option label="3.0x" value="3.0" />
           </el-select>
-          <el-button size="small" type="primary" @click="showSettings = true">
+          <el-button size="small" type="primary" @click="showSettings = true" :disabled="isPlaying">
             游戏设置
           </el-button>
         </div>
@@ -85,6 +95,68 @@
       <h2>游戏暂停</h2>
       <el-button type="primary" @click="togglePause">继续游戏</el-button>
     </div>
+
+    <el-dialog
+      v-model="showSettings"
+      title="游戏设置"
+      :close-on-click-modal="!isPlaying"
+      :close-on-press-escape="!isPlaying"
+      :show-close="!isPlaying"
+    >
+      <el-form :model="tempSettings" label-width="100px">
+        <el-form-item label="难度">
+          <el-select 
+            v-model="tempSettings.difficulty" 
+            :disabled="isPlaying"
+          >
+            <el-option label="初级" value="beginner" />
+            <el-option label="中级" value="intermediate" />
+            <el-option label="高级" value="advanced" />
+            <el-option label="专家" value="expert" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="最大水果数">
+          <el-input-number 
+            v-model="tempSettings.maxFruits" 
+            :min="1" 
+            :max="5"
+            :disabled="isPlaying"
+          />
+        </el-form-item>
+        <el-form-item label="最大炸弹数">
+          <el-input-number 
+            v-model="tempSettings.maxBombs" 
+            :min="0" 
+            :max="3"
+            :disabled="isPlaying"
+          />
+        </el-form-item>
+        <el-form-item label="水果大小">
+          <el-input-number 
+            v-model="tempSettings.fruitSize" 
+            :min="15" 
+            :max="30"
+            :disabled="isPlaying"
+          />
+        </el-form-item>
+        <el-form-item label="炸弹大小">
+          <el-input-number 
+            v-model="tempSettings.bombSize" 
+            :min="15" 
+            :max="30"
+            :disabled="isPlaying"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showSettings = false" :disabled="isPlaying">取消</el-button>
+          <el-button type="primary" @click="handleApplySettings" :disabled="isPlaying">
+            应用设置
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -101,13 +173,45 @@ const gameSettings = ref({
 })
 
 // 临时设置（用于设置对话框）
-const tempSettings = ref({
-  difficulty: 'beginner',
-  maxFruits: 2,
-  maxBombs: 1,
-  fruitSize: 20,
-  bombSize: 20
+const tempSettings = ref({...gameSettings.value})
+
+// 显示设置对话框
+const showSettings = ref(false)
+
+// 监听设置对话框的打开
+watch(() => showSettings.value, (newVal) => {
+  if (newVal) {
+    // 当对话框打开时，复制当前设置到临时设置
+    tempSettings.value = { ...gameSettings.value }
+  }
 })
+
+// 处理设置应用
+const handleApplySettings = () => {
+  // 将临时设置应用到游戏设置
+  gameSettings.value = { ...tempSettings.value }
+  // 关闭设置对话框
+  showSettings.value = false
+  // 应用新设置
+  applySettings()
+  // 如果游戏正在进行，需要重置一些状态
+  if (isPlaying.value) {
+    // 更新难度
+    difficulty.value = gameSettings.value.difficulty
+    // 更新样式
+    document.documentElement.style.setProperty('--fruit-size', `${gameSettings.value.fruitSize}px`)
+    document.documentElement.style.setProperty('--bomb-size', `${gameSettings.value.bombSize}px`)
+  }
+}
+
+// 应用设置
+const applySettings = () => {
+  // 更新游戏难度
+  difficulty.value = gameSettings.value.difficulty
+  // 更新样式变量
+  document.documentElement.style.setProperty('--fruit-size', `${gameSettings.value.fruitSize}px`)
+  document.documentElement.style.setProperty('--bomb-size', `${gameSettings.value.bombSize}px`)
+}
 
 // 游戏状态
 const score = ref(0)
@@ -126,7 +230,6 @@ const gameOver = ref(false)
 const customSpeedMultiplier = ref(0.5)
 const speedPreset = ref('auto')
 const isAutoSpeed = ref(true)
-const showSettings = ref(false)
 
 // 暂停状态
 const isPaused = ref(false)
@@ -155,7 +258,7 @@ const difficultySettings = {
 
 // 创建新水果
 const createFruitBatch = () => {
-  const containerWidth = gameContainer.value.clientWidth
+  const containerWidth = gameContainer.value?.clientWidth
   const maxFruits = gameSettings.value.maxFruits
   const maxBombs = gameSettings.value.maxBombs
   
@@ -225,37 +328,6 @@ const onSpeedChange = (value) => {
   isAutoSpeed.value = false
 }
 
-// 应用设置
-const applySettings = () => {
-  // 如果难度发生变化，重置游戏
-  const difficultyChanged = tempSettings.value.difficulty !== gameSettings.value.difficulty
-  
-  // 更新游戏设置
-  gameSettings.value = { ...tempSettings.value }
-  
-  // 如果难度改变，重置游戏状态
-  if (difficultyChanged) {
-    resetGame()
-  }
-  
-  showSettings.value = false
-}
-
-// 重置游戏
-const resetGame = () => {
-  score.value = 0
-  stars.value = 3
-  fruits.value = []
-  isPlaying.value = false
-  lastFruitBatchTime.value = 0
-  basketPosition.value = gameContainer.value.clientWidth / 2 - 50
-  bombHits.value = 0
-  gameOver.value = false
-  
-  // 重置难度相关设置
-  difficulty.value = gameSettings.value.difficulty
-}
-
 // 检查游戏结束条件
 const checkGameOver = () => {
   if (stars.value <= 0 || bombHits.value >= 3) {
@@ -285,7 +357,7 @@ const togglePause = () => {
 
 // 更新游戏状态
 const updateGame = (timestamp) => {
-  if (!isPlaying.value) return
+  if (!isPlaying.value || !gameContainer.value) return
   
   // 如果游戏暂停，不更新游戏状态
   if (isPaused.value) {
@@ -304,8 +376,8 @@ const updateGame = (timestamp) => {
   }
 
   // 获取容器和篮子的尺寸
-  const containerWidth = gameContainer.value.clientWidth
-  const containerHeight = gameContainer.value.clientHeight
+  const containerWidth = gameContainer.value?.clientWidth
+  const containerHeight = gameContainer.value?.clientHeight
   const basketWidth = 80 // 增加篮子的碰撞宽度
   const basketHeight = 50 // 篮子高度
 
@@ -411,7 +483,7 @@ watch(() => showSettings.value, (show) => {
 const moveBasket = (event) => {
   if (!isPlaying.value || isPaused.value) return
   
-  const rect = gameContainer.value.getBoundingClientRect()
+  const rect = gameContainer.value?.getBoundingClientRect()
   const x = event.clientX - rect.left
   const basketWidth = 80 // 篮子宽度
   
@@ -440,6 +512,31 @@ const startGame = () => {
   gameContainer.value?.focus()
 }
 
+// 重置游戏
+const resetGame = () => {
+  score.value = 0
+  stars.value = 3
+  fruits.value = []
+  isPlaying.value = false
+  lastFruitBatchTime.value = 0
+  basketPosition.value = gameContainer.value?.clientWidth / 2 - 50
+  bombHits.value = 0
+  gameOver.value = false
+  
+  // 重置难度相关设置
+  difficulty.value = gameSettings.value.difficulty
+}
+
+// 切换难度
+const cycleDifficulty = () => {
+  if (!isPlaying.value) {
+    const difficulties = ['beginner', 'intermediate', 'advanced', 'expert'];
+    const currentIndex = difficulties.indexOf(difficulty.value);
+    const nextIndex = (currentIndex + 1) % difficulties.length;
+    difficulty.value = difficulties[nextIndex];
+  }
+};
+
 // 组件挂载和卸载
 onMounted(() => {
   window.addEventListener('keydown', handleKeyPress)
@@ -448,16 +545,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyPress)
 })
-
-// 处理设置应用
-const handleApplySettings = () => {
-  applySettings()
-  showSettings.value = false
-  // 如果游戏正在进行，暂停游戏
-  if (isPlaying.value) {
-    isPlaying.value = false
-  }
-}
 </script>
 
 <style scoped>
@@ -509,6 +596,43 @@ const handleApplySettings = () => {
   font-weight: bold;
   color: #1890ff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.difficulty {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.difficulty:hover {
+  opacity: 0.8;
+}
+
+.difficulty.beginner {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border: 1px solid #91d5ff;
+}
+
+.difficulty.intermediate {
+  background-color: #fff7e6;
+  color: #fa8c16;
+  border: 1px solid #ffd591;
+}
+
+.difficulty.advanced {
+  background-color: #fff1f0;
+  color: #f5222d;
+  border: 1px solid #ffa39e;
+}
+
+.difficulty.expert {
+  background-color: #722ed1;
+  color: #ffffff;
+  border: 1px solid #9254de;
 }
 
 .speed-control {
