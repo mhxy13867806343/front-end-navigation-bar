@@ -257,11 +257,16 @@ const updateGame = (timestamp) => {
     lastFruitBatchTime.value = timestamp
   }
 
+  // 获取容器宽度，用于边界检查
+  const containerWidth = gameContainer.value.clientWidth
+  const containerHeight = gameContainer.value.clientHeight
+  const basketWidth = 50 // 篮子实际宽度
+  
   const basketRect = {
     left: basketPosition.value,
-    right: basketPosition.value + 100,
-    top: gameContainer.value.clientHeight - 60,
-    bottom: gameContainer.value.clientHeight - 10
+    right: basketPosition.value + basketWidth,
+    top: containerHeight - 60,
+    bottom: containerHeight - 10
   }
 
   // 更新水果位置
@@ -277,22 +282,27 @@ const updateGame = (timestamp) => {
     if (difficultySettings[difficulty.value].pattern === 'tornado') {
       fruit.angle += 0.03 * speedMultiplier
       fruit.x += Math.sin(fruit.angle) * (fruit.amplitude / 15)
+      // 确保水果不会超出边界
+      fruit.x = Math.max(0, Math.min(containerWidth - 30, fruit.x))
     }
     
     // 检查碰撞
+    const fruitSize = 30
     const fruitRect = {
       left: fruit.x,
-      right: fruit.x + 30,
+      right: fruit.x + fruitSize,
       top: fruit.y,
-      bottom: fruit.y + 30
+      bottom: fruit.y + fruitSize
     }
     
+    // 使用更宽松的碰撞检测
+    const horizontalOverlap = (fruitRect.right >= basketRect.left - 10 && 
+                             fruitRect.left <= basketRect.right + 10)
+    const verticalOverlap = (fruitRect.bottom >= basketRect.top && 
+                           fruitRect.top <= basketRect.bottom)
+    
     // 检查是否与篮子碰撞
-    if (fruitRect.bottom >= basketRect.top &&
-        fruitRect.top <= basketRect.bottom &&
-        fruitRect.right >= basketRect.left &&
-        fruitRect.left <= basketRect.right) {
-      
+    if (horizontalOverlap && verticalOverlap) {
       if (fruit.isBomb) {
         // 炸弹效果
         fruit.caught = true
@@ -318,7 +328,7 @@ const updateGame = (timestamp) => {
     }
     
     // 检查是否落地
-    if (fruit.y > gameContainer.value.clientHeight) {
+    if (fruit.y > containerHeight) {
       if (!fruit.isBomb) {
         stars.value = Math.max(0, stars.value - 1)
         setTimeout(() => {
@@ -354,7 +364,7 @@ const moveBasket = (event) => {
   
   const rect = gameContainer.value.getBoundingClientRect()
   const x = event.clientX - rect.left
-  const basketWidth = 100
+  const basketWidth = 50 // 篮子实际宽度
   
   // 使用 requestAnimationFrame 优化性能
   requestAnimationFrame(() => {
