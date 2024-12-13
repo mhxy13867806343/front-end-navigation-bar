@@ -1372,6 +1372,13 @@ export const onlineWorksList = [
     logo: '📝',
     component: 'dialog',
     type:'dyform'
+  },
+  {
+    name: '接水果游戏',
+    desc: '接住水果得分，小心炸弹！',
+    logo: '🧺',
+    component: 'dialog',
+    type:'fruitgame'
   }
 ]
 

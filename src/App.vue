@@ -1,13 +1,14 @@
 <script setup>
-import { ref, onMounted, computed, shallowRef,onUnmounted } from 'vue'
+import { ref, onMounted, computed, shallowRef, onUnmounted } from 'vue'
 import { menuItemsList, authorWorksList, onlineWorksList } from '@/utlis/menuItems'
 import { ElDialog, ElMessageBox } from 'element-plus'
 import { Message, Timer } from '@element-plus/icons-vue'
 import SokobanGame from './components/games/SokobanGame.vue'
 import ImageEditor from './components/image/ImageEditor.vue'
-import MusicPlayer from "./components/MusicPlayer.vue";
+import MusicPlayer from "./components/MusicPlayer.vue"
 import DyForm from './views/DyForm.vue'
 import AnalogClock from './components/AnalogClock.vue'
+import FruitCatcher from './components/games/FruitCatcher.vue'
 
 // 判断是否为生产环境
 const isProd = import.meta.env.PROD
@@ -219,26 +220,27 @@ const handleCloseDialog = (done) => {
 }
 
 const openGame = (work) => {
-  if (work.component === 'dialog') {
-    gameTitle.value = work.name
-    // 根据游戏名称加载对应组件
-    switch (work.name) {
-      case '推箱子游戏':
-        currentGame.value = SokobanGame
-        break
-      case '图片处理工具':
-        currentGame.value = ImageEditor
-        break
-      case '音乐播放器':
-        currentGame.value = MusicPlayer
-        break
-      case '动态表单':
-        currentGame.value = DyForm
-        break
-      default:
-        currentGame.value = null
-    }
-    showGameDialog.value = true
+  showGameDialog.value = true
+  gameTitle.value = work.name
+  
+  switch(work.type) {
+    case 'game':
+      currentGame.value = SokobanGame
+      break
+    case 'image':
+      currentGame.value = ImageEditor
+      break
+    case 'video':
+      currentGame.value = MusicPlayer
+      break
+    case 'dyform':
+      currentGame.value = DyForm
+      break
+    case 'fruitgame':
+      currentGame.value = FruitCatcher
+      break
+    default:
+      currentGame.value = null
   }
 }
 
@@ -463,8 +465,9 @@ onUnmounted(() => {
       :close-on-press-escape="false"
       :before-close="handleCloseDialog"
       destroy-on-close
+      class="game-dialog"
     >
-      <component :is="currentGame" v-if="currentGame" />
+      <component :is="currentGame" v-if="currentGame" @close="showGameDialog = false" />
     </el-dialog>
     <!-- 邮箱图标 -->
     <a href="mailto:869710179@qq.com" class="email-icon" title="联系我">
@@ -852,6 +855,7 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
+
 .mail-icon {
   font-size: 20px;
   color: #909399;
@@ -871,5 +875,26 @@ onUnmounted(() => {
 
 .email-icon .el-icon {
   font-size: 20px;
+}
+
+.el-dialog {
+  display: flex;
+  flex-direction: column;
+}
+
+.el-dialog__body {
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 游戏对话框特殊样式 */
+:deep(.el-dialog.game-dialog) {
+  min-height: 600px;
+}
+
+:deep(.el-dialog.game-dialog .el-dialog__body) {
+  height: calc(100% - 54px);
+  padding: 0;
 }
 </style>
