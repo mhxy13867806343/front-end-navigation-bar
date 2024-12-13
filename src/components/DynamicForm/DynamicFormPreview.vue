@@ -10,7 +10,7 @@
         <el-form-item
           :label="item.label"
           :prop="item.field"
-          :rules="item.props.required ? [{ required: true, message: `请输入${item.label}`, trigger: 'blur' }] : []"
+          :rules="item.props?.required ? [{ required: true, message: `请输入${item.label}`, trigger: 'blur' }] : []"
         >
           <!-- 单行文本 -->
           <template v-if="item.type === 'input'">
@@ -103,6 +103,18 @@
               </template>
             </el-upload>
           </template>
+
+          <!-- 按钮 -->
+          <template v-else-if="item.type === 'button'">
+            <el-button
+              :type="getButtonType(item.buttonType)"
+              :style="getButtonStyle(item)"
+              :disabled="item.props?.disabled"
+              :size="item.props?.size"
+            >
+              {{ item.props?.text || '按钮' }}
+            </el-button>
+          </template>
         </el-form-item>
       </template>
 
@@ -129,6 +141,38 @@ const props = defineProps({
 const formRef = ref(null)
 const formData = reactive({})
 
+// 获取按钮类型
+const getButtonType = (buttonType) => {
+  const typeMap = {
+    '主要按钮': 'primary',
+    '成功按钮': 'success',
+    '警告按钮': 'warning',
+    '危险按钮': 'danger',
+    '信息按钮': 'info',
+    '自定义': ''
+  }
+  return typeMap[buttonType] || ''
+}
+
+// 获取按钮样式
+const getButtonStyle = (item) => {
+  if (item.buttonType === '自定义' && item.style) {
+    return {
+      width: item.style.width || 'auto',
+      backgroundColor: item.style.backgroundColor,
+      color: item.style.color,
+      borderStyle: item.style.borderStyle,
+      borderColor: item.style.borderStyle !== 'none' ? item.style.borderColor : 'transparent',
+      borderRadius: item.style.borderRadius ? `${item.style.borderRadius}px` : '4px',
+      fontSize: item.style.fontSize ? `${item.style.fontSize}px` : '14px',
+      padding: '8px 15px',
+      cursor: 'pointer',
+      transition: 'all 0.3s'
+    }
+  }
+  return {}
+}
+
 // 监听表单项变化，初始化表单数据
 watch(
   () => props.formItems,
@@ -144,7 +188,7 @@ watch(
     items.forEach(item => {
       if (!(item.field in formData)) {
         if (item.type === 'number') {
-          formData[item.field] = item.props.min || 0
+          formData[item.field] = item.props?.min || 0
         } else if (item.type === 'select') {
           formData[item.field] = ''
         } else if (item.type === 'date' || item.type === 'time') {
@@ -193,11 +237,17 @@ const resetForm = () => {
   width: 100%;
 }
 
-:deep(.el-upload) {
+.el-button {
+  margin-right: 10px;
+}
+
+.el-upload {
   width: 100%;
 }
 
-:deep(.el-upload-dragger) {
-  width: 100%;
+.el-upload__tip {
+  line-height: 1.2;
+  margin-top: 5px;
+  color: #909399;
 }
 </style>

@@ -3,8 +3,8 @@
     <el-container>
       <!-- 左侧组件列表 -->
       <el-aside width="250px">
-        <el-tabs v-model="activeTab">
-          <el-tab-pane label="基础组件" name="basic">
+        <el-tabs v-model="activeComponentType">
+          <el-tab-pane label="基础组件" name="基础组件">
             <div class="components-list">
               <draggable
                 :list="basicComponents"
@@ -16,6 +16,7 @@
                 <template #item="{ element }">
                   <div 
                     class="component-item"
+                    :class="{ 'is-selected': currentItem?.type === element.type }"
                     @click="addComponent(element)"
                   >
                     <el-icon>
@@ -27,7 +28,7 @@
               </draggable>
             </div>
           </el-tab-pane>
-          <el-tab-pane label="高级组件" name="advanced">
+          <el-tab-pane label="高级组件" name="高级组件">
             <div class="components-list">
               <draggable
                 :list="advancedComponents"
@@ -39,6 +40,7 @@
                 <template #item="{ element }">
                   <div 
                     class="component-item"
+                    :class="{ 'is-selected': currentItem?.type === element.type }"
                     @click="addComponent(element)"
                   >
                     <el-icon>
@@ -62,7 +64,7 @@
               <div class="header-actions">
                 <el-button 
                   type="primary" 
-                  @click="previewForm"
+                  @click="handlePreview"
                   :disabled="isFormEmpty"
                 >
                   <el-icon><View /></el-icon>
@@ -70,14 +72,14 @@
                 </el-button>
                 <el-button 
                   type="success" 
-                  @click="saveForm"
+                  @click="handleSave"
                   :disabled="isFormEmpty"
                 >
                   <el-icon><Download /></el-icon>
                   保存
                 </el-button>
                 <el-button 
-                  @click="clearForm"
+                  @click="handleClear"
                   :disabled="isFormEmpty"
                 >
                   <el-icon><Delete /></el-icon>
@@ -162,9 +164,9 @@
             </div>
           </template>
 
-          <el-tabs>
+          <el-tabs v-model="activeTab">
             <!-- 基础属性 -->
-            <el-tab-pane label="基础属性">
+            <el-tab-pane label="基础属性" name="基础属性">
               <el-form label-position="top" size="small">
                 <el-form-item label="组件名称">
                   <el-input v-model="currentItem.label" />
@@ -180,14 +182,57 @@
                     <el-input v-model="currentItem.props.text" />
                   </el-form-item>
                   <el-form-item label="按钮类型">
-                    <el-radio-group v-model="currentItem.props.type">
-                      <el-radio-button label="primary">主要按钮</el-radio-button>
-                      <el-radio-button label="success">成功按钮</el-radio-button>
-                      <el-radio-button label="warning">警告按钮</el-radio-button>
-                      <el-radio-button label="danger">危险按钮</el-radio-button>
-                      <el-radio-button label="info">信息按钮</el-radio-button>
+                    <el-radio-group 
+                      v-model="currentItem.props.buttonType"
+                      @change="handleButtonTypeChange"
+                    >
+                      <el-radio-button label="主要按钮">主要</el-radio-button>
+                      <el-radio-button label="成功按钮">成功</el-radio-button>
+                      <el-radio-button label="警告按钮">警告</el-radio-button>
+                      <el-radio-button label="危险按钮">危险</el-radio-button>
+                      <el-radio-button label="信息按钮">信息</el-radio-button>
+                      <el-radio-button label="自定义">自定义</el-radio-button>
                     </el-radio-group>
                   </el-form-item>
+                  <template v-if="currentItem.props.buttonType === '自定义'">
+                    <el-divider>自定义样式</el-divider>
+                    <el-form-item label="宽度">
+                      <el-input v-model="currentItem.style.width" />
+                    </el-form-item>
+                    <el-form-item label="背景颜色">
+                      <el-color-picker v-model="currentItem.style.backgroundColor" />
+                    </el-form-item>
+                    <el-form-item label="文字颜色">
+                      <el-color-picker v-model="currentItem.style.color" />
+                    </el-form-item>
+                    <el-form-item label="边框样式">
+                      <el-select v-model="currentItem.style.borderStyle">
+                        <el-option label="无边框" value="none" />
+                        <el-option label="实线" value="solid" />
+                        <el-option label="虚线" value="dashed" />
+                        <el-option label="点线" value="dotted" />
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="边框颜色" v-if="currentItem.style.borderStyle !== 'none'">
+                      <el-color-picker v-model="currentItem.style.borderColor" />
+                    </el-form-item>
+                    <el-form-item label="圆角">
+                      <el-slider 
+                        v-model="currentItem.style.borderRadius" 
+                        :min="0" 
+                        :max="20"
+                        :step="1"
+                      />
+                    </el-form-item>
+                    <el-form-item label="字体大小">
+                      <el-input-number 
+                        v-model="currentItem.style.fontSize" 
+                        :min="12" 
+                        :max="30"
+                        :step="1"
+                      />
+                    </el-form-item>
+                  </template>
                 </template>
 
                 <!-- 输入框特有属性 -->
@@ -291,7 +336,7 @@
             </el-tab-pane>
 
             <!-- 样式设置 -->
-            <el-tab-pane label="样式设置">
+            <el-tab-pane label="样式设置" name="样式设置">
               <el-form label-position="top" size="small">
                 <el-form-item label="组件大小">
                   <el-radio-group v-model="currentItem.props.size">
@@ -465,7 +510,8 @@ const formItems = ref([])
 const currentItem = ref(null)
 const previewVisible = ref(false)
 const formData = reactive({})
-const activeTab = ref('basic')
+const activeTab = ref('基础属性')
+const activeComponentType = ref('基础组件')
 
 // 基础组件列表
 const basicComponents = reactive([
@@ -683,7 +729,7 @@ const selectItem = (item) => {
 }
 
 // 预览表单
-const previewForm = () => {
+const handlePreview = () => {
   if (isFormEmpty.value) {
     ElMessage.warning('请先添加表单组件')
     return
@@ -692,10 +738,18 @@ const previewForm = () => {
 }
 
 // 保存表单
-const saveForm = () => {
+const handleSave = () => {
   if (isFormEmpty.value) {
     ElMessage.warning('请先添加表单组件')
     return
+  }
+
+  const formData = {
+    items: formItems.value,
+    layout: {
+      labelWidth: '100px',
+      size: 'default'
+    }
   }
 
   ElMessageBox.confirm(
@@ -711,17 +765,17 @@ const saveForm = () => {
     }
   )
   .then(() => {
-    saveToLocal()
+    saveToLocal(formData)
   })
   .catch((action) => {
     if (action === 'cancel') {
-      uploadToServer()
+      uploadToServer(formData)
     }
   })
 }
 
 // 清空表单
-const clearForm = () => {
+const handleClear = () => {
   if (isFormEmpty.value) {
     ElMessage.warning('表单已经是空的了')
     return
@@ -857,13 +911,20 @@ const getDefaultProps = (type) => {
       return {
         ...commonProps,
         type: 'button',
-        buttonType: 'primary',
+        buttonType: '主要按钮',
         text: '按钮',
         icon: '',
         onClick: ''
       }
     default:
       return commonProps
+  }
+}
+
+// 处理按钮类型变化
+const handleButtonTypeChange = (value) => {
+  if (value === '自定义') {
+    activeTab.value = '样式设置'
   }
 }
 
@@ -907,6 +968,31 @@ const getComponentLabel = (type) => {
     button: '按钮'
   }
   return labels[type] || type
+}
+
+// 保存到本地
+const saveToLocal = (formData) => {
+  // 生成时间戳文件名
+  const now = new Date()
+  const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`
+  const fileName = `form-data_${timestamp}.json`
+
+  const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  a.click()
+  URL.revokeObjectURL(url)
+  ElMessage.success('保存成功')
+}
+
+// 上传到服务器
+const uploadToServer = (formData) => {
+  // 这里模拟上传到服务器的操作
+  setTimeout(() => {
+    ElMessage.success('上传成功')
+  }, 300)
 }
 </script>
 
@@ -983,6 +1069,11 @@ const getComponentLabel = (type) => {
 }
 
 .component-item:hover {
+  border-color: #409eff;
+  background-color: #ecf5ff;
+}
+
+.component-item.is-selected {
   border-color: #409eff;
   background-color: #ecf5ff;
 }
@@ -1099,5 +1190,15 @@ const getComponentLabel = (type) => {
 
 .empty-placeholder {
   padding: 32px;
+}
+
+.form-actions {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #dcdfe6;
+}
+
+.form-actions .el-button {
+  margin: 0 10px;
 }
 </style>
