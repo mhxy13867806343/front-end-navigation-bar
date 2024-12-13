@@ -127,10 +127,25 @@
 
                   <component
                     :is="getComponentType(element)"
-                    v-model="formData[element.field]"
                     v-bind="element.props"
                     :label="element.label"
-                  />
+                  >
+                    <!-- 按钮特殊处理 -->
+                    <template v-if="element.type === 'button'">
+                      {{ element.props.text }}
+                    </template>
+                    <!-- 选项组件处理 -->
+                    <template v-else-if="['select', 'radio', 'checkbox'].includes(element.type)">
+                      <component
+                        :is="element.type === 'select' ? 'el-option' : element.type === 'radio' ? 'el-radio' : 'el-checkbox'"
+                        v-for="option in element.props.options"
+                        :key="option.value"
+                        :label="option.value"
+                      >
+                        {{ option.label }}
+                      </component>
+                    </template>
+                  </component>
                 </div>
               </template>
             </draggable>
@@ -363,10 +378,7 @@
                 </el-form-item>
 
                 <el-divider>验证规则</el-divider>
-                <el-form-item label="验证提示">
-                  <el-input v-model="currentItem.validation.message" placeholder="请输入验证失败时的提示信息" />
-                </el-form-item>
-                <el-form-item label="验证规则">
+                <el-form-item label="验证类型">
                   <el-select v-model="currentItem.validation.type">
                     <el-option label="无" value="none" />
                     <el-option label="邮箱" value="email" />
@@ -377,6 +389,9 @@
                 </el-form-item>
                 <el-form-item label="正则表达式" v-if="currentItem.validation.type === 'pattern'">
                   <el-input v-model="currentItem.validation.pattern" placeholder="请输入正则表达式" />
+                </el-form-item>
+                <el-form-item label="验证提示">
+                  <el-input v-model="currentItem.validation.message" placeholder="请输入验证失败时的提示信息" />
                 </el-form-item>
               </el-form>
             </el-tab-pane>
@@ -741,148 +756,114 @@ const getComponentType = (element) => {
   switch (element.type) {
     case 'input':
       return 'el-input'
-    case 'textarea':
-      return 'el-input'
     case 'number':
       return 'el-input-number'
     case 'select':
       return 'el-select'
-    case 'date':
-      return 'el-date-picker'
-    case 'time':
-      return 'el-time-picker'
     case 'radio':
       return 'el-radio-group'
     case 'checkbox':
       return 'el-checkbox-group'
-    case 'switch':
-      return 'el-switch'
-    case 'slider':
-      return 'el-slider'
-    case 'rate':
-      return 'el-rate'
-    case 'upload':
-      return 'el-upload'
     case 'button':
       return 'el-button'
     default:
-      return 'el-input'
+      return 'div'
   }
 }
 
 // 初始化组件时的默认配置
 const getDefaultProps = (type) => {
-  // 基础样式配置
-  const baseStyle = {
-    width: 100,
-    marginBottom: 18,
-    color: '',
-    backgroundColor: '',
-    borderStyle: 'none',
-    borderColor: '',
-    borderRadius: 0
-  }
-
-  // 基础动画配置
-  const baseAnimation = {
-    type: 'none',
-    duration: 300
-  }
-
-  // 基础验证配置
-  const baseValidation = {
-    type: 'none',
-    message: '',
-    pattern: ''
-  }
-
-  // 组件特有属性
-  const specificProps = {
-    input: {
-      placeholder: '请输入',
-      defaultValue: '',
-      maxlength: undefined,
-      required: false,
-      disabled: false,
-      clearable: true,
-      size: 'default',
-      style: { ...baseStyle }
+  const commonProps = {
+    label: '新建组件',
+    field: '',
+    size: 'default',
+    disabled: false,
+    required: false,
+    style: {
+      width: '100%',
+      borderStyle: 'none',
+      borderColor: '#DCDFE6',
+      borderRadius: 0,
+      backgroundColor: '#FFFFFF',
+      fontSize: 14,
+      color: '#303133'
     },
-    number: {
-      placeholder: '请输入数字',
-      min: undefined,
-      max: undefined,
-      step: 1,
-      precision: 0,
-      required: false,
-      disabled: false,
-      clearable: true,
-      size: 'default',
-      style: { ...baseStyle }
+    animation: {
+      type: 'none',
+      duration: 300
     },
-    select: {
-      placeholder: '请选择',
-      options: [
-        { label: '选项1', value: '1' },
-        { label: '选项2', value: '2' }
-      ],
-      multiple: false,
-      required: false,
-      disabled: false,
-      clearable: true,
-      size: 'default',
-      style: { ...baseStyle }
-    },
-    radio: {
-      options: [
-        { label: '选项1', value: '1' },
-        { label: '选项2', value: '2' },
-        { label: '选项3', value: '3' }
-      ],
-      required: false,
-      disabled: false,
-      size: 'default',
-      style: { ...baseStyle }
-    },
-    checkbox: {
-      options: [
-        { label: '选项1', value: '1' },
-        { label: '选项2', value: '2' },
-        { label: '选项3', value: '3' }
-      ],
-      min: 0,
-      max: undefined,
-      required: false,
-      disabled: false,
-      size: 'default',
-      style: { ...baseStyle }
-    },
-    button: {
-      text: '按钮',
-      type: 'primary',
-      nativeType: 'button',
-      icon: '',
-      loading: false,
-      disabled: false,
-      plain: false,
-      round: false,
-      circle: false,
-      link: false,
-      autofocus: false,
-      dark: false,
-      size: 'default',
-      style: {
-        ...baseStyle,
-        width: 'auto'
-      }
+    validation: {
+      type: 'none',
+      pattern: '',
+      message: ''
     }
   }
 
-  return {
-    props: specificProps[type] || {},
-    style: baseStyle,
-    animation: baseAnimation,
-    validation: baseValidation
+  switch (type) {
+    case 'input':
+      return {
+        ...commonProps,
+        type: 'input',
+        placeholder: '请输入',
+        maxlength: null,
+        showWordLimit: false,
+        clearable: true,
+        readonly: false
+      }
+    case 'number':
+      return {
+        ...commonProps,
+        type: 'number',
+        placeholder: '请输入数字',
+        min: null,
+        max: null,
+        step: 1,
+        precision: 0,
+        controlsPosition: ''
+      }
+    case 'select':
+      return {
+        ...commonProps,
+        type: 'select',
+        placeholder: '请选择',
+        clearable: true,
+        multiple: false,
+        options: [
+          { label: '选项1', value: '1' },
+          { label: '选项2', value: '2' }
+        ]
+      }
+    case 'radio':
+      return {
+        ...commonProps,
+        type: 'radio',
+        options: [
+          { label: '选项1', value: '1' },
+          { label: '选项2', value: '2' }
+        ]
+      }
+    case 'checkbox':
+      return {
+        ...commonProps,
+        type: 'checkbox',
+        options: [
+          { label: '选项1', value: '1' },
+          { label: '选项2', value: '2' }
+        ],
+        min: null,
+        max: null
+      }
+    case 'button':
+      return {
+        ...commonProps,
+        type: 'button',
+        buttonType: 'primary',
+        text: '按钮',
+        icon: '',
+        onClick: ''
+      }
+    default:
+      return commonProps
   }
 }
 
@@ -1023,18 +1004,19 @@ const getComponentLabel = (type) => {
   margin-bottom: 8px;
   border: 1px dashed transparent;
   border-radius: 4px;
+  transition: all 0.3s;
 }
 
 .form-item-wrapper:hover,
 .form-item-wrapper.is-selected {
-  border-color: #409eff;
+  border-color: var(--el-color-primary);
 }
 
 .form-item-actions {
-  display: none;
   position: absolute;
   right: 8px;
   top: 8px;
+  display: none;
   z-index: 10;
 }
 
@@ -1070,5 +1052,52 @@ const getComponentLabel = (type) => {
   line-height: 1.5;
   white-space: pre;
   word-break: break-all;
+}
+
+.form-item-wrapper {
+  position: relative;
+  padding: 8px;
+  border: 1px dashed transparent;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+
+.form-item-wrapper:hover {
+  border-color: var(--el-color-primary);
+}
+
+.form-item-wrapper.is-selected {
+  border-color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+}
+
+.form-item-actions {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: none;
+  z-index: 10;
+}
+
+.form-item-wrapper:hover .form-item-actions {
+  display: block;
+}
+
+.form-items-container {
+  min-height: 200px;
+  padding: 16px;
+}
+
+.form-items-container.is-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--el-fill-color-light);
+  border: 2px dashed var(--el-border-color);
+  border-radius: 4px;
+}
+
+.empty-placeholder {
+  padding: 32px;
 }
 </style>
