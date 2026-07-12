@@ -2679,6 +2679,12 @@ export const menuItemsList = [
     "name": "接口工具箱",
     "icon": "🔌",
     "tools": []
+  },
+  {
+    "id": 25,
+    "name": "组件示例",
+    "icon": "🧩",
+    "tools": []
   }
 ];
 
@@ -2780,6 +2786,13 @@ export const onlineWorksList = [
     "logo": "🚀",
     "component": "dialog",
     "type": "spaceshooter"
+  },
+  {
+    "name": "Qite.js Todo & 搜索",
+    "desc": "基于 Qite.js 框架实现的 Todo 待办与搜索过滤",
+    "logo": "📝",
+    "component": "dialog",
+    "type": "qitetodo"
   }
 ];
 

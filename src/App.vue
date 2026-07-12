@@ -18,7 +18,9 @@ import TetrisGame from './components/games/TetrisGame.vue'
 import Game2048 from './components/games/Game2048.vue'
 import MinesweeperGame from './components/games/MinesweeperGame.vue'
 import TicTacToeGame from './components/games/TicTacToeGame.vue'
+import QiteTodo from './components/games/QiteTodo.vue'
 import ApiToolbox from './components/ApiToolbox.vue'
+import ComponentShowcase from './components/ComponentShowcase.vue'
 import AiNewsTimeline from './components/AiNewsTimeline.vue'
 import AiAppStore from './components/AiAppStore.vue'
 import AiArticlesList from './components/AiArticlesList.vue'
@@ -51,6 +53,11 @@ const setGridCols = (cols) => {
   localStorage.setItem('gridCols', cols.toString())
 }
 
+const dialogGridCols = computed(() => {
+  const maxCols = Math.min(5, likedToolsList.value.length || 1)
+  return Math.min(gridCols.value, maxCols)
+})
+
 const getActiveCategoryName = () => {
   const cat = menuItems.value.find(c => c.id === activeItem.value)
   return cat ? cat.name : '全部'
@@ -77,7 +84,7 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 const aiCategories = computed(() => {
-  return menuItems.value.filter(item => item.id !== 24)
+  return menuItems.value.filter(item => item.id !== 24 && item.id !== 25)
 })
 
 const isHomeLive = ref(false)
@@ -305,6 +312,10 @@ const mergeMenuItems = (liveData, staticData) => {
   const apiToolboxCat = staticData.find(c => c.id === 24)
   if (apiToolboxCat && !merged.some(c => c.id === 24)) {
     merged.push(apiToolboxCat)
+  }
+  const showcaseCat = staticData.find(c => c.id === 25)
+  if (showcaseCat && !merged.some(c => c.id === 25)) {
+    merged.push(showcaseCat)
   }
   return merged
 }
@@ -737,6 +748,9 @@ const openGame = (work) => {
     case 'tictactoe':
       currentGame.value = TicTacToeGame
       break
+    case 'qitetodo':
+      currentGame.value = QiteTodo
+      break
     default:
       currentGame.value = null
   }
@@ -965,6 +979,9 @@ onUnmounted(() => {
       <div v-else-if="activeItem === 24" class="api-toolbox-view-wrapper">
         <ApiToolbox />
       </div>
+      <div v-else-if="activeItem === 25" class="api-toolbox-view-wrapper">
+        <ComponentShowcase />
+      </div>
       <template v-else>
         <div class="search-wrapper">
           <input
@@ -1116,7 +1133,7 @@ onUnmounted(() => {
     <el-dialog
       v-model="showLikeHistory"
       :title="`历史爱心记录(${likedToolsList.length})`"
-      width="60%"
+      width="90%"
       destroy-on-close
       class="like-history-dialog"
     >
@@ -1128,10 +1145,10 @@ onUnmounted(() => {
         <div class="column-switcher" style="margin-left: auto; margin-right: 16px;">
           <span class="switcher-label">🖥️ 视图布局:</span>
           <button 
-            v-for="cols in [1, 2, 3, 4, 5]" 
+            v-for="cols in [1, 2, 3, 4, 5].filter(c => c <= likedToolsList.length)" 
             :key="cols"
             class="switcher-btn"
-            :class="{ active: gridCols === cols }"
+            :class="{ active: dialogGridCols === cols }"
             @click="setGridCols(cols)"
           >
             {{ cols }}列
@@ -1147,7 +1164,7 @@ onUnmounted(() => {
           🗑️ 清空记录
         </button>
       </div>
-      <div :class="['liked-tools-list', `cols-${gridCols}`, { 'scrollable': likedToolsList.length > 10 }]">
+      <div :class="['liked-tools-list', `cols-${dialogGridCols}`, { 'scrollable': likedToolsList.length > 10 }]">
         <div v-if="likedToolsList.length === 0" class="no-likes">
           <p>还没有点赞过任何工具哦~ 💝</p>
         </div>
@@ -1160,7 +1177,7 @@ onUnmounted(() => {
             <div class="tool-details">
               <h4>{{ tool.name }}</h4>
               <p>
-                <span class="menu-info">{{ tool.menuInfo.menuIcon }} {{ tool.menuInfo.menuName }}</span>
+                <span class="menu-info">{{ tool.menuInfo?.menuIcon }} {{ tool.menuInfo?.menuName }}</span>
                 {{ tool.desc }}
               </p>
             </div>
