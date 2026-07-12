@@ -15,7 +15,13 @@ const BRICK_GAP = 6
 const BRICK_START_X = 19
 const BRICK_START_Y = 54
 const INITIAL_LIVES = 3
-const MAX_DELTA_SECONDS = 0.032
+const INITIAL_BALL_VX = 145
+const INITIAL_BALL_VY = -220
+const BALL_SPEED_INCREMENT = 22
+const MAX_BALL_SPEED = 410
+const FIXED_STEP_SECONDS = 1 / 120
+const MAX_FRAME_DELTA_SECONDS = 0.032
+const MAX_STEPS_PER_FRAME = 4
 const HIGH_SCORE_KEY = 'brickbreaker_high_score'
 
 const ROW_COLORS = ['#ff5c5c', '#ff8c42', '#f5cf46', '#65c96e', '#45a9e6', '#9b75df']
@@ -29,11 +35,13 @@ const isGameOver = ref(false)
 const isWin = ref(false)
 const isLaunched = ref(false)
 
+let speedLevel = 0
 let paddle = createPaddle()
-let ball = createBall()
+let ball = createBall(speedLevel)
 let bricks = createBricks()
 let pressedDirections = new Set()
 let lastFrameAt = null
+let accumulator = 0
 let animationFrameId = null
 
 function createPaddle() {
@@ -46,13 +54,19 @@ function createPaddle() {
   }
 }
 
-function createBall() {
+function ballSpeedForLevel(level) {
+  return Math.min(Math.hypot(INITIAL_BALL_VX, INITIAL_BALL_VY) + level * BALL_SPEED_INCREMENT, MAX_BALL_SPEED)
+}
+
+function createBall(level = speedLevel) {
+  const initialSpeed = Math.hypot(INITIAL_BALL_VX, INITIAL_BALL_VY)
+  const speed = ballSpeedForLevel(level)
   return {
     x: CANVAS_WIDTH / 2,
     y: CANVAS_HEIGHT - 38,
     radius: BALL_RADIUS,
-    vx: 145,
-    vy: -220
+    vx: INITIAL_BALL_VX / initialSpeed * speed,
+    vy: INITIAL_BALL_VY / initialSpeed * speed
   }
 }
 
@@ -73,14 +87,15 @@ function createBricks() {
 }
 
 function resetBall() {
-  ball = createBall()
+  ball = createBall(speedLevel)
   ball.x = paddle.x + paddle.width / 2
   isLaunched.value = false
   isPaused.value = true
-  lastFrameAt = null
+  clearFrameTiming()
 }
 
 function resetGame() {
+  speedLevel = 0
   paddle = createPaddle()
   bricks = createBricks()
   pressedDirections.clear()
@@ -108,6 +123,7 @@ function finishGame(won) {
   isPaused.value = true
   isLaunched.value = false
   pressedDirections.clear()
+  clearFrameTiming()
   saveHighScore()
 }
 
@@ -119,7 +135,7 @@ function launchOrTogglePause() {
   } else {
     isPaused.value = !isPaused.value
   }
-  lastFrameAt = null
+  clearFrameTiming()
 }
 
 function updatePaddle(deltaSeconds) {
@@ -132,12 +148,13 @@ function updatePaddle(deltaSeconds) {
   ))
 }
 
-function increaseBallSpeed() {
+function applySpeedLevel(level) {
+  speedLevel = level
   const speed = Math.hypot(ball.vx, ball.vy)
   if (!speed) return
-  const fasterSpeed = Math.min(speed + 22, 410)
-  ball.vx = ball.vx / speed * fasterSpeed
-  ball.vy = ball.vy / speed * fasterSpeed
+  const progressionSpeed = ballSpeedForLevel(speedLevel)
+  ball.vx = ball.vx / speed * progressionSpeed
+  ball.vy = ball.vy / speed * progressionSpeed
 }
 
 function reflectFromBrick(brick, previousX, previousY) {
@@ -189,7 +206,8 @@ function handleBrickCollision(previousX, previousY) {
   saveHighScore()
 
   const clearedBricks = score.value / 10
-  if (clearedBricks % BRICK_COLUMNS === 0) increaseBallSpeed()
+  const progressionLevel = Math.floor(clearedBricks / BRICK_COLUMNS)
+  if (progressionLevel !== speedLevel) applySpeedLevel(progressionLevel)
   if (clearedBricks === BRICK_ROWS * BRICK_COLUMNS) finishGame(true)
 }
 
@@ -242,11 +260,27 @@ function update(deltaSeconds) {
   updateBall(deltaSeconds)
 }
 
+function clearFrameTiming() {
+  lastFrameAt = null
+  accumulator = 0
+}
+
 function gameLoop(now) {
   if (lastFrameAt === null) lastFrameAt = now
-  const deltaSeconds = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_DELTA_SECONDS)
+  const wallDeltaSeconds = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_FRAME_DELTA_SECONDS)
   lastFrameAt = now
-  if (!isPaused.value && !isGameOver.value && !isWin.value) update(deltaSeconds)
+  if (!isPaused.value && !isGameOver.value && !isWin.value) {
+    accumulator += wallDeltaSeconds
+    let steps = 0
+    while (accumulator >= FIXED_STEP_SECONDS && steps < MAX_STEPS_PER_FRAME) {
+      accumulator -= FIXED_STEP_SECONDS
+      update(FIXED_STEP_SECONDS)
+      steps += 1
+      if (isPaused.value || isGameOver.value || isWin.value) break
+    }
+  } else {
+    accumulator = 0
+  }
   draw()
   animationFrameId = requestAnimationFrame(gameLoop)
 }
