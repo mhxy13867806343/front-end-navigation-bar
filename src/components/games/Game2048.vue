@@ -1,0 +1,395 @@
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+
+const emit = defineEmits(['close'])
+
+const board = ref([
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0]
+])
+
+const score = ref(0)
+const highScore = ref(parseInt(localStorage.getItem('2048_high_score')) || 0)
+const isGameOver = ref(false)
+
+const addRandomTile = () => {
+  const emptyCells = []
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (board.value[r][c] === 0) {
+        emptyCells.push({ r, c })
+      }
+    }
+  }
+  
+  if (emptyCells.length > 0) {
+    const { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)]
+    board.value[r][c] = Math.random() < 0.9 ? 2 : 4
+  }
+}
+
+const initGame = () => {
+  board.value = [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+  ]
+  score.value = 0
+  isGameOver.value = false
+  addRandomTile()
+  addRandomTile()
+}
+
+const getTileBg = (val) => {
+  const mapping = {
+    2: '#eee4da',
+    4: '#ede0c8',
+    8: '#f2b179',
+    16: '#f59563',
+    32: '#f67c5f',
+    64: '#f65e3b',
+    128: '#edcf72',
+    256: '#edcc61',
+    512: '#edc850',
+    1024: '#edc53f',
+    2048: '#edc22e'
+  }
+  return mapping[val] || '#3c3a32'
+}
+
+const getTileColor = (val) => {
+  return val <= 4 ? '#776e65' : '#f9f6f2'
+}
+
+// Slide row left
+const slideLeft = (row) => {
+  let arr = row.filter(val => val !== 0)
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] === arr[i + 1]) {
+      arr[i] *= 2
+      score.value += arr[i]
+      arr[i + 1] = 0
+    }
+  }
+  arr = arr.filter(val => val !== 0)
+  while (arr.length < 4) {
+    arr.push(0)
+  }
+  return arr
+}
+
+const rotateBoard = () => {
+  // Transpose and reverse rows -> 90 deg clockwise
+  const n = 4
+  const temp = Array.from({ length: 4 }, () => Array(4).fill(0))
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      temp[c][n - 1 - r] = board.value[r][c]
+    }
+  }
+  board.value = temp
+}
+
+const moveLeft = () => {
+  let moved = false
+  for (let r = 0; r < 4; r++) {
+    const original = [...board.value[r]]
+    const next = slideLeft(board.value[r])
+    if (JSON.stringify(original) !== JSON.stringify(next)) {
+      moved = true
+    }
+    board.value[r] = next
+  }
+  return moved
+}
+
+const move = (dir) => {
+  if (isGameOver.value) return
+  let moved = false
+
+  // 0: Left, 1: Up, 2: Right, 3: Down
+  if (dir === 0) {
+    moved = moveLeft()
+  } else if (dir === 1) { // Up
+    rotateBoard(); rotateBoard(); rotateBoard() // 270 deg clockwise
+    moved = moveLeft()
+    rotateBoard() // 90 deg clockwise to restore
+  } else if (dir === 2) { // Right
+    rotateBoard(); rotateBoard() // 180 deg
+    moved = moveLeft()
+    rotateBoard(); rotateBoard() // restore
+  } else if (dir === 3) { // Down
+    rotateBoard() // 90 deg clockwise
+    moved = moveLeft()
+    rotateBoard(); rotateBoard(); rotateBoard() // restore
+  }
+
+  if (moved) {
+    addRandomTile()
+    checkGameOver()
+    if (score.value > highScore.value) {
+      highScore.value = score.value
+      localStorage.setItem('2048_high_score', highScore.value.toString())
+    }
+  }
+}
+
+const checkGameOver = () => {
+  // Any empty cell?
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (board.value[r][c] === 0) return
+    }
+  }
+
+  // Any adjacent merges possible?
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (r < 3 && board.value[r][c] === board.value[r + 1][c]) return
+      if (c < 3 && board.value[r][c] === board.value[r][c + 1]) return
+    }
+  }
+
+  isGameOver.value = true
+}
+
+const handleKeydown = (e) => {
+  switch (e.key) {
+    case 'ArrowLeft':
+    case 'a':
+    case 'A':
+      move(0)
+      e.preventDefault()
+      break
+    case 'ArrowUp':
+    case 'w':
+    case 'W':
+      move(1)
+      e.preventDefault()
+      break
+    case 'ArrowRight':
+    case 'd':
+    case 'D':
+      move(2)
+      e.preventDefault()
+      break
+    case 'ArrowDown':
+    case 's':
+    case 'S':
+      move(3)
+      e.preventDefault()
+      break
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+  initGame()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+</script>
+
+<template>
+  <div class="g2048-container">
+    <div class="game-header">
+      <div class="score-board">
+        <div class="score-item">
+          <span class="label">SCORE</span>
+          <span class="val">{{ score }}</span>
+        </div>
+        <div class="score-item">
+          <span class="label">BEST</span>
+          <span class="val">{{ highScore }}</span>
+        </div>
+      </div>
+      <div class="game-title">⚡ 2048 经典合并 ⚡</div>
+    </div>
+
+    <div class="board-wrapper">
+      <div class="grid-container">
+        <div v-for="(row, rIndex) in board" :key="rIndex" class="grid-row">
+          <div v-for="(val, cIndex) in row" 
+               :key="cIndex" 
+               class="grid-cell"
+               :style="{ background: val > 0 ? getTileBg(val) : 'rgba(238, 228, 218, 0.35)', color: getTileColor(val) }">
+            <span v-if="val > 0" class="tile-number" :class="`tile-${val}`">{{ val }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Over overlay -->
+      <div v-if="isGameOver" class="overlay">
+        <div class="game-over-panel">
+          <h2>GAME OVER</h2>
+          <p>您获得了 {{ score }} 分</p>
+          <button class="action-btn" @click="initGame">重新开始</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-helper">
+      <p>操作说明: 键盘上的 <b>W / A / S / D</b> 或 <b>方向键</b> 移动滑块并完成合并。</p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.g2048-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+  padding: 10px 0;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 320px;
+  align-items: center;
+}
+
+.score-board {
+  display: flex;
+  gap: 12px;
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(187, 173, 160, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 14px;
+  border-radius: 8px;
+  min-width: 60px;
+}
+
+.score-item .label {
+  font-size: 8px;
+  color: #eee4da;
+  font-weight: bold;
+}
+
+.score-item .val {
+  font-size: 16px;
+  font-weight: bold;
+  color: #f2b179;
+}
+
+.game-title {
+  font-size: 15px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #f2b179, #f65e3b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.board-wrapper {
+  position: relative;
+  border: 6px solid #bbada0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  background: #bbada0;
+}
+
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.grid-row {
+  display: flex;
+  gap: 10px;
+}
+
+.grid-cell {
+  width: 65px;
+  height: 65px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.15s ease;
+}
+
+.tile-number {
+  font-size: 22px;
+  font-weight: bold;
+  animation: popIn 0.2s ease;
+}
+
+.tile-1024, .tile-2048 {
+  font-size: 16px;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(187, 173, 160, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.game-over-panel h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #776e65;
+}
+
+.game-over-panel p {
+  color: #f9f6f2;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  background: #8f7a66;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  background: #7f6a56;
+}
+
+.controls-helper {
+  font-size: 11px;
+  color: #a0a0b0;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  90% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+</style>

@@ -1,0 +1,82 @@
+[
+  {
+    "title": "Loop Engineering 是什么？一文看懂 – AI百科知识",
+    "link": "https://ai-bot.cn/loop-engineering/",
+    "desc": "Loop Engineering 是 AI 工程新范式，指围绕大模型构建自主循环运行系统，使 AI 从单次响应工具升级为长期自治代理。类比传统工程学中的 PDCA 循环，模型是执...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/05/Loop-Engineering-1.png",
+    "category": "Loop Engineering 是什么？一文看懂 – AI百科知识",
+    "date": "2个月前"
+  },
+  {
+    "title": "Harness Engineering是什么？ – AI百科知识",
+    "link": "https://ai-bot.cn/harness-engineering/",
+    "desc": "Harness Engineering是AI工程新范式，指围绕大模型构建完整运行系统，使从单次响应工具升级为长期自治代理。",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/03/Harness-Engineering-website-2-1.png",
+    "category": "Harness Engineering是什么？ – AI百科知识",
+    "date": "4个月前"
+  },
+  {
+    "title": "UCP（Universal Commerce Protocol）是什么？ – AI百科知识",
+    "link": "https://ai-bot.cn/what-is-ucp/",
+    "desc": "UCP（Universal Commerce Protocol）是谷歌联合众多电商巨头和支付平台共同开发的开源标准协议，旨在推动新一代代理式商务的发展。UCP通过标准化的接口和协议...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/01/UCP-website3-1.png",
+    "category": "UCP（Universal Commerce Protocol）是什么？ – AI百科知识",
+    "date": "6个月前"
+  },
+  {
+    "title": "Rue是什么？ – AI百科知识",
+    "link": "https://ai-bot.cn/what-is-rue/",
+    "desc": "Rue 是由 Rust 核心贡献者 Steve Klabnik 用 Claude 开发的实验性编程语言。Rue 能探索在不依赖垃圾回收机制的前提下，提供比 Rust 更易用的内存安全编程体验。",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/01/Rue-website-1-1.png",
+    "category": "Rue是什么？ – AI百科知识",
+    "date": "6个月前"
+  },
+  {
+    "title": "嵌套学习（Nested Learning）是什么？ &#8211; AI百科知识",
+    "link": "https://ai-bot.cn/what-is-nested-learning/",
+    "desc": "Nested Learning（嵌套学习）是谷歌推出的新型机器学习范式，能解决传统大语言模型在持续学习中面临的“灾难性遗忘”问题。Nested Learning将复杂的机器学习模...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2025/11/Nested-Learning.png",
+    "category": "嵌套学习（Nested Learning）是什么？ &#8211; AI百科知识",
+    "date": "9个月前"
+  },
+  {
+    "title": "Agentic Context Engineering（ACE）是什么？ &#8211; AI百科知识",
+    "link": "https://ai-bot.cn/what-is-ace/",
+    "desc": "Agentic Context Engineering（ACE）是斯坦福大学、SambaNova Systems和加州大学伯克利分校的研究者们提出的创新框架，通过动态优化输入信息（即“上下文”）来...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2025/10/ACE.png",
+    "category": "Agentic Context Engineering（ACE）是什么？ &#8211; AI百科知识",
+    "date": "9个月前"
+  },
+  {
+    "title": "AP2（Agentic Payments Protocol）是什么？ &#8211; AI百科知识",
+    "link": "https://ai-bot.cn/what-is-ap2/",
+    "desc": "AP2（Agentic Payments Protocol）是一个开放协议，为用户提供一个安全、可扩展且支付方式无关的框架，以便用户、商家和支付提供商能跨平台进行智能体支付。...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2025/09/AP2-website.png",
+    "category": "AP2（Agentic Payments Protocol）是什么？ &#8211; AI百科知识",
+    "date": "10个月前"
+  },
+  {
+    "title": "AGL框架是什么？一文看懂 &#8211; AI百科知识",
+    "link": "https://ai-bot.cn/what-is-agl/",
+    "desc": "Agent Guidance Language（AGL，Agent指导语言）是一种借鉴标准作业流程（SOP）的自然语言结构化编写法，让业务专家能够用自然语言为Agent编写“可执行的指令...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2025/08/AGL.png",
+    "category": "AGL框架是什么？一文看懂 &#8211; AI百科知识",
+    "date": "1年前 (2025)"
+  },
+  {
+    "title": "AI智能体（AI Agent）是什么？一文看懂 &#8211; AI百科知识",
+    "link": "https://ai-bot.cn/what-is-ai-agent/",
+    "desc": "AI智能体（AI Agent），也被称为人工智能体，是人工智能领域中的一个核心概念，指的是能感知其环境、进行自主决策并采取行动以实现特定目标的智能实体或计算...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2025/06/AI-Agent-website.png",
+    "category": "AI智能体（AI Agent）是什么？一文看懂 &#8211; AI百科知识",
+    "date": "1年前 (2025)"
+  },
+  {
+    "title": "上下文工程是什么？一文读懂 &#8211; AI百科知识",
+    "link": "https://ai-bot.cn/what-is-context-engineering/",
+    "desc": "上下文工程是指构建一个动态系统，以正确的格式提供正确的信息和工具，使大语言模型（LLM）能合理地完成任务。是一种系统性的方法，确保LLM获得执行任务所需...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2025/06/Context-Engineering-2.png",
+    "category": "上下文工程是什么？一文读懂 &#8211; AI百科知识",
+    "date": "1年前 (2025)"
+  }
+]

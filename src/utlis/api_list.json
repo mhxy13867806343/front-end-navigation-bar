@@ -1,0 +1,1091 @@
+{
+  "认证": [
+    {
+      "name": "用户登录",
+      "desc": "用户登录并返回 JWT token",
+      "path": "/api/auth/login",
+      "method": "POST",
+      "params": [],
+      "pathParams": [],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"password\": \"\",\n  \"username\": \"\"\n}"
+    },
+    {
+      "name": "用户注册",
+      "desc": "创建新用户账户和用户信息",
+      "path": "/api/auth/register",
+      "method": "POST",
+      "params": [],
+      "pathParams": [],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"password\": \"\",\n  \"username\": \"\"\n}"
+    }
+  ],
+  "JSON仓库": [
+    {
+      "name": "获取JSON列表",
+      "desc": "分页获取JSON列表",
+      "path": "/api/json",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "创建JSON数据",
+      "desc": "创建一个新的JSON数据（需要认证）。content字段可以是任意JSON对象或数组，示例：{\"theme\":\"dark\",\"language\":\"zh-CN\"} 或 [{\"id\":1,\"name\":\"Alice\"}]",
+      "path": "/api/json",
+      "method": "POST",
+      "params": [],
+      "pathParams": [],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"content\": \"\",\n  \"name\": \"\"\n}"
+    },
+    {
+      "name": "获取当前用户创建的JSON列表",
+      "desc": "分页获取当前登录用户创建的JSON列表",
+      "path": "/api/json/my",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "根据ID获取JSON数据",
+      "desc": "根据JSON ID获取JSON内容和创建者信息",
+      "path": "/api/json/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "JSON ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "更新JSON数据",
+      "desc": "更新JSON数据（需要认证，只有创建者本人才能更新）。content字段可以是任意JSON对象或数组，示例：{\"theme\":\"light\",\"fontSize\":14}",
+      "path": "/api/json/{id}",
+      "method": "PUT",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "JSON ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"content\": \"\",\n  \"name\": \"\"\n}"
+    },
+    {
+      "name": "删除JSON数据",
+      "desc": "根据ID删除JSON数据（需要认证，只有创建者本人才能删除）",
+      "path": "/api/json/{id}",
+      "method": "DELETE",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "JSON ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    }
+  ],
+  "图片视频": [
+    {
+      "name": "获取图片列表",
+      "desc": "获取图片列表，支持分页（数据源：文件表中类型为image和avatar的文件）",
+      "path": "/api/images",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取当前用户上传的图片列表",
+      "desc": "获取当前登录用户上传的图片列表，支持分页（需要认证）",
+      "path": "/api/images/my",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取随机图片",
+      "desc": "随机返回一张图片（数据源：文件表中类型为image和avatar的文件）",
+      "path": "/api/images/random",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取视频列表",
+      "desc": "获取视频列表，支持分页（数据源：文件表中类型为video的文件）",
+      "path": "/api/videos",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取当前用户上传的视频列表",
+      "desc": "获取当前登录用户上传的视频列表，支持分页（需要认证）",
+      "path": "/api/videos/my",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取随机视频",
+      "desc": "随机返回一个视频（数据源：文件表中类型为video的文件）",
+      "path": "/api/videos/random",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    }
+  ],
+  "工具类": [
+    {
+      "name": "获取随机名句",
+      "desc": "随机返回一条名句",
+      "path": "/api/tools/famous-sentence",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取指定IP解析信息",
+      "desc": "解析指定的IP地址，返回其地理位置信息",
+      "path": "/api/tools/ip-info",
+      "method": "GET",
+      "params": [
+        {
+          "name": "ip",
+          "label": "IP地址",
+          "type": "text",
+          "placeholder": "请输入 IP地址",
+          "required": true,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取用户IP解析信息",
+      "desc": "获取当前请求用户的IP地址及其地理位置信息",
+      "path": "/api/tools/my-ip",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "汉字转拼音",
+      "desc": "将中文汉字转换为拼音，支持多种拼音风格",
+      "path": "/api/tools/pinyin",
+      "method": "GET",
+      "params": [
+        {
+          "name": "text",
+          "label": "要转换的中文文本",
+          "type": "text",
+          "placeholder": "请输入 要转换的中文文本",
+          "required": true,
+          "default": "你好世界"
+        },
+        {
+          "name": "style",
+          "label": "拼音风格: normal(普通), tone(带声调), tone2(数字声调), tone3(声调在后), initials(首字母), first_letter(首字母缩写)",
+          "type": "text",
+          "placeholder": "请输入 拼音风格: normal(普通), tone(带声调), tone2(数字声调), tone3(声调在后), initials(首字母), first_letter(首字母缩写)",
+          "required": false,
+          "default": "normal"
+        },
+        {
+          "name": "separator",
+          "label": "拼音分隔符",
+          "type": "text",
+          "placeholder": "请输入 拼音分隔符",
+          "required": false,
+          "default": ","
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "生成随机字符串",
+      "desc": "生成指定长度的随机字符串(最长1000个字符)",
+      "path": "/api/tools/random-string",
+      "method": "GET",
+      "params": [
+        {
+          "name": "length",
+          "label": "字符串长度",
+          "type": "number",
+          "placeholder": "请输入 字符串长度",
+          "required": false,
+          "default": 16
+        },
+        {
+          "name": "type",
+          "label": "字符串类型: upper(全大写), lower(全小写), mixed(大小写混合)",
+          "type": "text",
+          "placeholder": "请输入 字符串类型: upper(全大写), lower(全小写), mixed(大小写混合)",
+          "required": false,
+          "default": "mixed"
+        },
+        {
+          "name": "includeNumbers",
+          "label": "是否包含数字",
+          "type": "switch",
+          "placeholder": "请输入 是否包含数字",
+          "required": false,
+          "default": true
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取时间戳",
+      "desc": "获取当前Unix时间戳和格式化时间",
+      "path": "/api/tools/timestamp",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "生成UUID",
+      "desc": "生成一个随机的UUID",
+      "path": "/api/tools/uuid",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    }
+  ],
+  "文件管理": [
+    {
+      "name": "获取文件列表",
+      "desc": "分页获取文件列表",
+      "path": "/api/files",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "fileType",
+          "label": "文件类型过滤",
+          "type": "text",
+          "placeholder": "请输入 文件类型过滤",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取文件详情",
+      "desc": "根据文件ID获取文件详情，包含文件信息和上传用户信息",
+      "path": "/api/files/detail/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文件ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "根据ID下载文件",
+      "desc": "根据文件ID下载文件",
+      "path": "/api/files/download/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文件ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取当前用户上传的文件列表",
+      "desc": "分页获取当前登录用户上传的文件列表，支持按文件类型过滤",
+      "path": "/api/files/my",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "fileType",
+          "label": "文件类型过滤",
+          "type": "text",
+          "placeholder": "请输入 文件类型过滤",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "根据ID获取文件",
+      "desc": "根据文件ID在线预览文件(支持视频播放、图片查看等)",
+      "path": "/api/files/serve/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文件ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "上传文件",
+      "desc": "上传单个文件到服务器（需要认证），支持用户头像、图片、视频、文章资源上传",
+      "path": "/api/files/upload",
+      "method": "POST",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "通过文件名获取文件",
+      "desc": "根据文件名获取文件(支持视频播放、图片查看等)",
+      "path": "/api/files/{filename}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "filename",
+          "description": "文件名",
+          "required": true,
+          "type": "string",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "删除文件",
+      "desc": "根据ID删除文件（需要认证，只有上传者本人才能删除）",
+      "path": "/api/files/{id}",
+      "method": "DELETE",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文件ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    }
+  ],
+  "文章管理": [
+    {
+      "name": "获取文章列表",
+      "desc": "获取文章列表（不包含content），支持分页和分类筛选",
+      "path": "/api/articles",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "category",
+          "label": "分类筛选",
+          "type": "text",
+          "placeholder": "请输入 分类筛选",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "创建文章",
+      "desc": "创建新文章（需要认证）",
+      "path": "/api/articles",
+      "method": "POST",
+      "params": [],
+      "pathParams": [],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"category\": \"\",\n  \"content\": \"\",\n  \"cover_image\": \"\",\n  \"is_pinned\": false,\n  \"summary\": \"\",\n  \"tags\": \"\",\n  \"title\": \"\"\n}"
+    },
+    {
+      "name": "删除文章评论",
+      "desc": "删除文章评论（需要认证且只能删除自己的评论）",
+      "path": "/api/articles/comments/{id}",
+      "method": "DELETE",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "评论ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取当前用户的文章列表",
+      "desc": "获取当前登录用户的文章列表（不包含content），支持分页（需要认证）",
+      "path": "/api/articles/my",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取随机文章",
+      "desc": "随机返回一篇文章（不包含content）",
+      "path": "/api/articles/random",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取文章详情",
+      "desc": "根据文章ID获取文章详细信息（包含content和评论），并增加浏览计数",
+      "path": "/api/articles/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文章ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "更新文章",
+      "desc": "更新文章信息（需要认证且只能更新自己的文章）",
+      "path": "/api/articles/{id}",
+      "method": "PUT",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文章ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"category\": \"\",\n  \"content\": \"\",\n  \"cover_image\": \"\",\n  \"is_pinned\": false,\n  \"is_published\": false,\n  \"summary\": \"\",\n  \"tags\": \"\",\n  \"title\": \"\"\n}"
+    },
+    {
+      "name": "删除文章",
+      "desc": "删除文章（需要认证且只能删除自己的文章）",
+      "path": "/api/articles/{id}",
+      "method": "DELETE",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文章ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取文章评论列表",
+      "desc": "获取指定文章的评论列表，按创建时间倒序排列",
+      "path": "/api/articles/{id}/comments",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文章ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "为文章创建评论",
+      "desc": "为指定文章创建评论（需要认证）",
+      "path": "/api/articles/{id}/comments",
+      "method": "POST",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文章ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"content\": \"\",\n  \"parent_id\": 0\n}"
+    },
+    {
+      "name": "点赞文章",
+      "desc": "对文章进行点赞（需要认证，每日每篇文章只能点赞一次）",
+      "path": "/api/articles/{id}/like",
+      "method": "POST",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文章ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "置顶/取消置顶文章",
+      "desc": "切换文章的置顶状态（需要认证且只能操作自己的文章）",
+      "path": "/api/articles/{id}/pin",
+      "method": "POST",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "文章ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    }
+  ],
+  "用户管理": [
+    {
+      "name": "获取用户列表",
+      "desc": "获取用户列表，支持分页",
+      "path": "/api/users",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取当前用户信息",
+      "desc": "获取当前登录用户的详细信息",
+      "path": "/api/users/profile",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "更新用户信息",
+      "desc": "更新当前登录用户的信息",
+      "path": "/api/users/profile",
+      "method": "PUT",
+      "params": [],
+      "pathParams": [],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"age\": 0,\n  \"avatar\": \"\",\n  \"bio\": \"\",\n  \"email\": \"\",\n  \"gender\": \"\",\n  \"location\": \"\",\n  \"nickname\": \"\"\n}"
+    },
+    {
+      "name": "获取随机用户",
+      "desc": "随机返回一个用户",
+      "path": "/api/users/random",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "根据ID获取用户",
+      "desc": "根据用户ID获取用户详细信息",
+      "path": "/api/users/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "用户ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    }
+  ],
+  "社交": [
+    {
+      "name": "查询所有动态",
+      "desc": "获取所有动态列表，按发布时间倒序排列，支持分页",
+      "path": "/api/moments",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "发布动态",
+      "desc": "发布新动态（需要认证），支持文字和最多9个附件",
+      "path": "/api/moments",
+      "method": "POST",
+      "params": [],
+      "pathParams": [],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"attachments\": \"\",\n  \"content\": \"\"\n}"
+    },
+    {
+      "name": "删除动态评论",
+      "desc": "删除动态评论（需要认证且只能删除自己的评论）",
+      "path": "/api/moments/comments/{id}",
+      "method": "DELETE",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "评论ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "查询自己的动态",
+      "desc": "获取当前用户的动态列表，按发布时间倒序排列，支持分页（需要认证）",
+      "path": "/api/moments/my",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "查询指定用户的动态",
+      "desc": "获取指定用户的动态列表，按发布时间倒序排列，支持分页",
+      "path": "/api/moments/user/{id}",
+      "method": "GET",
+      "params": [
+        {
+          "name": "page",
+          "label": "页码",
+          "type": "number",
+          "placeholder": "请输入 页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "label": "每页数量",
+          "type": "number",
+          "placeholder": "请输入 每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "用户ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "编辑动态",
+      "desc": "编辑动态信息（需要认证且只能编辑自己的动态）",
+      "path": "/api/moments/{id}",
+      "method": "PUT",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "动态ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"attachments\": \"\",\n  \"content\": \"\"\n}"
+    },
+    {
+      "name": "删除动态",
+      "desc": "删除动态（需要认证且只能删除自己的动态）",
+      "path": "/api/moments/{id}",
+      "method": "DELETE",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "动态ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "获取动态评论列表",
+      "desc": "获取指定动态的评论列表，按创建时间倒序排列",
+      "path": "/api/moments/{id}/comments",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "动态ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    },
+    {
+      "name": "为社交动态创建评论",
+      "desc": "为指定动态创建评论（需要认证）",
+      "path": "/api/moments/{id}/comments",
+      "method": "POST",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "动态ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": true,
+      "bodyPlaceholder": "{\n  \"content\": \"\",\n  \"parent_id\": 0\n}"
+    },
+    {
+      "name": "点赞动态",
+      "desc": "对动态进行点赞（需要认证），同一用户对同一动态只能点赞一次",
+      "path": "/api/moments/{id}/like",
+      "method": "POST",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "description": "动态ID",
+          "required": true,
+          "type": "integer",
+          "default": ""
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": ""
+    }
+  ]
+}

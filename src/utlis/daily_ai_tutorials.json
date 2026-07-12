@@ -1,0 +1,82 @@
+[
+  {
+    "title": "新ChatGPT Plus 和 Claude Pro 会员代充值 &#8211; 支持支付宝",
+    "link": "https://ai-bot.cn/vipcheap-banner-0210/",
+    "desc": "VipCheap - 首个 AI 会员权益折扣店，汇聚 ChatGPT Plus、Claude Pro 等热门AI工具官方直充",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/02/vipcheap-banner-0210.png",
+    "category": "AI专栏",
+    "date": "3小时前"
+  },
+  {
+    "title": "开闭源模型实测 &#8211; 横评 Sonnet 5 与四大国产开源模型编程能力",
+    "link": "https://ai-bot.cn/sonnet-5-pk-china-models/",
+    "desc": "今天发点开闭源模型的对比实测。我选了四个开源模型：Kimi K2.7 Code，GLM 5.2，MiniMax M3，DeepSeek V4 Pro 来跟 Sonnet 5 来对比实测一波，看看 Sonnet 5 ...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/Sonnet-5-pk.png",
+    "category": "开闭源模型实测 &#8211; 横评 Sonnet 5 与四大国产开源模型编程能力",
+    "date": "1天前"
+  },
+  {
+    "title": "Codex 怎么用国产模型？Kimi + CC Switch 接入配置指南",
+    "link": "https://ai-bot.cn/codex-integrates-kimi/",
+    "desc": "最近 Claude 又开始大面积封号，不管新号老号，没半点预兆说没就没，最让人头痛的是，之前辛苦喂进去的上下文、个人偏好、项目工作流，全都要重新整理，迁移....",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/codex-kimi-1.png",
+    "category": "Codex 怎么用国产模型？Kimi + CC Switch 接入配置指南",
+    "date": "2天前"
+  },
+  {
+    "title": "Clawd-on-desk实测 &#8211; 能实时反馈 AI Agent 状态的桌面宠物",
+    "link": "https://ai-bot.cn/github-clawd-on-desk/",
+    "desc": "今天发点适合养桌宠的东西。 我们平时用 Claude Code 、Codex CLI做事时，终端里文字一直在滚动，不认真看根本就不知道 Agent 在干嘛。 今天给大家推荐一个在...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/Clawd-on-desk-1.png",
+    "category": "Clawd-on-desk实测 &#8211; 能实时反馈 AI Agent 状态的桌面宠物",
+    "date": "6天前"
+  },
+  {
+    "title": "不用花钱的 AI 换脸方案 &#8211; VisoMaster-Fusion 批量视频图片换脸",
+    "link": "https://ai-bot.cn/github-visomaster-fusion/",
+    "desc": "今天发点适合做视频/图片换脸的东西。 平时让想弄点恶搞视频或者图片时，换脸用 PS 老是 P 的不好，用 AI 吧又有点贵。 我终于在GitHub上找到一个好东西，叫 ...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/VisoMaster-Fusion-1.png",
+    "category": "不用花钱的 AI 换脸方案 &#8211; VisoMaster-Fusion 批量视频图片换脸",
+    "date": "1周前"
+  },
+  {
+    "title": "豆包音频生成模型1.0实测 &#8211; 多角色配音、有声书一键生成",
+    "link": "https://ai-bot.cn/doubao-seed-audio-1-0-hands-on-review/",
+    "desc": "你可能也在烦恼：用 AI 生成大片，画面质感已经很到位了，可角色一开口，瞬间让人出戏。 画面里明明在经历生死关头，配音听起来却像在四平八稳地念产品说明...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/未命名17-5.png",
+    "category": "豆包音频生成模型1.0实测 &#8211; 多角色配音、有声书一键生成",
+    "date": "1周前"
+  },
+  {
+    "title": "实测 Awesome-design-md &#8211; 精准复刻知名产品网页风格",
+    "link": "https://ai-bot.cn/github-awesome-design-md/",
+    "desc": "今天发点适合做网页设计的东西。 平时我们让 Cursor、Claude Code、Codex、这些Agent 做页面，经常会遇到一个问题：跟 AI 说了想要复刻什么风格的页面，但是...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/06/Awesome-design-md-1.png",
+    "category": "实测 Awesome-design-md &#8211; 精准复刻知名产品网页风格",
+    "date": "2周前"
+  },
+  {
+    "title": "用箭头标注精准修改 AI 图片，Cowart 项目已获 2k+ Stars",
+    "link": "https://ai-bot.cn/github-cowart/",
+    "desc": "今天发点适合做图片的东西。 平时用 AI 生图，喜欢的风格可以搜，提示词也有现成参考，效果不满意就多生成几次。真正麻烦的是，成图已经有八九分满意，偏偏还...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/06/Cowart-1.png",
+    "category": "用箭头标注精准修改 AI 图片，Cowart 项目已获 2k+ Stars",
+    "date": "2周前"
+  },
+  {
+    "title": "updream实测 &#8211; 画布式创作，一句话续写画面到成片",
+    "link": "https://ai-bot.cn/updream-hands-on/",
+    "desc": "最近在 B 站刷到好多有意思的 AI 短剧。 有 AI 动画，有悬疑短片，也有那种把网文脑洞拍出来的短剧。不管是内容、质量还是完成度，都比前两年高太多了。",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/06/Loop-Engineering-2026-06-26T124009.440.png",
+    "category": "updream实测 &#8211; 画布式创作，一句话续写画面到成片",
+    "date": "2周前"
+  },
+  {
+    "title": "Ponytail教程 &#8211; AI 编程 Agent 精简代码实战详解",
+    "link": "https://ai-bot.cn/ponytail-tutorial/",
+    "desc": "今天发点适合写代码的东西。 写项目的时候，刚开始代码都很清爽：两个页面、三个接口、几段工具函数，目录一眼能看完。",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/06/Loop-Engineering-2026-06-26T110415.798.png",
+    "category": "Ponytail教程 &#8211; AI 编程 Agent 精简代码实战详解",
+    "date": "2周前"
+  }
+]
