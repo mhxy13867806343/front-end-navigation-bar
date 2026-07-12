@@ -1,6 +1,12 @@
 # HooksVue AI 导航工具箱
 
+简体中文 | [English](./README.en.md) | [日本語](./README.jp.md)
+
 一个基于 Vue 3 + Vite 构建的前端 AI 工具导航站，聚合 AI 聊天助手、AI 绘画、AI 编程、AI 开发平台等各类工具入口，并内置多款小游戏与实用小工具。
+
+## 🌐 在线预览
+
+👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 
 ## ✨ 功能特性
 
