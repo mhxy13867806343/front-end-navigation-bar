@@ -10,12 +10,16 @@ const BIRD_RADIUS = 13
 const GRAVITY = 980
 const FLAP_VELOCITY = -330
 const PIPE_WIDTH = 62
+const PIPE_CAP_HEIGHT = 22
+const PIPE_CAP_OVERHANG = 5
 const PIPE_GAP = 142
 const PIPE_SPEED = 150
 const PIPE_SPAWN_SECONDS = 1.45
 const SAFE_TOP = 58
 const SAFE_BOTTOM = 56
-const MAX_FRAME_DELTA_SECONDS = 0.034
+const FIXED_STEP_SECONDS = 1 / 120
+const MAX_WALL_DELTA_SECONDS = 0.25
+const MAX_STEPS_PER_FRAME = 30
 const HIGH_SCORE_KEY = 'flappybird_high_score'
 
 const canvasRef = ref(null)
@@ -28,6 +32,7 @@ let pipes = []
 let nextPipeId = 1
 let spawnElapsed = 0
 let lastFrameAt = null
+let accumulator = 0
 let animationFrameId = null
 
 function createBird() {
@@ -59,6 +64,7 @@ function saveHighScore() {
 
 function clearFrameTiming() {
   lastFrameAt = null
+  accumulator = 0
 }
 
 function resetGame() {
@@ -102,10 +108,31 @@ function finishGame() {
   saveHighScore()
 }
 
+function pipeVisibleRight(pipe) {
+  return pipe.x + PIPE_WIDTH + PIPE_CAP_OVERHANG
+}
+
 function pipeRectangles(pipe) {
   return [
-    { x: pipe.x, y: 0, width: PIPE_WIDTH, height: pipe.gapTop },
-    { x: pipe.x, y: pipe.gapBottom, width: PIPE_WIDTH, height: GROUND_Y - pipe.gapBottom }
+    { x: pipe.x, y: 0, width: PIPE_WIDTH, height: pipe.gapTop - PIPE_CAP_HEIGHT },
+    {
+      x: pipe.x - PIPE_CAP_OVERHANG,
+      y: pipe.gapTop - PIPE_CAP_HEIGHT,
+      width: PIPE_WIDTH + PIPE_CAP_OVERHANG * 2,
+      height: PIPE_CAP_HEIGHT
+    },
+    {
+      x: pipe.x - PIPE_CAP_OVERHANG,
+      y: pipe.gapBottom,
+      width: PIPE_WIDTH + PIPE_CAP_OVERHANG * 2,
+      height: PIPE_CAP_HEIGHT
+    },
+    {
+      x: pipe.x,
+      y: pipe.gapBottom + PIPE_CAP_HEIGHT,
+      width: PIPE_WIDTH,
+      height: GROUND_Y - pipe.gapBottom - PIPE_CAP_HEIGHT
+    }
   ]
 }
 
@@ -121,13 +148,13 @@ function update(deltaSeconds) {
 
   for (const pipe of pipes) {
     pipe.x -= PIPE_SPEED * deltaSeconds
-    if (!pipe.scored && pipe.x + PIPE_WIDTH < bird.x) {
+    if (!pipe.scored && pipeVisibleRight(pipe) < bird.x) {
       pipe.scored = true
       score.value += 1
       saveHighScore()
     }
   }
-  pipes = pipes.filter(pipe => pipe.x + PIPE_WIDTH >= -2)
+  pipes = pipes.filter(pipe => pipeVisibleRight(pipe) >= 0)
 
   if (bird.y - bird.radius <= 0 || bird.y + bird.radius >= GROUND_Y) {
     finishGame()
@@ -168,8 +195,6 @@ function drawBackground(ctx) {
 }
 
 function drawPipe(ctx, pipe) {
-  const lipHeight = 22
-  const lipOverhang = 5
   const gradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0)
   gradient.addColorStop(0, '#62c94d')
   gradient.addColorStop(0.48, '#b4ef65')
@@ -178,15 +203,15 @@ function drawPipe(ctx, pipe) {
   ctx.strokeStyle = '#236f35'
   ctx.lineWidth = 3
 
-  ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.gapTop - lipHeight)
-  ctx.strokeRect(pipe.x + 1.5, -2, PIPE_WIDTH - 3, pipe.gapTop - lipHeight + 2)
-  ctx.fillRect(pipe.x - lipOverhang, pipe.gapTop - lipHeight, PIPE_WIDTH + lipOverhang * 2, lipHeight)
-  ctx.strokeRect(pipe.x - lipOverhang + 1.5, pipe.gapTop - lipHeight + 1.5, PIPE_WIDTH + lipOverhang * 2 - 3, lipHeight - 3)
+  ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.gapTop - PIPE_CAP_HEIGHT)
+  ctx.strokeRect(pipe.x + 1.5, -2, PIPE_WIDTH - 3, pipe.gapTop - PIPE_CAP_HEIGHT + 2)
+  ctx.fillRect(pipe.x - PIPE_CAP_OVERHANG, pipe.gapTop - PIPE_CAP_HEIGHT, PIPE_WIDTH + PIPE_CAP_OVERHANG * 2, PIPE_CAP_HEIGHT)
+  ctx.strokeRect(pipe.x - PIPE_CAP_OVERHANG + 1.5, pipe.gapTop - PIPE_CAP_HEIGHT + 1.5, PIPE_WIDTH + PIPE_CAP_OVERHANG * 2 - 3, PIPE_CAP_HEIGHT - 3)
 
-  ctx.fillRect(pipe.x - lipOverhang, pipe.gapBottom, PIPE_WIDTH + lipOverhang * 2, lipHeight)
-  ctx.strokeRect(pipe.x - lipOverhang + 1.5, pipe.gapBottom + 1.5, PIPE_WIDTH + lipOverhang * 2 - 3, lipHeight - 3)
-  ctx.fillRect(pipe.x, pipe.gapBottom + lipHeight, PIPE_WIDTH, GROUND_Y - pipe.gapBottom - lipHeight)
-  ctx.strokeRect(pipe.x + 1.5, pipe.gapBottom + lipHeight, PIPE_WIDTH - 3, GROUND_Y - pipe.gapBottom - lipHeight + 2)
+  ctx.fillRect(pipe.x - PIPE_CAP_OVERHANG, pipe.gapBottom, PIPE_WIDTH + PIPE_CAP_OVERHANG * 2, PIPE_CAP_HEIGHT)
+  ctx.strokeRect(pipe.x - PIPE_CAP_OVERHANG + 1.5, pipe.gapBottom + 1.5, PIPE_WIDTH + PIPE_CAP_OVERHANG * 2 - 3, PIPE_CAP_HEIGHT - 3)
+  ctx.fillRect(pipe.x, pipe.gapBottom + PIPE_CAP_HEIGHT, PIPE_WIDTH, GROUND_Y - pipe.gapBottom - PIPE_CAP_HEIGHT)
+  ctx.strokeRect(pipe.x + 1.5, pipe.gapBottom + PIPE_CAP_HEIGHT, PIPE_WIDTH - 3, GROUND_Y - pipe.gapBottom - PIPE_CAP_HEIGHT + 2)
 }
 
 function drawBird(ctx) {
@@ -273,9 +298,20 @@ function draw() {
 
 function gameLoop(now) {
   if (lastFrameAt === null) lastFrameAt = now
-  const deltaSeconds = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_FRAME_DELTA_SECONDS)
+  const wallDeltaSeconds = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_WALL_DELTA_SECONDS)
   lastFrameAt = now
-  if (phase.value === 'playing') update(deltaSeconds)
+  if (phase.value === 'playing') {
+    accumulator += wallDeltaSeconds
+    let steps = 0
+    while (accumulator >= FIXED_STEP_SECONDS && steps < MAX_STEPS_PER_FRAME) {
+      accumulator -= FIXED_STEP_SECONDS
+      update(FIXED_STEP_SECONDS)
+      steps += 1
+      if (phase.value !== 'playing') break
+    }
+  } else {
+    accumulator = 0
+  }
   draw()
   animationFrameId = requestAnimationFrame(gameLoop)
 }
