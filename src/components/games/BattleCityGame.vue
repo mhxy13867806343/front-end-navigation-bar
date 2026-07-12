@@ -34,6 +34,8 @@ let pressedKeys = new Set()
 let spawnedEnemies = 0
 let defeatedEnemies = 0
 let nextEnemyId = 1
+let terminalResult = null
+let gameTime = 0
 let lastSpawnAt = 0
 let lastPlayerShotAt = -PLAYER_SHOT_COOLDOWN
 let lastFrameAt = null
@@ -61,7 +63,6 @@ function createBricks() {
 }
 
 function resetGame() {
-  const now = globalThis.performance?.now?.() ?? 0
   player = createPlayer()
   base = createBase()
   bricks = createBricks()
@@ -71,8 +72,10 @@ function resetGame() {
   spawnedEnemies = 0
   defeatedEnemies = 0
   nextEnemyId = 1
-  lastSpawnAt = now - 850
-  lastPlayerShotAt = now - PLAYER_SHOT_COOLDOWN
+  terminalResult = null
+  gameTime = 0
+  lastSpawnAt = -850
+  lastPlayerShotAt = -PLAYER_SHOT_COOLDOWN
   lastFrameAt = null
   score.value = 0
   lives.value = 3
@@ -90,11 +93,14 @@ function togglePause() {
 }
 
 function finishGame(won = false) {
+  if (terminalResult !== null) return false
+  terminalResult = won ? 'win' : 'loss'
   isWin.value = won
   isGameOver.value = !won
   isPaused.value = true
   pressedKeys.clear()
   saveHighScore()
+  return true
 }
 
 function saveHighScore() {
@@ -227,6 +233,7 @@ function updateBullets(deltaSeconds) {
   let playerHit = false
 
   bullets.forEach((bullet, bulletIndex) => {
+    if (terminalResult !== null) return
     if (bullet.x + bullet.width < 0 || bullet.y + bullet.height < 0 || bullet.x > CANVAS_SIZE || bullet.y > CANVAS_SIZE) {
       removedBullets.add(bulletIndex)
       return
@@ -271,7 +278,7 @@ function updateBullets(deltaSeconds) {
 
   bullets = bullets.filter((_, index) => !removedBullets.has(index))
   bricks = bricks.filter(brick => !removedBricks.has(brick.id))
-  if (removedEnemies.size) {
+  if (removedEnemies.size && terminalResult === null) {
     enemies = enemies.filter(enemy => !removedEnemies.has(enemy.id))
     defeatedEnemies += removedEnemies.size
     score.value += removedEnemies.size * 100
@@ -293,7 +300,10 @@ function gameLoop(now) {
   if (lastFrameAt === null) lastFrameAt = now
   const deltaSeconds = Math.min((now - lastFrameAt) / 1000, 0.032)
   lastFrameAt = now
-  if (!isPaused.value && !isGameOver.value && !isWin.value) update(deltaSeconds, now)
+  if (!isPaused.value && terminalResult === null) {
+    gameTime += deltaSeconds * 1000
+    update(deltaSeconds, gameTime)
+  }
   draw()
   animationFrameId = requestAnimationFrame(gameLoop)
 }
@@ -414,7 +424,7 @@ function handleKeydown(event) {
   event.preventDefault()
   if (isGameOver.value || isWin.value) return
   pressedKeys.add(action)
-  if (action === 'fire') shootPlayer(performance.now())
+  if (action === 'fire') shootPlayer(gameTime)
 }
 
 function handleKeyup(event) {
@@ -428,11 +438,16 @@ function releaseControls() {
   pressedKeys.clear()
 }
 
+function handleVisibilityChange() {
+  lastFrameAt = null
+  if (document.hidden) releaseControls()
+}
+
 function pressControl(action, event) {
   event?.preventDefault()
   if (isPaused.value || isGameOver.value || isWin.value) return
   pressedKeys.add(action)
-  if (action === 'fire') shootPlayer(performance.now())
+  if (action === 'fire') shootPlayer(gameTime)
 }
 
 function releaseControl(action, event) {
@@ -445,6 +460,7 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
   window.addEventListener('keyup', handleKeyup)
   window.addEventListener('blur', releaseControls)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
   animationFrameId = requestAnimationFrame(gameLoop)
 })
 
@@ -452,6 +468,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('keyup', handleKeyup)
   window.removeEventListener('blur', releaseControls)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
   if (animationFrameId !== null) cancelAnimationFrame(animationFrameId)
   animationFrameId = null
   pressedKeys.clear()
