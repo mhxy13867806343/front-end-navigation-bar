@@ -9,6 +9,10 @@ import MusicPlayer from "./components/MusicPlayer.vue"
 import DyForm from './views/DyForm.vue'
 import AnalogClock from './components/AnalogClock.vue'
 import FruitCatcher from './components/games/FruitCatcher.vue'
+import BattleCityGame from './components/games/BattleCityGame.vue'
+import BrickBreakerGame from './components/games/BrickBreakerGame.vue'
+import FlappyBirdGame from './components/games/FlappyBirdGame.vue'
+import SpaceShooterGame from './components/games/SpaceShooterGame.vue'
 
 // 判断是否为生产环境
 const isProd = import.meta.env.PROD
@@ -238,6 +242,18 @@ const openGame = (work) => {
       break
     case 'fruitgame':
       currentGame.value = FruitCatcher
+      break
+    case 'battlecity':
+      currentGame.value = BattleCityGame
+      break
+    case 'brickbreaker':
+      currentGame.value = BrickBreakerGame
+      break
+    case 'flappybird':
+      currentGame.value = FlappyBirdGame
+      break
+    case 'spaceshooter':
+      currentGame.value = SpaceShooterGame
       break
     default:
       currentGame.value = null

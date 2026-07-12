@@ -1478,6 +1478,34 @@ export const onlineWorksList = [
     logo: '🧺',
     component: 'dialog',
     type:'fruitgame'
+  },
+  {
+    name: '90坦克大战',
+    desc: '守卫基地，击退来袭的敌军坦克',
+    logo: '🛡️',
+    component: 'dialog',
+    type: 'battlecity'
+  },
+  {
+    name: '经典打砖块',
+    desc: '控制挡板反弹小球，击碎全部砖块',
+    logo: '🧱',
+    component: 'dialog',
+    type: 'brickbreaker'
+  },
+  {
+    name: '飞翔小鸟',
+    desc: '点击起飞，穿越管道挑战更高分',
+    logo: '🐦',
+    component: 'dialog',
+    type: 'flappybird'
+  },
+  {
+    name: '太空战机',
+    desc: '驾驶战机穿梭星海，消灭敌方舰队',
+    logo: '🚀',
+    component: 'dialog',
+    type: 'spaceshooter'
   }
 ]
 
