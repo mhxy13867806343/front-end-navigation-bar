@@ -1021,6 +1021,22 @@ export const menuItemsList = [
         desc: 'Rust和WebAssembly交互',
         link: 'https://github.com/rustwasm/wasm-bindgen',
         stars: '8k+'
+      },
+      {
+        id: 'github-31',
+        name: 'GitHub 中文社区',
+        desc: '提供开源项目中文解读、趋势榜单、精选专题与入门指南',
+        icon: '🇨🇳',
+        link: 'https://github-cn.com/',
+        stars: '中文社区'
+      },
+      {
+        id: 'github-32',
+        name: 'GitCN 中文社区',
+        desc: '面向中文开发者的 GitHub 项目发现与开源内容社区',
+        icon: '🔎',
+        link: 'https://gitcn.org/',
+        stars: '中文社区'
       }
     ]
   },
