@@ -4,7 +4,7 @@
       "id": "page-index",
       "title": "首页",
       "type": "page",
-      "version": 1,
+      "version": 2,
       "createdAt": 1783948639000,
       "canvasData": {
         "x": 0,
@@ -13,7 +13,30 @@
       },
       "devMetadata": {
         "htmlSrc": "pages/index.html",
-        "interactions": []
+        "interactions": [
+          "carousel-prev:click",
+          "carousel-next:click",
+          "bi-carousel-dot:click",
+          "bi-tab:click",
+          "like-btn:click",
+          "coin-btn:click",
+          "fav-btn:click",
+          "search-input:focus,input,keydown",
+          "bi-suggestion-item:click",
+          "login-btn:click",
+          "close-login-modal:click",
+          "toggle-password:click",
+          "submit-login:click",
+          "follow-btn:click",
+          "load-more-btn:click",
+          "bi-category:click",
+          "bi-nav-link:click",
+          "data-action=ranking:click",
+          "data-action=topics:click",
+          "data-action=ups:click",
+          "data-action=close-tip:click",
+          "back-to-top:click"
+        ]
       }
     }
   ],

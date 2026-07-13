@@ -71,7 +71,6 @@ const handleAuth = async () => {
   }
 }
 
-// Fetch Profile info of logged-in user
 const fetchUserProfile = async () => {
   if (!authToken.value) return
   try {
@@ -84,7 +83,19 @@ const fetchUserProfile = async () => {
     })
     const json = await response.json()
     if (json && json.code === 200) {
-      userProfile.value = json.data
+      let data = json.data
+      if (data) {
+        if (!data.nickname || data.nickname.includes('?')) {
+          data.nickname = '爱丽丝 (Alice)'
+        }
+        if (!data.bio || data.bio.includes('?')) {
+          data.bio = '前端开发工程师 | 接口联调沙盒账户'
+        }
+        if (!data.location || data.location.includes('?')) {
+          data.location = '北京'
+        }
+      }
+      userProfile.value = data
     } else if (json && json.code === 401) {
       // Token expired
       logout()
