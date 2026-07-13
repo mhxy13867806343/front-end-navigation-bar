@@ -53,8 +53,10 @@ import chinaCascaderOptions from './utils/china-cascader-options.json'
 
 const route = useRoute()
 const router = useRouter()
-const isFlashRoute = computed(() => route.path === '/flash')
+const routeViewPaths = ['/flash', '/aicoding']
+const isFlashRoute = computed(() => routeViewPaths.includes(route.path))
 const goFlash = () => router.push('/flash')
+const goAiCoding = () => router.push('/aicoding')
 const backFromFlash = () => router.push('/')
 
 let weatherChartInstance = null
@@ -345,6 +347,10 @@ watch(isDarkMode, () => {
         <div class="sidebar-footer" @click="goFlash" title="闪存">
           <span class="nav-icon">⚡</span>
           <span v-show="isSidebarOpen">闪存</span>
+        </div>
+        <div class="sidebar-footer" @click="goAiCoding" title="AI编程资讯">
+          <span class="nav-icon">🤖</span>
+          <span v-show="isSidebarOpen">AI编程资讯</span>
         </div>
         <div class="sidebar-footer" @click="showWeatherDialog = true" title="实时天气">
           <span class="nav-icon">🌦️</span>

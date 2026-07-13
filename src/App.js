@@ -820,7 +820,9 @@ export function useAppLogic() {
     weread: '微信读书',
     'netease-music': '网易云音乐',
     oschina: '开源中国',
-    'juejin-pins': '掘金沸点'
+    'juejin-pins': '掘金沸点',
+    v2ex: 'V2EX论坛',
+    hellogithub: 'HelloGitHub开源'
   }
 
   // 4. 院线票房与影视排行
@@ -901,42 +903,48 @@ export function useAppLogic() {
     isHotboardLoading.value = true
     try {
       if (hotboardType.value === 'oschina') {
-        const rssUrl = 'https://www.oschina.net/news/rss'
-        const res = await axios.get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
-        if (res.data && res.data.status === 'ok' && res.data.items) {
-          hotboardData.value = res.data.items.map((item, idx) => ({
-            title: item.title,
-            url: item.link,
-            hot_value: `📰 新闻 (Type:1)`
-          }))
-        } else {
-          throw new Error('OSChina RSS response status is not ok')
-        }
-      } else if (hotboardType.value === 'juejin-pins') {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        const baseEndpoint = 'https://api.juejin.cn/recommend_api/v1/short_msg/hot?aid=6587&uuid=7662043820276532774'
-        const requestUrl = isLocal ? `/api-juejin/recommend_api/v1/short_msg/hot?aid=6587&uuid=7662043820276532774` : `https://corsproxy.io/?url=${encodeURIComponent(baseEndpoint)}`
-        
         try {
-          const res = await axios.post(requestUrl, {
-            cursor: "0",
-            limit: 30,
-            id_type: 4,
-            sort_type: 200 // use sort_type 200 for paginated hot data
-          }, {
-            timeout: 5000
-          })
-          if (res.data && res.data.err_no === 0 && res.data.data) {
-            hotboardData.value = res.data.data.map(item => ({
-              title: item.msg_Info?.content || '掘金沸点内容',
-              url: `https://juejin.cn/pin/${item.msg_id}`,
-              hot_value: `🔥 热度: ${item.msg_Info?.comment_count + item.msg_Info?.digg_count || 200}`
+          const rssUrl = 'https://www.oschina.net/news/rss'
+          const res = await axios.get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
+          if (res.data && res.data.status === 'ok' && res.data.items) {
+            hotboardData.value = res.data.items.map((item, idx) => ({
+              title: item.title,
+              url: item.link,
+              hot_value: `📰 新闻 (Type:1)`
             }))
           } else {
-            throw new Error('Juejin response error')
+            throw new Error('OSChina RSS response status is not ok')
           }
         } catch (e) {
-          console.warn('Unable to query Juejin API directly/via proxy, falling back to mock Juejin Pins:', e.message)
+          console.warn('Unable to query OSChina RSS, falling back to mock OSChina news:', e.message)
+          hotboardData.value = [
+            { title: "openKylin 开放麒麟 2.0 正式版发布！搭载全新一代麒麟桌面 💻", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
+            { title: "Linux 6.10 内核正式发布，带来大量硬件驱动更新 🐧", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
+            { title: "Taro 4.0 正式发布：支持全新编译引擎与多端同构架构 🚀", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
+            { title: "Rust 1.80.0 稳定版发布：带来全新的 Lazy Cell 和 Lazy Lock 🌟", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
+            { title: "Node.js 22.5.0 发布：实验性支持 TypeScript 执行 ⚡", hot_value: "📰 新闻", url: "https://www.oschina.net/news" }
+          ]
+        }
+      } else if (hotboardType.value === 'juejin-pins') {
+        try {
+          // Use UApi hotboard for Juejin articles to bypass CORS and get real live Juejin data!
+          const res = await axios.get('https://uapis.cn/api/v1/misc/hotboard', {
+            params: { type: 'juejin' }
+          })
+          const isEnvelope = res.data && res.data.code === 200 && res.data.data
+          const data = isEnvelope ? res.data.data : res.data
+          const list = data.list || data.results || []
+          if (list && list.length > 0) {
+            hotboardData.value = list.map(item => ({
+              title: item.title,
+              url: item.url,
+              hot_value: item.hot_value || '🔥 热门'
+            }))
+          } else {
+            throw new Error('Empty list')
+          }
+        } catch (e) {
+          console.warn('Unable to query UApi Juejin, falling back to mock Juejin Pins:', e.message)
           hotboardData.value = [
             { title: "一切尽在不言中 🤫", hot_value: "🔥 热度: 999", url: "https://juejin.cn/pins" },
             { title: "早上5点多跑步半小时，再学习一个小时，卷死我了！🏃‍♂️", hot_value: "🔥 热度: 852", url: "https://juejin.cn/pins" },

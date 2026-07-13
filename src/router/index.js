@@ -29,6 +29,11 @@ const routes = [
     path: '/flash',
     name: 'Flash',
     component: () => import('../views/flash/index.vue')
+  },
+  {
+    path: '/aicoding',
+    name: 'AiCoding',
+    component: () => import('../views/aicoding/index.vue')
   }
 ]
 

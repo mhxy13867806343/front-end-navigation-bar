@@ -4,7 +4,7 @@
       "id": "page-index",
       "title": "首页",
       "type": "page",
-      "version": 2,
+      "version": 3,
       "createdAt": 1783948639000,
       "canvasData": {
         "x": 0,
@@ -14,28 +14,138 @@
       "devMetadata": {
         "htmlSrc": "pages/index.html",
         "interactions": [
-          "carousel-prev:click",
-          "carousel-next:click",
-          "bi-carousel-dot:click",
-          "bi-tab:click",
-          "like-btn:click",
-          "coin-btn:click",
-          "fav-btn:click",
-          "search-input:focus,input,keydown",
-          "bi-suggestion-item:click",
-          "login-btn:click",
-          "close-login-modal:click",
-          "toggle-password:click",
-          "submit-login:click",
-          "follow-btn:click",
-          "load-more-btn:click",
-          "bi-category:click",
-          "bi-nav-link:click",
-          "data-action=ranking:click",
-          "data-action=topics:click",
-          "data-action=ups:click",
-          "data-action=close-tip:click",
-          "back-to-top:click"
+          {
+            "domId": "carousel-prev",
+            "targetPageId": "page-index",
+            "transitionLabel": "上一张",
+            "hideEdge": true
+          },
+          {
+            "domId": "carousel-next",
+            "targetPageId": "page-index",
+            "transitionLabel": "下一张",
+            "hideEdge": true
+          },
+          {
+            "domId": "carousel-dots",
+            "targetPageId": "page-index",
+            "transitionLabel": "切换轮播",
+            "hideEdge": true
+          },
+          {
+            "domId": "sort-tabs",
+            "targetPageId": "page-index",
+            "transitionLabel": "切换排序",
+            "hideEdge": true
+          },
+          {
+            "domId": "like-btn",
+            "targetPageId": "page-index",
+            "transitionLabel": "点赞",
+            "hideEdge": true
+          },
+          {
+            "domId": "coin-btn",
+            "targetPageId": "page-index",
+            "transitionLabel": "投币",
+            "hideEdge": true
+          },
+          {
+            "domId": "fav-btn",
+            "targetPageId": "page-index",
+            "transitionLabel": "收藏",
+            "hideEdge": true
+          },
+          {
+            "domId": "search-input",
+            "targetPageId": "page-index",
+            "transitionLabel": "搜索",
+            "hideEdge": true
+          },
+          {
+            "domId": "search-suggestions",
+            "targetPageId": "page-index",
+            "transitionLabel": "搜索建议",
+            "hideEdge": true
+          },
+          {
+            "domId": "login-btn",
+            "targetPageId": "page-index",
+            "transitionLabel": "登录弹窗",
+            "hideEdge": true
+          },
+          {
+            "domId": "close-login-modal",
+            "targetPageId": "page-index",
+            "transitionLabel": "关闭登录",
+            "hideEdge": true
+          },
+          {
+            "domId": "toggle-password",
+            "targetPageId": "page-index",
+            "transitionLabel": "切换密码可见",
+            "hideEdge": true
+          },
+          {
+            "domId": "submit-login",
+            "targetPageId": "page-index",
+            "transitionLabel": "提交登录",
+            "hideEdge": true
+          },
+          {
+            "domId": "follow-btn",
+            "targetPageId": "page-index",
+            "transitionLabel": "关注UP主",
+            "hideEdge": true
+          },
+          {
+            "domId": "load-more-btn",
+            "targetPageId": "page-index",
+            "transitionLabel": "换一换",
+            "hideEdge": true
+          },
+          {
+            "domId": "bi-category",
+            "targetPageId": "page-index",
+            "transitionLabel": "切换频道",
+            "hideEdge": true
+          },
+          {
+            "domId": "bi-nav-link",
+            "targetPageId": "page-index",
+            "transitionLabel": "导航",
+            "hideEdge": true
+          },
+          {
+            "domId": "ranking-more",
+            "targetPageId": "page-index",
+            "transitionLabel": "排行榜更多",
+            "hideEdge": true
+          },
+          {
+            "domId": "topics-more",
+            "targetPageId": "page-index",
+            "transitionLabel": "话题更多",
+            "hideEdge": true
+          },
+          {
+            "domId": "ups-more",
+            "targetPageId": "page-index",
+            "transitionLabel": "UP主更多",
+            "hideEdge": true
+          },
+          {
+            "domId": "close-tip",
+            "targetPageId": "page-index",
+            "transitionLabel": "关闭tip",
+            "hideEdge": true
+          },
+          {
+            "domId": "back-to-top",
+            "targetPageId": "page-index",
+            "transitionLabel": "回到顶部",
+            "hideEdge": true
+          }
         ]
       }
     }
