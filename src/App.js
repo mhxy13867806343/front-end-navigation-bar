@@ -483,6 +483,28 @@ export function useAppLogic() {
     return null
   }
 
+  const getCityInfoByAdcode = (adcode) => {
+    if (!adcode) return null
+    const target = String(adcode)
+    for (const letter in chinaCitiesAz) {
+      const found = chinaCitiesAz[letter].find(c => c.adcode === target)
+      if (found) return found
+    }
+    if (target.length === 6 && !target.endsWith('00')) {
+      const parentAdcode = target.slice(0, 4) + '00'
+      for (const letter in chinaCitiesAz) {
+        const found = chinaCitiesAz[letter].find(c => c.adcode === parentAdcode)
+        if (found) {
+          return {
+            ...found,
+            district: '城区'
+          }
+        }
+      }
+    }
+    return null
+  }
+
   const fallbackMockSearch = async () => {
     const kw = weatherSearchKeyword.value.trim()
     let matches = []
@@ -676,6 +698,19 @@ export function useAppLogic() {
     }
     
     let match = citiesMap[adcode]
+    
+    if (!match) {
+      const foundCity = getCityInfoByAdcode(adcode)
+      if (foundCity) {
+        match = {
+          province: foundCity.province || '未知省份',
+          city: foundCity.name || '未知城市',
+          district: foundCity.district || '全市',
+          temp: String(24 + Math.round(Math.random() * 8)),
+          weather: '多云'
+        }
+      }
+    }
     
     if (!match && weatherDistrictList.value.length > 0) {
       const found = weatherDistrictList.value.find(item => item.adcode === adcode)

@@ -115,11 +115,10 @@ const handleCascaderChange = async (val) => {
 }
 
 const selectCityFromPicker = async (city) => {
+  weatherSearchKeyword.value = city.name
   const path = findCascaderPath(city.adcode)
   if (path.length > 0) {
     cascaderValue.value = path
-  } else {
-    weatherSearchKeyword.value = city.name
   }
   await queryWeatherByAdcode(city.adcode)
 }
