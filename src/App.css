@@ -1,0 +1,45 @@
+@keyframes jelly {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.2); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.jelly {
+  animation: jelly 0.6s ease;
+}
+
+.clock-component {
+  margin-right: 5px;
+}
+
+:deep(.custom-message-box) {
+  .el-message-box__message {
+    & p {
+      line-height: 1.8;
+      font-size: 14px;
+    }
+  }
+}
+
+.el-dialog {
+  display: flex;
+  flex-direction: column;
+}
+
+.el-dialog__body {
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 游戏对话框特殊样式 */
+:deep(.el-dialog.game-dialog) {
+  min-height: 600px;
+}
+
+:deep(.el-dialog.game-dialog .el-dialog__body) {
+  height: calc(100% - 54px);
+  padding: 0;
+}

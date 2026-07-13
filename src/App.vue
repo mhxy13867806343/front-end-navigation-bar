@@ -1,835 +1,299 @@
 <script setup>
-import { ref, onMounted, computed, shallowRef, onUnmounted } from 'vue'
-import { menuItemsList, authorWorksList, onlineWorksList } from '@/utlis/menuItems'
-import { ElDialog, ElMessageBox } from 'element-plus'
-import { Message, Timer } from '@element-plus/icons-vue'
-import SokobanGame from './components/games/SokobanGame.vue'
-import ImageEditor from './components/image/ImageEditor.vue'
-import MusicPlayer from "./components/MusicPlayer.vue"
-import DyForm from './views/DyForm.vue'
+import { useAppLogic } from './App.js'
+
+// Import components used directly in the template
 import AnalogClock from './components/AnalogClock.vue'
-import FruitCatcher from './components/games/FruitCatcher.vue'
-import BattleCityGame from './components/games/BattleCityGame.vue'
-import BrickBreakerGame from './components/games/BrickBreakerGame.vue'
-import FlappyBirdGame from './components/games/FlappyBirdGame.vue'
-import SpaceShooterGame from './components/games/SpaceShooterGame.vue'
-import SnakeGame from './components/games/SnakeGame.vue'
-import TetrisGame from './components/games/TetrisGame.vue'
-import Game2048 from './components/games/Game2048.vue'
-import MinesweeperGame from './components/games/MinesweeperGame.vue'
-import TicTacToeGame from './components/games/TicTacToeGame.vue'
-import QiteTodo from './components/games/QiteTodo.vue'
+import AiArticlesList from './components/AiArticlesList.vue'
+import AiAppStore from './components/AiAppStore.vue'
+import AiNewsTimeline from './components/AiNewsTimeline.vue'
 import ApiToolbox from './components/ApiToolbox.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
-import AiNewsTimeline from './components/AiNewsTimeline.vue'
-import AiAppStore from './components/AiAppStore.vue'
-import AiArticlesList from './components/AiArticlesList.vue'
 
-// 判断是否为生产环境
-const isProd = import.meta.env.PROD
+const {
+  isProd,
+  menuItems, isHomeLive, isHomeLoading, fetchHomeDatabase,
+  isDarkMode, showThemeDropdown, toggleTheme, toggleThemeDropdown,
+  likedItemsInfo, showLikeHistory, openLikeHistory, isLiked, toggleLike, likedToolsList, clearAllLikes,
+  activeItem, isSidebarOpen, activeSubTabs,
+  showAuthorDropdown, showOnlineWorksDropdown,
+  authorWorks, onlineWorks, showDrawer, isAuthorWorksExpanded, isOnlineWorksExpanded,
+  isNewsActive, isAppStoreActive, isArticlesListActive, articlesListType,
+  gridCols, setGridCols, dialogGridCols, getActiveCategoryName,
+  showNewsTimeline, showAppStore, showArticlesList, showAboutDialog, toggleSidebar,
+  aiCategories, isUrl, selectItem, activeSubItem, selectSubItem, getCurrentTools, openLink,
+  contextMenu, handleRightClick, closeContextMenu, copyLink, openInNewTab,
+  toggleAuthorDropdown, toggleOnlineWorksDropdown, showAiToolsDropdown, showLatestProjectsDropdown, showAiTutorialsDropdown,
+  toggleAiToolsDropdown, toggleLatestProjectsDropdown, toggleAiTutorialsDropdown,
+  isListening, startVoiceSearch, searchQuery, searchHistory, searchCategories, activeSearchCat, activeEngineId, selectSearchCategory,
+  activeCategory, activeEngine, clearSearch, saveSearchQuery, triggerSearch, useHistoryTag, clearHistory, filteredTools,
+  showGameDialog, currentGame, gameTitle, handleCloseDialog, openGame,
+  currentTime, currentDate, userOS, userTimezone, userLanguage, detectSystemInfo, updateTime,
+  randomTools, refreshRandomTools, onClickWork,
+  showBingDialog, isBingLoading, bingWallpaperForm, bingPreviewUrl, customBackgroundUrl, hasCustomBg,
+  updateBingPreview, applyCustomBackground, clearCustomBackground,
+  showWeatherDialog, weatherSearchKeyword, weatherDistrictList, selectedAdcode, currentWeather, forecastList, isWeatherLoading,
+  searchWeatherDistrict, queryWeatherByAdcode, loadWeatherByIp, getCityInfoByName
+} = useAppLogic()
 
-const menuItems = ref(menuItemsList)
+import { watch, nextTick, ref } from 'vue'
+import * as echarts from 'echarts'
+import chinaCitiesAz from './utils/china-cities-az.json'
+import chinaCascaderOptions from './utils/china-cascader-options.json'
 
-// 从本地存储初始化激活的菜单项
-const activeItem = ref(parseInt(localStorage.getItem('activeItem')) || 1)
-const isSidebarOpen = ref(true)
-const isDarkMode = ref(localStorage.getItem('theme') === 'dark')
-const showThemeDropdown = ref(false)
-const showAuthorDropdown = ref(false)
-const showOnlineWorksDropdown = ref(false)
-const authorWorks = ref(authorWorksList)
-const onlineWorks = ref(onlineWorksList)
-const showDrawer = ref(false)
-const isAuthorWorksExpanded = ref(false)
-const isOnlineWorksExpanded = ref(false)
-const isNewsActive = ref(false)
-const isAppStoreActive = ref(false)
-const isArticlesListActive = ref(false)
-const articlesListType = ref('tutorials')
+let weatherChartInstance = null
+const showCityPicker = ref(true)
+const cascaderValue = ref([])
+const activeLetter = ref('A')
 
-const gridCols = ref(parseInt(localStorage.getItem('gridCols')) || 3)
-const setGridCols = (cols) => {
-  gridCols.value = cols
-  localStorage.setItem('gridCols', cols.toString())
+const isCitySelected = (city) => {
+  if (!currentWeather.value) return false
+  const activeCity = currentWeather.value.city || ''
+  return activeCity.includes(city.name) || city.name.includes(activeCity)
 }
 
-const dialogGridCols = computed(() => {
-  const maxCols = Math.min(5, likedToolsList.value.length || 1)
-  return Math.min(gridCols.value, maxCols)
-})
-
-const getActiveCategoryName = () => {
-  const cat = menuItems.value.find(c => c.id === activeItem.value)
-  return cat ? cat.name : '全部'
-}
-
-const showNewsTimeline = () => {
-  isNewsActive.value = true
-  isAppStoreActive.value = false
-  isArticlesListActive.value = false
-}
-const showAppStore = () => {
-  isAppStoreActive.value = true
-  isNewsActive.value = false
-  isArticlesListActive.value = false
-}
-const showArticlesList = (type) => {
-  articlesListType.value = type
-  isArticlesListActive.value = true
-  isNewsActive.value = false
-  isAppStoreActive.value = false
-}
-const showAboutDialog = ref(false)
-const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value
-}
-const aiCategories = computed(() => {
-  return menuItems.value.filter(item => item.id !== 24 && item.id !== 25)
-})
-
-const isHomeLive = ref(false)
-const isHomeLoading = ref(false)
-
-const isUrl = (str) => {
-  if (!str) return false
-  return str.startsWith('http://') || str.startsWith('https://') || str.startsWith('/')
-}
-
-const parseHomeHtml = (htmlText) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(htmlText, 'text/html')
-  
-  const sidebarItems = doc.querySelectorAll('.sidebar-menu-inner > ul > li.sidebar-item')
-  if (sidebarItems.length === 0) return []
-  
-  const parsedMenuItems = []
-  
-  sidebarItems.forEach((li, index) => {
-    const parentA = li.querySelector('a')
-    if (!parentA) return
-    const hrefAttr = parentA.getAttribute('href')
-    if (!hrefAttr || !hrefAttr.startsWith('#term-')) return
-    
-    const catName = parentA.querySelector('span')?.textContent.trim() || ''
-    const catAnchor = hrefAttr.replace('#', '')
-    
-    const subUl = li.querySelector('ul')
-    const subcategories = []
-    
-    if (subUl) {
-      const subLinks = subUl.querySelectorAll('li a')
-      subLinks.forEach(subA => {
-        const subHref = subA.getAttribute('href')
-        if (subHref && subHref.startsWith('#term-')) {
-          const subName = subA.querySelector('span')?.textContent.trim() || subA.textContent.trim()
-          const subAnchor = subHref.replace('#', '')
-          
-          const bodyTabLink = doc.getElementById(subAnchor)
-          let tabId = subAnchor.replace('term-', 'tab-')
-          if (bodyTabLink) {
-            const hrefVal = bodyTabLink.getAttribute('href')
-            if (hrefVal) tabId = hrefVal.replace('#', '')
-          }
-          
-          const tabPane = doc.getElementById(tabId)
-          const tools = []
-          
-          if (tabPane) {
-            const cards = tabPane.querySelectorAll('.url-card')
-            cards.forEach(card => {
-              const a = card.querySelector('a')
-              if (!a) return
-              const nameEl = a.querySelector('strong')
-              const name = nameEl ? nameEl.textContent.trim() : a.getAttribute('title') || ''
-              if (!name) return
-              const descEl = a.querySelector('p.text-muted')
-              const desc = descEl ? descEl.textContent.trim() : ''
-              const link = a.getAttribute('data-url') || a.getAttribute('href') || ''
-              const img = a.querySelector('img')
-              const icon = img ? (img.getAttribute('data-src') || img.getAttribute('src') || '') : ''
-              
-              tools.push({
-                id: `live-tool-${Math.random().toString(36).substr(2, 9)}`,
-                name,
-                link,
-                icon,
-                desc,
-                status: 'Free',
-                needVPN: false,
-                price: '免费',
-                region: '国内'
-              })
-            })
-          }
-          
-          if (tools.length > 0) {
-            subcategories.push({
-              id: subAnchor,
-              name: subName,
-              tools
-            })
-          }
-        }
-      })
-    }
-    
-    let tools = []
-    if (subcategories.length === 0) {
-      const headerIcon = doc.getElementById(catAnchor)
-      if (headerIcon) {
-        const headerEl = headerIcon.parentElement
-        let rowEl = null
-        let nextSibling = headerEl.nextElementSibling || headerEl.parentElement?.nextElementSibling
-        for (let k = 0; k < 5; k++) {
-          if (nextSibling) {
-            if (nextSibling.classList.contains('row')) {
-              rowEl = nextSibling
-              break
-            }
-            const subRow = nextSibling.querySelector('.row')
-            if (subRow) {
-              rowEl = subRow
-              break
-            }
-            nextSibling = nextSibling.nextElementSibling
-          }
-        }
-        
-        if (rowEl) {
-          const cards = rowEl.querySelectorAll('.url-card')
-          cards.forEach(card => {
-            const a = card.querySelector('a')
-            if (!a) return
-            const nameEl = a.querySelector('strong')
-            const name = nameEl ? nameEl.textContent.trim() : a.getAttribute('title') || ''
-            if (!name) return
-            const descEl = a.querySelector('p.text-muted')
-            const desc = descEl ? descEl.textContent.trim() : ''
-            const link = a.getAttribute('data-url') || a.getAttribute('href') || ''
-            const img = a.querySelector('img')
-            const icon = img ? (img.getAttribute('data-src') || img.getAttribute('src') || '') : ''
-            
-            tools.push({
-              id: `live-tool-${Math.random().toString(36).substr(2, 9)}`,
-              name,
-              link,
-              icon,
-              desc,
-              status: 'Free',
-              needVPN: false,
-              price: '免费',
-              region: '国内'
-            })
-          })
-        }
-      }
-    }
-    
-    if (subcategories.length > 0 || tools.length > 0) {
-      parsedMenuItems.push({
-        id: catAnchor,
-        name: catName,
-        icon: '🔗',
-        subcategories: subcategories.length > 0 ? subcategories : undefined,
-        tools: tools.length > 0 ? tools : undefined
-      })
-    }
-  })
-  
-  return parsedMenuItems
-}
-
-const mergeMenuItems = (liveData, staticData) => {
-  const staticToolsMap = {}
-  staticData.forEach(cat => {
-    if (cat.tools) {
-      cat.tools.forEach(t => {
-        staticToolsMap[t.name.toLowerCase()] = t
-      })
-    }
-    if (cat.subcategories) {
-      cat.subcategories.forEach(sub => {
-        sub.tools.forEach(t => {
-          staticToolsMap[t.name.toLowerCase()] = t
-        })
-      })
-    }
-  })
-  
-  const merged = liveData.map((liveCat) => {
-    const staticCat = staticData.find(c => c.name === liveCat.name)
-    const catIcon = staticCat ? staticCat.icon : '🔗'
-    const catId = staticCat ? staticCat.id : liveCat.id
-    
-    if (liveCat.subcategories) {
-      const mergedSubs = liveCat.subcategories.map(liveSub => {
-        const mergedTools = liveSub.tools.map(liveTool => {
-          const staticTool = staticToolsMap[liveTool.name.toLowerCase()]
-          if (staticTool) {
-            return {
-              ...staticTool,
-              link: liveTool.link || staticTool.link,
-              desc: liveTool.desc || staticTool.desc
-            }
-          }
-          return liveTool
-        })
-        return {
-          id: liveSub.id,
-          name: liveSub.name,
-          tools: mergedTools
-        }
-      })
-      
-      return {
-        id: catId,
-        name: liveCat.name,
-        icon: catIcon,
-        subcategories: mergedSubs
-      }
-    } else {
-      const mergedTools = (liveCat.tools || []).map(liveTool => {
-        const staticTool = staticToolsMap[liveTool.name.toLowerCase()]
-        if (staticTool) {
-          return {
-            ...staticTool,
-            link: liveTool.link || staticTool.link,
-            desc: liveTool.desc || staticTool.desc
-          }
-        }
-        return liveTool
-      })
-      
-      return {
-        id: catId,
-        name: liveCat.name,
-        icon: catIcon,
-        tools: mergedTools
-      }
-    }
-  })
-  
-  const apiToolboxCat = staticData.find(c => c.id === 24)
-  if (apiToolboxCat && !merged.some(c => c.id === 24)) {
-    merged.push(apiToolboxCat)
-  }
-  const showcaseCat = staticData.find(c => c.id === 25)
-  if (showcaseCat && !merged.some(c => c.id === 25)) {
-    merged.push(showcaseCat)
-  }
-  return merged
-}
-
-const fetchHomeDatabase = async () => {
-  isHomeLoading.value = true
-  const targetUrls = [
-    '/api-home',
-    'https://api.codetabs.com/v1/proxy?quest=https://ai-bot.cn/',
-    'https://api.allorigins.win/raw?url=https://ai-bot.cn/'
-  ]
-  let success = false
-  for (const url of targetUrls) {
-    try {
-      const response = await fetch(url, { headers: { 'Accept': 'text/html' } })
-      if (response.ok) {
-        const htmlText = await response.text()
-        const parsed = parseHomeHtml(htmlText)
-        if (parsed && parsed.length > 0) {
-          menuItems.value = mergeMenuItems(parsed, menuItemsList)
-          isHomeLive.value = true
-          success = true
-          break
-        }
-      }
-    } catch (err) {
-      console.warn(`Failed to fetch home database from ${url}:`, err.message)
-    }
-  }
-  if (!success) {
-    menuItems.value = [...menuItemsList]
-    isHomeLive.value = false
-  }
-  isHomeLoading.value = false
-}
-
-// 从本地存储初始化点赞信息
-const likedItemsInfo = ref(JSON.parse(localStorage.getItem('likedItemsInfo') || '{}'))
-
-const toggleLike = (itemId) => {
-  let currentMenu = null
-  let currentTool = null
-  
-  for (const menu of menuItems.value) {
-    if (menu.tools) {
-      const tool = menu.tools.find(t => t.id === itemId)
-      if (tool) {
-        currentMenu = menu
-        currentTool = tool
+watch(() => currentWeather.value, (newWeather) => {
+  if (newWeather && newWeather.city) {
+    const cityName = newWeather.city
+    for (const letter in chinaCitiesAz) {
+      const found = chinaCitiesAz[letter].find(c => cityName.includes(c.name) || c.name.includes(cityName))
+      if (found) {
+        activeLetter.value = found.letter
         break
       }
     }
-    if (menu.subcategories) {
-      for (const sub of menu.subcategories) {
-        const tool = sub.tools.find(t => t.id === itemId)
-        if (tool) {
-          currentMenu = menu
-          currentTool = tool
-          break
-        }
+  }
+}, { immediate: true, deep: true })
+const getWeatherEmoji = (code) => {
+  const iconCode = String(code || '')
+  if (iconCode.startsWith('100')) return '☀️'
+  if (iconCode.startsWith('101') || iconCode.startsWith('102') || iconCode.startsWith('103') || iconCode.startsWith('151') || iconCode.startsWith('152') || iconCode.startsWith('153')) return '☁️'
+  if (iconCode.startsWith('104')) return '☁️'
+  if (iconCode.startsWith('300') || iconCode.startsWith('301')) return '🌧️'
+  if (iconCode.startsWith('302') || iconCode.startsWith('303') || iconCode.startsWith('304')) return '⛈️'
+  if (iconCode.startsWith('305') || iconCode.startsWith('306') || iconCode.startsWith('307') || iconCode.startsWith('308') || iconCode.startsWith('309') || iconCode.startsWith('310') || iconCode.startsWith('311') || iconCode.startsWith('312')) return '🌧️'
+  if (iconCode.startsWith('400') || iconCode.startsWith('401') || iconCode.startsWith('402') || iconCode.startsWith('403') || iconCode.startsWith('404')) return '❄️'
+  if (iconCode.startsWith('500') || iconCode.startsWith('501') || iconCode.startsWith('502') || iconCode.startsWith('503') || iconCode.startsWith('504') || iconCode.startsWith('507') || iconCode.startsWith('508') || iconCode.startsWith('509') || iconCode.startsWith('510') || iconCode.startsWith('511') || iconCode.startsWith('512') || iconCode.startsWith('513') || iconCode.startsWith('514') || iconCode.startsWith('515')) return '🌫️'
+  return '🌤️'
+}
+
+const findCascaderPath = (targetAdcode) => {
+  const path = []
+  const search = (nodes, currentPath) => {
+    for (const node of nodes) {
+      const newPath = [...currentPath, node.value]
+      if (node.value === targetAdcode) {
+        path.push(...newPath)
+        return true
+      }
+      if (node.children && node.children.length > 0) {
+        if (search(node.children, newPath)) return true
       }
     }
+    return false
   }
-  
-  if (likedItemsInfo.value[itemId]) {
-    delete likedItemsInfo.value[itemId]
-  } else if (currentTool && currentMenu) {
-    likedItemsInfo.value[itemId] = {
-      menuName: currentMenu.name,
-      menuIcon: currentMenu.icon,
-      timestamp: new Date().getTime()
+  search(chinaCascaderOptions, [])
+  return path
+}
+
+const handleCascaderChange = async (val) => {
+  if (!val || val.length === 0) return
+  const targetAdcode = val[val.length - 1]
+  const pathNodes = []
+  const findNodes = (nodes, idx) => {
+    if (idx >= val.length) return
+    const found = nodes.find(n => n.value === val[idx])
+    if (found) {
+      pathNodes.push(found.label)
+      if (found.children) findNodes(found.children, idx + 1)
     }
   }
-  
-  // 保存到本地存储
-  localStorage.setItem('likedItemsInfo', JSON.stringify(likedItemsInfo.value))
-
-  // 添加果冻动画效果
-  const heart = document.querySelector(`.heart-icon-${itemId}`)
-  heart.classList.add('jelly')
-  setTimeout(() => {
-    heart.classList.remove('jelly')
-  }, 600)
-}
-
-// 检查是否已点赞
-const isLiked = (itemId) => {
-  return !!likedItemsInfo.value[itemId]
-}
-
-
-const activeSubItem = ref(null)
-
-const selectItem = (itemId) => {
-  activeItem.value = itemId
-  activeSubItem.value = null
-  isNewsActive.value = false
-  isAppStoreActive.value = false
-  isArticlesListActive.value = false
-  localStorage.setItem('activeItem', itemId.toString())
-}
-
-const selectSubItem = (subId) => {
-  activeSubItem.value = subId
-  isNewsActive.value = false
-  isAppStoreActive.value = false
-  isArticlesListActive.value = false
-}
-
-const getCurrentTools = () => {
-  const cat = menuItems.value.find(item => item.id === activeItem.value)
-  if (!cat) return []
-  
-  if (activeSubItem.value && cat.subcategories) {
-    const sub = cat.subcategories.find(s => s.id === activeSubItem.value)
-    return sub ? sub.tools : []
+  findNodes(chinaCascaderOptions, 0)
+  if (pathNodes.length > 0) {
+    weatherSearchKeyword.value = pathNodes[pathNodes.length - 1]
   }
-  
-  if (cat.subcategories) {
-    return cat.subcategories.reduce((acc, sub) => acc.concat(sub.tools || []), [])
+  await queryWeatherByAdcode(targetAdcode)
+}
+
+const selectCityFromPicker = async (city) => {
+  const path = findCascaderPath(city.adcode)
+  if (path.length > 0) {
+    cascaderValue.value = path
+  } else {
+    weatherSearchKeyword.value = city.name
   }
-  
-  return cat.tools || []
+  await queryWeatherByAdcode(city.adcode)
 }
 
-const openLink = (link) => {
-  if (link) {
-    window.open(link, '_blank')
-  }
-}
-const toggleTheme = () => {
-  localStorage.setItem('theme', isDarkMode.value ? 'dark' : 'light')
-  document.documentElement.classList.toggle('dark', isDarkMode.value)
-}
+const renderWeatherChart = () => {
+  nextTick(() => {
+    const chartDom = document.getElementById('weather-echarts-container')
+    if (!chartDom) return
 
-const contextMenu = ref({
-  show: false,
-  x: 0,
-  y: 0,
-  tool: null
-})
-
-const handleRightClick = (event, tool) => {
-  event.preventDefault()
-  contextMenu.value = {
-    show: true,
-    x: event.clientX,
-    y: event.clientY,
-    tool
-  }
-}
-
-const closeContextMenu = () => {
-  contextMenu.value.show = false
-}
-
-const copyLink = () => {
-  if (contextMenu.value.tool) {
-    navigator.clipboard.writeText(contextMenu.value.tool.link)
-    closeContextMenu()
-  }
-}
-
-const openInNewTab = () => {
-  if (contextMenu.value.tool) {
-    window.open(contextMenu.value.tool.link, '_blank')
-    closeContextMenu()
-  }
-}
-
-const toggleAuthorDropdown = () => {
-  showAuthorDropdown.value = !showAuthorDropdown.value
-  showThemeDropdown.value = false
-  showOnlineWorksDropdown.value = false
-  showAiToolsDropdown.value = false
-  showLatestProjectsDropdown.value = false
-  showAiTutorialsDropdown.value = false
-}
-
-const toggleThemeDropdown = () => {
-  showThemeDropdown.value = !showThemeDropdown.value
-  showAuthorDropdown.value = false
-  showOnlineWorksDropdown.value = false
-  showAiToolsDropdown.value = false
-  showLatestProjectsDropdown.value = false
-  showAiTutorialsDropdown.value = false
-}
-
-const toggleOnlineWorksDropdown = () => {
-  showOnlineWorksDropdown.value = !showOnlineWorksDropdown.value
-  showThemeDropdown.value = false
-  showAuthorDropdown.value = false
-  showAiToolsDropdown.value = false
-  showLatestProjectsDropdown.value = false
-  showAiTutorialsDropdown.value = false
-}
-
-const showAiToolsDropdown = ref(false)
-const showLatestProjectsDropdown = ref(false)
-const showAiTutorialsDropdown = ref(false)
-
-const toggleAiToolsDropdown = () => {
-  showAiToolsDropdown.value = !showAiToolsDropdown.value
-  showThemeDropdown.value = false
-  showAuthorDropdown.value = false
-  showOnlineWorksDropdown.value = false
-  showLatestProjectsDropdown.value = false
-  showAiTutorialsDropdown.value = false
-}
-
-const toggleLatestProjectsDropdown = () => {
-  showLatestProjectsDropdown.value = !showLatestProjectsDropdown.value
-  showThemeDropdown.value = false
-  showAuthorDropdown.value = false
-  showOnlineWorksDropdown.value = false
-  showAiToolsDropdown.value = false
-  showAiTutorialsDropdown.value = false
-}
-
-const toggleAiTutorialsDropdown = () => {
-  showAiTutorialsDropdown.value = !showAiTutorialsDropdown.value
-  showThemeDropdown.value = false
-  showAuthorDropdown.value = false
-  showOnlineWorksDropdown.value = false
-  showAiToolsDropdown.value = false
-  showLatestProjectsDropdown.value = false
-}
-
-const searchQuery = ref('')
-const searchHistory = ref(JSON.parse(localStorage.getItem('searchHistory') || '[]'))
-
-const clearSearch = () => {
-  searchQuery.value = ''
-}
-
-const saveSearchQuery = (query) => {
-  if (!query) return
-  const trimmed = query.trim()
-  if (!trimmed) return
-  let history = searchHistory.value.filter(item => item !== trimmed)
-  history.unshift(trimmed)
-  if (history.length > 8) {
-    history = history.slice(0, 8)
-  }
-  searchHistory.value = history
-  localStorage.setItem('searchHistory', JSON.stringify(history))
-}
-
-const useHistoryTag = (tag) => {
-  searchQuery.value = tag
-}
-
-const clearHistory = () => {
-  ElMessageBox.confirm(
-    '确定要清空所有的历史搜索记录吗？',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
+    if (weatherChartInstance) {
+      weatherChartInstance.dispose()
     }
-  )
-    .then(() => {
-      searchHistory.value = []
-      localStorage.setItem('searchHistory', '[]')
-    })
-    .catch(() => {
-      // 取消操作
-    })
-}
 
-const filteredTools = computed(() => {
-  if (!searchQuery.value) return getCurrentTools()
-  const query = searchQuery.value.toLowerCase()
-  
-  const results = []
-  menuItems.value.forEach(category => {
-    if (category.tools) {
-      category.tools.forEach(tool => {
-        if (tool.name.toLowerCase().includes(query) || tool.desc.toLowerCase().includes(query)) {
-          results.push({
-            ...tool,
-            categoryName: category.name,
-            categoryIcon: category.icon,
-            categoryId: category.id
+    weatherChartInstance = echarts.init(chartDom, isDarkMode.value ? 'dark' : null, {
+      renderer: 'canvas'
+    })
+
+    const list = forecastList.value && forecastList.value.length > 0 ? forecastList.value : [
+      { date: '今天', temp_high: 32, temp_low: 25, weather: '晴' },
+      { date: '明天', temp_high: 33, temp_low: 26, weather: '多云' },
+      { date: '后天', temp_high: 34, temp_low: 25, weather: '雷阵雨' },
+      { date: '周四', temp_high: 32, temp_low: 24, weather: '阴' },
+      { date: '周五', temp_high: 31, temp_low: 23, weather: '小雨' },
+      { date: '周六', temp_high: 33, temp_low: 24, weather: '多云' },
+      { date: '周日', temp_high: 34, temp_low: 25, weather: '晴' }
+    ]
+
+    const dates = list.map(item => item.week || item.date || item.day || '')
+    const highs = list.map(item => parseInt(item.temp_high || item.high || 0, 10))
+    const lows = list.map(item => parseInt(item.temp_low || item.low || 0, 10))
+    const weathers = list.map(item => item.weather_day || item.weather || '')
+
+    const option = {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        formatter: function (params) {
+          let res = params[0].name + '<br/>'
+          params.forEach((item) => {
+            res += item.marker + item.seriesName + ': ' + item.value + '°C (' + weathers[item.dataIndex] + ')<br/>'
           })
+          return res
         }
-      })
-    }
-    if (category.subcategories) {
-      category.subcategories.forEach(sub => {
-        sub.tools.forEach(tool => {
-          if (tool.name.toLowerCase().includes(query) || tool.desc.toLowerCase().includes(query)) {
-            results.push({
-              ...tool,
-              categoryName: `${category.name} - ${sub.name}`,
-              categoryIcon: category.icon,
-              categoryId: category.id
-            })
+      },
+      legend: {
+        data: ['最高气温', '最低气温'],
+        textStyle: {
+          color: isDarkMode.value ? '#ffffff' : '#333333'
+        }
+      },
+      grid: {
+        left: '4%',
+        right: '4%',
+        bottom: '8%',
+        top: '18%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: dates,
+        axisLabel: {
+          color: isDarkMode.value ? '#a4a4a4' : '#666666'
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          formatter: '{value} °C',
+          color: isDarkMode.value ? '#a4a4a4' : '#666666'
+        },
+        splitLine: {
+          lineStyle: {
+            color: isDarkMode.value ? '#3e3e3e' : '#e0e0e0'
           }
-        })
-      })
+        }
+      },
+      series: [
+        {
+          name: '最高气温',
+          type: 'line',
+          data: highs,
+          smooth: true,
+          symbolSize: 8,
+          lineStyle: {
+            width: 3,
+            color: '#ff4757'
+          },
+          itemStyle: {
+            color: '#ff4757'
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(255, 71, 87, 0.2)' },
+              { offset: 1, color: 'rgba(255, 71, 87, 0)' }
+            ])
+          },
+          label: {
+            show: true,
+            position: 'top',
+            color: isDarkMode.value ? '#ffffff' : '#333333'
+          }
+        },
+        {
+          name: '最低气温',
+          type: 'line',
+          data: lows,
+          smooth: true,
+          symbolSize: 8,
+          lineStyle: {
+            width: 3,
+            color: '#5961f9'
+          },
+          itemStyle: {
+            color: '#5961f9'
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(89, 97, 249, 0.2)' },
+              { offset: 1, color: 'rgba(89, 97, 249, 0)' }
+            ])
+          },
+          label: {
+            show: true,
+            position: 'bottom',
+            color: isDarkMode.value ? '#ffffff' : '#333333'
+          }
+        }
+      ]
     }
+
+    weatherChartInstance.setOption(option)
   })
-  return results
+}
+
+const initWeatherView = async () => {
+  showCityPicker.value = true
+  await loadWeatherByIp()
+  if (selectedAdcode.value) {
+    const path = findCascaderPath(selectedAdcode.value)
+    if (path.length > 0) {
+      cascaderValue.value = path
+    }
+  }
+  renderWeatherChart()
+}
+
+watch(selectedAdcode, (newVal) => {
+  if (newVal) {
+    const path = findCascaderPath(newVal)
+    if (path.length > 0) {
+      cascaderValue.value = path
+    }
+  }
 })
 
-// 获取已点赞的工具列表（包含菜单信息）
-const likedToolsList = computed(() => {
-  const allTools = []
-  menuItems.value.forEach(category => {
-    if (category.tools) {
-      allTools.push(...category.tools)
-    }
-    if (category.subcategories) {
-      category.subcategories.forEach(sub => {
-        allTools.push(...sub.tools)
-      })
-    }
-  })
-  
-  return allTools
-    .filter(tool => likedItemsInfo.value[tool.id])
-    .map(tool => ({
-      ...tool,
-      menuInfo: likedItemsInfo.value[tool.id]
-    }))
+watch(forecastList, () => {
+  renderWeatherChart()
 })
 
-// 打开历史记录
-const openLikeHistory = () => {
-  showLikeHistory.value = true
-}
-
-// 关闭历史记录
-const closeLikeHistory = () => {
-  showLikeHistory.value = false
-}
-
-// 清空所有点赞
-const clearAllLikes = () => {
-  ElMessageBox.confirm(
-    `确定要清空历史爱心记录<span style="color: #ff4757; font-weight: bold; font-size: 16px; margin: 0 4px; font-weight: 800; font-stretch: expanded;">${likedToolsList.value.length}</span>条点赞记录吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-      dangerouslyUseHTMLString: true,
-      customClass: 'custom-message-box'
-    }
-  )
-    .then(() => {
-      likedItemsInfo.value = {}
-      localStorage.setItem('likedItemsInfo', '{}')
-    })
-    .catch(() => {})
-}
-
-const showGameDialog = ref(false)
-const currentGame = shallowRef(null)
-const gameTitle = ref('')
-
-const handleCloseDialog = (done) => {
-  const currentItem = menuItems.value.find(item => item.id === activeItem.value)
-  let message = '确定要退出吗？'
-  
-  // 根据type显示不同的提示信息
-  if (currentItem.type === 'game') {
-    message = '确定要退出游戏吗？'
-  } else if (currentItem.type === 'image') {
-    message = '确定要退出图片操作吗？'
-  }
-
-  ElMessageBox.confirm(message, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(() => {
-      done()
-    })
-    .catch(() => {})
-}
-
-const openGame = (work) => {
-  showGameDialog.value = true
-  gameTitle.value = work.name
-  
-  switch(work.type) {
-    case 'game':
-      currentGame.value = SokobanGame
-      break
-    case 'image':
-      currentGame.value = ImageEditor
-      break
-    case 'video':
-      currentGame.value = MusicPlayer
-      break
-    case 'dyform':
-      currentGame.value = DyForm
-      break
-    case 'fruitgame':
-      currentGame.value = FruitCatcher
-      break
-    case 'battlecity':
-      currentGame.value = BattleCityGame
-      break
-    case 'brickbreaker':
-      currentGame.value = BrickBreakerGame
-      break
-    case 'flappybird':
-      currentGame.value = FlappyBirdGame
-      break
-    case 'spaceshooter':
-      currentGame.value = SpaceShooterGame
-      break
-    case 'snake':
-      currentGame.value = SnakeGame
-      break
-    case 'tetris':
-      currentGame.value = TetrisGame
-      break
-    case 'game2048':
-      currentGame.value = Game2048
-      break
-    case 'minesweeper':
-      currentGame.value = MinesweeperGame
-      break
-    case 'tictactoe':
-      currentGame.value = TicTacToeGame
-      break
-    case 'qitetodo':
-      currentGame.value = QiteTodo
-      break
-    default:
-      currentGame.value = null
-  }
-}
-
-// 添加历史记录弹窗状态
-const showLikeHistory = ref(false)
-
-const currentTime = ref('')
-let timer = null
-
-const updateTime = () => {
-  const now = new Date()
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  const seconds = String(now.getSeconds()).padStart(2, '0')
-  currentTime.value = `${hours}:${minutes}:${seconds}`
-}
-const onClickWork=item=>{
-  window.open(item.link)
-}
-onMounted(() => {
-  const theme = localStorage.getItem('theme')
-  if (theme) {
-    isDarkMode.value = theme === 'dark'
-    document.documentElement.classList.toggle('dark', isDarkMode.value)
-  }
-
-  // 添加点击外部关闭下拉菜单
-  document.addEventListener('click', (e) => {
-    const dropdowns = document.querySelectorAll('.dropdown, .nav-h-item')
-    let clickedInside = false
-    dropdowns.forEach(el => {
-      if (el.contains(e.target)) {
-        clickedInside = true
-      }
-    })
-    
-    if (!clickedInside) {
-      showThemeDropdown.value = false
-      showAuthorDropdown.value = false
-      showOnlineWorksDropdown.value = false
-      showAiToolsDropdown.value = false
-      showLatestProjectsDropdown.value = false
-      showAiTutorialsDropdown.value = false
-    }
-    closeContextMenu()
-  })
-
-  // 添加全局右键事件监听
-  document.addEventListener('contextmenu', (event) => {
-    const toolCard = event.target.closest('.tool-card')
-    if (!toolCard && isProd) {
-      event.preventDefault()
-      window.open('about:blank', '_blank')
-    }
-  })
-
-  updateTime()
-  timer = setInterval(updateTime, 1000)
-
-  // Start periodic sync of navigation cards database
-  fetchHomeDatabase()
-  homeRefreshInterval = setInterval(fetchHomeDatabase, 60000)
-})
-
-let homeRefreshInterval = null
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer)
-  }
-  if (homeRefreshInterval) {
-    clearInterval(homeRefreshInterval)
+watch(isDarkMode, () => {
+  if (showWeatherDialog.value) {
+    renderWeatherChart()
   }
 })
 </script>
 
 <template>
-  <div id="app" class="app-container" :class="{ 'dark': isDarkMode }">
+  <div 
+    id="app" 
+    class="app-container" 
+    :class="{ 'dark': isDarkMode, 'has-custom-bg': hasCustomBg }"
+    :style="hasCustomBg ? { backgroundImage: `url(${customBackgroundUrl})` } : {}"
+  >
     <!-- 左侧导航栏 -->
     <nav class="sidebar" :class="{ 'collapsed': !isSidebarOpen }">
       <div class="logo">HooksVue</div>
@@ -861,6 +325,16 @@ onUnmounted(() => {
           </transition>
         </template>
       </ul>
+      <div class="sidebar-footers">
+        <div class="sidebar-footer" @click="showWeatherDialog = true" title="实时天气">
+          <span class="nav-icon">🌦️</span>
+          <span v-show="isSidebarOpen">实时天气</span>
+        </div>
+        <div class="sidebar-footer" @click="showBingDialog = true" title="Bing 每日壁纸">
+          <span class="nav-icon">🌅</span>
+          <span v-show="isSidebarOpen">Bing 每日壁纸</span>
+        </div>
+      </div>
     </nav>
 
     <!-- 主内容区域 -->
@@ -983,22 +457,68 @@ onUnmounted(() => {
         <ComponentShowcase />
       </div>
       <template v-else>
-        <div class="search-wrapper">
-          <input
-            type="text"
-            v-model="searchQuery"
-            @keyup.enter="saveSearchQuery(searchQuery)"
-            placeholder="输入关键词并按回车全局搜索..."
-            class="search-input"
-          >
-          <button
-            v-show="searchQuery"
-            @click="clearSearch"
-            class="clear-button"
-            title="清除搜索"
-          >
-            ✕
-          </button>
+        <div class="aggregator-search-container">
+          <!-- 分类 Tab 栏 -->
+          <div class="search-category-tabs">
+            <span
+              v-for="cat in searchCategories"
+              :key="cat.id"
+              class="search-cat-tab"
+              :class="{ active: activeSearchCat === cat.id }"
+              @click="selectSearchCategory(cat.id)"
+            >
+              {{ cat.name }}
+            </span>
+          </div>
+
+          <!-- 搜索输入框包裹层 -->
+          <div class="search-input-wrapper">
+            <input
+              type="text"
+              v-model="searchQuery"
+              @keyup.enter="triggerSearch"
+              :placeholder="activeEngine.placeholder"
+              class="search-input"
+            >
+            
+            <!-- 清除按钮 -->
+            <button
+              v-show="searchQuery"
+              @click="clearSearch"
+              class="clear-button-new"
+              title="清除搜索"
+            >
+              ✕
+            </button>
+
+            <!-- 语音搜索按钮 -->
+            <button 
+              class="voice-search-btn" 
+              :class="{ 'listening': isListening }"
+              @click="startVoiceSearch" 
+              title="语音搜索"
+            >
+              🎤
+            </button>
+
+            <!-- 搜索按钮 -->
+            <button class="search-icon-btn" @click="triggerSearch" title="搜索">
+              🔍
+            </button>
+          </div>
+
+          <!-- 搜索引擎 Tab 栏 -->
+          <div class="search-engine-tabs">
+            <span
+              v-for="engine in activeCategory.engines"
+              :key="engine.id"
+              class="search-engine-tab"
+              :class="{ active: activeEngineId === engine.id }"
+              @click="activeEngineId = engine.id"
+            >
+              {{ engine.name }}
+            </span>
+          </div>
 
           <!-- 历史搜索记录 -->
           <div v-if="searchHistory.length > 0 && !searchQuery" class="search-history">
@@ -1016,6 +536,62 @@ onUnmounted(() => {
           <span class="active-category-indicator">
             📂 当前分类: {{ getActiveCategoryName() }}
           </span>
+
+          <!-- Pill Switcher for IDE Tools -->
+          <!-- Pill Switchers dynamically rendered based on active category -->
+          <div v-if="activeSubTabs[activeItem] && !searchQuery" class="ide-tab-container">
+            <div class="pill-switcher">
+              <template v-if="activeItem === 1">
+                <button 
+                  class="pill-btn" 
+                  :class="{ active: activeSubTabs[1] === 'china' }" 
+                  @click="activeSubTabs[1] = 'china'"
+                >
+                  国内
+                </button>
+                <button 
+                  class="pill-btn" 
+                  :class="{ active: activeSubTabs[1] === 'overseas' }" 
+                  @click="activeSubTabs[1] = 'overseas'"
+                >
+                  国外
+                </button>
+              </template>
+              <template v-else-if="activeItem === 9">
+                <button 
+                  class="pill-btn" 
+                  :class="{ active: activeSubTabs[9] === 'agents' }" 
+                  @click="activeSubTabs[9] = 'agents'"
+                >
+                  AI智能体
+                </button>
+                <button 
+                  class="pill-btn" 
+                  :class="{ active: activeSubTabs[9] === 'skills' }" 
+                  @click="activeSubTabs[9] = 'skills'"
+                >
+                  插件与Skills
+                </button>
+              </template>
+              <template v-else-if="activeItem === 16">
+                <button 
+                  class="pill-btn" 
+                  :class="{ active: activeSubTabs[16] === 'traditional' }" 
+                  @click="activeSubTabs[16] = 'traditional'"
+                >
+                  传统IDE
+                </button>
+                <button 
+                  class="pill-btn" 
+                  :class="{ active: activeSubTabs[16] === 'ai' }" 
+                  @click="activeSubTabs[16] = 'ai'"
+                >
+                  AI IDE
+                </button>
+              </template>
+            </div>
+          </div>
+
           <div class="column-switcher">
             <span class="switcher-label">🖥️ 视图布局:</span>
             <button 
@@ -1120,6 +696,291 @@ onUnmounted(() => {
         <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 12px; color: var(--text-secondary);">
           <p>版本: v2.0.0</p>
           <p>作者: HooksVue & Gemini Assistant</p>
+        </div>
+      </div>
+    </el-dialog>
+
+    <!-- Bing 每日壁纸对话框 -->
+    <el-dialog
+      v-model="showBingDialog"
+      title="🌅 Bing 每日高清壁纸"
+      width="50%"
+      destroy-on-close
+      class="bing-dialog"
+      @open="updateBingPreview"
+    >
+      <el-form :model="bingWallpaperForm" label-position="top">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="接口数据源：">
+              <el-select v-model="bingWallpaperForm.source" placeholder="请选择" @change="updateBingPreview" style="width: 100%;">
+                <el-option label="uapis.cn (支持日期自定义)" value="uapis" />
+                <el-option label="bing.img.run (极速重定向)" value="imgrun" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="目标图片分辨率：">
+              <el-select v-model="bingWallpaperForm.resolution" placeholder="请选择" @change="updateBingPreview" style="width: 100%;">
+                <el-option label="4K 超高清 (UHD)" value="4k" />
+                <el-option label="1080P 全高清 (FHD)" value="1080" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="指定壁纸日期：">
+              <el-date-picker
+                v-model="bingWallpaperForm.date"
+                type="date"
+                placeholder="选择日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                :disabled="bingWallpaperForm.random || bingWallpaperForm.source === 'imgrun'"
+                style="width: 100%;"
+                @change="updateBingPreview"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="随机历史壁纸：">
+              <el-select 
+                v-model="bingWallpaperForm.random" 
+                placeholder="请选择"
+                :disabled="bingWallpaperForm.source === 'imgrun'"
+                style="width: 100%;"
+                @change="updateBingPreview"
+              >
+                <el-option label="获取指定日期或当天" :value="false" />
+                <el-option label="每次请求随机返回一张" :value="true" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="壁纸预览效果：" style="margin-top: 10px;">
+          <div class="bing-preview-box" style="width: 100%;">
+            <el-image 
+              v-if="bingPreviewUrl"
+              :src="bingPreviewUrl" 
+              fit="cover"
+              class="bing-preview-img"
+              @load="isBingLoading = false"
+              @error="isBingLoading = false"
+            >
+              <template #placeholder>
+                <div class="bing-preview-placeholder">
+                  🌀 正在获取预览大图...
+                </div>
+              </template>
+              <template #error>
+                <div class="bing-preview-placeholder" style="color: #ff4757;">
+                  ❌ 预览图加载超时，请点击下方刷新或更换接口源
+                </div>
+              </template>
+            </el-image>
+            <div v-if="!bingPreviewUrl" class="bing-preview-placeholder">
+              点击下方“刷新生成壁纸”按钮获取
+            </div>
+          </div>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="bing-dialog-actions" style="margin-top: 0; display: flex; justify-content: flex-end; gap: 8px;">
+          <el-button type="danger" plain @click="clearCustomBackground" v-if="hasCustomBg">
+            ❌ 还原默认背景
+          </el-button>
+          <el-button @click="updateBingPreview">
+            🔄 刷新生成壁纸
+          </el-button>
+          <el-button type="primary" @click="applyCustomBackground">
+            🌅 设为网页背景
+          </el-button>
+          <el-button type="success" v-if="bingPreviewUrl">
+            <a :href="bingPreviewUrl" target="_blank" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 4px;">
+              📥 下载高清壁纸
+            </a>
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 实时天气与波动走势对话框 -->
+    <el-dialog
+      v-model="showWeatherDialog"
+      title="🌦️ 实时天气与气温变化趋势"
+      width="50%"
+      destroy-on-close
+      class="weather-dialog"
+      @open="initWeatherView"
+      @opened="renderWeatherChart"
+    >
+      <div v-loading="isWeatherLoading" style="display: flex; flex-direction: column; gap: 16px;">
+        <el-row :gutter="12">
+          <el-col :span="24">
+            <el-cascader
+              v-model="cascaderValue"
+              :options="chinaCascaderOptions"
+              :props="{ checkStrictly: true }"
+              filterable
+              clearable
+              placeholder="请点击选择或输入搜索全国城市/区县"
+              style="width: 100%;"
+              @change="handleCascaderChange"
+            />
+          </el-col>
+        </el-row>
+
+        <!-- 城市选择器折叠面板 (A-Z) -->
+        <el-row>
+          <el-col :span="24">
+            <el-button 
+              type="info" 
+              plain 
+              size="small" 
+              style="width: 100%; border-style: dashed;"
+              @click="showCityPicker = !showCityPicker"
+            >
+              {{ showCityPicker ? '🔼 收起城市选择器' : '📍 按拼音首字母 (A-Z) 选择全国城市' }}
+            </el-button>
+          </el-col>
+        </el-row>
+
+        <el-collapse-transition>
+          <div v-show="showCityPicker" class="city-picker-panel" style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; max-height: 220px; overflow-y: auto;">
+            <!-- 自定义首字母索引栏 -->
+            <div class="letter-index-bar" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; user-select: none;">
+              <span 
+                v-for="(cities, letter) in chinaCitiesAz"
+                :key="letter"
+                @click="activeLetter = letter"
+                :style="{
+                  cursor: 'pointer',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  background: activeLetter === letter ? 'var(--primary-color)' : 'transparent',
+                  color: activeLetter === letter ? '#ffffff' : 'var(--text-color)'
+                }"
+              >
+                {{ letter }}
+              </span>
+            </div>
+
+            <!-- 当前选中的字母对应的城市列表 -->
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <el-button
+                v-for="city in chinaCitiesAz[activeLetter]"
+                :key="city.adcode"
+                size="small"
+                plain
+                :type="isCitySelected(city) ? 'primary' : 'default'"
+                style="margin: 0; padding: 4px 8px; font-size: 12px;"
+                @click="selectCityFromPicker(city)"
+              >
+                {{ city.name }}
+              </el-button>
+            </div>
+          </div>
+        </el-collapse-transition>
+
+        <el-row :gutter="12" v-if="weatherDistrictList.length > 0">
+          <el-col :span="24">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; color: var(--text-secondary); white-space: nowrap;">匹配地区：</span>
+              <el-select 
+                v-model="selectedAdcode" 
+                placeholder="请选择具体区县" 
+                @change="queryWeatherByAdcode"
+                style="flex: 1;"
+              >
+                <el-option 
+                  v-for="d in weatherDistrictList" 
+                  :key="d.adcode" 
+                  :label="`${d.province || ''} - ${d.city || ''} - ${d.district || d.name || ''} (${d.adcode})`" 
+                  :value="d.adcode" 
+                />
+              </el-select>
+            </div>
+          </el-col>
+        </el-row>
+
+        <div v-if="currentWeather" class="weather-current-card">
+          <el-row :gutter="20" align="middle">
+            <el-col :span="8" style="text-align: center; border-right: 1px solid var(--border-color);">
+              <div style="font-size: 38px; font-weight: 700; color: var(--primary-color);">
+                {{ currentWeather.temp }}°C
+              </div>
+              <div style="font-size: 14px; font-weight: 600; margin-top: 4px; color: var(--text-color);">
+                {{ getWeatherEmoji(currentWeather.weather_icon) }} {{ currentWeather.weather }}
+              </div>
+            </el-col>
+            <el-col :span="16" style="padding-left: 20px;">
+              <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text-color);">
+                📍 当前城市: {{ currentWeather.province }} {{ currentWeather.city }} {{ currentWeather.district }}
+              </div>
+              <el-row :gutter="10" style="font-size: 13px; color: var(--text-secondary);">
+                <el-col :span="12" style="margin-bottom: 4px;">💧 湿度: {{ currentWeather.humidity }}</el-col>
+                <el-col :span="12" style="margin-bottom: 4px;">🍃 风力: {{ currentWeather.wind_direction }} {{ currentWeather.wind_power }}</el-col>
+                <el-col :span="12" style="margin-bottom: 4px;" v-if="currentWeather.temp_feels">🌡️ 体感温度: {{ currentWeather.temp_feels }}°C</el-col>
+                <el-col :span="12" style="margin-bottom: 4px;" v-if="currentWeather.uv_index">☀️ 紫外线: {{ currentWeather.uv_index }}级</el-col>
+                <el-col :span="12" style="margin-bottom: 4px;" v-if="currentWeather.visibility">👁️ 能见度: {{ currentWeather.visibility }} km</el-col>
+                <el-col :span="12" style="margin-bottom: 4px;" v-if="currentWeather.pressure">🎈 气压: {{ currentWeather.pressure }} hPa</el-col>
+                <el-col :span="24" style="margin-bottom: 4px;" v-if="currentWeather.aqi">🍃 空气质量: {{ currentWeather.aqi }} ({{ currentWeather.aqi_desc }})</el-col>
+                <el-col :span="24" style="margin-top: 4px; font-size: 11px; opacity: 0.75;">
+                  🕒 报告时间: {{ currentWeather.update_time }}
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">
+            📈 7 天最高/最低气温变化趋势 (ECharts)：
+          </div>
+          <div id="weather-echarts-container" style="width: 100%; height: 260px; background: var(--hover-bg); border-radius: 8px; border: 1px solid var(--border-color);"></div>
+        </div>
+
+        <!-- 生活指数面板 -->
+        <div v-if="currentWeather && currentWeather.indices" style="margin-top: 12px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">
+            👕 生活指数指南：
+          </div>
+          <el-row :gutter="12">
+            <el-col :span="6" v-if="currentWeather.indices.apparel">
+              <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; text-align: center; height: 100%;">
+                <div style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;">穿衣指数</div>
+                <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: var(--primary-color);">{{ currentWeather.indices.apparel.level }}</div>
+                <div style="font-size: 11px; opacity: 0.85; line-height: 1.3;">{{ currentWeather.indices.apparel.advice || currentWeather.indices.apparel.brief }}</div>
+              </div>
+            </el-col>
+            <el-col :span="6" v-if="currentWeather.indices.car_wash">
+              <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; text-align: center; height: 100%;">
+                <div style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;">洗车指数</div>
+                <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: var(--primary-color);">{{ currentWeather.indices.car_wash.level }}</div>
+                <div style="font-size: 11px; opacity: 0.85; line-height: 1.3;">{{ currentWeather.indices.car_wash.advice || currentWeather.indices.car_wash.brief }}</div>
+              </div>
+            </el-col>
+            <el-col :span="6" v-if="currentWeather.indices.sunscreen">
+              <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; text-align: center; height: 100%;">
+                <div style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;">防晒指数</div>
+                <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: var(--primary-color);">{{ currentWeather.indices.sunscreen.level }}</div>
+                <div style="font-size: 11px; opacity: 0.85; line-height: 1.3;">{{ currentWeather.indices.sunscreen.advice || currentWeather.indices.sunscreen.brief }}</div>
+              </div>
+            </el-col>
+            <el-col :span="6" v-if="currentWeather.indices.sport">
+              <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; text-align: center; height: 100%;">
+                <div style="font-size: 12px; color: var(--text-secondary); white-space: nowrap;">运动指数</div>
+                <div style="font-weight: 700; font-size: 13px; margin: 4px 0; color: var(--primary-color);">{{ currentWeather.indices.sport.level }}</div>
+                <div style="font-size: 11px; opacity: 0.85; line-height: 1.3;">{{ currentWeather.indices.sport.advice || currentWeather.indices.sport.brief }}</div>
+              </div>
+            </el-col>
+          </el-row>
         </div>
       </div>
     </el-dialog>
@@ -1251,6 +1112,31 @@ onUnmounted(() => {
             </div>
           </transition>
         </div>
+
+        <!-- Section 2.5: 随机网址 -->
+        <div class="drawer-section">
+          <h3 class="section-title collapsible-title" style="cursor: default;">
+            <span>📈 随机网址</span>
+            <button class="refresh-btn" @click="refreshRandomTools" title="刷新">
+              <span class="refresh-icon">↻</span>
+              <span class="refresh-text" style="font-size: 11px; margin-left: 2px;">刷新</span>
+            </button>
+          </h3>
+          <div class="random-tools-grid">
+            <a v-for="tool in randomTools" 
+               :key="tool.id" 
+               :href="tool.link" 
+               target="_blank" 
+               class="random-tool-item" 
+               :title="tool.name + ' - ' + tool.desc">
+              <span class="random-tool-icon">
+                <img v-if="isUrl(tool.icon)" :src="tool.icon" class="random-tool-icon-img" alt="icon">
+                <span v-else class="random-tool-text-icon">{{ tool.icon }}</span>
+              </span>
+              <span class="random-tool-name">{{ tool.name }}</span>
+            </a>
+          </div>
+        </div>
         
         <!-- Section 3: 系统设置 -->
         <div class="drawer-section">
@@ -1268,55 +1154,42 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
+
+        <!-- Section 4: 关于与系统信息 -->
+        <div class="drawer-section">
+          <h3 class="section-title">ℹ️ 系统信息</h3>
+          <div class="info-list">
+            <div class="info-item">
+              <span>作者 GitHub</span>
+              <a href="https://github.com/mhxy13867806343" target="_blank" class="github-link">
+                mhxy13867806343
+              </a>
+            </div>
+            <div class="info-item">
+              <span>当前时间</span>
+              <span class="info-value">{{ currentDate }} {{ currentTime }}</span>
+            </div>
+            <div class="info-item">
+              <span>操作系统</span>
+              <span class="info-value">{{ userOS }}</span>
+            </div>
+            <div class="info-item">
+              <span>当前时区</span>
+              <span class="info-value">{{ userTimezone }}</span>
+            </div>
+            <div class="info-item">
+              <span>语言类型</span>
+              <span class="info-value">{{ userLanguage }}</span>
+            </div>
+            <div class="info-item">
+              <span>版本号</span>
+              <span class="info-value">0.1</span>
+            </div>
+          </div>
+        </div>
       </div>
     </el-drawer>
   </div>
 </template>
 
-<style scoped>
-@keyframes jelly {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.2); }
-  50% { transform: scale(0.95); }
-  75% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-.jelly {
-  animation: jelly 0.6s ease;
-}
-
-.clock-component {
-  margin-right: 5px;
-}
-
-:deep(.custom-message-box) {
-  .el-message-box__message {
-    & p {
-      line-height: 1.8;
-      font-size: 14px;
-    }
-  }
-}
-
-.el-dialog {
-  display: flex;
-  flex-direction: column;
-}
-
-.el-dialog__body {
-  flex: 1;
-  padding: 0;
-  overflow: hidden;
-}
-
-/* 游戏对话框特殊样式 */
-:deep(.el-dialog.game-dialog) {
-  min-height: 600px;
-}
-
-:deep(.el-dialog.game-dialog .el-dialog__body) {
-  height: calc(100% - 54px);
-  padding: 0;
-}
-</style>
+<style scoped src="./App.css"></style>

@@ -146,6 +146,7 @@ body {
 /* 主内容区域与渐变背景 */
 .main-content {
   margin-left: 240px;
+  width: calc(100% - 240px);
   padding: 32px;
   flex: 1;
   position: relative;
@@ -154,6 +155,7 @@ body {
   background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 /* 极光渐变背景 */
@@ -310,18 +312,63 @@ body {
   color: #ff4757;
 }
 
-/* 搜索区域 */
-.search-wrapper {
+/* 聚合搜索区域 */
+.aggregator-search-container {
   width: 100%;
   margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
-  z-index: 2;
+  z-index: 5;
+}
+
+.search-category-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 14px;
+}
+
+.search-cat-tab {
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 8px;
+  position: relative;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.search-cat-tab:hover {
+  color: var(--text-color);
+}
+
+.search-cat-tab.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.search-cat-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  background: var(--primary-color);
+  border-radius: 2px;
+}
+
+.search-input-wrapper {
+  width: 100%;
+  position: relative;
 }
 
 .search-input {
   width: 100%;
   padding: 14px 20px;
-  padding-right: 48px;
+  padding-right: 112px; /* 留出清除、语音和搜索按钮空间 */
   border: 1px solid var(--border-color);
   border-radius: 24px;
   background: var(--bg-secondary);
@@ -345,15 +392,75 @@ body {
   opacity: 0.8;
 }
 
-.clear-button {
+.search-input-wrapper .search-icon-btn {
   position: absolute;
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
+  font-size: 16px;
+  cursor: pointer;
   color: var(--text-secondary);
-  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.search-input-wrapper .search-icon-btn:hover {
+  background: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+.search-input-wrapper .voice-search-btn {
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.search-input-wrapper .voice-search-btn:hover {
+  background: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+.search-input-wrapper .voice-search-btn.listening {
+  color: #ff4757;
+  animation: pulse-recording 1.2s infinite ease-in-out;
+  background: rgba(255, 71, 87, 0.1);
+}
+
+@keyframes pulse-recording {
+  0% { transform: translateY(-50%) scale(1); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+  70% { transform: translateY(-50%) scale(1.1); box-shadow: 0 0 0 8px rgba(255, 71, 87, 0); }
+  100% { transform: translateY(-50%) scale(1); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+}
+
+.clear-button-new {
+  position: absolute;
+  right: 80px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
   cursor: pointer;
   width: 24px;
   height: 24px;
@@ -364,9 +471,69 @@ body {
   transition: all 0.2s ease;
 }
 
-.clear-button:hover {
+.clear-button-new:hover {
   background: var(--hover-bg);
   color: var(--text-color);
+}
+
+.search-engine-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 14px;
+  position: relative;
+  width: 100%;
+}
+
+.search-engine-tab {
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 12px;
+  position: relative;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.search-engine-tab:hover {
+  color: var(--text-color);
+}
+
+.search-engine-tab.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* 指向输入框的 caret 箭头 */
+.search-engine-tab.active::before {
+  content: "";
+  position: absolute;
+  top: -15px; /* 指向上方贴近输入框边缘 */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent var(--border-color) transparent;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.search-engine-tab.active::after {
+  content: "";
+  position: absolute;
+  top: -14px; /* 内部重合遮罩，形成空心 border 效果 */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent var(--bg-secondary) transparent;
+  pointer-events: none;
+  z-index: 11;
+}
+
+/* 输入框 focus 时，caret 背景遮罩同步切换为 focused 背景色 */
+.search-input-wrapper:focus-within ~ .search-engine-tabs .search-engine-tab.active::after {
+  border-color: transparent transparent var(--card-bg) transparent;
 }
 
 /* 响应式工具网格 */
@@ -790,7 +957,9 @@ body {
 
   .main-content {
     margin-left: 80px;
+    width: calc(100% - 80px);
     padding: 20px;
+    box-sizing: border-box;
   }
 
   .tools-grid {
@@ -834,10 +1003,11 @@ body {
   transform: translateX(-100%);
 }
 .main-content {
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .main-content.expanded {
   margin-left: 0;
+  width: 100%;
 }
 
 /* 水平顶部导航栏 */
@@ -1141,6 +1311,46 @@ body {
 
 .drawer-list-container::-webkit-scrollbar-thumb:hover {
   background: var(--primary-color);
+}
+
+/* 系统与作者信息样式 */
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text-color);
+}
+
+.info-item span {
+  color: var(--text-secondary);
+}
+
+.info-item .info-value {
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.github-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.github-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
 }
 
 /* 折叠展开过渡动画 */
@@ -1478,4 +1688,246 @@ body {
     flex-direction: column;
     gap: 8px;
   }
+}
+
+/* 随机网址样式 */
+.random-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.random-tool-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.random-tool-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.random-tool-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.random-tool-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.random-tool-text-icon {
+  font-size: 14px;
+}
+
+.random-tool-name {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+.refresh-btn:hover .refresh-icon {
+  transform: rotate(180deg);
+}
+
+.refresh-icon {
+  font-size: 14px;
+  transition: transform 0.4s ease;
+  display: inline-block;
+}
+
+/* IDE工具二级分类切换器样式 */
+.ide-tab-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pill-switcher {
+  display: flex;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  padding: 3px;
+  border-radius: 20px;
+  gap: 4px;
+}
+
+.pill-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 18px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.pill-btn:hover {
+  color: var(--text-color);
+}
+
+.pill-btn.active {
+  background: var(--primary-color);
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(89, 97, 249, 0.3);
+}
+
+/* Custom Bing Wallpaper Glassmorphism Styles */
+.app-container.has-custom-bg {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.app-container.has-custom-bg .sidebar {
+  background: rgba(26, 26, 36, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-container.has-custom-bg .main-content {
+  background: rgba(15, 15, 24, 0.65) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Light mode support for custom bg */
+.app-container.has-custom-bg:not(.dark) .sidebar {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.app-container.has-custom-bg:not(.dark) .main-content {
+  background: rgba(245, 246, 250, 0.7) !important;
+}
+
+/* Bing dialog components styling */
+.bing-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bing-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.bing-preview-box {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background: var(--hover-bg);
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+.bing-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.bing-preview-placeholder {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.bing-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Sidebar footer style for Bing Wallpaper entry */
+.sidebar-footers {
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-footer {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.sidebar-footer + .sidebar-footer {
+  border-top: 1px solid var(--border-color);
+}
+
+.weather-current-card {
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.sidebar-footer:hover {
+  background: rgba(89, 97, 249, 0.08);
+  color: var(--primary-color);
+}
+
+.collapsed .sidebar-footer {
+  justify-content: center;
+  padding: 14px 0;
 }
