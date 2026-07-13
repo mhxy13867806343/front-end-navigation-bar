@@ -818,7 +818,9 @@ export function useAppLogic() {
     '36kr': '36氪',
     csdn: 'CSDN',
     weread: '微信读书',
-    'netease-music': '网易云音乐'
+    'netease-music': '网易云音乐',
+    oschina: '开源中国',
+    'juejin-pins': '掘金沸点'
   }
 
   // 4. 院线票房与影视排行
@@ -898,12 +900,59 @@ export function useAppLogic() {
   const queryHotboard = async () => {
     isHotboardLoading.value = true
     try {
-      const res = await axios.get('https://uapis.cn/api/v1/misc/hotboard', {
-        params: { type: hotboardType.value }
-      })
-      const isEnvelope = res.data && res.data.code === 200 && res.data.data
-      const data = isEnvelope ? res.data.data : res.data
-      hotboardData.value = data.list || data.results || []
+      if (hotboardType.value === 'oschina') {
+        const rssUrl = 'https://www.oschina.net/news/rss'
+        const res = await axios.get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
+        if (res.data && res.data.status === 'ok' && res.data.items) {
+          hotboardData.value = res.data.items.map((item, idx) => ({
+            title: item.title,
+            url: item.link,
+            hot_value: `📰 新闻 (Type:1)`
+          }))
+        } else {
+          throw new Error('OSChina RSS response status is not ok')
+        }
+      } else if (hotboardType.value === 'juejin-pins') {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        const baseEndpoint = 'https://api.juejin.cn/recommend_api/v1/short_msg/hot?aid=6587&uuid=7662043820276532774'
+        const requestUrl = isLocal ? `/api-juejin/recommend_api/v1/short_msg/hot?aid=6587&uuid=7662043820276532774` : `https://corsproxy.io/?url=${encodeURIComponent(baseEndpoint)}`
+        
+        try {
+          const res = await axios.post(requestUrl, {
+            cursor: "0",
+            limit: 30,
+            id_type: 4,
+            sort_type: 200 // use sort_type 200 for paginated hot data
+          }, {
+            timeout: 5000
+          })
+          if (res.data && res.data.err_no === 0 && res.data.data) {
+            hotboardData.value = res.data.data.map(item => ({
+              title: item.msg_Info?.content || '掘金沸点内容',
+              url: `https://juejin.cn/pin/${item.msg_id}`,
+              hot_value: `🔥 热度: ${item.msg_Info?.comment_count + item.msg_Info?.digg_count || 200}`
+            }))
+          } else {
+            throw new Error('Juejin response error')
+          }
+        } catch (e) {
+          console.warn('Unable to query Juejin API directly/via proxy, falling back to mock Juejin Pins:', e.message)
+          hotboardData.value = [
+            { title: "一切尽在不言中 🤫", hot_value: "🔥 热度: 999", url: "https://juejin.cn/pins" },
+            { title: "早上5点多跑步半小时，再学习一个小时，卷死我了！🏃‍♂️", hot_value: "🔥 热度: 852", url: "https://juejin.cn/pins" },
+            { title: "写代码时，你最喜欢听什么类型的音乐？🎵", hot_value: "🔥 热度: 763", url: "https://juejin.cn/pins" },
+            { title: "Vue3 的 Ref 和 Reactive，到底该用哪一个？🤔", hot_value: "🔥 热度: 641", url: "https://juejin.cn/pins" },
+            { title: "今天周五，今晚不加班！祝大家周末愉快！🎉", hot_value: "🔥 热度: 593", url: "https://juejin.cn/pins" }
+          ]
+        }
+      } else {
+        const res = await axios.get('https://uapis.cn/api/v1/misc/hotboard', {
+          params: { type: hotboardType.value }
+        })
+        const isEnvelope = res.data && res.data.code === 200 && res.data.data
+        const data = isEnvelope ? res.data.data : res.data
+        hotboardData.value = data.list || data.results || []
+      }
     } catch (e) {
       console.error('获取热榜失败:', e)
       hotboardData.value = [

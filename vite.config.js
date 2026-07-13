@@ -59,6 +59,16 @@ export default defineConfig({
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         },
         rewrite: (path) => path.replace(/^\/api-hall-of-fame/, '')
+      },
+      '/api-juejin': {
+        target: 'https://api.juejin.cn',
+        changeOrigin: true,
+        headers: {
+          'Origin': 'https://juejin.cn',
+          'Referer': 'https://juejin.cn/',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        },
+        rewrite: (path) => path.replace(/^\/api-juejin/, '')
       }
     }
   }

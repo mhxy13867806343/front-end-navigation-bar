@@ -5,933 +5,648 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>B站 - 哔哩哔哩 (゜-゜)つロ 干杯~-bilibili</title>
     <style id="theme-vars">
-/**
- * Bilibili Homepage Brand CSS
- * 基于B站品牌色彩体系：粉色主色调 (#FF6699) + 中性白/灰
- */
-
-/* ============================================
-   Brand Color Tokens
-   ============================================ */
 :root {
-  /* Primary brand color: Bilibili pink */
-  --bi-color-primary-50: #FFF1F5;
-  --bi-color-primary-100: #FFDCE5;
-  --bi-color-primary-200: #FFB8C9;
-  --bi-color-primary-300: #FF93AE;
-  --bi-color-primary-400: #FB7299;
-  --bi-color-primary-500: #FF6699;
-  --bi-color-primary-600: #E8558A;
-  --bi-color-primary-700: #C74276;
-  --bi-color-primary-800: #A13562;
-  --bi-color-primary-900: #7A2A4D;
-
   --bi-color-primary: #FF6699;
   --bi-color-primary-light: #FB7299;
   --bi-color-primary-dark: #E8558A;
-
-  /* State colors */
+  --bi-color-primary-50: #FFF1F5;
+  --bi-color-primary-100: #FFDCE5;
+  --bi-color-primary-200: #FFB8C9;
   --state-success: #00C789;
   --state-warning: #FFAB00;
   --state-error: #FF4444;
-  --state-info: #00A1D6;
-
-  /* Surface colors */
-  --bi-color-background: #FFFFFF;
   --bi-color-surface-1: #F4F5F7;
   --bi-color-surface-2: #FFFFFF;
   --bi-color-surface-3: #F9F9F9;
-  --bi-color-surface-hover: #F1F2F4;
-
-  /* Text colors */
   --bi-color-text-primary: #18191C;
   --bi-color-text-secondary: #61666D;
   --bi-color-text-placeholder: #9499A0;
-  --bi-color-text-link: #00A1D6;
-
-  /* Border colors */
   --bi-color-border: #E3E5E7;
   --bi-color-border-light: #EBEBEB;
-
-  /* Shadow */
-  --bi-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --bi-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --bi-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.12);
-
-  /* Radius */
-  --bi-radius-sm: 4px;
+  --bi-shadow-card: 0 2px 8px rgba(0,0,0,0.04);
+  --bi-shadow-hover: 0 4px 16px rgba(0,0,0,0.08);
+  --bi-shadow-modal: 0 20px 60px rgba(0,0,0,0.15);
   --bi-radius-md: 8px;
   --bi-radius-lg: 12px;
   --bi-radius-full: 9999px;
-
-  /* Typography */
-  --bi-font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
-  --bi-font-display: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
-
-  /* Spacing */
-  --bi-spacing-xs: 4px;
-  --bi-spacing-sm: 8px;
-  --bi-spacing-md: 12px;
-  --bi-spacing-lg: 16px;
-  --bi-spacing-xl: 24px;
-  --bi-spacing-2xl: 32px;
-
-  /* Layout */
-  --bi-content-max-width: 1400px;
-  --bi-header-height: 64px;
+  --bi-font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
-
-/* Dark mode support */
-.dark {
-  --bi-color-background: #121212;
-  --bi-color-surface-1: #1E1E1E;
-  --bi-color-surface-2: #252525;
-  --bi-color-surface-3: #2A2A2A;
-  --bi-color-surface-hover: #333333;
-  --bi-color-text-primary: #F1F2F4;
-  --bi-color-text-secondary: #A1A4A8;
-  --bi-color-text-placeholder: #6B6F76;
-  --bi-color-border: #333333;
-  --bi-color-border-light: #2A2A2A;
-}
-
-/* ============================================
-   Typography Classes
-   ============================================ */
-.bi-display {
-  font-family: var(--bi-font-display);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.bi-h1 { font-size: 32px; font-weight: 700; line-height: 1.2; }
-.bi-h2 { font-size: 24px; font-weight: 700; line-height: 1.3; }
-.bi-h3 { font-size: 18px; font-weight: 600; line-height: 1.4; }
-.bi-h4 { font-size: 16px; font-weight: 600; line-height: 1.5; }
-.bi-body { font-size: 14px; font-weight: 400; line-height: 1.5; }
-.bi-body-sm { font-size: 13px; font-weight: 400; line-height: 1.5; }
-.bi-body-xs { font-size: 12px; font-weight: 400; line-height: 1.5; }
-.bi-caption { font-size: 11px; font-weight: 400; line-height: 1.4; }
-
-.bi-primary-text { color: var(--bi-color-text-primary); }
-.bi-secondary-text { color: var(--bi-color-text-secondary); }
-.bi-placeholder-text { color: var(--bi-color-text-placeholder); }
-.bi-primary-color { color: var(--bi-color-primary); }
-
-/* ============================================
-   Component Classes
-   ============================================ */
-.bi-btn-primary {
-  background-color: var(--bi-color-primary);
-  color: #FFFFFF;
-  border: none;
-  border-radius: var(--bi-radius-md);
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.bi-btn-primary:hover {
-  background-color: var(--bi-color-primary-dark);
-}
-
-.bi-btn-secondary {
-  background-color: transparent;
-  color: var(--bi-color-primary);
-  border: 1px solid var(--bi-color-primary);
-  border-radius: var(--bi-radius-md);
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.bi-btn-secondary:hover {
-  background-color: var(--bi-color-primary-50);
-}
-
-.bi-card {
-  background: var(--bi-color-surface-2);
-  border-radius: var(--bi-radius-md);
-  box-shadow: var(--bi-shadow-card);
-  transition: box-shadow 0.2s;
-}
-.bi-card:hover {
-  box-shadow: var(--bi-shadow-hover);
-}
-
-.bi-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  background: var(--bi-color-primary-50);
-  color: var(--bi-color-primary);
-  border-radius: var(--bi-radius-sm);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.bi-input {
-  background: var(--bi-color-surface-3);
-  border: 1px solid var(--bi-color-border);
-  border-radius: var(--bi-radius-md);
-  padding: 8px 12px;
-  font-size: 14px;
-  color: var(--bi-color-text-primary);
-  outline: none;
-  transition: border-color 0.2s;
-}
-.bi-input:focus {
-  border-color: var(--bi-color-primary);
-}
-
-.bi-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--bi-color-primary-200);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--bi-color-primary);
-  font-weight: 600;
-}
-
-.bi-video-card {
-  position: relative;
-  border-radius: var(--bi-radius-md);
-  overflow: hidden;
-  background: var(--bi-color-surface-3);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.bi-video-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--bi-shadow-hover);
-}
-
-.bi-nav-item {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 12px;
-  color: var(--bi-color-text-secondary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: var(--bi-radius-sm);
-  transition: all 0.15s;
-}
-.bi-nav-item:hover,
-.bi-nav-item.active {
-  color: var(--bi-color-primary);
-  background: var(--bi-color-primary-50);
-}
-
-.bi-progress {
-  height: 4px;
-  background: var(--bi-color-surface-3);
-  border-radius: var(--bi-radius-full);
-  overflow: hidden;
-}
-.bi-progress-fill {
-  height: 100%;
-  background: var(--bi-color-primary);
-  border-radius: var(--bi-radius-full);
-  transition: width 0.3s ease;
-}
-
-.bi-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  background: var(--bi-color-primary);
-  color: #FFFFFF;
-  border-radius: var(--bi-radius-full);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.bi-tooltip {
-  position: relative;
-  display: inline-block;
-}
-.bi-tooltip::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 8px;
-  background: var(--bi-color-text-primary);
-  color: #FFFFFF;
-  font-size: 12px;
-  border-radius: var(--bi-radius-sm);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s;
-}
-.bi-tooltip:hover::after {
-  opacity: 1;
-}
-
-/* ============================================
-   Utility Classes
-   ============================================ */
-.bi-flex { display: flex; }
-.bi-flex-col { display: flex; flex-direction: column; }
-.bi-flex-center { display: flex; align-items: center; justify-content: center; }
-.bi-flex-between { display: flex; align-items: center; justify-content: space-between; }
-.bi-flex-start { display: flex; align-items: center; justify-content: flex-start; }
-.bi-flex-end { display: flex; align-items: center; justify-content: flex-end; }
-
-.bi-text-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bi-text-ellipsis-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-.bi-overflow-hidden { overflow: hidden; }
-.bi-relative { position: relative; }
-.bi-absolute { position: absolute; }
-
-.bi-m-0 { margin: 0; }
-.bi-mx-auto { margin-left: auto; margin-right: auto; }
-.bi-mt-1 { margin-top: 4px; }
-.bi-mt-2 { margin-top: 8px; }
-.bi-mt-3 { margin-top: 12px; }
-.bi-mt-4 { margin-top: 16px; }
-.bi-mt-6 { margin-top: 24px; }
-.bi-mt-8 { margin-top: 32px; }
-.bi-mb-1 { margin-bottom: 4px; }
-.bi-mb-2 { margin-bottom: 8px; }
-.bi-mb-3 { margin-bottom: 12px; }
-.bi-mb-4 { margin-bottom: 16px; }
-.bi-mb-6 { margin-bottom: 24px; }
-
-.bi-p-2 { padding: 8px; }
-.bi-p-3 { padding: 12px; }
-.bi-p-4 { padding: 16px; }
-.bi-p-6 { padding: 24px; }
-
-.bi-rounded-sm { border-radius: var(--bi-radius-sm); }
-.bi-rounded-md { border-radius: var(--bi-radius-md); }
-.bi-rounded-lg { border-radius: var(--bi-radius-lg); }
-.bi-rounded-full { border-radius: var(--bi-radius-full); }
-
-.bi-bg-white { background: var(--bi-color-surface-2); }
-.bi-bg-gray { background: var(--bi-color-surface-1); }
-
-.bi-border { border: 1px solid var(--bi-color-border); }
-.bi-border-light { border: 1px solid var(--bi-color-border-light); }
-
-.bi-shadow-sm { box-shadow: var(--bi-shadow-card); }
-.bi-shadow-md { box-shadow: var(--bi-shadow-hover); }
-
-.bi-w-full { width: 100%; }
-.bi-h-full { height: 100%; }
-
-.bi-cursor-pointer { cursor: pointer; }
-.bi-select-none { user-select: none; }
-
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
-    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
-    <style type="text/tailwindcss">
-  
-  @layer base {
-    body { background: var(--bi-background); color: var(--bi-foreground); }
-    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
-    th { @apply whitespace-nowrap; }
-  }
-    </style>
-    <style>
-      .no-scrollbar::-webkit-scrollbar { display: none; }
-      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      [data-icon] {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        -webkit-mask-size: contain;
-        mask-size: contain;
-        -webkit-mask-repeat: no-repeat;
-        mask-repeat: no-repeat;
-        -webkit-mask-position: center;
-        mask-position: center;
-        background-color: currentColor;
-      }
-    </style>
+.bi-carousel { position: relative; overflow: hidden; border-radius: var(--bi-radius-lg); }
+.bi-carousel-track { display: flex; transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94); }
+.bi-carousel-slide { min-width: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.bi-carousel-dots { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+.bi-carousel-dot { width: 8px; height: 8px; border-radius: var(--bi-radius-full); background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; }
+.bi-carousel-dot.active { background: #FFFFFF; width: 24px; }
+.bi-carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: var(--bi-radius-full); background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: all 0.3s; border: none; z-index: 10; color: var(--bi-color-primary); }
+.bi-carousel:hover .bi-carousel-arrow { opacity: 1; }
+.bi-carousel-arrow.prev { left: 16px; } .bi-carousel-arrow.next { right: 16px; }
+.bi-tab { padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--bi-color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; white-space: nowrap; }
+.bi-tab:hover { color: var(--bi-color-primary); }
+.bi-tab.active { color: var(--bi-color-primary); border-bottom-color: var(--bi-color-primary); font-weight: 600; }
+.bi-tab-content { display: none; animation: fadeIn 0.3s ease; }
+.bi-tab-content.active { display: block; }
+.bi-video-card { position: relative; border-radius: var(--bi-radius-md); overflow: hidden; background: var(--bi-color-surface-3); cursor: pointer; transition: all 0.25s cubic-bezier(0.25,0.46,0.45,0.94); }
+.bi-video-card:hover { transform: translateY(-4px); box-shadow: var(--bi-shadow-hover); }
+.bi-video-card:hover .bi-video-thumb-overlay { opacity: 1; }
+.bi-video-thumb-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+.bi-action-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; background: rgba(0,0,0,0.6); border: none; border-radius: var(--bi-radius-full); font-size: 12px; color: white; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(4px); }
+.bi-action-btn:hover { background: var(--bi-color-primary); }
+.bi-card { background: var(--bi-color-surface-2); border-radius: var(--bi-radius-md); box-shadow: var(--bi-shadow-card); transition: all 0.2s; }
+.bi-card:hover { box-shadow: var(--bi-shadow-hover); }
+.bi-input { background: var(--bi-color-surface-3); border: 1px solid var(--bi-color-border); border-radius: var(--bi-radius-md); padding: 8px 12px; font-size: 14px; color: var(--bi-color-text-primary); outline: none; transition: all 0.2s; font-family: var(--bi-font-body); }
+.bi-input:focus { border-color: var(--bi-color-primary); box-shadow: 0 0 0 3px rgba(255,102,153,0.1); }
+.bi-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; background: var(--bi-color-primary); color: #FFFFFF; border-radius: var(--bi-radius-full); font-size: 11px; font-weight: 600; }
+.bi-toast { position: fixed; top: 80px; right: 24px; background: var(--bi-color-text-primary); color: #FFFFFF; padding: 12px 20px; border-radius: var(--bi-radius-md); font-size: 14px; z-index: 1000; opacity: 0; transform: translateX(20px); transition: all 0.3s ease; pointer-events: none; display: flex; align-items: center; gap: 8px; font-family: var(--bi-font-body); }
+.bi-toast.show { opacity: 1; transform: translateX(0); }
+.bi-toast.success { background: var(--state-success); }
+.bi-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+.bi-modal-overlay.show { opacity: 1; visibility: visible; }
+.bi-modal { background: #FFFFFF; border-radius: var(--bi-radius-lg); padding: 32px; width: 100%; max-width: 420px; transform: scale(0.9); transition: transform 0.3s ease; box-shadow: var(--bi-shadow-modal); font-family: var(--bi-font-body); }
+.bi-modal-overlay.show .bi-modal { transform: scale(1); }
+.bi-search-suggestions { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #FFFFFF; border-radius: var(--bi-radius-md); box-shadow: var(--bi-shadow-hover); padding: 8px 0; display: none; z-index: 100; font-family: var(--bi-font-body); }
+.bi-search-suggestions.show { display: block; }
+.bi-suggestion-item { padding: 8px 16px; font-size: 14px; color: var(--bi-color-text-primary); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+.bi-suggestion-item:hover, .bi-suggestion-item.active { background: var(--bi-color-primary-50); color: var(--bi-color-primary); }
+.bi-back-to-top { position: fixed; bottom: 32px; right: 32px; width: 44px; height: 44px; border-radius: var(--bi-radius-full); background: var(--bi-color-primary); color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; box-shadow: var(--bi-shadow-hover); opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s ease; z-index: 100; }
+.bi-back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+.bi-back-to-top:hover { background: var(--bi-color-primary-dark); transform: translateY(-2px); }
+.bi-category, .bi-nav-link { transition: all 0.15s; }
+.bi-category:hover, .bi-nav-link:hover { color: var(--bi-color-primary) !important; background: var(--bi-color-primary-50) !important; }
+.bi-category { border-radius: var(--bi-radius-md); padding: 4px 8px; }
+.bi-nav-link { border-radius: var(--bi-radius-md); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes heartBeat { 0% { transform: scale(1); } 25% { transform: scale(1.4); } 50% { transform: scale(0.9); } 100% { transform: scale(1); } }
+.text-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.scrollbar-hide { -webkit-scrollbar: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+</style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <!-- Top Navigation Bar -->
-  <header class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between">
-      <!-- Logo -->
-      <div class="flex items-center gap-6">
+<body class="bg-gray-50 min-h-screen font-sans" style="font-family: var(--bi-font-body);">
+
+  <!-- HEADER -->
+  <header class="bg-white shadow-sm sticky top-0 z-50" style="border-bottom: 1px solid var(--bi-color-border-light);">
+    <div class="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-6 shrink-0">
         <a href="#" class="flex items-center gap-2" aria-label="B站首页">
-          <div class="w-9 h-9 rounded-lg bg-[#FF6699] flex items-center justify-center">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background: var(--bi-color-primary);">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M5 8C5 6.89543 5.89543 6 7 6H8.5V4.5C8.5 4.22386 8.72386 4 9 4H15C15.2761 4 15.5 4.22386 15.5 4.5V6H17C18.1046 6 19 6.89543 19 8V16C19 17.1046 18.1046 18 17 18H15.5V19.5C15.5 19.7761 15.2761 20 15 20H9C8.72386 20 8.5 19.7761 8.5 19.5V18H7C5.89543 18 5 17.1046 5 16V8Z" fill="white"/>
-              <circle cx="10" cy="12" r="1.5" fill="white"/>
-              <circle cx="14" cy="12" r="1.5" fill="white"/>
+              <path d="M5 8C5 6.895 5.895 6 7 6H8.5V4.5C8.5 4.224 8.724 4 9 4H15C15.276 4 15.5 4.224 15.5 4.5V6H17C18.105 6 19 6.895 19 8V16C19 17.105 18.105 18 17 18H15.5V19.5C15.5 19.776 15.276 20 15 20H9C8.724 20 8.5 19.776 8.5 19.5V18H7C5.895 18 5 17.105 5 16V8Z" fill="white"/>
+              <circle cx="10" cy="12" r="1.5" fill="white"/><circle cx="14" cy="12" r="1.5" fill="white"/>
             </svg>
           </div>
-          <span class="text-xl font-bold text-[#FF6699] tracking-tight">Bilibili</span>
+          <span class="text-xl font-bold" style="color: var(--bi-color-primary);">Bilibili</span>
         </a>
-        
-        <!-- Main Nav -->
-        <nav class="hidden md:flex items-center gap-1">
-          <a href="#" class="px-3 py-2 text-sm font-medium text-[#18191C] rounded-md bg-[#FFF1F5] text-[#FF6699]">首页</a>
-          <a href="#" class="px-3 py-2 text-sm font-medium text-[#61666D] rounded-md hover:text-[#FF6699] hover:bg-[#FFF1F5]">番剧</a>
-          <a href="#" class="px-3 py-2 text-sm font-medium text-[#61666D] rounded-md hover:text-[#FF6699] hover:bg-[#FFF1F5]">直播</a>
-          <a href="#" class="px-3 py-2 text-sm font-medium text-[#61666D] rounded-md hover:text-[#FF6699] hover:bg-[#FFF1F5]">视频</a>
-          <a href="#" class="px-3 py-2 text-sm font-medium text-[#61666D] rounded-md hover:text-[#FF6699] hover:bg-[#FFF1F5]">投稿</a>
+        <nav class="hidden lg:flex items-center gap-1">
+          <a href="#" class="bi-nav-link px-3 py-2 text-sm font-medium rounded-md" style="color: var(--bi-color-primary); background: var(--bi-color-primary-50);">首页</a>
+          <a href="#" class="bi-nav-link px-3 py-2 text-sm font-medium rounded-md" style="color: var(--bi-color-text-secondary);">番剧</a>
+          <a href="#" class="bi-nav-link px-3 py-2 text-sm font-medium rounded-md" style="color: var(--bi-color-text-secondary);">直播</a>
+          <a href="#" class="bi-nav-link px-3 py-2 text-sm font-medium rounded-md" style="color: var(--bi-color-text-secondary);">视频</a>
+          <a href="#" class="bi-nav-link px-3 py-2 text-sm font-medium rounded-md" style="color: var(--bi-color-text-secondary);">投稿</a>
         </nav>
       </div>
-
-      <!-- Search Bar -->
-      <div class="flex-1 max-w-md mx-4">
+      <div class="flex-1 max-w-md mx-4 relative" id="search-container">
         <div class="relative">
-          <input type="text" placeholder="搜索视频、UP主、话题" class="w-full h-10 pl-10 pr-4 bg-gray-100 border border-transparent rounded-full text-sm focus:bg-white focus:border-[#FF6699] focus:outline-none transition-all">
-          <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+          <input type="text" id="search-input" placeholder="搜索视频、UP主、话题" class="bi-input w-full h-10 pl-10 pr-4 rounded-full">
+          <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--bi-color-text-placeholder);"></i>
+          <div class="bi-search-suggestions" id="search-suggestions"></div>
         </div>
       </div>
-
-      <!-- User Actions -->
-      <div class="flex items-center gap-4">
-        <button class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#61666D] rounded-full hover:bg-gray-100">
-          <i data-lucide="message-circle" class="w-4 h-4"></i>
-          <span>消息</span>
-        </button>
-        <button class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#61666D] rounded-full hover:bg-gray-100">
-          <i data-lucide="star" class="w-4 h-4"></i>
-          <span>收藏</span>
-        </button>
-        <button class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-[#61666D] rounded-full hover:bg-gray-100">
-          <i data-lucide="history" class="w-4 h-4"></i>
-          <span>历史</span>
-        </button>
-        <div class="hidden sm:flex items-center gap-2">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#FF6699] to-[#FF8FB8] flex items-center justify-center text-white text-sm font-medium">
-            <i data-lucide="user" class="w-4 h-4"></i>
-          </div>
-        </div>
-        <button class="bg-[#FF6699] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#E8558A] transition-colors">
-          登录
-        </button>
+      <div class="flex items-center gap-3 shrink-0">
+        <button class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full hover:bg-gray-100 transition-colors relative" style="color: var(--bi-color-text-secondary);"><i data-lucide="message-circle" class="w-4 h-4"></i><span class="hidden md:inline">消息</span><span class="bi-badge absolute -top-1 -right-1">3</span></button>
+        <button class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full hover:bg-gray-100 transition-colors" style="color: var(--bi-color-text-secondary);"><i data-lucide="star" class="w-4 h-4"></i><span class="hidden md:inline">收藏</span></button>
+        <button class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full hover:bg-gray-100 transition-colors" style="color: var(--bi-color-text-secondary);"><i data-lucide="history" class="w-4 h-4"></i><span class="hidden md:inline">历史</span></button>
+        <button id="login-btn" class="bg-[#FF6699] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#E8558A] transition-all hover:shadow-lg">登录</button>
       </div>
     </div>
   </header>
 
-  <!-- Category Bar -->
-  <nav class="bg-white border-b border-gray-100 sticky top-16 z-40">
+  <!-- CATEGORY BAR -->
+  <nav class="bg-white border-b sticky top-16 z-40" style="border-color: var(--bi-color-border-light);">
     <div class="max-w-[1400px] mx-auto px-4">
-      <div class="flex items-center gap-6 overflow-x-auto py-3 scrollbar-hide">
-        <a href="#" class="flex items-center gap-1.5 shrink-0 text-sm font-medium text-[#FF6699]">
-          <i data-lucide="home" class="w-4 h-4"></i>
-          首页
-        </a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">推荐</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">动画</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">番剧</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">音乐</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">舞蹈</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">游戏</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">知识</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">科技</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">运动</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">汽车</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">生活</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">美食</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">动物圈</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">鬼畜</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">时尚</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">资讯</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">娱乐</a>
-        <a href="#" class="shrink-0 text-sm text-[#61666D] hover:text-[#FF6699]">影视</a>
+      <div class="flex items-center gap-6 overflow-x-axis py-3 scrollbar-hide" id="category-bar" style="padding: 12px 0;">
+        <a href="#" class="bi-category flex items-center gap-1.5 shrink-0 text-sm font-medium" style="color: var(--bi-color-primary);"><i data-lucide="home" class="w-4 h-4"></i>首页</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">推荐</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">动画</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">番剧</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">音乐</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">舞蹈</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">游戏</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">知识</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">科技</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">运动</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">汽车</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">生活</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">美食</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">动物圈</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">鬼畜</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">时尚</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">资讯</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">娱乐</a>
+        <a href="#" class="bi-category shrink-0 text-sm" style="color: var(--bi-color-text-secondary);">影视</a>
       </div>
     </div>
   </nav>
 
-  <!-- Main Content -->
+  <!-- MAIN CONTENT -->
   <main class="max-w-[1400px] mx-auto px-4 py-6">
-    <!-- Banner Section -->
+    <!-- Banner -->
     <section class="mb-8">
-      <div class="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#FF6699] to-[#FF8FB8] h-64 md:h-80 lg:h-96">
-        <!-- Banner Content -->
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div class="text-center text-white px-8">
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-              热门推荐
+      <div class="bi-carousel" id="carousel" style="height: 320px;">
+        <div class="bi-carousel-track" id="carousel-track">
+          <div class="bi-carousel-slide" style="height: 100%; background: linear-gradient(135deg, var(--bi-color-primary) 0%, #FF8FB8 100%);">
+            <div class="text-center text-white px-8">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i>热门推荐</div>
+              <h1 class="text-4xl lg:text-5xl font-bold mb-3" style="text-wrap: balance; word-break: keep-all;">发现精彩视频</h1>
+              <p class="text-white/80 text-sm md:text-base max-w-lg mx-auto">海量优质内容，涵盖动画、番剧、音乐、舞蹈、游戏、知识等多个领域</p>
             </div>
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-wrap: balance" style="text-wrap: balance; word-break: keep-all;">
-              发现精彩视频
-            </h1>
-            <p class="text-white/80 text-sm md:text-base max-w-lg mx-auto">
-              海量优质内容，涵盖动画、番剧、音乐、舞蹈、游戏、知识等多个领域
-            </p>
-            <div class="flex gap-3 justify-center mt-6">
-              <button class="bg-white text-[#FF6699] px-6 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
-                立即观看
-              </button>
-              <button class="bg-white/20 backdrop-blur-sm text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-white/30 transition-colors">
-                了解更多
-              </button>
+          </div>
+          <div class="bi-carousel-slide" style="height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="text-center text-white px-8">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4"><i data-lucide="film" class="w-3.5 h-3.5"></i>新番上线</div>
+              <h1 class="text-4xl lg:text-5xl font-bold mb-3" style="text-wrap: balance; word-break: keep-all;">2024夏季新番</h1>
+              <p class="text-white/80 text-sm md:text-base max-w-lg mx-auto">本季度最热门的动画作品，独家高清更新，快来追番吧</p>
+            </div>
+          </div>
+          <div class="bi-carousel-slide" style="height: 100%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="text-center text-white px-8">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4"><i data-lucide="music" class="w-3.5 h-3.5"></i>音乐专区</div>
+              <h1 class="text-4xl lg:text-5xl font-bold mb-3" style="text-wrap: balance; word-break: keep-all;">音乐MV精选</h1>
+              <p class="text-white/80 text-sm md:text-base max-w-lg mx-auto">从流行到古风，从摇滚到电子，发现你喜欢的音乐</p>
+            </div>
+          </div>
+          <div class="bi-carousel-slide" style="height: 100%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="text-center text-white px-8">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4"><i data-lucide="gamepad-2" class="w-3.5 h-3.5"></i>游戏直播</div>
+              <h1 class="text-4xl lg:text-5xl font-bold mb-3" style="text-wrap: balance; word-break: keep-all;">游戏直播狂欢</h1>
+              <p class="text-white/80 text-sm md:text-base max-w-lg mx-auto">精彩赛事直播，大神操作解析，一起游戏一起嗨</p>
             </div>
           </div>
         </div>
-        
-        <!-- Decorative elements -->
-        <div class="absolute top-4 right-4 flex gap-2">
-          <div class="w-3 h-3 rounded-full bg-white/60"></div>
-          <div class="w-3 h-3 rounded-full bg-white"></div>
-          <div class="w-3 h-3 rounded-full bg-white/60"></div>
+        <button class="bi-carousel-arrow prev" id="carousel-prev" aria-label="上一张"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+        <button class="bi-carousel-arrow next" id="carousel-next" aria-label="下一张"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+        <div class="bi-carousel-dots" id="carousel-dots">
+          <div class="bi-carousel-dot active"></div>
+          <div class="bi-carousel-dot"></div>
+          <div class="bi-carousel-dot"></div>
+          <div class="bi-carousel-dot"></div>
         </div>
       </div>
     </section>
 
-    <!-- Content Area: Video Grid + Sidebar -->
+    <!-- Content -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- Video Grid (3 columns) -->
+      <!-- Videos -->
       <div class="lg:col-span-3">
-        <!-- Section Header -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <h2 class="text-lg font-bold text-[#18191C]">推荐视频</h2>
-            <span class="text-xs text-[#FF6699] bg-[#FFF1F5] px-2 py-0.5 rounded-full">热门推荐</span>
+            <h2 class="text-lg font-bold" style="color: var(--bi-color-text-primary);">推荐视频</h2>
+            <span class="text-xs" style="color: var(--bi-color-primary); background: var(--bi-color-primary-50); padding: 2px 8px; border-radius: var(--bi-radius-full);">热门推荐</span>
           </div>
-          <div class="flex gap-2">
-            <button class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#61666D] bg-gray-100 rounded-full hover:bg-gray-200">
-              综合
-            </button>
-            <button class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#61666D] bg-gray-100 rounded-full hover:bg-gray-200">
-              最新
-            </button>
+          <div class="flex gap-0" id="sort-tabs">
+            <div class="bi-tab active" data-tab="综合">综合</div>
+            <div class="bi-tab" data-tab="最新">最新</div>
+            <div class="bi-tab" data-tab="热门">热门</div>
           </div>
         </div>
-
-        <!-- Video Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-          <!-- Video Card 1 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                10:25
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                128.5万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              2024年最火的10个动漫作品盘点
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">A</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">动画达人阿明</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">2小时前</span>
-            </div>
-          </article>
-
-          <!-- Video Card 2 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#f093fb] to-[#f5576c] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                05:42
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                89.2万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              超燃游戏混剪 - 那些年我们一起追过的游戏
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">G</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">游戏君</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">5小时前</span>
-            </div>
-          </article>
-
-          <!-- Video Card 3 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                15:30
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                256.8万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              程序员入门到进阶 - 完整版编程教程
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">C</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">编程小哥</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">1天前</span>
-            </div>
-          </article>
-
-          <!-- Video Card 4 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#fa709a] to-[#fee140] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                03:18
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                45.6万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              超可爱猫咪日常 - 今日份治愈
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">M</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">萌宠乐园</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">3小时前</span>
-            </div>
-          </article>
-
-          <!-- Video Card 5 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#a8edea] to-[#fed6e3] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                22:15
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                67.3万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              日本街头美食大探秘 - 地道日式料理
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">F</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">美食旅行者</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">8小时前</span>
-            </div>
-          </article>
-
-          <!-- Video Card 6 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#ffecd2] to-[#fcb69f] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                08:45
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                198.4万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              舞蹈挑战 - 当红歌曲舞蹈教学
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">D</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">舞蹈教室</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">6小时前</span>
-            </div>
-          </article>
-
-          <!-- Video Card 7 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#ff9a9e] to-[#fecfef] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                12:00
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                34.7万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              科技前沿 - 最新AI技术解读
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">T</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">科技前沿</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">12小时前</span>
-            </div>
-          </article>
-
-          <!-- Video Card 8 -->
-          <article class="group cursor-pointer">
-            <div class="relative aspect-video rounded-lg overflow-hidden bg-gray-200 mb-2">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#d4fc79] to-[#96e6a1] flex items-center justify-center">
-                <i data-lucide="play" class="w-8 h-8 text-white/80"></i>
-              </div>
-              <div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                18:30
-              </div>
-              <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1">
-                <i data-lucide="eye" class="w-3 h-3"></i>
-                72.1万
-              </div>
-            </div>
-            <h3 class="text-sm font-medium text-[#18191C] line-clamp-2 group-hover:text-[#FF6699] transition-colors">
-              健身教学 - 居家燃脂运动课程
-            </h3>
-            <div class="flex items-center gap-1 mt-1">
-              <div class="w-4 h-4 rounded-full bg-[#FFB8C9] flex items-center justify-center">
-                <span class="text-[10px] font-medium text-[#FF6699]">F</span>
-              </div>
-              <span class="text-xs text-[#9499A0] truncate">健身达人</span>
-              <span class="text-xs text-[#9499A0]">·</span>
-              <span class="text-xs text-[#9499A0]">4小时前</span>
-            </div>
-          </article>
+        <div id="tab-contents">
+          <div class="bi-tab-content active" data-tab-content="综合"><div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" id="video-grid-综合"></div></div>
+          <div class="bi-tab-content" data-tab-content="最新"><div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" id="video-grid-最新"></div></div>
+          <div class="bi-tab-content" data-tab-content="热门"><div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" id="video-grid-热门"></div></div>
         </div>
-
-        <!-- Load More -->
         <div class="flex justify-center mt-8">
-          <button class="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-full text-sm font-medium text-[#61666D] hover:text-[#FF6699] hover:border-[#FF6699] transition-all shadow-sm">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            换一换
+          <button id="load-more-btn" class="flex items-center gap-2 px-6 py-2.5 bg-white border rounded-full text-sm font-medium transition-all hover:shadow-md" style="border-color: var(--bi-color-border); color: var(--bi-color-text-secondary);">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i><span>换一换</span>
           </button>
         </div>
       </div>
 
-      <!-- Sidebar (1 column) -->
+      <!-- Sidebar -->
       <aside class="space-y-6">
-        <!-- Ranking Section -->
-        <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="bi-card p-4" style="border-radius: var(--bi-radius-lg);">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-bold text-[#18191C] flex items-center gap-1.5">
-              <i data-lucide="trophy" class="w-4 h-4 text-[#FF6699]"></i>
-              排行榜
-            </h3>
-            <button class="text-xs text-[#61666D] hover:text-[#FF6699]">更多</button>
+            <h3 class="text-sm font-bold flex items-center gap-1.5" style="color: var(--bi-color-text-primary);"><i data-lucide="trophy" class="w-4 h-4" style="color: var(--bi-color-primary);"></i>排行榜</h3>
+            <button class="text-xs" style="color: var(--bi-color-text-secondary);" data-action="ranking">更多</button>
           </div>
-          <ol class="space-y-3">
-            <li class="flex items-center gap-3">
-              <span class="text-xs font-bold text-[#FF6699] w-5 text-center">1</span>
-              <div class="w-10 h-10 rounded bg-gradient-to-br from-[#ffecd2] to-[#fcb69f] flex items-center justify-center">
-                <i data-lucide="film" class="w-4 h-4 text-white"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">2024夏季新番总动员</p>
-                <p class="text-[10px] text-[#9499A0]">128.5万播放</p>
-              </div>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="text-xs font-bold text-[#FF6699] w-5 text-center">2</span>
-              <div class="w-10 h-10 rounded bg-gradient-to-br from-[#a8edea] to-[#fed6e3] flex items-center justify-center">
-                <i data-lucide="music" class="w-4 h-4 text-white"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">音乐创作大师课</p>
-                <p class="text-[10px] text-[#9499A0]">89.2万播放</p>
-              </div>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="text-xs font-bold text-[#FF6699] w-5 text-center">3</span>
-              <div class="w-10 h-10 rounded bg-gradient-to-br from-[#f093fb] to-[#f5576c] flex items-center justify-center">
-                <i data-lucide="gamepad-2" class="w-4 h-4 text-white"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">主机游戏精选推荐</p>
-                <p class="text-[10px] text-[#9499A0]">67.3万播放</p>
-              </div>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="text-xs font-bold text-[#61666D] w-5 text-center">4</span>
-              <div class="w-10 h-10 rounded bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center">
-                <i data-lucide="lightbulb" class="w-4 h-4 text-white"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">知识科普频道精选</p>
-                <p class="text-[10px] text-[#9499A0]">45.6万播放</p>
-              </div>
-            </li>
-            <li class="flex items-center gap-3">
-              <span class="text-xs font-bold text-[#61666D] w-5 text-center">5</span>
-              <div class="w-10 h-10 rounded bg-gradient-to-br from-[#fa709a] to-[#fee140] flex items-center justify-center">
-                <i data-lucide="utensils" class="w-4 h-4 text-white"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">美食烹饪教学合集</p>
-                <p class="text-[10px] text-[#9499A0]">34.7万播放</p>
-              </div>
-            </li>
-          </ol>
+          <ol class="space-y-3" id="ranking-list"></ol>
         </div>
-
-        <!-- Hot Topics Section -->
-        <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="bi-card p-4" style="border-radius: var(--bi-radius-lg);">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-bold text-[#18191C] flex items-center gap-1.5">
-              <i data-lucide="flame" class="w-4 h-4 text-[#FF6699]"></i>
-              热门话题
-            </h3>
-            <button class="text-xs text-[#61666D] hover:text-[#FF6699]">更多</button>
+            <h3 class="text-sm font-bold flex items-center gap-1.5" style="color: var(--bi-color-text-primary);"><i data-lucide="flame" class="w-4 h-4" style="color: var(--bi-color-primary);"></i>热门话题</h3>
+            <button class="text-xs" style="color: var(--bi-color-text-secondary);" data-action="topics">更多</button>
           </div>
-          <div class="flex flex-wrap gap-2">
-            <a href="#" class="px-2.5 py-1 bg-[#FFF1F5] text-[#FF6699] text-xs font-medium rounded-full hover:bg-[#FFDCE5] transition-colors"># 新番推荐</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 游戏攻略</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 音乐MV</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 舞蹈挑战</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 知识科普</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 美食探店</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 萌宠日常</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 健身教学</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 科技数码</a>
-            <a href="#" class="px-2.5 py-1 bg-gray-100 text-[#61666D] text-xs font-medium rounded-full hover:bg-gray-200 transition-colors"># 影视解说</a>
-          </div>
+          <div class="flex flex-wrap gap-2" id="topic-tags"></div>
         </div>
-
-        <!-- Popular UP Section -->
-        <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="bi-card p-4" style="border-radius: var(--bi-radius-lg);">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-bold text-[#18191C] flex items-center gap-1.5">
-              <i data-lucide="users" class="w-4 h-4 text-[#FF6699]"></i>
-              推荐UP主
-            </h3>
-            <button class="text-xs text-[#61666D] hover:text-[#FF6699]">更多</button>
+            <h3 class="text-sm font-bold flex items-center gap-1.5" style="color: var(--bi-color-text-primary);"><i data-lucide="users" class="w-4 h-4" style="color: var(--bi-color-primary);"></i>推荐UP主</h3>
+            <button class="text-xs" style="color: var(--bi-color-text-secondary);" data-action="ups">更多</button>
           </div>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#FF6699] to-[#FF8FB8] flex items-center justify-center text-white text-xs font-medium">
-                A
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">动画达人阿明</p>
-                <p class="text-[10px] text-[#9499A0]">粉丝 128.5万</p>
-              </div>
-              <button class="text-xs text-[#FF6699] border border-[#FF6699] px-2 py-0.5 rounded-full hover:bg-[#FFF1F5]">关注</button>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center text-white text-xs font-medium">
-                G
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">游戏君</p>
-                <p class="text-[10px] text-[#9499A0]">粉丝 89.2万</p>
-              </div>
-              <button class="text-xs text-[#FF6699] border border-[#FF6699] px-2 py-0.5 rounded-full hover:bg-[#FFF1F5]">关注</button>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#a8edea] to-[#fed6e3] flex items-center justify-center text-white text-xs font-medium">
-                M
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-[#18191C] truncate">萌宠乐园</p>
-                <p class="text-[10px] text-[#9499A0]">粉丝 67.3万</p>
-              </div>
-              <button class="text-xs text-[#FF6699] border border-[#FF6699] px-2 py-0.5 rounded-full hover:bg-[#FFF1F5]">关注</button>
-            </div>
-          </div>
+          <div class="space-y-3" id="up-list"></div>
+        </div>
+        <div class="bi-card p-4" style="border-radius: var(--bi-radius-lg); background: linear-gradient(135deg, var(--bi-color-primary-50) 0%, #FFFFFF 100%);" id="daily-tip">
+          <div class="flex items-center gap-2 mb-3"><i data-lucide="lightbulb" class="w-4 h-4" style="color: var(--bi-color-primary);"></i><h3 class="text-sm font-bold" style="color: var(--bi-color-text-primary);">每日小tip</h3></div>
+          <p class="text-xs" style="color: var(--bi-color-text-secondary); line-height: 1.5;">长按视频封面可以收藏到稍后再看，方便随时回顾哦～</p>
+          <button class="mt-3 text-xs font-medium" style="color: var(--bi-color-primary);" data-action="close-tip">知道了</button>
         </div>
       </aside>
     </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-white border-t border-gray-100 mt-12">
+  <!-- FOOTER -->
+  <footer class="bg-white border-t mt-12" style="border-color: var(--bi-color-border-light);">
     <div class="max-w-[1400px] mx-auto px-4 py-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-        <div>
-          <h4 class="text-sm font-bold text-[#18191C] mb-3">关于B站</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">关于我们</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">用户协议</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">隐私政策</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">联系方式</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-sm font-bold text-[#18191C] mb-3">帮助中心</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">常见问题</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">投稿规则</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">帮助中心</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">意见反馈</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-sm font-bold text-[#18191C] mb-3">创作者</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">投稿中心</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">创作学院</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">官方活动</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">商业化服务</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-sm font-bold text-[#18191C] mb-3">关注我们</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">官方微博</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">官方微信</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">QQ群</a></li>
-            <li><a href="#" class="text-xs text-[#61666D] hover:text-[#FF6699]">下载App</a></li>
-          </ul>
-        </div>
+        <div><h4 class="text-sm font-bold mb-3" style="color: var(--bi-color-text-primary);">关于B站</h4><ul class="space-y-2"><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">关于我们</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">用户协议</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">隐私政策</a></li></ul></div>
+        <div><h4 class="text-sm font-bold mb-3" style="color: var(--bi-color-text-primary);">帮助中心</h4><ul class="space-y-2"><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">常见问题</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">投稿规则</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">意见反馈</a></li></ul></div>
+        <div><h4 class="text-sm font-bold mb-3" style="color: var(--bi-color-text-primary);">创作者</h4><ul class="space-y-2"><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">投稿中心</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">创作学院</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">官方活动</a></li></ul></div>
+        <div><h4 class="text-sm font-bold mb-3" style="color: var(--bi-color-text-primary);">关注我们</h4><ul class="space-y-2"><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">官方微博</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">官方微信</a></li><li><a href="#" class="text-xs hover:underline" style="color: var(--bi-color-text-secondary);">下载App</a></li></ul></div>
       </div>
-      <div class="pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4" style="border-color: var(--bi-color-border-light);">
         <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded bg-[#FF6699] flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M5 8C5 6.89543 5.89543 6 7 6H8.5V4.5C8.5 4.22386 8.72386 4 9 4H15C15.2761 4 15.5 4.22386 15.5 4.5V6H17C18.1046 6 19 6.89543 19 8V16C19 17.1046 18.1046 18 17 18H15.5V19.5C15.5 19.7761 15.2761 20 15 20H9C8.72386 20 8.5 19.7761 8.5 19.5V18H7C5.89543 18 5 17.1046 5 16V8Z" fill="white"/>
-            </svg>
+          <div class="w-7 h-7 rounded flex items-center justify-center" style="background: var(--bi-color-primary);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 8C5 6.895 5.895 6 7 6H8.5V4.5C8.5 4.224 8.724 4 9 4H15C15.276 4 15.5 4.224 15.5 4.5V6H17C18.105 6 19 6.895 19 8V16C19 17.105 18.105 18 17 18H15.5V19.5C15.5 19.776 15.276 20 15 20H9C8.724 20 8.5 19.776 8.5 19.5V18H7C5.895 18 5 17.105 5 16V8Z" fill="white"/></svg>
           </div>
-          <span class="text-xs font-bold text-[#18191C]">Bilibili © 2026</span>
+          <span class="text-xs font-bold" style="color: var(--bi-color-text-primary);">Bilibili © 2026</span>
         </div>
-        <p class="text-xs text-[#9499A0]">哔哩哔哩 (゜-゜)つロ 干杯~-bilibili</p>
+        <p class="text-xs" style="color: var(--bi-color-text-placeholder);">哔哩哔哩 (゜-゜)つロ 干杯~-bilibili</p>
       </div>
     </div>
   </footer>
 
+  <!-- Toast -->
+  <div class="bi-toast" id="toast"><i data-lucide="check-circle" class="w-4 h-4"></i><span id="toast-message">操作成功</span></div>
+
+  <!-- Login Modal -->
+  <div class="bi-modal-overlay" id="login-modal">
+    <div class="bi-modal">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-bold" style="color: var(--bi-color-text-primary);">登录哔哩哔哩</h3>
+        <button id="close-login-modal" class="p-1 rounded-full hover:bg-gray-100 transition-colors" style="color: var(--bi-color-text-placeholder);"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div><label class="block text-sm font-medium mb-1.5" style="color: var(--bi-color-text-primary);">手机号/邮箱</label><input type="text" class="bi-input w-full" placeholder="请输入手机号或邮箱"></div>
+        <div><label class="block text-sm font-medium mb-1.5" style="color: var(--bi-color-text-primary);">密码</label>
+          <div class="relative"><input type="password" id="login-password" class="bi-input w-full pr-10" placeholder="请输入密码">
+            <button id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 p-1" style="color: var(--bi-color-text-placeholder);" type="button"><i data-lucide="eye" class="w-4 h-4"></i></button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded" style="accent-color: var(--bi-color-primary);"><span class="text-xs" style="color: var(--bi-color-text-secondary);">记住登录状态</span></label>
+          <a href="#" class="text-xs hover:underline" style="color: var(--bi-color-primary);">忘记密码？</a>
+        </div>
+        <button id="submit-login" class="bg-[#FF6699] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#E8558A] transition-all w-full">登录</button>
+      </div>
+      <div class="flex items-center gap-3 my-6">
+        <div class="flex-1" style="height: 1px; background: var(--bi-color-border-light);"></div>
+        <span class="text-xs" style="color: var(--bi-color-text-placeholder);">其他登录方式</span>
+        <div class="flex-1" style="height: 1px; background: var(--bi-color-border-light);"></div>
+      </div>
+      <div class="flex items-center justify-center gap-4">
+        <button class="w-10 h-10 rounded-full bg-[#EA4335] flex items-center justify-center text-white hover:opacity-80 transition-opacity" aria-label="微信登录"><i data-lucide="message-circle" class="w-5 h-5"></i></button>
+        <button class="w-10 h-10 rounded-full bg-[#1DA1F2] flex items-center justify-center text-white hover:opacity-80 transition-opacity" aria-label="微博登录"><i data-lucide="twitter" class="w-5 h-5"></i></button>
+        <button class="w-10 h-10 rounded-full bg-[#333] flex items-center justify-center text-white hover:opacity-80 transition-opacity" aria-label="QQ登录"><i data-lucide="at-sign" class="w-5 h-5"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to Top -->
+  <button class="bi-back-to-top" id="back-to-top" aria-label="回到顶部"><i data-lucide="chevron-up" class="w-5 h-5"></i></button>
+
+  <!-- SCRIPTS -->
+  <script src="https://unpkg.com/lucide@1.7.0/dist/umd/lucide.js"></script>
   <script>
-    // Initialize Lucide icons
     lucide.createIcons();
+
+    // === DATA ===
+    const videos = [
+      { id: 1, title: '2024年最火的10个动漫作品盘点', up: '动画达人阿明', fans: '128.5万', time: '2小时前', views: '128.5万', duration: '10:25', gradient: 'from-[#667eea] to-[#764ba2]', progress: 72 },
+      { id: 2, title: '超燃游戏混剪 - 那些年我们一起追过的游戏', up: '游戏君', fans: '89.2万', time: '5小时前', views: '89.2万', duration: '05:42', gradient: 'from-[#f093fb] to-[#f5576c]', progress: 35 },
+      { id: 3, title: '程序员入门到进阶 - 完整版编程教程', up: '编程小哥', fans: '67.3万', time: '1天前', views: '256.8万', duration: '15:30', gradient: 'from-[#4facfe] to-[#00f2fe]', progress: 88 },
+      { id: 4, title: '超可爱猫咪日常 - 今日份治愈', up: '萌宠乐园', fans: '45.6万', time: '3小时前', views: '45.6万', duration: '03:18', gradient: 'from-[#fa709a] to-[#fee140]', progress: 12 },
+      { id: 5, title: '日本街头美食大探秘 - 地道日式料理', up: '美食旅行者', fans: '34.7万', time: '8小时前', views: '67.3万', duration: '22:15', gradient: 'from-[#a8edea] to-[#fed6e3]', progress: 45 },
+      { id: 6, title: '舞蹈挑战 - 当红歌曲舞蹈教学', up: '舞蹈教室', fans: '72.1万', time: '6小时前', views: '198.4万', duration: '08:45', gradient: 'from-[#ffecd2] to-[#fcb69f]', progress: 65 },
+      { id: 7, title: '科技前沿 - 最新AI技术解读', up: '科技前沿', fans: '56.8万', time: '12小时前', views: '34.7万', duration: '12:00', gradient: 'from-[#ff9a9e] to-[#fecfef]', progress: 28 },
+      { id: 8, title: '健身教学 - 居家燃脂运动课程', up: '健身达人', fans: '91.3万', time: '4_hours ago', views: '72.1万', duration: '18:30', gradient: 'from-[#d4fc79] to-[#96e6a1]', progress: 91 },
+      { id: 9, title: '手办模型制作全过程 - 从零开始', up: '模型工匠', fans: '23.4万', time: '1天前', views: '15.2万', duration: '25:10', gradient: 'from-[#e0c3fc] to-[#8ec5fc]', progress: 55 },
+      { id: 10, title: '钢琴演奏 - 经典动漫主题曲合集', up: '音乐家', fans: '102.5万', time: '2天前', views: '345.6万', duration: '35:20', gradient: 'from-[#f5f7fa] to-[#c3cfe2]', progress: 40 },
+      { id: 11, title: '摄影教程 - 手机也能拍出大片感', up: '摄影师', fans: '78.9万', time: '6小时前', views: '89.4万', duration: '14:30', gradient: 'from-[#ffecd2] to-[#fcb69f]', progress: 78 },
+      { id: 12, title: '历史解密 - 你不知道的古代秘密', up: '历史学者', fans: '156.7万', time: '1天前', views: '234.5万', duration: '20:45', gradient: 'from-[#667eea] to-[#764ba2]', progress: 33 }
+    ];
+
+    const rankings = [
+      { rank: 1, title: '2024夏季新番总动员', views: '128.5万播放', icon: 'film', gradient: 'from-[#ffecd2] to-[#fcb69f]' },
+      { rank: 2, title: '音乐创作大师课', views: '89.2万播放', icon: 'music', gradient: 'from-[#a8edea] to-[#fed6e3]' },
+      { rank: 3, title: '主机游戏精选推荐', views: '67.3万播放', icon: 'gamepad-2', gradient: 'from-[#f093fb] to-[#f5576c]' },
+      { rank: 4, title: '知识科普频道精选', views: '45.6万播放', icon: 'lightbulb', gradient: 'from-[#4facfe] to-[#00f2fe]' },
+      { rank: 5, title: '美食烹饪教学合集', views: '34.7万播放', icon: 'utensils', gradient: 'from-[#fa709a] to-[#fee140]' }
+    ];
+
+    const topics = ['# 新番推荐', '# 游戏攻略', '# 音乐MV', '# 舞蹈挑战', '# 知识科普', '# 美食探店', '# 萌宠日常', '# 健身教学', '# 科技数码', '# 影视解说'];
+
+    const ups = [
+      { name: '动画达人阿明', fans: '粉丝 128.5万', initial: 'A', gradient: 'from-[#FF6699] to-[#FF8FB8]', followed: false },
+      { name: '游戏君', fans: '粉丝 89.2万', initial: 'G', gradient: 'from-[#4facfe] to-[#00f2fe]', followed: false },
+      { name: '萌宠乐园', fans: '粉丝 67.3万', initial: 'M', gradient: 'from-[#a8edea] to-[#fed6e3]', followed: false },
+      { name: '美食旅行者', fans: '粉丝 34.7万', initial: 'F', gradient: 'from-[#ffecd2] to-[#fcb69f]', followed: false }
+    ];
+
+    const searchSuggestionsData = ['2024新番推荐', '游戏攻略大全', '音乐MV合集', '舞蹈教学视频', '知识科普频道', '美食探店', '萌宠日常', '健身教学', '科技数码评测', '影视解说', '动漫杂谈', '编程教程'];
+
+    // === RENDER ===
+    function createVideoCard(video) {
+      return '<article class="bi-video-card" data-video-id="'+video.id+'">'
+        +'<div class="relative aspect-video rounded-t-lg overflow-hidden">'
+          +'<div class="absolute inset-0 bg-gradient-to-br '+video.gradient+' flex items-center justify-center"><i data-lucide="play" class="w-8 h-8 text-white/80"></i></div>'
+          +'<div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">'+video.duration+'</div>'
+          +'<div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i>'+video.views+'</div>'
+          +'<div class="bi-video-thumb-overlay"><div class="flex gap-2">'
+            +'<button class="bi-action-btn like-btn" data-action="like" data-video-id="'+video.id+'"><i data-lucide="heart" class="w-4 h-4"></i><span>点赞</span></button>'
+            +'<button class="bi-action-btn coin-btn" data-action="coin" data-video-id="'+video.id+'"><i data-lucide="coins" class="w-4 h-4"></i><span>投币</span></button>'
+            +'<button class="bi-action-btn fav-btn" data-action="fav" data-video-id="'+video.id+'"><i data-lucide="bookmark" class="w-4 h-4"></i><span>收藏</span></button>'
+          +'</div></div>'
+          +'<div class="absolute bottom-0 left-0 height-3 bg-[#FF6699] transition-opacity duration-200 opacity-0 hover:opacity-100" style="width:'+video.progress+'%; height:3px; background: var(--bi-color-primary); opacity:0; transition:opacity .2s;"></div>'
+        +'</div>'
+        +'<div class="p-3">'
+          +'<h3 class="text-sm font-medium line-clamp-2" style="color: var(--bi-color-text-primary);">'+video.title+'</h3>'
+          +'<div class="flex items-center gap-1 mt-2">'
+            +'<div class="w-4 h-4 rounded-full flex items-center justify-center" style="background: var(--bi-color-primary-200);"><span class="text-[10px] font-medium" style="color: var(--bi-color-primary);">'+video.up[0]+'</span></div>'
+            +'<span class="text-xs text-ellipsis" style="color: var(--bi-color-text-placeholder);">'+video.up+'</span>'
+            +'<span class="text-xs" style="color: var(--bi-color-text-placeholder);">·</span>'
+            +'<span class="text-xs" style="color: var(--bi-color-text-placeholder);">'+video.time+'</span>'
+          +'</div>'
+        +'</div></article>';
+    }
+
+    function renderVideos(gridId, videosList) {
+      const grid = document.getElementById(gridId);
+      if (grid) { grid.innerHTML = videosList.map(createVideoCard).join(''); lucide.createIcons(); }
+    }
+
+    function renderRankings() {
+      const list = document.getElementById('ranking-list');
+      if (list) {
+        list.innerHTML = rankings.map(r => '<li class="flex items-center gap-3 cursor-pointer group">'
+          +'<span class="text-xs font-bold w-5 text-center" style="color:'+(r.rank<=3?'var(--bi-color-primary)':'var(--bi-color-text-secondary)')+'">'+r.rank+'</span>'
+          +'<div class="w-10 h-10 rounded flex items-center justify-center bg-gradient-to-br '+r.gradient+' group-hover:scale-110 transition-transform"><i data-lucide="'+r.icon+'" class="w-4 h-4 text-white"></i></div>'
+          +'<div class="flex-1 min-w-0"><p class="text-xs font-medium text-ellipsis" style="color: var(--bi-color-text-primary);">'+r.title+'</p><p class="text-[10px]" style="color: var(--bi-color-text-placeholder);">'+r.views+'</p></div>'
+        +'</li>').join('');
+        lucide.createIcons();
+      }
+    }
+
+    function renderTopics() {
+      const c = document.getElementById('topic-tags');
+      if (c) {
+        c.innerHTML = topics.map((t,i) => '<a href="#" class="px-2.5 py-1 rounded-full text-xs font-medium hover:opacity-80 transition-all hover:scale-105" style="'+(i===0?'color: var(--bi-color-primary); background: var(--bi-color-primary-50);':'color: var(--bi-color-text-secondary); background: var(--bi-color-surface-3);')+'">'+t+'</a>').join('');
+      }
+    }
+
+    function renderUps() {
+      const c = document.getElementById('up-list');
+      if (c) {
+        c.innerHTML = ups.map((u,i) => '<div class="flex items-center gap-3">'
+          +'<div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-medium bg-gradient-to-br '+u.gradient+'">'+u.initial+'</div>'
+          +'<div class="flex-1 min-w-0"><p class="text-xs font-medium text-ellipsis" style="color: var(--bi-color-text-primary);">'+u.name+'</p><p class="text-[10px]" style="color: var(--bi-color-text-placeholder);">'+u.fans+'</p></div>'
+          +'<button class="follow-btn text-xs border rounded-full px-3 py-1 hover:opacity-80 transition-all" data-up-id="'+i+'" style="color: var(--bi-color-primary); border-color: var(--bi-color-primary); background:'+(u.followed?'var(--bi-color-primary-50)':'transparent')+';">'+(u.followed?'已关注':'关注')+'</button>'
+        +'</div>').join('');
+      }
+    }
+
+    function initRender() {
+      renderVideos('video-grid-综合', videos);
+      renderVideos('video-grid-最新', [...videos].reverse());
+      renderVideos('video-grid-热门', [...videos].sort(function(a,b){ return parseFloat(b.views)-parseFloat(a.views); }));
+      renderRankings(); renderTopics(); renderUps();
+    }
+    initRender();
+
+    // === TOAST ===
+    function showToast(message, type) {
+      type = type || 'success';
+      var toast = document.getElementById('toast');
+      var msg = document.getElementById('toast-message');
+      msg.textContent = message;
+      toast.className = 'bi-toast show ' + type;
+      setTimeout(function() { toast.classList.remove('show'); }, 2500);
+    }
+
+    // === CAROUSEL ===
+    var carouselTrack = document.getElementById('carousel-track');
+    var carouselDots = document.querySelectorAll('.bi-carousel-dot');
+    var carouselPrev = document.getElementById('carousel-prev');
+    var carouselNext = document.getElementById('carousel-next');
+    var currentSlide = 0;
+    var totalSlides = carouselDots.length;
+    var carouselInterval;
+
+    function goToSlide(idx) {
+      currentSlide = (idx + totalSlides) % totalSlides;
+      carouselTrack.style.transform = 'translateX(-'+(currentSlide*100)+'%)';
+      carouselDots.forEach(function(dot, i) { dot.classList.toggle('active', i === currentSlide); });
+    }
+    function nextSlide() { goToSlide(currentSlide + 1); }
+    function prevSlide() { goToSlide(currentSlide - 1); }
+
+    carouselNext.addEventListener('click', nextSlide);
+    carouselPrev.addEventListener('click', prevSlide);
+    carouselDots.forEach(function(dot, i) { dot.addEventListener('click', function() { goToSlide(i); }); });
+
+    function startCarousel() { carouselInterval = setInterval(nextSlide, 4000); }
+    function stopCarousel() { clearInterval(carouselInterval); }
+    startCarousel();
+    document.getElementById('carousel').addEventListener('mouseenter', stopCarousel);
+    document.getElementById('carousel').addEventListener('mouseleave', startCarousel);
+
+    // === TABS ===
+    var tabs = document.querySelectorAll('.bi-tab');
+    var tabContents = document.querySelectorAll('.bi-tab-content');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        var name = tab.dataset.tab;
+        tabs.forEach(function(t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        tabContents.forEach(function(content) {
+          content.classList.toggle('active', content.dataset.tabContent === name);
+        });
+        showToast('已切换到"' + name + '"排序', 'success');
+      });
+    });
+
+    // === VIDEO CARD ACTIONS (hover overlay) ===
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.like-btn')) {
+        e.stopPropagation();
+        var btn = e.target.closest('.like-btn');
+        var id = btn.dataset.videoId;
+        btn.classList.toggle('liked');
+        var isLiked = btn.classList.contains('liked');
+        var countEl = btn.querySelector('span');
+        var currentCount = countEl.textContent;
+        if (isLiked) { showToast('已点赞视频 #'+id, 'success'); }
+        else { showToast('已取消点赞', 'warning'); }
+      }
+      if (e.target.closest('.coin-btn')) {
+        e.stopPropagation();
+        var btn2 = e.target.closest('.coin-btn');
+        showToast('已投币 +1，下次可投 1 枚', 'success');
+      }
+      if (e.target.closest('.fav-btn')) {
+        e.stopPropagation();
+        var btn3 = e.target.closest('.fav-btn');
+        btn3.classList.toggle('liked');
+        var isFav = btn3.classList.contains('liked');
+        if (isFav) { showToast('已添加到收藏夹', 'success'); }
+        else { showToast('已移出收藏夹', 'warning'); }
+      }
+    });
+
+    // === SEARCH SUGGESTIONS ===
+    var searchInput = document.getElementById('search-input');
+    var searchSuggestions = document.getElementById('search-suggestions');
+    var suggestionIndex = -1;
+
+    searchInput.addEventListener('focus', function() {
+      renderSearchSuggestions(searchInput.value || '');
+    });
+    searchInput.addEventListener('input', function() {
+      renderSearchSuggestions(searchInput.value || '');
+      suggestionIndex = -1;
+    });
+    searchInput.addEventListener('keydown', function(e) {
+      var items = searchSuggestions.querySelectorAll('.bi-suggestion-item');
+      if (e.key === 'ArrowDown') { e.preventDefault(); suggestionIndex = Math.min(suggestionIndex + 1, items.length - 1); highlightSuggestion(items); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); suggestionIndex = Math.max(suggestionIndex - 1, -1); highlightSuggestion(items); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (suggestionIndex >= 0 && items[suggestionIndex]) { selectSuggestion(items[suggestionIndex]); } }
+    });
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#search-container')) { searchSuggestions.classList.remove('show'); }
+    });
+
+    function renderSearchSuggestions(query) {
+      var filtered = searchSuggestionsData.filter(function(s) { return s.toLowerCase().indexOf(query.toLowerCase()) >= 0; });
+      if (filtered.length === 0) { searchSuggestions.classList.remove('show'); return; }
+      searchSuggestions.innerHTML = filtered.map(function(s) {
+        return '<div class="bi-suggestion-item" data-suggestion="'+s+'"><i data-lucide="search" class="w-3 h-3"></i>'+s+'</div>';
+      }).join('');
+      searchSuggestions.classList.add('show');
+      lucide.createIcons();
+      var items = searchSuggestions.querySelectorAll('.bi-suggestion-item');
+      items.forEach(function(item) {
+        item.addEventListener('click', function() { selectSuggestion(item); });
+      });
+    }
+
+    function highlightSuggestion(items) {
+      items.forEach(function(item, i) { item.classList.toggle('active', i === suggestionIndex); });
+      if (suggestionIndex >= 0) { searchInput.value = items[suggestionIndex].dataset.suggestion; }
+    }
+
+    function selectSuggestion(item) {
+      searchInput.value = item.dataset.suggestion;
+      searchSuggestions.classList.remove('show');
+      showToast('正在搜索: '+item.dataset.suggestion, 'success');
+    }
+
+    // === LOGIN MODAL ===
+    var loginBtn = document.getElementById('login-btn');
+    var loginModal = document.getElementById('login-modal');
+    var closeLoginModal = document.getElementById('close-login-modal');
+    var togglePassword = document.getElementById('toggle-password');
+    var loginPassword = document.getElementById('login-password');
+    var submitLogin = document.getElementById('submit-login');
+
+    loginBtn.addEventListener('click', function() { loginModal.classList.add('show'); });
+    closeLoginModal.addEventListener('click', function() { loginModal.classList.remove('show'); });
+    loginModal.addEventListener('click', function(e) { if (e.target === loginModal) { loginModal.classList.remove('show'); } });
+    togglePassword.addEventListener('click', function() {
+      var type = loginPassword.type === 'password' ? 'text' : 'password';
+      loginPassword.type = type;
+      var icon = togglePassword.querySelector('[data-lucide]');
+      icon.dataset.lucide = type === 'password' ? 'eye' : 'eye-off';
+      lucide.createIcons();
+    });
+    submitLogin.addEventListener('click', function() {
+      loginModal.classList.remove('show');
+      showToast('登录成功！欢迎回来～', 'success');
+      loginBtn.textContent = '用户';
+      loginBtn.style.background = 'var(--bi-color-primary-200)';
+      loginBtn.style.color = 'var(--bi-color-primary)';
+    });
+
+    // === BACK TO TOP ===
+    var backToTop = document.getElementById('back-to-top');
+    window.addEventListener('scroll', function() {
+      backToTop.classList.toggle('show', window.scrollY > 300);
+    });
+    backToTop.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // === SIDEBAR ACTIONS ===
+    document.addEventListener('click', function(e) {
+      if (e.target.dataset.action === 'ranking') { showToast('正在前往排行榜...', 'success'); }
+      if (e.target.dataset.action === 'topics') { showToast('正在前往话题广场...', 'success'); }
+      if (e.target.dataset.action === 'ups') { showToast('正在前往UP主广场...', 'success'); }
+      if (e.target.dataset.action === 'close-tip') {
+        var tip = document.getElementById('daily-tip');
+        if (tip) { tip.style.transition = 'all 0.3s ease'; tip.style.opacity = '0'; tip.style.transform = 'translateY(20px)'; setTimeout(function() { tip.style.display = 'none'; }, 300); }
+        showToast('已关闭每日小tip', 'success');
+      }
+    });
+
+    // === FOLLOW UP ===
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.follow-btn');
+      if (!btn) return;
+      var upId = btn.dataset.upId;
+      ups[upId].followed = !ups[upId].followed;
+      btn.textContent = ups[upId].followed ? '已关注' : '关注';
+      btn.style.background = ups[upId].followed ? 'var(--bi-color-primary-50)' : 'transparent';
+      if (ups[upId].followed) { showToast('已关注 '+ups[upId].name, 'success'); }
+      else { showToast('已取消关注', 'warning'); }
+    });
+
+    // === LOAD MORE (换一换) ===
+    var loadMoreBtn = document.getElementById('load-more-btn');
+    loadMoreBtn.addEventListener('click', function() {
+      var activeContent = document.querySelector('.bi-tab-content.active');
+      var gridId = activeContent.querySelector('.grid').id;
+      // Shuffle and re-render
+      var shuffled = [...videos].sort(function() { return Math.random() - 0.5; });
+      renderVideos(gridId, shuffled);
+      // Animate the button
+      var icon = loadMoreBtn.querySelector('[data-lucide]');
+      icon.style.transition = 'transform 0.6s';
+      icon.style.transform = 'rotate(360deg)';
+      setTimeout(function() { icon.style.transform = ''; }, 600);
+      showToast('已刷新推荐内容', 'success');
+    });
+
+    // === CATEGORY NAV ===
+    document.addEventListener('click', function(e) {
+      var cat = e.target.closest('.bi-category');
+      if (cat) {
+        document.querySelectorAll('.bi-category').forEach(function(c) {
+          c.style.color = '';
+          c.style.background = '';
+        });
+        cat.style.color = 'var(--bi-color-primary)';
+        cat.style.fontWeight = '600';
+        showToast('正在浏览"' + cat.textContent + '"频道', 'success');
+      }
+      var nav = e.target.closest('.bi-nav-link');
+      if (nav) {
+        showToast('正在前往"' + nav.textContent + '"页面', 'success');
+      }
+    });
+
+    // === TOPIC TAG CLICK ===
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('a[href="#"]').classList && e.target.closest('a[href="#"]').parentElement.id === 'topic-tags') {
+        showToast('正在浏览话题: ' + e.target.textContent, 'success');
+      }
+    });
   </script>
 </body>
 </html>
