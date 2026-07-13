@@ -45,10 +45,17 @@ const {
   randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage
 } = useAppLogic()
 
-import { watch, nextTick, ref } from 'vue'
+import { watch, nextTick, ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import chinaCitiesAz from './utils/china-cities-az.json'
 import chinaCascaderOptions from './utils/china-cascader-options.json'
+
+const route = useRoute()
+const router = useRouter()
+const isFlashRoute = computed(() => route.path === '/flash')
+const goFlash = () => router.push('/flash')
+const backFromFlash = () => router.push('/')
 
 let weatherChartInstance = null
 const showCityPicker = ref(true)
@@ -335,6 +342,10 @@ watch(isDarkMode, () => {
         </template>
       </ul>
       <div class="sidebar-footers">
+        <div class="sidebar-footer" @click="goFlash" title="闪存">
+          <span class="nav-icon">⚡</span>
+          <span v-show="isSidebarOpen">闪存</span>
+        </div>
         <div class="sidebar-footer" @click="showWeatherDialog = true" title="实时天气">
           <span class="nav-icon">🌦️</span>
           <span v-show="isSidebarOpen">实时天气</span>
@@ -1529,7 +1540,34 @@ watch(isDarkMode, () => {
         </div>
       </div>
     </el-drawer>
+
+    <!-- 路由页面层（闪存等独立页面） -->
+    <div v-if="isFlashRoute" class="route-view-layer">
+      <div class="route-view-bar">
+        <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
+      </div>
+      <router-view />
+    </div>
   </div>
 </template>
 
 <style scoped src="./App.css"></style>
+
+<style scoped>
+.route-view-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: #f2f2f2;
+  overflow-y: auto;
+}
+.route-view-bar {
+  position: sticky;
+  top: 0;
+  z-index: 3001;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: #2f5b88;
+}
+</style>
