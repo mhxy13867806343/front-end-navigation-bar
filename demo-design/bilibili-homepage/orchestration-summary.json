@@ -1,0 +1,95 @@
+{
+  "project": {
+    "name": "B站首页",
+    "path": "/Users/hooksvue/Desktop/front-end-navigation-bar/demo-design/bilibili-homepage",
+    "operation": "create",
+    "deviceType": "desktop",
+    "language": "zh-CN",
+    "dashboardMode": false,
+    "replicationMode": null,
+    "sourceUrl": null,
+    "visualSpecExcerpt": null,
+    "styleDefinitionBrief": "B站首页：粉色品牌主色调，信息密集型视频内容平台，活泼年轻化的视觉风格",
+    "designRead": "video-platform / young users / playful energetic / information-dense / avoid generic card walls",
+    "designDials": {
+      "layoutVariance": 3,
+      "motionIntensity": 2,
+      "visualDensity": 4
+    },
+    "styleContinuityAnchors": {
+      "colorSystem": {
+        "primaryColorRole": "Bilibili pink (#FF6699) used for primary CTA, active nav, brand accents",
+        "brandHuePolicy": "single brand primary; no secondary/accent brand hues; identities/categories use neutral or primary tints",
+        "stateColors": "state-success/warning/error/info for semantic status only"
+      },
+      "shapeSystem": {
+        "radiusScale": "4px / 8px / 12px / full (rounded-full for pills/avatars/tags)",
+        "radiusMax": 16
+      },
+      "typographySystem": {
+        "titleStack": "-apple-system, PingFang SC, Microsoft YaHei, sans-serif",
+        "bodyStack": "-apple-system, PingFang SC, Microsoft YaHei, sans-serif"
+      },
+      "surfaceAndDepth": {
+        "staticShadowAlphaMax": 0.05,
+        "surfaceModel": "white cards on gray-50 background; subtle shadows on cards; hover shadows deeper"
+      }
+    },
+    "sharedProjectShellContract": {
+      "navigationShell": "sticky top header with logo + nav + search + user actions; category bar below header",
+      "primaryColorSystem": "single pink brand hue #FF6699",
+      "typographySystem": "PingFang SC / Microsoft YaHei sans-serif stack",
+      "radiusScale": "4px sm / 8px md / 12px lg / full",
+      "surfaceDepthModel": "white cards, gray-50 background, subtle card shadows",
+      "ctaStyle": "pink rounded-full buttons for primary; outlined pink for secondary",
+      "alignmentRules": "1400px max-width centered content; grid layouts with gap-4/6"
+    },
+    "generationTree": {
+      "root": {
+        "nodeId": "gen-page-index",
+        "kind": "page-leaf",
+        "pageIds": ["page-index"],
+        "output": "pages/index.html",
+        "sharedRegions": [],
+        "privateRegions": ["full page layout"],
+        "status": "generated",
+        "children": []
+      }
+    }
+  },
+  "designSource": {
+    "operatingMode": "free-explore",
+    "libraryIdentity": null,
+    "cssFilePath": "/Users/hooksvue/Desktop/front-end-navigation-bar/demo-design/bilibili-homepage/colors_and_type.css",
+    "brandPrefix": "bi",
+    "themeMode": "light",
+    "designDecisionSummary": "B站品牌色粉色主色调，圆润活泼的设计风格，信息密集的视频内容布局",
+    "styleConstraints": {
+      "radiusMax": 16,
+      "spacingBase": 4,
+      "fontSizeBody": 14,
+      "fontSizeMin": 10
+    }
+  },
+  "pages": [
+    {
+      "nodeId": "page-index",
+      "slug": "index",
+      "title": "首页",
+      "htmlSrc": "pages/index.html",
+      "pageIndex": 1,
+      "pageType": "information-dense",
+      "businessScenario": "视频内容平台首页",
+      "visualNorthStar": "活泼年轻化的视频内容发现页，以B站粉色为主色调，信息丰富但不拥挤",
+      "compositionPattern": "Banner + Grid + Sidebar",
+      "continuityAnchors": ["pink brand color #FF6699", "rounded-card surfaces", "sticky navigation"],
+      "chartsRequired": false,
+      "componentPlan": ["button", "card", "navigation", "avatar", "tag"],
+      "imagePlan": [],
+      "qualityRisks": ["dense first screen", "multiple video cards"]
+    }
+  ],
+  "assets": [],
+  "wiringPlan": [],
+  "hiddenInteractionPlan": []
+}

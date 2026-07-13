@@ -1,4 +1,4 @@
-import { ref, onMounted, computed, shallowRef, onUnmounted } from 'vue'
+import { watch,ref, onMounted, computed, shallowRef, onUnmounted } from 'vue'
 import axios from 'axios'
 import { menuItemsList, authorWorksList, onlineWorksList } from '@/utlis/menuItems'
 import chinaCitiesAz from '@/utils/china-cities-az.json'
@@ -430,7 +430,7 @@ export function useAppLogic() {
     let url = ''
     if (bingWallpaperForm.value.source === 'uapis') {
       const { date, random, resolution, format } = bingWallpaperForm.value
-      url = `https://api.uapis.cn/bing?resolution=${resolution}&format=${format}`
+      url = `https://uapis.cn/bing?resolution=${resolution}&format=${format}`
       if (date && !random) {
         url += `&date=${date}`
       }
@@ -570,14 +570,14 @@ export function useAppLogic() {
     isWeatherLoading.value = true
     try {
       // 1. Search region by keywords first
-      const res = await axios.get(`https://api.uapis.cn/api/v1/misc/district`, {
+      const res = await axios.get(`https://uapis.cn/api/v1/misc/district`, {
         params: { keywords: weatherSearchKeyword.value.trim() }
       })
       if (res.data && res.data.code === 200 && res.data.data && res.data.data.length > 0) {
         const primaryMatch = res.data.data[0]
         
         // 2. Query matched adcode to retrieve the matched region + its sub-districts!
-        const subRes = await axios.get(`https://api.uapis.cn/api/v1/misc/district`, {
+        const subRes = await axios.get(`https://uapis.cn/api/v1/misc/district`, {
           params: { adcode: primaryMatch.adcode }
         })
         
@@ -631,7 +631,7 @@ export function useAppLogic() {
   const queryWeatherByAdcode = async (adcode) => {
     isWeatherLoading.value = true
     try {
-      const res = await axios.get(`https://api.uapis.cn/api/v1/misc/weather`, {
+      const res = await axios.get(`https://uapis.cn/api/v1/misc/weather`, {
         params: { 
           adcode: adcode, 
           forecast: 'true',
@@ -661,7 +661,7 @@ export function useAppLogic() {
   const loadWeatherByIp = async () => {
     isWeatherLoading.value = true
     try {
-      const res = await axios.get(`https://api.uapis.cn/api/v1/misc/weather`, {
+      const res = await axios.get(`https://uapis.cn/api/v1/misc/weather`, {
         params: { 
           forecast: 'true',
           extended: 'true',
@@ -847,7 +847,7 @@ export function useAppLogic() {
     if (!holidayQueryDate.value) return
     isHolidayLoading.value = true
     try {
-      const res = await axios.get('https://api.uapis.cn/api/v1/misc/holiday-calendar', {
+      const res = await axios.get('https://uapis.cn/api/v1/misc/holiday-calendar', {
         params: { date: holidayQueryDate.value, include_nearby: true }
       })
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
@@ -879,7 +879,7 @@ export function useAppLogic() {
   const queryProgrammerToday = async () => {
     isProgrammerLoading.value = true
     try {
-      const res = await axios.get('https://api.uapis.cn/api/v1/history/programmer/today')
+      const res = await axios.get('https://uapis.cn/api/v1/history/programmer/today')
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
       const data = isEnvelope ? res.data.data : res.data
       programmerHistory.value = data.events || []
@@ -898,7 +898,7 @@ export function useAppLogic() {
   const queryHotboard = async () => {
     isHotboardLoading.value = true
     try {
-      const res = await axios.get('https://api.uapis.cn/api/v1/misc/hotboard', {
+      const res = await axios.get('https://uapis.cn/api/v1/misc/hotboard', {
         params: { type: hotboardType.value }
       })
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
@@ -919,7 +919,7 @@ export function useAppLogic() {
   const queryMovieBoxOffice = async () => {
     isMovieBoxLoading.value = true
     try {
-      const res = await axios.get('https://api.uapis.cn/api/v1/misc/movie-box-office')
+      const res = await axios.get('https://uapis.cn/api/v1/misc/movie-box-office')
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
       movieBoxOffice.value = isEnvelope ? res.data.data : res.data
     } catch (e) {
@@ -940,7 +940,7 @@ export function useAppLogic() {
   const queryMovieRatings = async () => {
     isMovieRatingsLoading.value = true
     try {
-      const res = await axios.get('https://api.uapis.cn/api/v1/misc/movie-rating-rank', {
+      const res = await axios.get('https://uapis.cn/api/v1/misc/movie-rating-rank', {
         params: { channel: movieRatingsChannel.value, period: movieRatingsPeriod.value }
       })
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
@@ -983,7 +983,7 @@ export function useAppLogic() {
     isTrackingLoading.value = true
     try {
       if (!trackingCarrier.value) {
-        const detRes = await axios.get('https://api.uapis.cn/api/v1/misc/tracking/detect', {
+        const detRes = await axios.get('https://uapis.cn/api/v1/misc/tracking/detect', {
           params: { tracking_number: trackingNumber.value.trim() }
         })
         const isEnvelopeDet = detRes.data && detRes.data.code === 200 && detRes.data.data
@@ -994,7 +994,7 @@ export function useAppLogic() {
         }
       }
       
-      const qRes = await axios.get('https://api.uapis.cn/api/v1/misc/tracking/query', {
+      const qRes = await axios.get('https://uapis.cn/api/v1/misc/tracking/query', {
         params: { 
           tracking_number: trackingNumber.value.trim(),
           carrier_code: trackingCarrier.value,
@@ -1026,7 +1026,7 @@ export function useAppLogic() {
   const queryRandomImage = async () => {
     isRandomImageLoading.value = true
     try {
-      const url = `https://api.uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
+      const url = `https://uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
       const checkRes = await axios.get(url, { maxRedirects: 0, validateStatus: () => true })
       if (checkRes.status === 302 && checkRes.headers.location) {
         randomImageUrl.value = checkRes.headers.location
@@ -1034,7 +1034,7 @@ export function useAppLogic() {
         randomImageUrl.value = url
       }
     } catch (e) {
-      randomImageUrl.value = `https://api.uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
+      randomImageUrl.value = `https://uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
     } finally {
       isRandomImageLoading.value = false
     }

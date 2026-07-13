@@ -24,6 +24,11 @@ const routes = [
     path: '/dyform',
     name: 'DyForm',
     component: () => import('../views/DyForm.vue')
+  },
+  {
+    path: '/flash',
+    name: 'Flash',
+    component: () => import('../views/flash/index.vue')
   }
 ]
 
