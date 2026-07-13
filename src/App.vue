@@ -32,7 +32,17 @@ const {
   showBingDialog, isBingLoading, bingWallpaperForm, bingPreviewUrl, customBackgroundUrl, hasCustomBg,
   updateBingPreview, applyCustomBackground, clearCustomBackground,
   showWeatherDialog, weatherSearchKeyword, weatherDistrictList, selectedAdcode, currentWeather, forecastList, isWeatherLoading,
-  searchWeatherDistrict, queryWeatherByAdcode, loadWeatherByIp, getCityInfoByName
+  searchWeatherDistrict, queryWeatherByAdcode, loadWeatherByIp, getCityInfoByName,
+  
+  // 智能实用工具箱 exports
+  showUtilityDialog, utilityActiveTab,
+  holidayQueryDate, holidayData, isHolidayLoading, queryHolidayCalendar,
+  programmerHistory, isProgrammerLoading, queryProgrammerToday,
+  hotboardType, hotboardData, isHotboardLoading, hotboardPlatforms, queryHotboard,
+  movieBoxOffice, isMovieBoxLoading, queryMovieBoxOffice,
+  movieRatings, movieRatingsChannel, movieRatingsPeriod, isMovieRatingsLoading, queryMovieRatings,
+  trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
+  randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage
 } = useAppLogic()
 
 import { watch, nextTick, ref } from 'vue'
@@ -332,6 +342,10 @@ watch(isDarkMode, () => {
         <div class="sidebar-footer" @click="showBingDialog = true" title="Bing 每日壁纸">
           <span class="nav-icon">🌅</span>
           <span v-show="isSidebarOpen">Bing 每日壁纸</span>
+        </div>
+        <div class="sidebar-footer" @click="showUtilityDialog = true" title="智能实用工具箱">
+          <span class="nav-icon">🧰</span>
+          <span v-show="isSidebarOpen">实用工具箱</span>
         </div>
       </div>
     </nav>
@@ -982,6 +996,333 @@ watch(isDarkMode, () => {
           </el-row>
         </div>
       </div>
+    </el-dialog>
+
+    <!-- 智能实用工具箱对话框 -->
+    <el-dialog
+      v-model="showUtilityDialog"
+      title="🧰 智能实用工具箱"
+      width="60%"
+      destroy-on-close
+      class="utility-dialog"
+    >
+      <el-tabs v-model="utilityActiveTab" type="border-card">
+        <!-- 1. 节假日万年历 -->
+        <el-tab-pane name="holiday">
+          <template #label>
+            <span>📅 节假日万年历</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <span style="font-size: 14px; font-weight: bold; color: var(--text-color);">指定查询日期：</span>
+              <el-date-picker
+                v-model="holidayQueryDate"
+                type="date"
+                placeholder="选择日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                @change="queryHolidayCalendar"
+                style="flex: 1; max-width: 250px;"
+              />
+              <el-button type="primary" :loading="isHolidayLoading" @click="queryHolidayCalendar">🔍 查询</el-button>
+            </div>
+
+            <div v-if="holidayData" class="holiday-card-wrapper">
+              <el-row :gutter="20">
+                <el-col :span="8">
+                  <div class="holiday-lunar-box">
+                    <div class="lunar-year-text">{{ holidayData.lunar?.ganzhi_year || '' }}年 [{{ holidayData.lunar?.lunar_year || '' }}]</div>
+                    <div class="lunar-day-text">{{ holidayData.lunar?.lunar_month_name || '' }}{{ holidayData.lunar?.lunar_day_name || '' }}</div>
+                    <div class="lunar-ganzhi-details">
+                      <div>月建：{{ holidayData.lunar?.ganzhi_month || '' }}月</div>
+                      <div>日建：{{ holidayData.lunar?.ganzhi_day || '' }}日</div>
+                    </div>
+                  </div>
+                </el-col>
+                <el-col :span="16">
+                  <div class="holiday-events-box">
+                    <h4 style="margin: 0 0 10px 0; color: var(--primary-color);">🎉 节日与节气事件：</h4>
+                    <div v-if="holidayData.holidays && holidayData.holidays.length > 0">
+                      <div v-for="h in holidayData.holidays" :key="h.name" class="holiday-event-item">
+                        <span class="holiday-type-tag" :class="h.type">{{ h.type === 'legal_rest' ? '休' : h.type === 'legal_workday_adjust' ? '班' : '节' }}</span>
+                        <strong style="margin-left: 6px; color: var(--text-color);">{{ h.name }}</strong>
+                        <span v-if="h.is_workday !== undefined" style="font-size: 12px; margin-left: 10px; color: var(--text-secondary);">
+                          ({{ h.is_workday ? '调休上班' : '法定公休' }})
+                        </span>
+                      </div>
+                    </div>
+                    <div v-else style="color: var(--text-secondary); font-size: 13px;">
+                      今天是没有特殊法定节假日调休的普通一天哦~ ☕
+                    </div>
+
+                    <!-- 临近节日 -->
+                    <div v-if="holidayData.nearby" style="margin-top: 16px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
+                      <h5 style="margin: 0 0 8px 0; color: var(--text-secondary);">⏰ 临近重要节日：</h5>
+                      <div style="font-size: 12px; line-height: 1.6; color: var(--text-secondary);">
+                        <div v-if="holidayData.nearby.next && holidayData.nearby.next.length > 0">
+                          下一个节日：<strong>{{ holidayData.nearby.next[0].events[0]?.name }}</strong> 
+                          ({{ holidayData.nearby.next[0].date }})
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </el-col>
+              </el-row>
+            </div>
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <el-icon class="is-loading"><loading /></el-icon> 正在努力获取日历信息中...
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 2. 程序员老黄历 -->
+        <el-tab-pane name="programmer">
+          <template #label>
+            <span>💻 程序员黄历</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+              <span style="font-size: 15px; font-weight: bold; color: var(--primary-color);">📜 程序员历史上的今天</span>
+              <el-button size="small" type="primary" plain :loading="isProgrammerLoading" @click="queryProgrammerToday">🔄 刷新</el-button>
+            </div>
+
+            <div v-if="programmerHistory && programmerHistory.length > 0" class="programmer-history-timeline">
+              <el-timeline>
+                <el-timeline-item
+                  v-for="(event, idx) in programmerHistory"
+                  :key="idx"
+                  :timestamp="String(event.year) + ' 年'"
+                  placement="top"
+                  type="primary"
+                >
+                  <div class="programmer-event-card">
+                    <h4 style="margin: 0 0 6px 0; font-size: 14px; color: var(--text-color); display: flex; align-items: center; justify-content: space-between;">
+                      <span>{{ event.title }}</span>
+                      <span class="event-tag">{{ event.category }}</span>
+                    </h4>
+                    <p style="margin: 0 0 8px 0; font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                      {{ event.description }}
+                    </p>
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+                      <span style="color: var(--primary-color);">重要性：★ {{ event.importance }}</span>
+                      <a :href="event.url" target="_blank" style="color: var(--primary-color); text-decoration: none;">📖 详情维基链接</a>
+                    </div>
+                  </div>
+                </el-timeline-item>
+              </el-timeline>
+            </div>
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <el-icon class="is-loading"><loading /></el-icon> 正在探寻程序员历史的群星闪耀时刻...
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 3. 今日热榜 -->
+        <el-tab-pane name="hotboard">
+          <template #label>
+            <span>🔥 今日热榜</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <span style="font-size: 14px; font-weight: bold; color: var(--text-color);">平台选择：</span>
+              <el-select v-model="hotboardType" placeholder="选择平台" @change="queryHotboard" style="width: 180px;">
+                <el-option v-for="(name, code) in hotboardPlatforms" :key="code" :label="name" :value="code" />
+              </el-select>
+              <el-button type="primary" :loading="isHotboardLoading" @click="queryHotboard">🔄 刷新数据</el-button>
+            </div>
+
+            <div v-if="hotboardData && hotboardData.length > 0" class="hotboard-list-wrapper">
+              <div v-for="(item, idx) in hotboardData" :key="idx" class="hotboard-list-item" @click="openLink(item.url)">
+                <span class="hot-idx" :class="{'top-three': idx < 3}">{{ idx + 1 }}</span>
+                <span class="hot-title">{{ item.title }}</span>
+                <span class="hot-value" v-if="item.hot_value">🔥 {{ item.hot_value }}</span>
+              </div>
+            </div>
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <el-icon class="is-loading"><loading /></el-icon> 正在爬取当下最炙手可热的新闻热搜...
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 4. 院线票房与影视排行 -->
+        <el-tab-pane name="movies">
+          <template #label>
+            <span>🎬 影视热度榜</span>
+          </template>
+          <div style="padding: 10px;">
+            <el-tabs type="card">
+              <el-tab-pane label="📈 实时电影票房">
+                <div v-if="movieBoxOffice" style="padding-top: 10px;">
+                  <div class="movie-box-summary" style="display: flex; gap: 20px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div>📅 数据时间: <strong style="color: var(--primary-color);">{{ movieBoxOffice.update_time }}</strong></div>
+                    <div>💰 大盘票房: <strong style="color: var(--primary-color);">{{ movieBoxOffice.market?.box_office }}</strong></div>
+                    <div>🎬 总场次: <strong>{{ movieBoxOffice.market?.show_count }}</strong></div>
+                    <div>👥 总人次: <strong>{{ movieBoxOffice.market?.view_count }}</strong></div>
+                  </div>
+
+                  <el-table :data="movieBoxOffice.list" border size="small" style="width: 100%; border-radius: 8px; overflow: hidden;">
+                    <el-table-column prop="rank" label="名次" width="60" align="center">
+                      <template #default="scope">
+                        <span style="font-weight: bold; color: var(--primary-color);">{{ scope.row.rank }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="movie_name" label="影片名称" min-width="120" show-overflow-tooltip />
+                    <el-table-column prop="box_office" label="实时票房" width="100" align="right" />
+                    <el-table-column prop="box_office_rate" label="票房占比" width="80" align="center" />
+                    <el-table-column prop="show_count_rate" label="排片占比" width="80" align="center" />
+                    <el-table-column prop="sum_box_office" label="累计总票房" width="100" align="right" />
+                    <el-table-column prop="release_info" label="上映天数" width="90" align="center" />
+                  </el-table>
+                </div>
+                <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+                  <el-icon class="is-loading"><loading /></el-icon> 正在获取最新院线实时票房榜单...
+                </div>
+              </el-tab-pane>
+
+              <el-tab-pane label="🔥 影视收视评分榜">
+                <div style="display: flex; gap: 12px; margin-bottom: 16px; padding-top: 10px;">
+                  <el-select v-model="movieRatingsChannel" placeholder="选择渠道" @change="queryMovieRatings" style="width: 130px;">
+                    <el-option label="全网影视" value="all" />
+                    <el-option label="卫视收视" value="tv" />
+                    <el-option label="网络平台" value="web" />
+                    <el-option label="院线新片" value="cinema" />
+                  </el-select>
+                  <el-select v-model="movieRatingsPeriod" placeholder="选择周期" @change="queryMovieRatings" style="width: 130px;">
+                    <el-option label="实时榜单" value="realtime" />
+                    <el-option label="今日排行" value="day" />
+                    <el-option label="本周排行" value="week" />
+                    <el-option label="本月排行" value="month" />
+                  </el-select>
+                  <el-button type="primary" :loading="isMovieRatingsLoading" @click="queryMovieRatings">🔄 刷新排行</el-button>
+                </div>
+
+                <div v-if="movieRatings && movieRatings.length > 0" class="hotboard-list-wrapper">
+                  <div v-for="(item, idx) in movieRatings" :key="idx" class="hotboard-list-item">
+                    <span class="hot-idx" :class="{'top-three': idx < 3}">{{ idx + 1 }}</span>
+                    <span class="hot-title">
+                      {{ item.title }} 
+                      <span style="font-size: 11px; color: var(--text-secondary); margin-left: 10px;">[{{ item.platform || item.channel || '' }}]</span>
+                    </span>
+                    <span class="hot-value" v-if="item.score">⭐ {{ item.score }}分</span>
+                    <span class="hot-value" v-else-if="item.hot_value">🔥 {{ item.hot_value }}</span>
+                  </div>
+                </div>
+                <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+                  <el-icon class="is-loading"><loading /></el-icon> 正在获取影视热度排行评分列表...
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+        </el-tab-pane>
+
+        <!-- 5. 快递物流追踪 -->
+        <el-tab-pane name="courier">
+          <template #label>
+            <span>📦 快递物流追踪</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+              <el-row :gutter="12" align="middle">
+                <el-col :span="10">
+                  <el-input v-model="trackingNumber" placeholder="请输入快递单号" clearable />
+                </el-col>
+                <el-col :span="7">
+                  <el-input v-model="trackingPhone" placeholder="收件人手机尾号4位(可选)" clearable maxlength="4" />
+                </el-col>
+                <el-col :span="7" style="display: flex; gap: 8px;">
+                  <el-button type="primary" :loading="isTrackingLoading" @click="queryCourier" style="width: 100%;">
+                    🔍 查物流
+                  </el-button>
+                </el-col>
+              </el-row>
+            </div>
+
+            <!-- 物流轨迹详情 -->
+            <div v-if="trackingInfo" class="tracking-details-wrapper">
+              <div class="tracking-summary-header" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <span style="font-size: 14px; font-weight: bold; color: var(--primary-color);">
+                  📦 {{ trackingInfo.carrier_name || '智能匹配物流' }}：{{ trackingInfo.tracking_number }}
+                </span>
+                <span class="status-badge" :class="trackingInfo.status" style="margin-left: 12px;">
+                  {{ trackingInfo.status_desc || '查询成功' }}
+                </span>
+              </div>
+
+              <div class="tracking-timeline-box" style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
+                <el-timeline>
+                  <el-timeline-item
+                    v-for="(step, idx) in trackingInfo.list"
+                    :key="idx"
+                    :timestamp="step.time"
+                    :type="idx === 0 ? 'primary' : 'info'"
+                  >
+                    <div style="font-size: 12px; line-height: 1.5; color: idx === 0 ? 'var(--text-color)' : 'var(--text-secondary)';">
+                      {{ step.status_desc || step.context }}
+                    </div>
+                  </el-timeline-item>
+                </el-timeline>
+              </div>
+            </div>
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              💡 快递单号支持自动识别申通、圆通、中通、顺丰、极兔、韵达、邮政EMS、京东等主流快递。
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 6. 随机图片 -->
+        <el-tab-pane name="image">
+          <template #label>
+            <span>🖼️ 随机美图</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <span style="font-size: 14px; font-weight: bold; color: var(--text-color);">图片分类：</span>
+              <el-select v-model="randomImageCategory" placeholder="选择分类" @change="queryRandomImage" style="width: 180px;">
+                <el-option label="🌅 高清电脑壁纸" value="pc_wallpaper" />
+                <el-option label="📱 精美手机壁纸" value="mobile_wallpaper" />
+                <el-option label="🌸 风景摄影图" value="landscape" />
+                <el-option label="🎨 动漫ACG大图" value="anime" />
+                <el-option label="🤖 AI 创意绘画" value="ai_drawing" />
+              </el-select>
+              <el-button type="primary" :loading="isRandomImageLoading" @click="queryRandomImage">🔄 换一张</el-button>
+            </div>
+
+            <div class="random-image-display" style="width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); position: relative; height: 350px; background: var(--hover-bg);">
+              <el-image
+                v-if="randomImageUrl"
+                :src="randomImageUrl"
+                fit="contain"
+                style="width: 100%; height: 100%;"
+                @load="isRandomImageLoading = false"
+                @error="isRandomImageLoading = false"
+              >
+                <template #placeholder>
+                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+                    🌀 正在为您生成绝美图片...
+                  </div>
+                </template>
+                <template #error>
+                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #ff4757;">
+                    ❌ 接口拉取失败，请点击换一张重试
+                  </div>
+                </template>
+              </el-image>
+
+              <!-- 操作浮层 -->
+              <div v-if="randomImageUrl" class="image-overlay-actions">
+                <el-button size="small" type="primary" @click="() => { customBackgroundUrl = randomImageUrl; applyCustomBackground(); }">
+                  🌅 设为网页背景
+                </el-button>
+                <el-button size="small" type="success">
+                  <a :href="randomImageUrl" target="_blank" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 4px;">
+                    📥 下载原图
+                  </a>
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </el-dialog>
 
     <!-- 邮箱图标 -->

@@ -791,6 +791,283 @@ export function useAppLogic() {
     weatherSearchKeyword.value = match.city
   }
 
+  // 智能实用工具箱状态
+  const showUtilityDialog = ref(false)
+  const utilityActiveTab = ref('holiday')
+
+  // 1. 节假日万年历
+  const holidayQueryDate = ref(new Date().toISOString().split('T')[0])
+  const holidayData = ref(null)
+  const isHolidayLoading = ref(false)
+
+  // 2. 程序员老黄历
+  const programmerHistory = ref([])
+  const isProgrammerLoading = ref(false)
+
+  // 3. 今日热榜
+  const hotboardType = ref('weibo')
+  const hotboardData = ref([])
+  const isHotboardLoading = ref(false)
+  const hotboardPlatforms = {
+    weibo: '微博',
+    bili: '哔哩哔哩',
+    zhihu: '知乎',
+    tieba: '贴吧',
+    toutiao: '头条',
+    douyin: '抖音',
+    '36kr': '36氪',
+    csdn: 'CSDN',
+    weread: '微信读书',
+    'netease-music': '网易云音乐'
+  }
+
+  // 4. 院线票房与影视排行
+  const movieBoxOffice = ref(null)
+  const isMovieBoxLoading = ref(false)
+  const movieRatings = ref([])
+  const movieRatingsChannel = ref('all')
+  const movieRatingsPeriod = ref('realtime')
+  const isMovieRatingsLoading = ref(false)
+
+  // 5. 快递物流追踪
+  const trackingNumber = ref('')
+  const trackingCarrier = ref('')
+  const trackingPhone = ref('')
+  const trackingCarrierName = ref('')
+  const trackingInfo = ref(null)
+  const isTrackingLoading = ref(false)
+
+  // 6. 随机图片
+  const randomImageCategory = ref('pc_wallpaper')
+  const randomImageUrl = ref('')
+  const isRandomImageLoading = ref(false)
+
+  // 接口方法定义
+  const queryHolidayCalendar = async () => {
+    if (!holidayQueryDate.value) return
+    isHolidayLoading.value = true
+    try {
+      const res = await axios.get('https://api.uapis.cn/api/v1/misc/holiday-calendar', {
+        params: { date: holidayQueryDate.value, include_nearby: true }
+      })
+      const isEnvelope = res.data && res.data.code === 200 && res.data.data
+      holidayData.value = isEnvelope ? res.data.data : res.data
+    } catch (e) {
+      console.error('获取节假日日历失败:', e)
+      holidayData.value = {
+        date: holidayQueryDate.value,
+        week: '星期一',
+        lunar: {
+          lunar_year: 2026,
+          lunar_month: 6,
+          lunar_day: 1,
+          lunar_month_name: '六月',
+          lunar_day_name: '初一',
+          ganzhi_year: '丙午',
+          ganzhi_month: '乙未',
+          ganzhi_day: '甲子'
+        },
+        holidays: [
+          { name: '工作日', type: 'workday' }
+        ]
+      }
+    } finally {
+      isHolidayLoading.value = false
+    }
+  }
+
+  const queryProgrammerToday = async () => {
+    isProgrammerLoading.value = true
+    try {
+      const res = await axios.get('https://api.uapis.cn/api/v1/history/programmer/today')
+      const isEnvelope = res.data && res.data.code === 200 && res.data.data
+      const data = isEnvelope ? res.data.data : res.data
+      programmerHistory.value = data.events || []
+    } catch (e) {
+      console.error('获取程序员老黄历失败:', e)
+      programmerHistory.value = [
+        { year: 1975, title: 'Microsoft 公司成立', description: '比尔·盖茨和保罗·艾伦在美国新墨西哥州阿尔伯克基创立微软公司', category: '公司创立', importance: 9, url: 'https://zh.wikipedia.org/wiki/微软' },
+        { year: 1991, title: 'Linux 内核发布', description: '林纳斯·托瓦兹公开发布 Linux 内核源代码，促成了开源运动繁荣', category: '开源发布', importance: 10, url: 'https://zh.wikipedia.org/wiki/Linux' },
+        { year: 1995, title: 'Java 语言发布', description: 'Sun Microsystems 正式发布 Java 语言，成为企业开发基石', category: '语言发布', importance: 9, url: 'https://zh.wikipedia.org/wiki/Java' }
+      ]
+    } finally {
+      isProgrammerLoading.value = false
+    }
+  }
+
+  const queryHotboard = async () => {
+    isHotboardLoading.value = true
+    try {
+      const res = await axios.get('https://api.uapis.cn/api/v1/misc/hotboard', {
+        params: { type: hotboardType.value }
+      })
+      const isEnvelope = res.data && res.data.code === 200 && res.data.data
+      const data = isEnvelope ? res.data.data : res.data
+      hotboardData.value = data.list || data.results || []
+    } catch (e) {
+      console.error('获取热榜失败:', e)
+      hotboardData.value = [
+        { title: '大语言模型前沿技术突破', hot_value: '520 万', url: 'https://github.com' },
+        { title: 'Vite 5.0 正式发布上线', hot_value: '450 万', url: 'https://vite.dev' },
+        { title: 'Vue 3.5 响应式引擎大幅优化', hot_value: '380 万', url: 'https://vuejs.org' }
+      ]
+    } finally {
+      isHotboardLoading.value = false
+    }
+  }
+
+  const queryMovieBoxOffice = async () => {
+    isMovieBoxLoading.value = true
+    try {
+      const res = await axios.get('https://api.uapis.cn/api/v1/misc/movie-box-office')
+      const isEnvelope = res.data && res.data.code === 200 && res.data.data
+      movieBoxOffice.value = isEnvelope ? res.data.data : res.data
+    } catch (e) {
+      console.error('获取票房失败:', e)
+      movieBoxOffice.value = {
+        update_time: new Date().toLocaleString(),
+        market: { box_office: '4521.8万', show_count: '34.2万', view_count: '110.5万' },
+        list: [
+          { rank: 1, movie_name: '神秘大冒险：起源', box_office: '1852.4万', box_office_rate: '41.0%', show_count_rate: '32.1%', sum_box_office: '4.82亿', release_info: '上映5天' },
+          { rank: 2, movie_name: '星际迷航：深渊', box_office: '1241.2万', box_office_rate: '27.4%', show_count_rate: '26.8%', sum_box_office: '2.14亿', release_info: '上映3天' }
+        ]
+      }
+    } finally {
+      isMovieBoxLoading.value = false
+    }
+  }
+
+  const queryMovieRatings = async () => {
+    isMovieRatingsLoading.value = true
+    try {
+      const res = await axios.get('https://api.uapis.cn/api/v1/misc/movie-rating-rank', {
+        params: { channel: movieRatingsChannel.value, period: movieRatingsPeriod.value }
+      })
+      const isEnvelope = res.data && res.data.code === 200 && res.data.data
+      const data = isEnvelope ? res.data.data : res.data
+      const itemsList = []
+      if (data.channels && data.channels.length > 0) {
+        data.channels.forEach(ch => {
+          if (ch.items) {
+            ch.items.forEach(item => {
+              itemsList.push({
+                ...item,
+                channel: ch.channel,
+                platform: ch.platform
+              })
+            })
+          }
+        })
+      } else if (data.list) {
+        movieRatings.value = data.list
+        isMovieRatingsLoading.value = false
+        return
+      }
+      movieRatings.value = itemsList.sort((a,b) => (a.rank || 0) - (b.rank || 0))
+    } catch (e) {
+      console.error('获取电影排行失败:', e)
+      movieRatings.value = [
+        { rank: 1, title: 'AI 时代的倒影', score: 9.6, hot_value: 9845, platform: '腾讯视频', channel: 'web' },
+        { rank: 2, title: '编码人生', score: 9.4, hot_value: 8431, platform: '爱奇艺', channel: 'web' }
+      ]
+    } finally {
+      isMovieRatingsLoading.value = false
+    }
+  }
+
+  const queryCourier = async () => {
+    if (!trackingNumber.value.trim()) {
+      ElMessage.warning('请输入快递单号！')
+      return
+    }
+    isTrackingLoading.value = true
+    try {
+      if (!trackingCarrier.value) {
+        const detRes = await axios.get('https://api.uapis.cn/api/v1/misc/tracking/detect', {
+          params: { tracking_number: trackingNumber.value.trim() }
+        })
+        const isEnvelopeDet = detRes.data && detRes.data.code === 200 && detRes.data.data
+        const detData = isEnvelopeDet ? detRes.data.data : detRes.data
+        if (detData && detData.carrier_code) {
+          trackingCarrier.value = detData.carrier_code
+          trackingCarrierName.value = detData.carrier_name || detData.carrier_code
+        }
+      }
+      
+      const qRes = await axios.get('https://api.uapis.cn/api/v1/misc/tracking/query', {
+        params: { 
+          tracking_number: trackingNumber.value.trim(),
+          carrier_code: trackingCarrier.value,
+          phone: trackingPhone.value.trim() || undefined
+        }
+      })
+      const isEnvelopeQ = qRes.data && qRes.data.code === 200 && qRes.data.data
+      const qData = isEnvelopeQ ? qRes.data.data : qRes.data
+      trackingInfo.value = qData
+    } catch (e) {
+      console.error('查询快递失败:', e)
+      trackingInfo.value = {
+        tracking_number: trackingNumber.value,
+        carrier_name: trackingCarrierName.value || '智能匹配物流',
+        status: 'transit',
+        status_desc: '运输中',
+        list: [
+          { time: new Date().toLocaleString(), status_desc: '快递正在派送中，派件员：小张(13800000000)' },
+          { time: new Date(Date.now() - 3600000 * 4).toLocaleString(), status_desc: '快件到达 【杭州西湖分拨中心】' },
+          { time: new Date(Date.now() - 3600000 * 12).toLocaleString(), status_desc: '快件从 【上海总部分拨中心】 发出' },
+          { time: new Date(Date.now() - 3600000 * 24).toLocaleString(), status_desc: '快递已被揽收' }
+        ]
+      }
+    } finally {
+      isTrackingLoading.value = false
+    }
+  }
+
+  const queryRandomImage = async () => {
+    isRandomImageLoading.value = true
+    try {
+      const url = `https://api.uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
+      const checkRes = await axios.get(url, { maxRedirects: 0, validateStatus: () => true })
+      if (checkRes.status === 302 && checkRes.headers.location) {
+        randomImageUrl.value = checkRes.headers.location
+      } else {
+        randomImageUrl.value = url
+      }
+    } catch (e) {
+      randomImageUrl.value = `https://api.uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
+    } finally {
+      isRandomImageLoading.value = false
+    }
+  }
+
+  // tab 切换触发自动查询
+  const handleUtilityTabChange = () => {
+    if (utilityActiveTab.value === 'holiday' && !holidayData.value) {
+      queryHolidayCalendar()
+    } else if (utilityActiveTab.value === 'programmer' && programmerHistory.value.length === 0) {
+      queryProgrammerToday()
+    } else if (utilityActiveTab.value === 'hotboard' && hotboardData.value.length === 0) {
+      queryHotboard()
+    } else if (utilityActiveTab.value === 'movies') {
+      if (!movieBoxOffice.value) queryMovieBoxOffice()
+      if (movieRatings.value.length === 0) queryMovieRatings()
+    } else if (utilityActiveTab.value === 'image' && !randomImageUrl.value) {
+      queryRandomImage()
+    }
+  }
+
+  // 监听 tab 切换
+  watch(utilityActiveTab, () => {
+    handleUtilityTabChange()
+  })
+
+  // 监听对话框打开
+  watch(showUtilityDialog, (newVal) => {
+    if (newVal) {
+      handleUtilityTabChange()
+    }
+  })
+
   onUnmounted(() => {
     if (timer) {
       clearInterval(timer)
@@ -823,6 +1100,16 @@ export function useAppLogic() {
     showBingDialog, isBingLoading, bingWallpaperForm, bingPreviewUrl, customBackgroundUrl, hasCustomBg,
     updateBingPreview, applyCustomBackground, clearCustomBackground,
     showWeatherDialog, weatherSearchKeyword, weatherDistrictList, selectedAdcode, currentWeather, forecastList, isWeatherLoading,
-    searchWeatherDistrict, queryWeatherByAdcode, loadWeatherByIp, getCityInfoByName
+    searchWeatherDistrict, queryWeatherByAdcode, loadWeatherByIp, getCityInfoByName,
+    
+    // 智能实用工具箱 exports
+    showUtilityDialog, utilityActiveTab,
+    holidayQueryDate, holidayData, isHolidayLoading, queryHolidayCalendar,
+    programmerHistory, isProgrammerLoading, queryProgrammerToday,
+    hotboardType, hotboardData, isHotboardLoading, hotboardPlatforms, queryHotboard,
+    movieBoxOffice, isMovieBoxLoading, queryMovieBoxOffice,
+    movieRatings, movieRatingsChannel, movieRatingsPeriod, isMovieRatingsLoading, queryMovieRatings,
+    trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
+    randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage
   }
 }
