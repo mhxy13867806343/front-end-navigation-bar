@@ -352,18 +352,34 @@ watch(isDarkMode, () => {
           <span class="nav-icon">🤖</span>
           <span v-show="isSidebarOpen">AI编程资讯</span>
         </div>
-        <div class="sidebar-footer" @click="showWeatherDialog = true" title="实时天气">
-          <span class="nav-icon">🌦️</span>
-          <span v-show="isSidebarOpen">实时天气</span>
-        </div>
-        <div class="sidebar-footer" @click="showBingDialog = true" title="Bing 每日壁纸">
-          <span class="nav-icon">🌅</span>
-          <span v-show="isSidebarOpen">Bing 每日壁纸</span>
-        </div>
-        <div class="sidebar-footer" @click="showUtilityDialog = true" title="智能实用工具箱">
-          <span class="nav-icon">🧰</span>
-          <span v-show="isSidebarOpen">实用工具箱</span>
-        </div>
+        <el-popover
+          placement="top-start"
+          :width="160"
+          trigger="click"
+          popper-class="sidebar-upward-popover"
+        >
+          <template #reference>
+            <div class="sidebar-footer" title="实用工具箱">
+              <span class="nav-icon">🧰</span>
+              <span v-show="isSidebarOpen">实用工具箱</span>
+            </div>
+          </template>
+          
+          <div class="popover-tool-menu">
+            <div class="popover-tool-item" @click="showWeatherDialog = true">
+              <span class="tool-icon">🌦️</span>
+              <span>实时天气</span>
+            </div>
+            <div class="popover-tool-item" @click="showBingDialog = true">
+              <span class="tool-icon">🌅</span>
+              <span>Bing 每日壁纸</span>
+            </div>
+            <div class="popover-tool-item" @click="showUtilityDialog = true">
+              <span class="tool-icon">🧰</span>
+              <span>智能工具箱</span>
+            </div>
+          </div>
+        </el-popover>
       </div>
     </nav>
 
