@@ -43,7 +43,13 @@ const {
   movieBoxOffice, isMovieBoxLoading, queryMovieBoxOffice,
   movieRatings, movieRatingsChannel, movieRatingsPeriod, isMovieRatingsLoading, queryMovieRatings,
   trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
-  randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage
+  randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
+  
+  // Video & Photo Explorer exports
+  showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
+  
+  // Dujitang exports
+  dujitangText, isDujitangLoading, queryDujitang
 } = useAppLogic()
 
 import { watch, nextTick, ref, computed } from 'vue'
@@ -398,6 +404,11 @@ watch(isDarkMode, () => {
           </template>
           
           <div class="popover-tool-menu">
+            <div class="popover-tool-item" @click="showVideoDialog = true">
+              <span class="tool-icon">🎬</span>
+              <span>视频网站</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
+            </div>
             <div class="popover-tool-item" @click="showWeatherDialog = true">
               <span class="tool-icon">🌦️</span>
               <span>实时天气</span>
@@ -774,6 +785,133 @@ watch(isDarkMode, () => {
         <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 12px; color: var(--text-secondary);">
           <p>版本: v2.0.0</p>
           <p>作者: HooksVue & Gemini Assistant</p>
+        </div>
+      </div>
+    </el-dialog>
+
+    <!-- 🎬 视频与写真探索频道对话框 -->
+    <el-dialog
+      v-model="showVideoDialog"
+      title="🎬 极速小姐姐视频与写真探索频道"
+      width="65%"
+      destroy-on-close
+      class="video-explore-dialog"
+    >
+      <div class="video-explore-container">
+        <!-- 左侧：栏目列表 (列表页面) -->
+        <div class="video-explore-sidebar">
+          <div class="channel-group-title">📹 娱乐短视频</div>
+          <div 
+            class="video-channel-item" 
+            :class="{ active: videoActiveChannel === 'sjxjj' }"
+            @click="videoActiveChannel = 'sjxjj'"
+          >
+            <span class="channel-icon">💃</span>
+            <div class="channel-info">
+              <span class="channel-name">经典随机小姐姐</span>
+              <span class="channel-desc">热舞/日常/颜值精选</span>
+            </div>
+          </div>
+          <div 
+            class="video-channel-item" 
+            :class="{ active: videoActiveChannel === 'mp4_xjj' }"
+            @click="videoActiveChannel = 'mp4_xjj'"
+          >
+            <span class="channel-icon">✨</span>
+            <div class="channel-info">
+              <span class="channel-name">高质量1080P佳人</span>
+              <span class="channel-desc">精品画质/超多库存</span>
+            </div>
+          </div>
+
+          <div class="channel-group-title" style="margin-top: 16px;">📷 唯美美图写真</div>
+          <div 
+            class="video-channel-item" 
+            :class="{ active: videoActiveChannel === 'photo_meinv' }"
+            @click="videoActiveChannel = 'photo_meinv'"
+          >
+            <span class="channel-icon">👸</span>
+            <div class="channel-info">
+              <span class="channel-name">随机美女写真</span>
+              <span class="channel-desc">海量唯美清纯美图</span>
+            </div>
+          </div>
+          <div 
+            class="video-channel-item" 
+            :class="{ active: videoActiveChannel === 'photo_baisi' }"
+            @click="videoActiveChannel = 'photo_baisi'"
+          >
+            <span class="channel-icon">🧦</span>
+            <div class="channel-info">
+              <span class="channel-name">随机白丝美图</span>
+              <span class="channel-desc">专属腿控白丝福利</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：展示区域 -->
+        <div class="video-explore-player-box">
+          <!-- 视频播放器 -->
+          <div v-if="!videoActiveChannel.startsWith('photo_')" class="media-container" v-loading="isVideoLoading" element-loading-background="rgba(0,0,0,0.6)">
+            <video 
+              v-if="currentVideoUrl" 
+              :src="currentVideoUrl" 
+              controls 
+              autoplay 
+              loop
+              playsinline
+              class="custom-video-player"
+            ></video>
+            <div v-else class="media-placeholder">
+              <el-icon class="is-loading"><loading /></el-icon>
+              <span>正在获取小姐姐视频中...</span>
+            </div>
+          </div>
+
+          <!-- 图片浏览器 -->
+          <div v-else class="media-container" v-loading="isPhotoLoading" element-loading-background="rgba(0,0,0,0.6)">
+            <div v-if="currentPhotoUrl" class="custom-image-preview">
+              <el-image 
+                :src="currentPhotoUrl" 
+                fit="contain" 
+                :preview-src-list="[currentPhotoUrl]"
+                class="photo-img-element"
+              />
+            </div>
+            <div v-else class="media-placeholder">
+              <el-icon class="is-loading"><loading /></el-icon>
+              <span>正在探索唯美照片中...</span>
+            </div>
+          </div>
+
+          <!-- 底部工具栏 -->
+          <div class="video-control-toolbar">
+            <el-button 
+              type="primary" 
+              size="default" 
+              @click="videoActiveChannel.startsWith('photo_') ? queryNextPhoto() : queryNextVideo()"
+            >
+              🔄 换一个 / 刷新
+            </el-button>
+            <el-button 
+              v-if="videoActiveChannel.startsWith('photo_') ? currentPhotoUrl : currentVideoUrl"
+              type="info" 
+              plain
+              size="default" 
+              @click="copyLink(videoActiveChannel.startsWith('photo_') ? currentPhotoUrl : currentVideoUrl)"
+            >
+              📋 复制资源链接
+            </el-button>
+            <el-button 
+              v-if="videoActiveChannel.startsWith('photo_') ? currentPhotoUrl : currentVideoUrl"
+              type="success" 
+              plain
+              size="default" 
+              @click="openLink(videoActiveChannel.startsWith('photo_') ? currentPhotoUrl : currentVideoUrl)"
+            >
+              🚀 外部浏览器打开
+            </el-button>
+          </div>
         </div>
       </div>
     </el-dialog>
@@ -1388,6 +1526,26 @@ watch(isDarkMode, () => {
                   </a>
                 </el-button>
               </div>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 7. 毒鸡汤 -->
+        <el-tab-pane name="dujitang">
+          <template #label>
+            <span>🍲 毒鸡汤</span>
+          </template>
+          <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px;">
+            <div class="dujitang-card" v-loading="isDujitangLoading">
+              <span class="quote-mark-start">“</span>
+              <p class="dujitang-content-text">{{ dujitangText || '正在努力为您熬制毒鸡汤中...🍲' }}</p>
+              <span class="quote-mark-end">”</span>
+            </div>
+            
+            <div style="margin-top: 24px;">
+              <el-button type="danger" round :loading="isDujitangLoading" @click="queryDujitang">
+                🍲 再来一碗 / 换一碗
+              </el-button>
             </div>
           </div>
         </el-tab-pane>

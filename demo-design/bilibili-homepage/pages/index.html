@@ -282,20 +282,20 @@
     <div class="bi-modal">
       <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-bold" style="color: var(--bi-color-text-primary);">登录哔哩哔哩</h3>
-        <button id="close-login-modal" class="p-1 rounded-full hover:bg-gray-100 transition-colors" style="color: var(--bi-color-text-placeholder);"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button id="close-login-modal" data-dom-id="close-login-modal" class="p-1 rounded-full hover:bg-gray-100 transition-colors" style="color: var(--bi-color-text-placeholder);"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div class="space-y-4">
         <div><label class="block text-sm font-medium mb-1.5" style="color: var(--bi-color-text-primary);">手机号/邮箱</label><input type="text" class="bi-input w-full" placeholder="请输入手机号或邮箱"></div>
         <div><label class="block text-sm font-medium mb-1.5" style="color: var(--bi-color-text-primary);">密码</label>
           <div class="relative"><input type="password" id="login-password" class="bi-input w-full pr-10" placeholder="请输入密码">
-            <button id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 p-1" style="color: var(--bi-color-text-placeholder);" type="button"><i data-lucide="eye" class="w-4 h-4"></i></button>
+            <button id="toggle-password" data-dom-id="toggle-password" class="absolute right-3 top-1/2 -translate-y-1/2 p-1" style="color: var(--bi-color-text-placeholder);" type="button"><i data-lucide="eye" class="w-4 h-4"></i></button>
           </div>
         </div>
         <div class="flex items-center justify-between">
           <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded" style="accent-color: var(--bi-color-primary);"><span class="text-xs" style="color: var(--bi-color-text-secondary);">记住登录状态</span></label>
           <a href="#" class="text-xs hover:underline" style="color: var(--bi-color-primary);">忘记密码？</a>
         </div>
-        <button id="submit-login" class="bg-[#FF6699] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#E8558A] transition-all w-full">登录</button>
+        <button id="submit-login" data-dom-id="submit-login" class="bg-[#FF6699] text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-[#E8558A] transition-all w-full">登录</button>
       </div>
       <div class="flex items-center gap-3 my-6">
         <div class="flex-1" style="height: 1px; background: var(--bi-color-border-light);"></div>
@@ -361,9 +361,9 @@
           +'<div class="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">'+video.duration+'</div>'
           +'<div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i>'+video.views+'</div>'
           +'<div class="bi-video-thumb-overlay"><div class="flex gap-2">'
-            +'<button class="bi-action-btn like-btn" data-action="like" data-video-id="'+video.id+'"><i data-lucide="heart" class="w-4 h-4"></i><span>点赞</span></button>'
-            +'<button class="bi-action-btn coin-btn" data-action="coin" data-video-id="'+video.id+'"><i data-lucide="coins" class="w-4 h-4"></i><span>投币</span></button>'
-            +'<button class="bi-action-btn fav-btn" data-action="fav" data-video-id="'+video.id+'"><i data-lucide="bookmark" class="w-4 h-4"></i><span>收藏</span></button>'
+            +'<button class="bi-action-btn like-btn" data-action="like" data-video-id="'+video.id+'" data-dom-id="like-btn"><i data-lucide="heart" class="w-4 h-4"></i><span>点赞</span></button>'
+            +'<button class="bi-action-btn coin-btn" data-action="coin" data-video-id="'+video.id+'" data-dom-id="coin-btn"><i data-lucide="coins" class="w-4 h-4"></i><span>投币</span></button>'
+            +'<button class="bi-action-btn fav-btn" data-action="fav" data-video-id="'+video.id+'" data-dom-id="fav-btn"><i data-lucide="bookmark" class="w-4 h-4"></i><span>收藏</span></button>'
           +'</div></div>'
           +'<div class="absolute bottom-0 left-0 height-3 bg-[#FF6699] transition-opacity duration-200 opacity-0 hover:opacity-100" style="width:'+video.progress+'%; height:3px; background: var(--bi-color-primary); opacity:0; transition:opacity .2s;"></div>'
         +'</div>'
@@ -408,7 +408,7 @@
         c.innerHTML = ups.map((u,i) => '<div class="flex items-center gap-3">'
           +'<div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-medium bg-gradient-to-br '+u.gradient+'">'+u.initial+'</div>'
           +'<div class="flex-1 min-w-0"><p class="text-xs font-medium text-ellipsis" style="color: var(--bi-color-text-primary);">'+u.name+'</p><p class="text-[10px]" style="color: var(--bi-color-text-placeholder);">'+u.fans+'</p></div>'
-          +'<button class="follow-btn text-xs border rounded-full px-3 py-1 hover:opacity-80 transition-all" data-up-id="'+i+'" style="color: var(--bi-color-primary); border-color: var(--bi-color-primary); background:'+(u.followed?'var(--bi-color-primary-50)':'transparent')+';">'+(u.followed?'已关注':'关注')+'</button>'
+          +'<button class="follow-btn text-xs border rounded-full px-3 py-1 hover:opacity-80 transition-all" data-up-id="'+i+'" data-dom-id="follow-btn" style="color: var(--bi-color-primary); border-color: var(--bi-color-primary); background:'+(u.followed?'var(--bi-color-primary-50)':'transparent')+';">'+(u.followed?'已关注':'关注')+'</button>'
         +'</div>').join('');
       }
     }

@@ -7,8 +7,8 @@
       "version": 3,
       "createdAt": 1783948639000,
       "canvasData": {
-        "x": 0,
-        "y": 0,
+        "x": 24,
+        "y": 96,
         "group": 0
       },
       "devMetadata": {
@@ -151,9 +151,10 @@
     }
   ],
   "config": {
-    "autoLayout": true,
+    "autoLayout": false,
     "deviceType": "desktop",
     "projectName": "B站首页",
-    "designLibrary": null
+    "designLibrary": null,
+    "visualEditorEnabled": true
   }
 }

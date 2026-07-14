@@ -962,7 +962,33 @@ export function useAppLogic() {
         hotboardData.value = data.list || data.results || []
       }
     } catch (e) {
-      console.error('获取热榜失败:', e)
+      console.error('获取热榜失败，尝试使用小小API备用源:', e)
+      try {
+        if (hotboardType.value === 'weibo') {
+          const resBackup = await axios.get('https://v2.xxapi.cn/api/weibohot')
+          if (resBackup.data && resBackup.data.code === 200 && resBackup.data.data) {
+            hotboardData.value = resBackup.data.data.map(item => ({
+              title: item.title,
+              url: item.url,
+              hot_value: item.hot || '🔥 热门'
+            }))
+            return
+          }
+        } else if (hotboardType.value === 'douyin') {
+          const resBackup = await axios.get('https://v2.xxapi.cn/api/douyinhot')
+          if (resBackup.data && resBackup.data.code === 200 && resBackup.data.data) {
+            hotboardData.value = resBackup.data.data.map(item => ({
+              title: item.title,
+              url: item.url,
+              hot_value: item.hot || '🔥 热门'
+            }))
+            return
+          }
+        }
+      } catch (backupErr) {
+        console.error('备用热榜源获取失败:', backupErr)
+      }
+      
       hotboardData.value = [
         { title: '大语言模型前沿技术突破', hot_value: '520 万', url: 'https://github.com' },
         { title: 'Vite 5.0 正式发布上线', hot_value: '450 万', url: 'https://vite.dev' },
@@ -1097,6 +1123,110 @@ export function useAppLogic() {
     }
   }
 
+  // 5. 视频与写真探索
+  const showVideoDialog = ref(false)
+  const videoActiveChannel = ref('sjxjj') // 'sjxjj', 'mp4_xjj', 'photo_meinv', 'photo_baisi'
+  const isVideoLoading = ref(false)
+  const currentVideoUrl = ref('')
+  const currentPhotoUrl = ref('')
+  const isPhotoLoading = ref(false)
+
+  const queryNextVideo = async () => {
+    isVideoLoading.value = true
+    try {
+      if (videoActiveChannel.value === 'sjxjj') {
+        const res = await axios.get('https://api.kuleu.com/api/sjxjj')
+        if (res.data && res.data.code === 200 && res.data.data?.videoUrl) {
+          currentVideoUrl.value = res.data.data.videoUrl
+        } else {
+          currentVideoUrl.value = 'https://api.kuleu.com/api/sjxjj'
+        }
+      } else {
+        const res = await axios.get('https://api.kuleu.com/api/MP4_xiaojiejie?type=json')
+        if (res.data && res.data.code === 200 && res.data.mp4_video) {
+          currentVideoUrl.value = res.data.mp4_video
+        } else {
+          currentVideoUrl.value = 'https://api.kuleu.com/api/MP4_xiaojiejie'
+        }
+      }
+    } catch (e) {
+      console.error('获取小姐姐视频失败:', e)
+      if (videoActiveChannel.value === 'sjxjj') {
+        currentVideoUrl.value = `https://api.kuleu.com/api/sjxjj?t=${Date.now()}`
+      } else {
+        currentVideoUrl.value = `https://api.kuleu.com/api/MP4_xiaojiejie?t=${Date.now()}`
+      }
+    } finally {
+      isVideoLoading.value = false
+    }
+  }
+
+  const queryNextPhoto = async () => {
+    isPhotoLoading.value = true
+    try {
+      const endpoint = videoActiveChannel.value === 'photo_meinv' 
+        ? 'https://v2.xxapi.cn/api/meinvpic' 
+        : 'https://v2.xxapi.cn/api/baisi'
+      const res = await axios.get(endpoint)
+      if (res.data && res.data.code === 200 && res.data.data) {
+        currentPhotoUrl.value = res.data.data
+      } else {
+        throw new Error('Invalid photo response')
+      }
+    } catch (e) {
+      console.error('获取美女图片失败:', e)
+      currentPhotoUrl.value = videoActiveChannel.value === 'photo_meinv'
+        ? `https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop&t=${Date.now()}`
+        : `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&t=${Date.now()}`
+    } finally {
+      isPhotoLoading.value = false
+    }
+  }
+
+  const loadVideoOrPhotoContent = () => {
+    if (videoActiveChannel.value.startsWith('photo_')) {
+      queryNextPhoto()
+    } else {
+      queryNextVideo()
+    }
+  }
+
+  watch(videoActiveChannel, () => {
+    if (showVideoDialog.value) {
+      loadVideoOrPhotoContent()
+    }
+  })
+
+  watch(showVideoDialog, (newVal) => {
+    if (newVal) {
+      loadVideoOrPhotoContent()
+    } else {
+      currentVideoUrl.value = ''
+      currentPhotoUrl.value = ''
+    }
+  })
+
+  // 6. 毒鸡汤
+  const dujitangText = ref('')
+  const isDujitangLoading = ref(false)
+
+  const queryDujitang = async () => {
+    isDujitangLoading.value = true
+    try {
+      const res = await axios.get('https://v2.xxapi.cn/api/dujitang')
+      if (res.data && res.data.code === 200 && res.data.data) {
+        dujitangText.value = res.data.data
+      } else {
+        throw new Error('Dujitang response invalid')
+      }
+    } catch (e) {
+      console.error('获取毒鸡汤失败:', e)
+      dujitangText.value = '有时候你不努力一下，你都不知道什么叫绝望。🍲'
+    } finally {
+      isDujitangLoading.value = false
+    }
+  }
+
   // tab 切换触发自动查询
   const handleUtilityTabChange = () => {
     if (utilityActiveTab.value === 'holiday' && !holidayData.value) {
@@ -1110,6 +1240,8 @@ export function useAppLogic() {
       if (movieRatings.value.length === 0) queryMovieRatings()
     } else if (utilityActiveTab.value === 'image' && !randomImageUrl.value) {
       queryRandomImage()
+    } else if (utilityActiveTab.value === 'dujitang' && !dujitangText.value) {
+      queryDujitang()
     }
   }
 
@@ -1167,6 +1299,12 @@ export function useAppLogic() {
     movieBoxOffice, isMovieBoxLoading, queryMovieBoxOffice,
     movieRatings, movieRatingsChannel, movieRatingsPeriod, isMovieRatingsLoading, queryMovieRatings,
     trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
-    randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage
+    randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
+    
+    // Video & Photo Explorer exports
+    showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
+    
+    // Dujitang exports
+    dujitangText, isDujitangLoading, queryDujitang
   }
 }
