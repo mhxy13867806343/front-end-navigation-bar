@@ -69,6 +69,15 @@ export default defineConfig({
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         },
         rewrite: (path) => path.replace(/^\/api-juejin/, '')
+      },
+      '/api-helloworld': {
+        target: 'https://www.helloworld.net',
+        changeOrigin: true,
+        headers: {
+          'Referer': 'https://www.helloworld.net/',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        },
+        rewrite: (path) => path.replace(/^\/api-helloworld/, '')
       }
     }
   }

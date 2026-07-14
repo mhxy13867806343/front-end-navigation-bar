@@ -1,9 +1,27 @@
 <template>
   <div class="helloworld-page">
     <div class="page-inner">
-      <!-- 热门标签栏 -->
-      <div class="tag-bar">
-        <a href="javascript:;" :class="{ active: !activeTag }" @click="activeTag = ''">全部</a>
+      <nav class="sort-tabs">
+        <a
+          v-for="tab in sortTabs"
+          :key="tab.value"
+          href="javascript:;"
+          :class="{ active: activeTab === tab.value }"
+          @click="activeTab = tab.value"
+        >{{ tab.label }}</a>
+        <div class="tabs-right">
+          <button class="refresh-btn" :disabled="loading" @click="fetchHomeData">
+            {{ loading ? '刷新中...' : '刷新' }}
+          </button>
+        </div>
+      </nav>
+
+      <div v-if="activeTab === 'articles'" class="tag-bar">
+        <a
+          href="javascript:;"
+          :class="{ active: !activeTag }"
+          @click="activeTag = ''"
+        >全部</a>
         <a
           v-for="tag in tags"
           :key="tag"
@@ -13,186 +31,276 @@
         >#{{ tag }}</a>
       </div>
 
-      <!-- 技术方向/编程语言 Tab -->
-      <nav class="sort-tabs">
-        <a
-          v-for="tab in sortTabs"
-          :key="tab.value"
-          href="javascript:;"
-          :class="{ active: sortType === tab.value }"
-          @click="sortType = tab.value"
-        >{{ tab.label }}</a>
-      </nav>
-
-      <!-- 文章列表 -->
-      <div v-if="loading && !articles.length" class="state-block">加载中...</div>
-      <div v-else-if="error" class="state-block error">
-        {{ error }}
-        <a href="javascript:;" @click="fetchData">重试</a>
+      <div class="source-bar">
+        <span>数据源：`/api-helloworld/` 实时抓取首页</span>
+        <span v-if="lastUpdated">最近刷新：{{ lastUpdated }}</span>
       </div>
-      <ul v-else class="article-list">
-        <li v-for="(item, index) in articles" :key="index" class="article-item">
-          <div class="article-main">
-            <a class="title" :href="item.url" target="_blank" rel="noopener">{{ item.title }}</a>
-            <p class="brief">{{ item.brief }}</p>
-            <div class="meta">
-              <span class="author">{{ item.author }}</span>
-              <span class="dot">·</span>
-              <span>{{ item.time }}</span>
-              <span class="dot">·</span>
-              <span>👁 {{ item.readCount }}</span>
-              <span>👍 {{ item.likeCount }}</span>
-              <span>💬 {{ item.commentCount }}</span>
+
+      <div v-if="loading && !hasRenderableData" class="state-block">加载中...</div>
+      <div v-else-if="error && !hasRenderableData" class="state-block error">
+        {{ error }}
+        <a href="javascript:;" @click="fetchHomeData">重试</a>
+      </div>
+
+      <template v-else>
+        <ul v-if="activeTab === 'articles'" class="article-list">
+          <li v-for="item in filteredArticles" :key="item.url" class="article-item">
+            <div class="article-main">
+              <a class="title" :href="item.url" target="_blank" rel="noopener">{{ item.title }}</a>
+              <p class="brief">{{ item.brief }}</p>
+              <div class="meta">
+                <span class="author">{{ item.author }}</span>
+                <span class="dot">·</span>
+                <span>{{ item.time }}</span>
+                <span class="dot">·</span>
+                <span>👁 {{ item.readCount }}</span>
+                <span>👍 {{ item.likeCount }}</span>
+                <span>💬 {{ item.commentCount }}</span>
+              </div>
+            </div>
+            <img v-if="item.cover" class="cover" :src="item.cover" alt="" loading="lazy" />
+          </li>
+        </ul>
+
+        <ul v-else-if="activeTab === 'authors'" class="author-list">
+          <li v-for="item in authors" :key="item.url" class="author-item">
+            <div class="author-main">
+              <a class="title" :href="item.url" target="_blank" rel="noopener">{{ item.name }}</a>
+              <div class="meta">
+                <span class="author">{{ item.job || '暂无职位信息' }}</span>
+              </div>
+            </div>
+            <img v-if="item.avatar" class="avatar" :src="item.avatar" alt="" loading="lazy" />
+          </li>
+        </ul>
+
+        <ul v-else class="lesson-list">
+          <li v-for="item in lessons" :key="item.url" class="article-item">
+            <div class="article-main">
+              <a class="title" :href="item.url" target="_blank" rel="noopener">{{ item.title }}</a>
+              <div class="meta">
+                <span>{{ item.price }}</span>
+                <span class="dot">·</span>
+                <span>{{ item.learnCount }}</span>
+              </div>
+            </div>
+            <img v-if="item.cover" class="cover" :src="item.cover" alt="" loading="lazy" />
+          </li>
+        </ul>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <h3>技术方向</h3>
+            <div class="chip-list">
+              <span v-for="item in directions" :key="item" class="chip">{{ item }}</span>
             </div>
           </div>
-        </li>
-      </ul>
+          <div class="summary-card">
+            <h3>编程语言</h3>
+            <div class="chip-list">
+              <span v-for="item in languages" :key="item" class="chip">{{ item }}</span>
+            </div>
+          </div>
+        </div>
 
-      <!-- 状态提示 -->
-      <div class="load-more" v-if="!loading && !error">
-        <span class="no-more">{{ articles.length }} 篇文章</span>
-      </div>
+        <div class="load-more">
+          <span class="no-more">
+            文章 {{ articles.length }} 篇 / 作者 {{ authors.length }} 位 / 课程 {{ lessons.length }} 个
+          </span>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
-const API_BASE = 'https://www.helloworld.net'
+const API_BASE = '/api-helloworld'
 
 const sortTabs = [
-  { label: '技术方向', value: 'direction' },
-  { label: '编程语言', value: 'language' }
+  { label: '文章', value: 'articles' },
+  { label: '作者榜', value: 'authors' },
+  { label: '推荐课程', value: 'lessons' }
 ]
 
-const sortType = ref('direction')
-const tags = ref(['vue', 'react', 'flutter', 'golang', 'rust'])
+const activeTab = ref('articles')
 const activeTag = ref('')
+const tags = ref([])
 const articles = ref([])
+const authors = ref([])
+const lessons = ref([])
+const directions = ref([])
+const languages = ref([])
 const loading = ref(false)
 const error = ref('')
+const lastUpdated = ref('')
 
-const techDirections = [
-  '人工智能', '鸿蒙开发', '前端开发', '移动端',
-  '后端开发', '架构设计', '软件开发'
-]
+const hasRenderableData = computed(() => {
+  return articles.value.length || authors.value.length || lessons.value.length
+})
 
-const languages = [
-  'Java', 'C/C++', 'Golang', 'Javascript', 'Python', 'PHP'
-]
+const filteredArticles = computed(() => {
+  if (!activeTag.value) return articles.value
+  const keyword = activeTag.value.toLowerCase()
+  return articles.value.filter((item) => {
+    const content = `${item.title} ${item.brief}`.toLowerCase()
+    return content.includes(keyword)
+  })
+})
 
-// 模拟文章数据（从之前提取的数据）
-const mockArticles = [
-  {
-    title: '深入理解Linux文件系统：inode映射、路径解析、挂载与软硬链接',
-    brief: '一、Linux文件系统的核心基石：inode映射机制1.1inode的本质与核心作用在Linux文件中...',
-    author: '方悦',
-    time: '2个月前',
-    readCount: 853,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/1922620579'
-  },
-  {
-    title: '成者发布"十二周年战略新品发布会"：以"AI+极简"重塑高效办公新范式',
-    brief: '2026年1月6日，成者CZUR在其成立十二周年之际，成功举办战略新品发布会...',
-    author: '无分号教派',
-    time: '2个月前',
-    readCount: 432,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/6025293698'
-  },
-  {
-    title: 'OpenClaw接入企业微信全攻略：从0到1打通企业AI协作通道',
-    brief: '摘要：本文详细介绍了将OpenClawAI框架接入企业微信的完整方案...',
-    author: '无分号教派',
-    time: '2个月前',
-    readCount: 442,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/4478668206'
-  },
-  {
-    title: 'uniapp+PHP 圈子论坛系统源码：轻量化架构、发帖互动、评论点赞',
-    brief: '传统的大型论坛系统架构臃肿、维护成本高、移动端体验差...',
-    author: 'dkll',
-    time: '2个月前',
-    readCount: 407,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/0413763428'
-  },
-  {
-    title: '与AI结对编程，一路同行：一款数据库稳定性保障插件之AI设计开发结对编程实践之路',
-    brief: '背景在日常工作中，有时会遇到一些突发流量，突发流量虽然持续时间短...',
-    author: '京东云开发者',
-    time: '2个月前',
-    readCount: 743,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/7987425748'
-  },
-  {
-    title: '抽丝剥茧探穷境！一次数据库JSON字段的深度使用实践',
-    brief: '背景在我们系统中，承接多种行业，多种商家的，多个业务条线...',
-    author: '京东云开发者',
-    time: '2个月前',
-    readCount: 733,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/2338191012'
-  },
-  {
-    title: '智算监控的下半场：从基础设施报警到算力精算师',
-    brief: '摘要：在十万卡集群与万亿参数模型时代，基础设施的稳定性...',
-    author: '京东云开发者',
-    time: '2个月前',
-    readCount: 783,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/4697230071'
-  },
-  {
-    title: 'uniapp+php婚恋交友语音房配置系统，企业交友红娘牵线线下门店合作系统',
-    brief: '一、技术选型：UniAppPHP的黄金组合UniApp优势跨平台开发...',
-    author: 'dkll',
-    time: '2个月前',
-    readCount: 406,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/7114171318'
-  },
-  {
-    title: '【龙虾大脑核心揭秘-1】OpenClaw处理流程链路解析',
-    brief: '引言OpenClaw作为一款开源的AI智能体(AutonomousAgent)框架...',
-    author: '京东云开发者',
-    time: '2个月前',
-    readCount: 700,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/3660738190'
-  },
-  {
-    title: 'B端体验设计探索：如何缓解用户视觉疲劳',
-    brief: '前言"色彩是我们感知世界的重要媒介，对于信息传达有着重要的作用..."',
-    author: '京东云开发者',
-    time: '2个月前',
-    readCount: 741,
-    likeCount: 0,
-    commentCount: 0,
-    url: 'https://www.helloworld.net/p/9504736704'
-  }
-]
+function toAbsoluteUrl(url) {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  return `https://www.helloworld.net${url}`
+}
 
-async function fetchData() {
+function decodeHtml(text) {
+  return String(text || '')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\u002F/g, '/')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function getSection(html, startMarker, endMarker) {
+  const start = html.indexOf(startMarker)
+  if (start === -1) return ''
+  const fromStart = html.slice(start)
+  if (!endMarker) return fromStart
+  const end = fromStart.indexOf(endMarker)
+  return end === -1 ? fromStart : fromStart.slice(0, end)
+}
+
+function parseMenuSection(html, title) {
+  const section = getSection(
+    html,
+    `<h3 class="menu-title">${title}</h3>`,
+    '</ul>'
+  )
+  return Array.from(section.matchAll(/<span class="name">([^<]+)<\/span>/g)).map((match) => decodeHtml(match[1]))
+}
+
+function parseArticles(html) {
+  const articleSection = getSection(
+    html,
+    '<div class="blog_list_container">',
+    '<div class="right-list">'
+  )
+  const blocks = articleSection.split('<div class="blog-item"').slice(1)
+
+  return blocks.map((block) => {
+    const articleId = block.match(/href="\/p\/([^"]+)"/)
+    const title = block.match(/class="title[^"]*"[^>]*>\s*([^<]+)\s*<\/a>/)
+    const intro = block.match(/class="intro[^"]*"[^>]*>\s*([\s\S]*?)\s*<\/div>/)
+    const author = block.match(/class="name"[^>]*>\s*([^<]+)\s*<\/a>/)
+    const time = block.match(/class="time"[^>]*>\s*([^<]+)\s*<\/div>/)
+    const nums = Array.from(block.matchAll(/<span class="num"[^>]*>(\d+)<\/span>/g)).map((match) => match[1])
+    const cover = block.match(/<img src="([^"]+)" class="item-right"/)
+
+    return {
+      title: decodeHtml(title?.[1]),
+      brief: decodeHtml(intro?.[1]),
+      author: decodeHtml(author?.[1]),
+      time: decodeHtml(time?.[1]),
+      readCount: nums[0] || '0',
+      likeCount: nums[1] || '0',
+      commentCount: nums[2] || '0',
+      url: toAbsoluteUrl(articleId ? `/p/${articleId[1]}` : ''),
+      cover: toAbsoluteUrl(cover?.[1] || '')
+    }
+  }).filter((item) => item.title && item.url)
+}
+
+function parseAuthors(html) {
+  const authorSection = getSection(
+    html,
+    '<h5 class="common-title" data-v-377f20d6>作者榜</h5>',
+    '<h5 class="common-title" data-v-377f20d6>推荐课程</h5>'
+  )
+  const blocks = authorSection.split('<div class="author-item"').slice(1)
+
+  return blocks.map((block) => {
+    const profile = block.match(/href="\/([^"]+)" target="_blank" class="author-info"/)
+    const name = block.match(/<span class="name[^"]*"[^>]*>([^<]+)<\/span>/)
+    const job = block.match(/<span class="count[^"]*"[^>]*>([^<]*)<\/span>/)
+    const avatar = block.match(/<img src="([^"]+)"[^>]*class="avatar"/)
+
+    return {
+      name: decodeHtml(name?.[1]),
+      job: decodeHtml(job?.[1]),
+      url: toAbsoluteUrl(profile ? `/${profile[1]}` : ''),
+      avatar: toAbsoluteUrl(avatar?.[1] || '')
+    }
+  }).filter((item) => item.name && item.url)
+}
+
+function parseLessons(html) {
+  const lessonSection = getSection(
+    html,
+    '<h5 class="common-title" data-v-377f20d6>推荐课程</h5>',
+    '<h5 class="common-title" data-v-377f20d6>推荐标签</h5>'
+  )
+  const blocks = lessonSection.split('<a target="_blank" href="').slice(1)
+
+  return blocks.map((block) => {
+    const href = block.match(/^([^"]+)/)
+    const cover = block.match(/<img src="([^"]+)"/)
+    const title = block.match(/<h2[^>]*>([^<]+)<\/h2>/)
+    const price = block.match(/<div class="price"[^>]*>([^<]+)<\/div>/)
+    const count = block.match(/<span[^>]*>([^<]+人学习)<\/span>/)
+
+    return {
+      title: decodeHtml(title?.[1]),
+      price: decodeHtml(price?.[1]) || '未知价格',
+      learnCount: decodeHtml(count?.[1]),
+      url: toAbsoluteUrl(href?.[1] || ''),
+      cover: toAbsoluteUrl(cover?.[1] || '')
+    }
+  }).filter((item) => item.title && item.url)
+}
+
+function parseTags(html) {
+  return Array.from(
+    html.matchAll(/class="index-tag-item"[^>]*>([^<]+)<\/a>/g)
+  ).map((match) => decodeHtml(match[1]))
+}
+
+async function fetchHomeData() {
   loading.value = true
   error.value = ''
+
   try {
-    // 模拟API请求延迟
-    await new Promise(resolve => setTimeout(resolve, 500))
-    articles.value = mockArticles
+    const response = await fetch(`${API_BASE}/`, {
+      method: 'GET',
+      headers: {
+        Accept: 'text/html'
+      },
+      cache: 'no-store'
+    })
+
+    if (!response.ok) {
+      throw new Error(`请求失败：${response.status}`)
+    }
+
+    const html = await response.text()
+
+    articles.value = parseArticles(html)
+    authors.value = parseAuthors(html)
+    lessons.value = parseLessons(html)
+    tags.value = parseTags(html)
+    directions.value = parseMenuSection(html, '技术方向')
+    languages.value = parseMenuSection(html, '编程语言')
+
+    if (!articles.value.length && !authors.value.length && !lessons.value.length) {
+      throw new Error('已请求成功，但未解析出列表数据')
+    }
+
+    lastUpdated.value = new Date().toLocaleString('zh-CN')
   } catch (e) {
     error.value = `加载失败：${e.message || e}`
   } finally {
@@ -201,7 +309,7 @@ async function fetchData() {
 }
 
 onMounted(() => {
-  fetchData()
+  fetchHomeData()
 })
 </script>
 
@@ -212,48 +320,23 @@ onMounted(() => {
   color: #252933;
   font-size: 14px;
 }
+
 .page-inner {
   max-width: 820px;
   margin: 0 auto;
   padding: 16px;
 }
 
-/* 热门标签栏 */
-.tag-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  background: #fff;
-  padding: 12px 20px;
-  border-bottom: 1px solid #e4e6eb;
-  border-radius: 6px 6px 0 0;
-}
-.tag-bar a {
-  color: #515767;
-  text-decoration: none;
-  padding: 3px 12px;
-  border-radius: 14px;
-  white-space: nowrap;
-  font-size: 13px;
-}
-.tag-bar a:hover {
-  color: #1e80ff;
-}
-.tag-bar a.active {
-  color: #1e80ff;
-  background: #eaf2ff;
-  font-weight: 500;
-}
-
-/* 技术方向/编程语言 Tab */
 .sort-tabs {
   display: flex;
   align-items: flex-start;
   gap: 24px;
   background: #fff;
+  border-radius: 6px 6px 0 0;
   padding: 12px 20px 0;
   border-bottom: 1px solid #e4e6eb;
 }
+
 .sort-tabs a {
   color: #71777c;
   text-decoration: none;
@@ -261,13 +344,16 @@ onMounted(() => {
   position: relative;
   font-size: 15px;
 }
+
 .sort-tabs a:hover {
   color: #1e80ff;
 }
+
 .sort-tabs a.active {
   color: #1e80ff;
   font-weight: 600;
 }
+
 .sort-tabs a.active::after {
   content: '';
   position: absolute;
@@ -279,27 +365,92 @@ onMounted(() => {
   background: #1e80ff;
 }
 
-/* 文章列表 */
-.article-list {
+.tabs-right {
+  margin-left: auto;
+  padding-bottom: 8px;
+}
+
+.refresh-btn {
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  color: #515767;
+  padding: 6px 14px;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.refresh-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: #fff;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e4e6eb;
+}
+
+.tag-bar a {
+  color: #515767;
+  text-decoration: none;
+  padding: 3px 12px;
+  border-radius: 14px;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.tag-bar a:hover {
+  color: #1e80ff;
+}
+
+.tag-bar a.active {
+  color: #1e80ff;
+  background: #eaf2ff;
+  font-weight: 500;
+}
+
+.source-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  background: #fff;
+  color: #8a919f;
+  font-size: 12px;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.article-list,
+.author-list,
+.lesson-list {
   list-style: none;
   margin: 0;
   padding: 0;
   background: #fff;
-  border-radius: 0 0 6px 6px;
 }
-.article-item {
+
+.article-item,
+.author-item {
   display: flex;
   gap: 16px;
   padding: 14px 20px;
   border-bottom: 1px solid #f0f1f2;
 }
-.article-item:last-child {
+
+.article-item:last-child,
+.author-item:last-child {
   border-bottom: none;
 }
-.article-main {
+
+.article-main,
+.author-main {
   flex: 1;
   min-width: 0;
 }
+
 .title {
   color: #252933;
   font-size: 16px;
@@ -310,9 +461,11 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .title:hover {
   color: #1e80ff;
 }
+
 .brief {
   color: #8a919f;
   margin: 6px 0;
@@ -323,6 +476,7 @@ onMounted(() => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
 .meta {
   display: flex;
   flex-wrap: wrap;
@@ -331,14 +485,67 @@ onMounted(() => {
   color: #8a919f;
   font-size: 12px;
 }
+
 .meta .author {
   color: #515767;
 }
+
 .meta .dot {
   color: #d0d3d8;
 }
 
-/* 状态 & 加载更多 */
+.cover,
+.avatar {
+  width: 110px;
+  height: 74px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: #fff;
+  border-top: 1px solid #f0f1f2;
+  padding: 16px 20px 20px;
+  border-radius: 0 0 6px 6px;
+}
+
+.summary-card {
+  border: 1px solid #eef0f2;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fafbfc;
+}
+
+.summary-card h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #252933;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #1e80ff;
+  font-size: 12px;
+}
+
 .state-block {
   background: #fff;
   border-radius: 0 0 6px 6px;
@@ -346,33 +553,54 @@ onMounted(() => {
   text-align: center;
   color: #8a919f;
 }
+
 .state-block.error {
   color: #e05e5e;
 }
+
 .state-block.error a {
   color: #1e80ff;
   margin-left: 8px;
 }
+
 .load-more {
   text-align: center;
   padding: 16px 0;
 }
+
 .no-more {
   color: #b2bac2;
   font-size: 13px;
 }
 
-/* 响应式 */
 @media (max-width: 640px) {
   .page-inner {
     padding: 8px;
   }
+
   .sort-tabs,
   .tag-bar,
-  .article-item {
+  .source-bar,
+  .article-item,
+  .author-item,
+  .summary-grid {
     padding-left: 12px;
     padding-right: 12px;
   }
+
+  .source-bar {
+    flex-direction: column;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cover {
+    width: 84px;
+    height: 56px;
+  }
+
   .title {
     white-space: normal;
     display: -webkit-box;

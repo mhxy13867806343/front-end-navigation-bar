@@ -1,7 +1,10 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
-import { ElMessage, ElMessageBox, ElNotification, ElLoading } from 'element-plus'
-import { Document, Menu as MenuIcon, Setting, Location } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { 
+  Document, Menu as MenuIcon, Setting, Location, CopyDocument, 
+  Delete, View, Download, Plus, Star, CaretTop, CaretBottom 
+} from '@element-plus/icons-vue'
 
 // ------ Form 表单校验 ------
 const formRef = ref(null)
@@ -81,6 +84,7 @@ const treeSelectData = [
     children: [{ value: 'node', label: 'Node.js' }, { value: 'go', label: 'Go' }]
   }
 ]
+
 // ------ Tree 过滤与动态增删 ------
 const filterText = ref('')
 const treeRef = ref(null)
@@ -204,6 +208,13 @@ const handleUploadChange = () => {
   ElMessage.info('演示模式：文件不会真正上传')
 }
 
+// Simulated Avatar Upload
+const avatarUrl = ref('')
+const handleAvatarSuccess = (uploadFile) => {
+  avatarUrl.value = URL.createObjectURL(uploadFile.raw)
+  ElMessage.success('头像模拟上传并预览成功！')
+}
+
 // ------ 高级表格（展开行） ------
 const expandTableData = [
   { name: 'DeepSeek', type: 'AI聊天助手', price: '免费', region: '国内', desc: '强力开源大模型，深度求索' },
@@ -228,7 +239,6 @@ const orderData = ref(
   })
 )
 
-// 搜索过滤（名称/状态）
 const filteredOrders = computed(() => {
   const kw = orderSearch.value.trim().toLowerCase()
   if (!kw) return orderData.value
@@ -237,7 +247,6 @@ const filteredOrders = computed(() => {
   )
 })
 
-// 分页后的当页数据
 const pagedOrders = computed(() => {
   const start = (orderPage.value - 1) * orderPageSize.value
   return filteredOrders.value.slice(start, start + orderPageSize.value)
@@ -247,10 +256,8 @@ const handleOrderSearch = () => {
   orderPage.value = 1
 }
 
-// 自定义计算：金额 = 单价 × 数量
 const calcAmount = (row) => Number((row.price * row.count).toFixed(2))
 
-// 自定义合计行：对当页 数量/金额 求和
 const orderSummary = ({ columns }) => {
   const sums = []
   columns.forEach((column, index) => {
@@ -270,7 +277,9 @@ const orderSummary = ({ columns }) => {
   return sums
 }
 
-// ------ Statistic / Segmented / Descriptions / Carousel ------
+// ------ Calendar / Statistic / Segmented / Descriptions / Carousel ------
+const calendarValue = ref(new Date())
+const countdownValue = ref(Date.now() + 1000 * 60 * 60 * 24 * 3 + 1000 * 30) // 3 days from now
 const segmentedValue = ref('日')
 const segmentedOptions = ['日', '周', '月', '季', '年']
 
@@ -278,146 +287,112 @@ const segmentedOptions = ['日', '周', '月', '季', '年']
 const activeStep = ref(1)
 const activeMenu = ref('1-1')
 
-// ------ Dialog / Drawer / Loading / MessageBox / Notification / Popover / Tour ------
+// ------ Dialog / Drawer / Watermark / InfiniteScroll / Tour ------
 const dialogVisible = ref(false)
 const drawerVisible = ref(false)
 const popoverVisible = ref(false)
 const tourOpen = ref(false)
+const watermarkContent = ref('HooksVue')
 
-const showNotification = (position) => {
-  ElNotification({
-    title: '通知',
-    message: `来自 ${position} 的通知消息`,
-    type: 'success',
-    position
-  })
-}
 const showConfirm = () => {
   ElMessageBox.confirm('确定要执行此操作吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  })
-    .then(() => ElMessage.success('已确认'))
-    .catch(() => ElMessage.info('已取消'))
-}
-const showPrompt = () => {
-  ElMessageBox.prompt('请输入你的昵称', '输入框弹窗', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    inputPattern: /\S+/,
-    inputErrorMessage: '昵称不能为空'
-  })
-    .then(({ value }) => ElMessage.success(`你好，${value}！`))
-    .catch(() => ElMessage.info('已取消'))
-}
-const showLoading = () => {
-  const loading = ElLoading.service({
-    lock: true,
-    text: '加载中，2 秒后自动关闭...',
-    background: 'rgba(0, 0, 0, 0.7)'
-  })
-  setTimeout(() => loading.close(), 2000)
+  }).then(() => {
+    ElMessage.success('操作已执行')
+  }).catch(() => {})
 }
 
-// ------ Watermark / InfiniteScroll / Image ------
-const watermarkContent = ref('HooksVue')
-const imageUrl = 'https://picsum.photos/id/1015/300/180'
-const previewList = [
-  'https://picsum.photos/id/1015/800/500',
-  'https://picsum.photos/id/1016/800/500',
-  'https://picsum.photos/id/1018/800/500'
-]
+// InfiniteScroll simulation
 const scrollCount = ref(10)
 const loadMore = () => {
   if (scrollCount.value < 30) {
-    scrollCount.value += 5
+    setTimeout(() => {
+      scrollCount.value += 5
+    }, 500)
   }
 }
 </script>
 
 <template>
   <div>
-    <div class="demo-section">
-      <h4 class="demo-title">Form 表单（完整校验规则）</h4>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" style="max-width: 560px;">
-        <el-form-item label="活动名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入活动名称（2-10 个字符）" clearable />
-        </el-form-item>
-        <el-form-item label="活动区域" prop="region">
-          <el-select v-model="form.region" placeholder="请选择活动区域" style="width: 100%;">
-            <el-option label="杭州" value="hangzhou" />
-            <el-option label="上海" value="shanghai" />
-            <el-option label="北京" value="beijing" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="活动日期" prop="date">
-          <el-date-picker v-model="form.date" type="date" placeholder="选择日期" style="width: 100%;" />
-        </el-form-item>
-        <el-form-item label="活动性质" prop="type">
-          <el-checkbox-group v-model="form.type">
-            <el-checkbox value="online">线上活动</el-checkbox>
-            <el-checkbox value="promotion">地推活动</el-checkbox>
-            <el-checkbox value="offline">线下主题</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="活动资源" prop="resource">
-          <el-radio-group v-model="form.resource">
-            <el-radio value="sponsor">线上品牌赞助</el-radio>
-            <el-radio value="venue">线下场地免费</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="活动形式">
-          <el-input v-model="form.desc" type="textarea" :rows="2" placeholder="请输入活动形式" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="submitForm">立即创建</el-button>
-          <el-button @click="resetForm">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-
     <el-row :gutter="24">
+      <!-- 左半部 -->
       <el-col :xs="24" :sm="12">
         <div class="demo-section">
-          <h4 class="demo-title">Autocomplete 自动补全</h4>
+          <h4 class="demo-title">Form 表单校验与提交</h4>
+          <el-form ref="formRef" :model="form" :rules="rules" label-width="80px" size="small">
+            <el-form-item label="活动名称" prop="name">
+              <el-input v-model="form.name" />
+            </el-form-item>
+            <el-form-item label="活动区域" prop="region">
+              <el-select v-model="form.region" placeholder="请选择区域" style="width: 100%;">
+                <el-option label="上海" value="shanghai" />
+                <el-option label="北京" value="beijing" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="活动性质" prop="type">
+              <el-checkbox-group v-model="form.type">
+                <el-checkbox value="线上" name="type">线上活动</el-checkbox>
+                <el-checkbox value="线下" name="type">线下活动</el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+            <el-form-item label="资源" prop="resource">
+              <el-radio-group v-model="form.resource">
+                <el-radio value="赞助">品牌赞助</el-radio>
+                <el-radio value="自筹">线下自筹</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="活动形式">
+              <el-input v-model="form.desc" type="textarea" :rows="2" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="submitForm">立即创建</el-button>
+              <el-button @click="resetForm">重置</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+
+        <div class="demo-section">
+          <h4 class="demo-title">Autocomplete 输入建议</h4>
           <el-autocomplete
             v-model="autocompleteValue"
             :fetch-suggestions="queryFrameworks"
-            placeholder="输入 v 或 r 试试"
             clearable
+            placeholder="输入 vue/react 提示"
             style="width: 300px;"
           />
         </div>
 
         <div class="demo-section">
-          <h4 class="demo-title">Mention 提及</h4>
+          <h4 class="demo-title">Mention 提及成员</h4>
           <el-mention
             v-model="mentionValue"
             :options="mentionOptions"
-            placeholder="输入 @ 触发提及"
+            placeholder="输入 @ 触发人员提及"
             style="width: 300px;"
           />
         </div>
 
         <div class="demo-section">
-          <h4 class="demo-title">Virtualized Select 虚拟化选择器（1000 条）</h4>
+          <h4 class="demo-title">Virtualized Select 虚拟化选择（1000 条）</h4>
           <el-select-v2
             v-model="selectV2Value"
             :options="selectV2Options"
-            placeholder="请选择（虚拟滚动）"
+            placeholder="滑动加载（超高性能）"
             filterable
             style="width: 300px;"
           />
         </div>
 
         <div class="demo-section">
-          <h4 class="demo-title">TreeSelect 树形选择</h4>
+          <h4 class="demo-title">TreeSelect 树形选择器</h4>
           <el-tree-select
             v-model="treeSelectValue"
             :data="treeSelectData"
             check-strictly
-            placeholder="请选择节点"
+            placeholder="带树状结构选择"
             style="width: 300px;"
           />
         </div>
@@ -463,232 +438,212 @@ const loadMore = () => {
         </div>
       </el-col>
 
+      <!-- 右半部 -->
       <el-col :xs="24" :sm="12">
         <div class="demo-section">
-          <h4 class="demo-title">Upload 上传（拖拽，演示模式）</h4>
-          <el-upload
-            v-model:file-list="fileList"
-            drag
-            :auto-upload="false"
-            :on-change="handleUploadChange"
-            style="max-width: 360px;"
-          >
-            <div class="el-upload__text" style="padding: 20px 0;">
-              📁 拖拽文件到此处，或 <em>点击选择文件</em>
-            </div>
-            <template #tip>
-              <div class="el-upload__tip">演示模式，文件不会真正上传</div>
-            </template>
-          </el-upload>
+          <h4 class="demo-title">Upload 上传（拖拽与头像模拟）</h4>
+          <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+            <!-- Avatar Drag & Drop -->
+            <el-upload
+              v-model:file-list="fileList"
+              drag
+              :auto-upload="false"
+              :on-change="handleUploadChange"
+              style="max-width: 240px;"
+            >
+              <div class="el-upload__text" style="padding: 10px 0; font-size: 12px;">
+                📁 拖拽文件到此，或<em>选择文件</em>
+              </div>
+            </el-upload>
+            
+            <!-- Avatar preview -->
+            <el-upload
+              class="avatar-uploader"
+              :show-file-list="false"
+              :auto-upload="false"
+              :on-change="handleAvatarSuccess"
+              style="width: 80px; height: 80px; border: 1px dashed var(--el-border-color, #dcdfe6); border-radius: 6px; cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--el-fill-color-light, #f5f7fa);"
+            >
+              <img v-if="avatarUrl" :src="avatarUrl" class="avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+              <el-icon v-else class="avatar-uploader-icon" style="font-size: 24px; color: #8c939d;"><Plus /></el-icon>
+            </el-upload>
+          </div>
         </div>
 
         <div class="demo-section">
-          <h4 class="demo-title">Statistic 统计数值 / Segmented 分段控制器</h4>
-          <el-row :gutter="16" style="margin-bottom: 12px;">
-            <el-col :span="8"><el-statistic title="日访问量" :value="26890" /></el-col>
-            <el-col :span="8"><el-statistic title="收藏工具数" :value="512" /></el-col>
-            <el-col :span="8"><el-statistic title="好评率" :value="99.8" suffix="%" :precision="1" /></el-col>
-          </el-row>
-          <el-segmented v-model="segmentedValue" :options="segmentedOptions" />
+          <h4 class="demo-title">Affix 固钉</h4>
+          <el-affix :offset="80">
+            <el-button type="primary">📌 固钉按钮 (滚动至此贴顶)</el-button>
+          </el-affix>
         </div>
 
         <div class="demo-section">
           <h4 class="demo-title">Descriptions 描述列表</h4>
-          <el-descriptions title="项目信息" :column="2" border>
-            <el-descriptions-item label="项目名称">HooksVue 导航</el-descriptions-item>
-            <el-descriptions-item label="框架">Vue 3</el-descriptions-item>
-            <el-descriptions-item label="UI 库">Element Plus</el-descriptions-item>
-            <el-descriptions-item label="构建工具">Vite</el-descriptions-item>
+          <el-descriptions title="用户信息明细卡" :column="2" border>
+            <el-descriptions-item label="用户名">HooksVue</el-descriptions-item>
+            <el-descriptions-item label="手机号">181****8888</el-descriptions-item>
+            <el-descriptions-item label="居住地">北京市</el-descriptions-item>
+            <el-descriptions-item label="系统权限">
+              <el-tag size="small">超级管理员</el-tag>
+            </el-descriptions-item>
           </el-descriptions>
         </div>
 
         <div class="demo-section">
-          <h4 class="demo-title">Carousel 走马灯</h4>
-          <el-carousel height="140px" style="max-width: 420px; border-radius: 8px;">
-            <el-carousel-item v-for="i in 4" :key="i">
-              <div class="carousel-item" :class="`carousel-${i}`">轮播页 {{ i }}</div>
+          <h4 class="demo-title">Segmented 分段控制器</h4>
+          <el-segmented v-model="segmentedValue" :options="segmentedOptions" />
+        </div>
+
+        <div class="demo-section">
+          <h4 class="demo-title">Statistic 数值统计与趋势 / Countdown</h4>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <el-row :gutter="12">
+              <el-col :span="12">
+                <el-statistic title="今日活跃用户量" :value="268500">
+                  <template #suffix>
+                    <el-icon color="#67c23a"><CaretTop /></el-icon>
+                  </template>
+                </el-statistic>
+              </el-col>
+              <el-col :span="12">
+                <el-statistic title="核心交易单量" :value="14382" precision="0">
+                  <template #suffix>
+                    <el-icon color="#f56c6c"><CaretBottom /></el-icon>
+                  </template>
+                </el-statistic>
+              </el-col>
+            </el-row>
+            <el-countdown title="距离下一代版本发布倒计时" :value="countdownValue" format="D天 H时 m分 s秒" />
+          </div>
+        </div>
+
+        <div class="demo-section">
+          <h4 class="demo-title">Carousel 跑马灯轮播图（卡片布局）</h4>
+          <el-carousel :interval="4000" type="card" height="120px">
+            <el-carousel-item v-for="item in 4" :key="item" :class="'carousel-' + item">
+              <h3 style="color: #fff; text-align: center; line-height: 120px; margin: 0;">卡片看板 {{ item }}</h3>
             </el-carousel-item>
           </el-carousel>
         </div>
 
         <div class="demo-section">
-          <h4 class="demo-title">Progress 环形 / 仪表盘</h4>
-          <div class="demo-row">
-            <el-progress type="circle" :percentage="70" :width="90" />
-            <el-progress type="dashboard" :percentage="80" :width="90" />
+          <h4 class="demo-title">Steps 流程步骤条</h4>
+          <el-steps :active="activeStep" finish-status="success" simple style="margin-top: 10px;">
+            <el-step title="步骤 1" />
+            <el-step title="步骤 2" />
+            <el-step title="步骤 3" />
+          </el-steps>
+          <div style="margin-top: 10px;">
+            <el-button size="small" @click="activeStep = (activeStep % 3) + 1">下一步</el-button>
           </div>
+        </div>
+
+        <div class="demo-section">
+          <h4 class="demo-title">Menu 导航菜单（折叠式）</h4>
+          <el-menu :default-active="activeMenu" mode="horizontal">
+            <el-menu-item index="1">📂 菜单一</el-menu-item>
+            <el-sub-menu index="2">
+              <template #title>🛠️ 选项子级</template>
+              <el-menu-item index="2-1">配置项 A</el-menu-item>
+              <el-menu-item index="2-2">配置项 B</el-menu-item>
+            </el-sub-menu>
+          </el-menu>
         </div>
       </el-col>
     </el-row>
 
+    <!-- 综合扩展：表格（展开行） -->
     <div class="demo-section">
-      <h4 class="demo-title">Table 综合示例（搜索 + 分页 + 自定义计算列 + 合计行）</h4>
-      <div class="demo-row" style="margin-bottom: 12px;">
+      <h4 class="demo-title">Table 表格（展开行数据详情）</h4>
+      <el-table :data="expandTableData" style="width: 100%;">
+        <el-table-column type="expand">
+          <template #default="{ row }">
+            <div style="padding: 12px 24px; font-size: 13px; color: var(--el-text-color-regular);">
+              <p>📌 <strong>详细描述：</strong> {{ row.desc }}</p>
+              <p>🌍 <strong>开发团队分布：</strong> 亚洲、欧洲多地研发协同</p>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="产品名称" prop="name" />
+        <el-table-column label="分类" prop="type" />
+        <el-table-column label="单价" prop="price" />
+      </el-table>
+    </div>
+
+    <!-- 综合表格：搜索 + 分页 + 自定义计算 + 合计行 -->
+    <div class="demo-section">
+      <h4 class="demo-title">综合表格（实时过滤 + 分页 + 自定义汇总合计）</h4>
+      <div style="margin-bottom: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
         <el-input
           v-model="orderSearch"
-          placeholder="搜索商品名称或状态（如：已支付）"
+          placeholder="搜索产品名称/支付状态"
           clearable
-          style="width: 300px;"
+          style="max-width: 260px;"
           @input="handleOrderSearch"
         />
-        <el-text type="info" style="align-self: center;">共 {{ filteredOrders.length }} 条结果</el-text>
       </div>
-      <el-table :data="pagedOrders" border stripe show-summary :summary-method="orderSummary" style="width: 100%;">
-        <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="product" label="商品名称" min-width="160" />
-        <el-table-column prop="price" label="单价（¥）" width="110" sortable />
-        <el-table-column prop="count" label="数量" width="120">
+      
+      <el-table
+        :data="pagedOrders"
+        border
+        show-summary
+        :summary-method="orderSummary"
+        style="width: 100%;"
+      >
+        <el-table-column prop="id" label="订单ID" width="70" />
+        <el-table-column prop="product" label="产品名称" />
+        <el-table-column prop="price" label="单价" />
+        <el-table-column prop="count" label="数量" />
+        <el-table-column label="总价 (单价×数量)">
           <template #default="{ row }">
-            <el-input-number v-model="row.count" :min="1" :max="99" size="small" style="width: 100px;" />
+            <span>¥ {{ calcAmount(row) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="amount" label="金额（单价×数量）" width="150">
+        <el-table-column prop="status" label="支付状态" width="100">
           <template #default="{ row }">
-            <el-text type="primary" tag="b">¥ {{ calcAmount(row).toFixed(2) }}</el-text>
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === '已支付' ? 'success' : row.status === '待支付' ? 'warning' : 'info'" size="small">
+            <el-tag
+              :type="row.status === '已支付' ? 'success' : row.status === '待支付' ? 'warning' : 'danger'"
+              size="small"
+            >
               {{ row.status }}
             </el-tag>
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-model:current-page="orderPage"
-        v-model:page-size="orderPageSize"
-        :total="filteredOrders.length"
-        :page-sizes="[5, 10, 20]"
-        layout="total, sizes, prev, pager, next, jumper"
-        style="margin-top: 12px; justify-content: flex-end;"
-      />
-      <el-text type="info" size="small" style="display: block; margin-top: 8px;">
-        💡 修改表格内“数量”可实时重算金额与合计行；搜索与分页联动。
-      </el-text>
+      
+      <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+        <el-pagination
+          v-model:current-page="orderPage"
+          v-model:page-size="orderPageSize"
+          :page-sizes="[5, 10, 15]"
+          layout="total, sizes, prev, pager, next"
+          :total="filteredOrders.length"
+        />
+      </div>
     </div>
 
+    <!-- Calendar 日历自定义插槽 -->
     <div class="demo-section">
-      <h4 class="demo-title">Table 表格（排序 + 展开行）</h4>
-      <el-table :data="expandTableData" border stripe style="width: 100%;">
-        <el-table-column type="expand">
-          <template #default="{ row }">
-            <div style="padding: 8px 16px;">📄 详情：{{ row.desc }}</div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="名称" sortable />
-        <el-table-column prop="type" label="分类" />
-        <el-table-column prop="price" label="价格" sortable />
-        <el-table-column prop="region" label="地区">
-          <template #default="{ row }">
-            <el-tag :type="row.region === '国内' ? 'success' : 'warning'" size="small">{{ row.region }}</el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
+      <h4 class="demo-title">Calendar 日日历（自定义日程卡槽插槽）</h4>
+      <el-calendar v-model="calendarValue">
+        <template #date-cell="{ data }">
+          <div class="calendar-day" style="font-size: 11px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 4px;">
+            <span>{{ data.day.split('-').slice(2).join('') }}</span>
+            <el-tag v-if="data.day.endsWith('14')" size="small" type="danger">发布会</el-tag>
+            <el-tag v-else-if="data.day.endsWith('08') || data.day.endsWith('22')" size="small" type="success">常规迭代</el-tag>
+          </div>
+        </template>
+      </el-calendar>
     </div>
-
-    <el-row :gutter="24">
-      <el-col :xs="24" :sm="10">
-        <div class="demo-section">
-          <h4 class="demo-title">Menu 菜单（含子菜单）</h4>
-          <el-menu :default-active="activeMenu" style="max-width: 260px; border-radius: 8px;">
-            <el-sub-menu index="1">
-              <template #title>
-                <el-icon><Location /></el-icon>
-                <span>导航一</span>
-              </template>
-              <el-menu-item index="1-1">选项 1</el-menu-item>
-              <el-menu-item index="1-2">选项 2</el-menu-item>
-            </el-sub-menu>
-            <el-menu-item index="2">
-              <el-icon><MenuIcon /></el-icon>
-              <span>导航二</span>
-            </el-menu-item>
-            <el-menu-item index="3">
-              <el-icon><Document /></el-icon>
-              <span>导航三</span>
-            </el-menu-item>
-            <el-menu-item index="4" disabled>
-              <el-icon><Setting /></el-icon>
-              <span>禁用项</span>
-            </el-menu-item>
-          </el-menu>
-        </div>
-      </el-col>
-
-      <el-col :xs="24" :sm="14">
-        <div class="demo-section">
-          <h4 class="demo-title">Steps 步骤条</h4>
-          <el-steps :active="activeStep" finish-status="success" style="max-width: 600px;">
-            <el-step title="步骤一" description="填写基本信息" />
-            <el-step title="步骤二" description="确认订单内容" />
-            <el-step title="步骤三" description="完成提交" />
-          </el-steps>
-          <div class="demo-row" style="margin-top: 12px;">
-            <el-button size="small" @click="activeStep = Math.max(0, activeStep - 1)">上一步</el-button>
-            <el-button size="small" type="primary" @click="activeStep = Math.min(3, activeStep + 1)">下一步</el-button>
-          </div>
-        </div>
-
-        <div class="demo-section">
-          <h4 class="demo-title">Dialog / Drawer / Loading / MessageBox / Notification</h4>
-          <div class="demo-row">
-            <el-button type="primary" @click="dialogVisible = true">对话框</el-button>
-            <el-button type="primary" plain @click="drawerVisible = true">抽屉</el-button>
-            <el-button type="info" @click="showLoading">全屏 Loading</el-button>
-            <el-button type="warning" @click="showConfirm">确认弹框</el-button>
-            <el-button type="warning" plain @click="showPrompt">输入弹框</el-button>
-            <el-button type="success" @click="showNotification('top-right')">通知</el-button>
-          </div>
-        </div>
-
-        <div class="demo-section">
-          <h4 class="demo-title">Popover 气泡卡片 / Tour 漫游式引导</h4>
-          <div class="demo-row">
-            <el-popover :visible="popoverVisible" placement="top" :width="200">
-              <p>这是 Popover 气泡卡片的内容。</p>
-              <div style="text-align: right;">
-                <el-button size="small" text @click="popoverVisible = false">关闭</el-button>
-              </div>
-              <template #reference>
-                <el-button @click="popoverVisible = !popoverVisible">Popover 点击弹出</el-button>
-              </template>
-            </el-popover>
-            <el-button type="primary" @click="tourOpen = true">开始引导</el-button>
-            <el-button id="tour-step-1">第一步目标</el-button>
-            <el-button id="tour-step-2" type="success">第二步目标</el-button>
-          </div>
-          <el-tour v-model="tourOpen">
-            <el-tour-step target="#tour-step-1" title="第一步" description="这是漫游引导的第一步，介绍该按钮的功能。" />
-            <el-tour-step target="#tour-step-2" title="第二步" description="这是第二步，引导结束。" />
-          </el-tour>
-        </div>
-
-        <div class="demo-section">
-          <h4 class="demo-title">Skeleton 骨架屏 / Result 结果</h4>
-          <el-skeleton :rows="2" animated style="max-width: 420px; margin-bottom: 12px;" />
-          <el-result icon="success" title="操作成功" sub-title="内容已保存" style="padding: 10px;" />
-        </div>
-      </el-col>
-    </el-row>
 
     <el-row :gutter="24">
       <el-col :xs="24" :sm="12">
         <div class="demo-section">
-          <h4 class="demo-title">Image 图片（懒加载 + 大图预览）</h4>
+          <h4 class="demo-title">Feedback 弹窗与确认框</h4>
           <div class="demo-row">
-            <el-image
-              :src="imageUrl"
-              :preview-src-list="previewList"
-              fit="cover"
-              lazy
-              style="width: 240px; height: 140px; border-radius: 8px;"
-            >
-              <template #error>
-                <div class="image-error">图片加载失败</div>
-              </template>
-            </el-image>
-            <el-text type="info" style="align-self: center;">点击图片可放大预览</el-text>
+            <el-button @click="dialogVisible = true">打开对话框</el-button>
+            <el-button @click="drawerVisible = true">展开抽屉</el-button>
+            <el-button type="danger" @click="showConfirm">气泡确认警告</el-button>
           </div>
         </div>
 
@@ -796,9 +751,6 @@ const loadMore = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
 }
 .carousel-1 { background: #409eff; }
 .carousel-2 { background: #67c23a; }
