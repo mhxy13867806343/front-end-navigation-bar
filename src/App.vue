@@ -50,6 +50,9 @@ const {
   
   // Dujitang exports
   dujitangText, isDujitangLoading, queryDujitang,
+
+  // QQ exports
+  qqNumber, qqUserInfo, isQqLoading, qqError, queryQqUserInfo,
   
   // Shared configs & state
   ZH_TEXTS, GLOBAL_CONFIG, activeLibrary
@@ -1621,6 +1624,115 @@ watch(isDarkMode, () => {
             </div>
           </div>
         </el-tab-pane>
+
+        <!-- 8. QQ用户信息查询 -->
+        <el-tab-pane name="qq">
+          <template #label>
+            <span>🐧 QQ 信息查询</span>
+          </template>
+          <div style="padding: 16px;">
+            <!-- Search bar -->
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+              <el-input
+                v-model="qqNumber"
+                placeholder="请输入 QQ 号码 (如 10001)"
+                clearable
+                style="flex: 1;"
+                @keyup.enter="queryQqUserInfo"
+              />
+              <el-button type="primary" :loading="isQqLoading" @click="queryQqUserInfo">
+                🔍 立即查询
+              </el-button>
+            </div>
+
+            <!-- Error message -->
+            <el-alert
+              v-if="qqError"
+              :title="qqError"
+              type="error"
+              show-icon
+              :closable="false"
+              style="margin-bottom: 20px;"
+            />
+
+            <!-- QQ Card -->
+            <div v-if="qqUserInfo" class="qq-card" v-loading="isQqLoading">
+              <!-- Header Section with Avatar -->
+              <div class="qq-header">
+                <div class="avatar-wrapper" :class="{ 'is-vip': qqUserInfo.is_vip || qqUserInfo.is_svip }">
+                  <img :src="qqUserInfo.avatar_url" alt="QQ Avatar" class="qq-avatar" />
+                  <span v-if="qqUserInfo.is_svip" class="vip-tag svip">SVIP {{ qqUserInfo.vip_level }}</span>
+                  <span v-else-if="qqUserInfo.is_vip" class="vip-tag vip">VIP {{ qqUserInfo.vip_level }}</span>
+                </div>
+                
+                <div class="qq-title-info">
+                  <div class="qq-nick-row">
+                    <span class="qq-nick">{{ qqUserInfo.nickname || qqUserInfo.nick }}</span>
+                    <span v-if="qqUserInfo.sex === 'male'" class="gender male" title="男生">♂️</span>
+                    <span v-else-if="qqUserInfo.sex === 'female'" class="gender female" title="女生">♀️</span>
+                  </div>
+                  <p class="qq-signature" :title="qqUserInfo.long_nick || qqUserInfo.longNick">
+                    {{ qqUserInfo.long_nick || qqUserInfo.longNick || '这家伙很懒，什么都没有留下。' }}
+                  </p>
+                </div>
+              </div>
+
+              <el-divider style="margin: 16px 0;" />
+
+              <!-- Info Grid -->
+              <div class="qq-details-grid">
+                <div class="detail-item">
+                  <span class="label">QQ 号码：</span>
+                  <span class="valueHighlight">{{ qqUserInfo.qq }}</span>
+                </div>
+
+                <div class="detail-item">
+                  <span class="label">QQ 等级：</span>
+                  <div class="level-display" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <span class="value">Lv.{{ qqUserInfo.qq_level || qqUserInfo.qqLevel || qqUserInfo.level || 0 }}</span>
+                    <!-- Level icons representation -->
+                    <div v-if="qqUserInfo.qq_level_icons" class="level-icons" style="display: flex; gap: 2px;">
+                      <span v-for="i in qqUserInfo.qq_level_icons.crownNum" :key="'crown-' + i" title="皇冠">👑</span>
+                      <span v-for="i in qqUserInfo.qq_level_icons.sunNum" :key="'sun-' + i" title="太阳">☀️</span>
+                      <span v-for="i in qqUserInfo.qq_level_icons.moonNum" :key="'moon-' + i" title="月亮">🌙</span>
+                      <span v-for="i in qqUserInfo.qq_level_icons.starNum" :key="'star-' + i" title="星星">⭐</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="detail-item" v-if="qqUserInfo.email">
+                  <span class="label">绑定邮箱：</span>
+                  <span class="value">{{ qqUserInfo.email }}</span>
+                </div>
+
+                <div class="detail-item" v-if="qqUserInfo.reg_time">
+                  <span class="label">注册时间：</span>
+                  <span class="value">{{ new Date(qqUserInfo.reg_time).toLocaleDateString() }}</span>
+                </div>
+
+                <div class="detail-item" v-if="qqUserInfo.yellow_diamond_level">
+                  <span class="label">黄钻等级：</span>
+                  <span class="value active-diamond">💎 黄钻 {{ qqUserInfo.yellow_diamond_level }}</span>
+                </div>
+
+                <div class="detail-item" v-if="qqUserInfo.green_diamond_level">
+                  <span class="label">绿钻等级：</span>
+                  <span class="value active-diamond-green">🎵 绿钻 {{ qqUserInfo.green_diamond_level }}</span>
+                </div>
+
+                <div class="detail-item" v-if="qqUserInfo.age">
+                  <span class="label">Q 龄：</span>
+                  <span class="value">{{ qqUserInfo.age }} 岁</span>
+                </div>
+              </div>
+            </div>
+            
+            <div v-else-if="!isQqLoading && !qqError" style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <el-icon :size="48" style="margin-bottom: 12px; color: var(--text-secondary);"><Timer /></el-icon>
+              <p>请输入 QQ 号并点击“查询”获取详情</p>
+            </div>
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </el-dialog>
 
@@ -1860,5 +1972,138 @@ watch(isDarkMode, () => {
   align-items: center;
   padding: 8px 16px;
   background: #2f5b88;
+}
+
+/* QQ Info Card Styles */
+.qq-card {
+  background: var(--bg-color-overlay, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color-light, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+.qq-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.qq-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.avatar-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  padding: 4px;
+  background: var(--border-color-light, rgba(255, 255, 255, 0.1));
+}
+.avatar-wrapper.is-vip {
+  background: linear-gradient(135deg, #ff4e50, #f9d423);
+}
+.qq-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg-color-dialog, #fff);
+}
+.vip-tag {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: #fff;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.vip-tag.svip {
+  background: linear-gradient(to right, #e52d27, #b31217);
+}
+.vip-tag.vip {
+  background: linear-gradient(to right, #ff4e50, #f9d423);
+}
+.qq-title-info {
+  flex: 1;
+  min-width: 0;
+}
+.qq-nick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.qq-nick {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color, #303133);
+}
+.gender {
+  font-size: 14px;
+  font-weight: bold;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.gender.male {
+  color: #409eff;
+  background: rgba(64, 158, 255, 0.1);
+}
+.gender.female {
+  color: #f56c6c;
+  background: rgba(245, 108, 108, 0.1);
+}
+.qq-signature {
+  font-size: 14px;
+  color: var(--text-secondary, #909399);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qq-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid var(--border-color-extra-light, rgba(255, 255, 255, 0.05));
+}
+.detail-item .label {
+  font-size: 12px;
+  color: var(--text-secondary, #909399);
+}
+.detail-item .value {
+  font-size: 14px;
+  color: var(--text-color, #303133);
+  font-weight: 500;
+}
+.detail-item .valueHighlight {
+  font-size: 15px;
+  color: var(--color-primary, #409eff);
+  font-weight: bold;
+}
+.active-diamond {
+  color: #e6a23c !important;
+  font-weight: bold;
+}
+.active-diamond-green {
+  color: #67c23a !important;
+  font-weight: bold;
 }
 </style>

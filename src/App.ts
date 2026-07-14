@@ -19,7 +19,8 @@ import type {
   ProgrammerHistoryItem,
   SubTabMap,
   TrackingInfo,
-  WeatherForecast
+  WeatherForecast,
+  QqUserInfo
 } from '@/types/app'
 
 // Custom Components
@@ -1188,6 +1189,43 @@ export function useAppLogic() {
     }
   }
 
+  // 7. QQ用户信息查询
+  const qqNumber = ref('10001')
+  const qqUserInfo = ref<QqUserInfo | null>(null)
+  const isQqLoading = ref(false)
+  const qqError = ref('')
+
+  const queryQqUserInfo = async () => {
+    if (!qqNumber.value || !/^[1-9][0-9]{4,11}$/.test(qqNumber.value)) {
+      ElMessage.warning('请输入有效的QQ号(5-12位数字)')
+      return
+    }
+    isQqLoading.value = true
+    qqError.value = ''
+    qqUserInfo.value = null
+    try {
+      const res = await axios.get(`https://uapis.cn/api/v1/social/qq/userinfo?qq=${qqNumber.value}`)
+      if (res.data) {
+        if (res.data.code && res.data.code !== 200) {
+          qqError.value = res.data.message || '查询失败，未找到该QQ信息'
+        } else {
+          qqUserInfo.value = res.data
+        }
+      } else {
+        throw new Error('Invalid response')
+      }
+    } catch (e: any) {
+      console.error('获取QQ信息失败:', e)
+      if (e.response && e.response.data && e.response.data.message) {
+        qqError.value = e.response.data.message
+      } else {
+        qqError.value = '查询失败，请检查网络或稍后再试'
+      }
+    } finally {
+      isQqLoading.value = false
+    }
+  }
+
   // tab 切换触发自动查询
   const handleUtilityTabChange = () => {
     if (utilityActiveTab.value === 'holiday' && !holidayData.value) {
@@ -1203,6 +1241,8 @@ export function useAppLogic() {
       queryRandomImage()
     } else if (utilityActiveTab.value === 'dujitang' && !dujitangText.value) {
       queryDujitang()
+    } else if (utilityActiveTab.value === 'qq' && !qqUserInfo.value) {
+      queryQqUserInfo()
     }
   }
 
@@ -1267,6 +1307,9 @@ export function useAppLogic() {
     
     // Dujitang exports
     dujitangText, isDujitangLoading, queryDujitang,
+
+    // QQ exports
+    qqNumber, qqUserInfo, isQqLoading, qqError, queryQqUserInfo,
     
     // Shared globals
     ZH_TEXTS, GLOBAL_CONFIG,

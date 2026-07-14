@@ -153,3 +153,56 @@ export interface TrackingInfo {
 export type AppWorkItem = WorkItem & {
   type?: string
 }
+
+export interface QqLevelIcons {
+  crownNum: number
+  moonNum: number
+  penguinNum: number
+  starNum: number
+  sunNum: number
+}
+
+export interface QqPrivilegeIcons {
+  big_club?: boolean
+  super?: boolean
+  svip?: boolean
+  vip?: boolean
+  year?: boolean
+  years_vip?: boolean
+}
+
+export interface QqUserInfo {
+  qq: string
+  user_id: string
+  uin: string
+  nick: string
+  nickname: string
+  long_nick: string
+  longNick: string
+  avatar_url: string
+  age: number
+  sex: string
+  qid: string
+  qq_level: number | null
+  qqLevel: number | null
+  level: number | null
+  qq_level_icons?: QqLevelIcons
+  location?: string
+  email?: string
+  is_vip?: boolean
+  is_years_vip?: boolean
+  is_svip?: boolean
+  is_big_club?: boolean
+  vip_status?: number
+  vip_type?: number
+  vip_level?: number
+  big_club_level?: number
+  yellow_diamond_level?: number
+  green_diamond_level?: number
+  privilege_icons?: QqPrivilegeIcons
+  reg_time?: string
+  regTime?: number
+  last_updated?: string
+  code?: string
+  message?: string
+}
