@@ -41,13 +41,12 @@
             @change="onPresetChange"
             :disabled="isPlaying"
           >
-            <el-option label="自动" value="auto" />
-            <el-option label="0.5x" value="0.5" />
-            <el-option label="1.0x" value="1.0" />
-            <el-option label="1.5x" value="1.5" />
-            <el-option label="2.0x" value="2.0" />
-            <el-option label="2.5x" value="2.5" />
-            <el-option label="3.0x" value="3.0" />
+            <el-option
+              v-for="opt in FRUIT_SPEED_OPTIONS"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
           </el-select>
           <el-button size="small" type="primary" @click="showSettings = true" :disabled="isPlaying">
             游戏设置
@@ -109,10 +108,12 @@
             v-model="tempSettings.difficulty" 
             :disabled="isPlaying"
           >
-            <el-option label="初级" value="beginner" />
-            <el-option label="中级" value="intermediate" />
-            <el-option label="高级" value="advanced" />
-            <el-option label="专家" value="expert" />
+            <el-option
+              v-for="opt in DIFFICULTY_OPTIONS"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="最大水果数">
@@ -161,6 +162,7 @@
 </template>
 
 <script setup lang="ts">
+import { FRUIT_SPEED_OPTIONS, DIFFICULTY_OPTIONS } from '@/vue-pages-text-fn-abc/formOptions'
 
 type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert'
 type SpeedPreset = 'auto' | 'custom' | '0.5' | '1.0' | '1.5' | '2.0' | '2.5' | '3.0'

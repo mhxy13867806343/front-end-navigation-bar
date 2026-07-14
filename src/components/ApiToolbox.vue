@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { GENDER_OPTIONS } from '@/vue-pages-text-fn-abc/formOptions'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 import apiCategoriesData from '../utlis/api_list.json'
@@ -1043,9 +1044,12 @@ const clearToken = (): void => {
                   <div class="profile-form-item">
                     <label>性别 (Gender)</label>
                     <el-select v-model="profileForm.gender" style="width: 100%">
-                      <el-option value="male" label="🙋‍♂️ 男 (Male)" />
-                      <el-option value="female" label="🙋‍♀️ 女 (Female)" />
-                      <el-option value="other" label="🌈 其他 (Other)" />
+                      <el-option
+                        v-for="opt in GENDER_OPTIONS"
+                        :key="opt.value"
+                        :label="opt.label"
+                        :value="opt.value"
+                      />
                     </el-select>
                   </div>
 

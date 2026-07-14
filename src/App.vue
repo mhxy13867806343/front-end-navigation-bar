@@ -55,6 +55,14 @@ const {
   ZH_TEXTS, GLOBAL_CONFIG, activeLibrary
 } = useAppLogic()
 
+import {
+  WALLPAPER_API_OPTIONS,
+  RESOLUTION_OPTIONS,
+  RANDOM_IMAGE_CATEGORY_OPTIONS,
+  MOVIE_CHANNEL_OPTIONS,
+  MOVIE_PERIOD_OPTIONS
+} from '@/vue-pages-text-fn-abc/formOptions'
+
 import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
@@ -975,16 +983,24 @@ watch(isDarkMode, () => {
           <el-col :span="12">
             <el-form-item label="接口数据源：">
               <el-select v-model="bingWallpaperForm.source" placeholder="请选择" @change="updateBingPreview" style="width: 100%;">
-                <el-option label="uapis.cn (支持日期自定义)" value="uapis" />
-                <el-option label="bing.img.run (极速重定向)" value="imgrun" />
+                <el-option
+                  v-for="opt in WALLPAPER_API_OPTIONS"
+                  :key="opt.value"
+                  :label="opt.label"
+                  :value="opt.value"
+                />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="目标图片分辨率：">
               <el-select v-model="bingWallpaperForm.resolution" placeholder="请选择" @change="updateBingPreview" style="width: 100%;">
-                <el-option label="4K 超高清 (UHD)" value="4k" />
-                <el-option label="1080P 全高清 (FHD)" value="1080" />
+                <el-option
+                  v-for="opt in RESOLUTION_OPTIONS"
+                  :key="opt.value"
+                  :label="opt.label"
+                  :value="opt.value"
+                />
               </el-select>
             </el-form-item>
           </el-col>
@@ -1434,16 +1450,20 @@ watch(isDarkMode, () => {
               <el-tab-pane label="🔥 影视收视评分榜">
                 <div style="display: flex; gap: 12px; margin-bottom: 16px; padding-top: 10px;">
                   <el-select v-model="movieRatingsChannel" placeholder="选择渠道" @change="queryMovieRatings" style="width: 130px;">
-                    <el-option label="全网影视" value="all" />
-                    <el-option label="卫视收视" value="tv" />
-                    <el-option label="网络平台" value="web" />
-                    <el-option label="院线新片" value="cinema" />
+                    <el-option
+                      v-for="opt in MOVIE_CHANNEL_OPTIONS"
+                      :key="opt.value"
+                      :label="opt.label"
+                      :value="opt.value"
+                    />
                   </el-select>
                   <el-select v-model="movieRatingsPeriod" placeholder="选择周期" @change="queryMovieRatings" style="width: 130px;">
-                    <el-option label="实时榜单" value="realtime" />
-                    <el-option label="今日排行" value="day" />
-                    <el-option label="本周排行" value="week" />
-                    <el-option label="本月排行" value="month" />
+                    <el-option
+                      v-for="opt in MOVIE_PERIOD_OPTIONS"
+                      :key="opt.value"
+                      :label="opt.label"
+                      :value="opt.value"
+                    />
                   </el-select>
                   <el-button type="primary" :loading="isMovieRatingsLoading" @click="queryMovieRatings">🔄 刷新排行</el-button>
                 </div>
@@ -1530,11 +1550,12 @@ watch(isDarkMode, () => {
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
               <span style="font-size: 14px; font-weight: bold; color: var(--text-color);">图片分类：</span>
               <el-select v-model="randomImageCategory" placeholder="选择分类" @change="queryRandomImage" style="width: 180px;">
-                <el-option label="🌅 高清电脑壁纸" value="pc_wallpaper" />
-                <el-option label="📱 精美手机壁纸" value="mobile_wallpaper" />
-                <el-option label="🌸 风景摄影图" value="landscape" />
-                <el-option label="🎨 动漫ACG大图" value="anime" />
-                <el-option label="🤖 AI 创意绘画" value="ai_drawing" />
+                <el-option
+                  v-for="opt in RANDOM_IMAGE_CATEGORY_OPTIONS"
+                  :key="opt.value"
+                  :label="opt.label"
+                  :value="opt.value"
+                />
               </el-select>
               <el-button type="primary" :loading="isRandomImageLoading" @click="queryRandomImage">🔄 换一张</el-button>
             </div>

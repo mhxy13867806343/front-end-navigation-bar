@@ -175,152 +175,104 @@
                   <el-input v-model="currentItem.field" />
                 </el-form-item>
                 
-                <!-- 按钮特有属性 -->
-                <template v-if="currentItem.type === 'button'">
-                  <el-divider>按钮属性</el-divider>
-                  <el-form-item label="按钮文本">
-                    <el-input v-model="currentItem.props.text" />
-                  </el-form-item>
-                  <el-form-item label="按钮类型">
-                    <el-radio-group 
-                      v-model="currentItem.props.buttonType"
-                      @change="handleButtonTypeChange"
+                <!-- 动态组件特殊属性属性 -->
+                <template v-for="cfg in COMPONENT_TYPE_FIELDS" :key="cfg.type">
+                  <template v-if="currentItem.type === cfg.type">
+                    <el-divider>{{ cfg.divider }}</el-divider>
+                    <el-form-item
+                      v-for="field in cfg.fields"
+                      :key="field.key"
+                      :label="field.label"
                     >
-                      <el-radio-button label="主要按钮">主要</el-radio-button>
-                      <el-radio-button label="成功按钮">成功</el-radio-button>
-                      <el-radio-button label="警告按钮">警告</el-radio-button>
-                      <el-radio-button label="危险按钮">危险</el-radio-button>
-                      <el-radio-button label="信息按钮">信息</el-radio-button>
-                      <el-radio-button label="自定义">自定义</el-radio-button>
-                    </el-radio-group>
-                  </el-form-item>
-                  <template v-if="currentItem.props.buttonType === '自定义'">
-                    <el-divider>自定义样式</el-divider>
-                    <el-form-item label="宽度">
-                      <el-input v-model="currentItem.style.width" />
+                      <!-- input/text/placeholder/defaultValue -->
+                      <template v-if="field.type === 'input'">
+                        <el-input v-model="(currentItem.props[field.key] as string)" />
+                      </template>
+
+                      <!-- number/min/max/step/maxlength -->
+                      <template v-else-if="field.type === 'number'">
+                        <el-input-number v-model="(currentItem.props[field.key] as number)" />
+                      </template>
+
+                      <!-- checkbox/multiple -->
+                      <template v-else-if="field.type === 'checkbox'">
+                        <el-checkbox v-model="(currentItem.props[field.key] as boolean)" />
+                      </template>
+
+                      <!-- buttonType -->
+                      <template v-else-if="field.type === 'button-type'">
+                        <el-radio-group
+                          v-model="currentItem.props.buttonType"
+                          @change="handleButtonTypeChange"
+                        >
+                          <el-radio-button
+                            v-for="opt in BUTTON_TYPE_OPTIONS"
+                            :key="opt.label"
+                            :label="opt.label"
+                          >
+                            {{ opt.text }}
+                          </el-radio-button>
+                        </el-radio-group>
+                      </template>
+
+                      <!-- options list editor -->
+                      <template v-else-if="field.type === 'options'">
+                        <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
+                          <el-input v-model="option.label" placeholder="选项名" class="option-label" />
+                          <el-input v-model="option.value" placeholder="选项值" class="option-value" />
+                          <el-button type="danger" link @click="currentItem.props.options?.splice(index, 1)">
+                            <el-icon><Delete /></el-icon>
+                          </el-button>
+                        </div>
+                        <el-button type="primary" link @click="(currentItem.props.options ||= []).push({ label: '', value: '' })">
+                          添加选项
+                        </el-button>
+                      </template>
                     </el-form-item>
-                    <el-form-item label="背景颜色">
-                      <el-color-picker v-model="currentItem.style.backgroundColor" />
-                    </el-form-item>
-                    <el-form-item label="文字颜色">
-                      <el-color-picker v-model="currentItem.style.color" />
-                    </el-form-item>
-                    <el-form-item label="边框样式">
-                      <el-select v-model="currentItem.style.borderStyle">
-                        <el-option label="无边框" value="none" />
-                        <el-option label="实线" value="solid" />
-                        <el-option label="虚线" value="dashed" />
-                        <el-option label="点线" value="dotted" />
-                      </el-select>
-                    </el-form-item>
-                    <el-form-item label="边框颜色" v-if="currentItem.style.borderStyle !== 'none'">
-                      <el-color-picker v-model="currentItem.style.borderColor" />
-                    </el-form-item>
-                    <el-form-item label="圆角">
-                      <el-slider 
-                        v-model="currentItem.style.borderRadius" 
-                        :min="0" 
-                        :max="20"
-                        :step="1"
-                      />
-                    </el-form-item>
-                    <el-form-item label="字体大小">
-                      <el-input-number 
-                        v-model="currentItem.style.fontSize" 
-                        :min="12" 
-                        :max="30"
-                        :step="1"
-                      />
-                    </el-form-item>
+
+                    <!-- 自定义样式 -->
+                    <template v-if="currentItem.type === 'button' && currentItem.props.buttonType === '自定义'">
+                      <el-divider>自定义样式</el-divider>
+                      <el-form-item label="宽度">
+                        <el-input v-model="currentItem.style.width" />
+                      </el-form-item>
+                      <el-form-item label="背景颜色">
+                        <el-color-picker v-model="currentItem.style.backgroundColor" />
+                      </el-form-item>
+                      <el-form-item label="文字颜色">
+                        <el-color-picker v-model="currentItem.style.color" />
+                      </el-form-item>
+                      <el-form-item label="边框样式">
+                        <el-select v-model="currentItem.style.borderStyle">
+                          <el-option
+                            v-for="opt in BORDER_STYLE_OPTIONS"
+                            :key="opt.value"
+                            :label="opt.label"
+                            :value="opt.value"
+                          />
+                        </el-select>
+                      </el-form-item>
+                      <el-form-item label="边框颜色" v-if="currentItem.style.borderStyle !== 'none'">
+                        <el-color-picker v-model="currentItem.style.borderColor" />
+                      </el-form-item>
+                      <el-form-item label="圆角">
+                        <el-slider 
+                          v-model="currentItem.style.borderRadius" 
+                          :min="0" 
+                          :max="20"
+                          :step="1"
+                        />
+                      </el-form-item>
+                      <el-form-item label="字体大小">
+                        <el-input-number 
+                          v-model="currentItem.style.fontSize" 
+                          :min="12" 
+                          :max="30"
+                          :step="1"
+                        />
+                      </el-form-item>
+                    </template>
                   </template>
-                </template>
-
-                <!-- 输入框特有属性 -->
-                <template v-else-if="currentItem.type === 'input'">
-                  <el-divider>输入属性</el-divider>
-                  <el-form-item label="占位提示">
-                    <el-input v-model="currentItem.props.placeholder" />
-                  </el-form-item>
-                  <el-form-item label="默认值">
-                    <el-input v-model="currentItem.props.defaultValue" />
-                  </el-form-item>
-                  <el-form-item label="最大长度">
-                    <el-input-number v-model="currentItem.props.maxlength" :min="0" />
-                  </el-form-item>
-                </template>
-
-                <!-- 数字输入框特有属性 -->
-                <template v-else-if="currentItem.type === 'number'">
-                  <el-divider>数字属性</el-divider>
-                  <el-form-item label="最小值">
-                    <el-input-number v-model="currentItem.props.min" />
-                  </el-form-item>
-                  <el-form-item label="最大值">
-                    <el-input-number v-model="currentItem.props.max" />
-                  </el-form-item>
-                  <el-form-item label="步长">
-                    <el-input-number v-model="currentItem.props.step" :min="0" :precision="2" />
-                  </el-form-item>
-                </template>
-
-                <!-- 选择器特有属性 -->
-                <template v-else-if="currentItem.type === 'select'">
-                  <el-divider>选择属性</el-divider>
-                  <el-form-item label="选项列表">
-                    <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
-                      <el-input v-model="option.label" placeholder="选项名" class="option-label" />
-                      <el-input v-model="option.value" placeholder="选项值" class="option-value" />
-                      <el-button type="danger" link @click="currentItem.props.options?.splice(index, 1)">
-                        <el-icon><Delete /></el-icon>
-                      </el-button>
-                    </div>
-                    <el-button type="primary" link @click="(currentItem.props.options ||= []).push({ label: '', value: '' })">
-                      添加选项
-                    </el-button>
-                  </el-form-item>
-                  <el-form-item>
-                    <el-checkbox v-model="currentItem.props.multiple">允许多选</el-checkbox>
-                  </el-form-item>
-                </template>
-
-                <!-- 单选框组特有属性 -->
-                <template v-else-if="currentItem.type === 'radio'">
-                  <el-divider>单选属性</el-divider>
-                  <el-form-item label="选项列表">
-                    <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
-                      <el-input v-model="option.label" placeholder="选项名" class="option-label" />
-                      <el-input v-model="option.value" placeholder="选项值" class="option-value" />
-                      <el-button type="danger" link @click="currentItem.props.options?.splice(index, 1)">
-                        <el-icon><Delete /></el-icon>
-                      </el-button>
-                    </div>
-                    <el-button type="primary" link @click="(currentItem.props.options ||= []).push({ label: '', value: '' })">
-                      添加选项
-                    </el-button>
-                  </el-form-item>
-                </template>
-
-                <!-- 多选框组特有属性 -->
-                <template v-else-if="currentItem.type === 'checkbox'">
-                  <el-divider>多选属性</el-divider>
-                  <el-form-item label="选项列表">
-                    <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
-                      <el-input v-model="option.label" placeholder="选项名" class="option-label" />
-                      <el-input v-model="option.value" placeholder="选项值" class="option-value" />
-                      <el-button type="danger" link @click="currentItem.props.options?.splice(index, 1)">
-                        <el-icon><Delete /></el-icon>
-                      </el-button>
-                    </div>
-                    <el-button type="primary" link @click="(currentItem.props.options ||= []).push({ label: '', value: '' })">
-                      添加选项
-                    </el-button>
-                  </el-form-item>
-                  <el-form-item label="最少选择">
-                    <el-input-number v-model="currentItem.props.min" :min="0" />
-                  </el-form-item>
-                  <el-form-item label="最多选择">
-                    <el-input-number v-model="currentItem.props.max" :min="0" />
-                  </el-form-item>
                 </template>
 
                 <!-- 公共属性 -->
@@ -340,9 +292,13 @@
               <el-form label-position="top" size="small">
                 <el-form-item label="组件大小">
                   <el-radio-group v-model="currentItem.props.size">
-                    <el-radio-button label="large">大号</el-radio-button>
-                    <el-radio-button label="default">默认</el-radio-button>
-                    <el-radio-button label="small">小号</el-radio-button>
+                    <el-radio-button
+                      v-for="opt in SIZE_OPTIONS"
+                      :key="opt.label"
+                      :label="opt.label"
+                    >
+                      {{ opt.text }}
+                    </el-radio-button>
                   </el-radio-group>
                 </el-form-item>
 
@@ -377,10 +333,12 @@
 
                 <el-form-item label="边框样式">
                   <el-select v-model="currentItem.style.borderStyle">
-                    <el-option label="无边框" value="none" />
-                    <el-option label="实线" value="solid" />
-                    <el-option label="虚线" value="dashed" />
-                    <el-option label="点线" value="dotted" />
+                    <el-option
+                      v-for="opt in BORDER_STYLE_OPTIONS"
+                      :key="opt.value"
+                      :label="opt.label"
+                      :value="opt.value"
+                    />
                   </el-select>
                 </el-form-item>
 
@@ -404,10 +362,12 @@
               <el-form label-position="top" size="small">
                 <el-form-item label="动画效果">
                   <el-select v-model="currentItem.animation.type">
-                    <el-option label="无动画" value="none" />
-                    <el-option label="淡入淡出" value="fade" />
-                    <el-option label="滑动" value="slide" />
-                    <el-option label="缩放" value="scale" />
+                    <el-option
+                      v-for="opt in ANIMATION_TYPE_OPTIONS"
+                      :key="opt.value"
+                      :label="opt.label"
+                      :value="opt.value"
+                    />
                   </el-select>
                 </el-form-item>
 
@@ -425,11 +385,12 @@
                 <el-divider>验证规则</el-divider>
                 <el-form-item label="验证类型">
                   <el-select v-model="currentItem.validation.type">
-                    <el-option label="无" value="none" />
-                    <el-option label="邮箱" value="email" />
-                    <el-option label="手机号" value="phone" />
-                    <el-option label="身份证" value="idcard" />
-                    <el-option label="自定义正则" value="pattern" />
+                    <el-option
+                      v-for="opt in VALIDATION_TYPE_OPTIONS"
+                      :key="opt.value"
+                      :label="opt.label"
+                      :value="opt.value"
+                    />
                   </el-select>
                 </el-form-item>
                 <el-form-item label="正则表达式" v-if="currentItem.validation.type === 'pattern'">
@@ -490,6 +451,14 @@
 </template>
 
 <script setup lang="ts">
+import {
+  BORDER_STYLE_OPTIONS,
+  ANIMATION_TYPE_OPTIONS,
+  VALIDATION_TYPE_OPTIONS,
+  BUTTON_TYPE_OPTIONS,
+  SIZE_OPTIONS,
+  COMPONENT_TYPE_FIELDS
+} from '@/vue-pages-text-fn-abc/formOptions'
 
 import { Delete, Plus, CopyDocument, Download, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
