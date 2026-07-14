@@ -71,7 +71,9 @@ const backFromFlash = () => router.push('/')
 
 const activeMenuIndex = computed(() => {
   if (activeItem.value === 25) {
-    return activeLibrary.value === 'element' ? 'showcase-element' : 'showcase-naive'
+    if (activeLibrary.value === 'element') return 'showcase-element'
+    if (activeLibrary.value === 'naive') return 'showcase-naive'
+    return 'showcase-combined'
   }
   return activeSubItem.value ? activeSubItem.value.toString() : activeItem.value.toString()
 })
@@ -388,6 +390,9 @@ watch(isDarkMode, () => {
             </el-menu-item>
             <el-menu-item index="showcase-naive" @click="selectItem(25); activeLibrary = 'naive'">
               <span>🍀 Naive UI 示例</span>
+            </el-menu-item>
+            <el-menu-item index="showcase-combined" @click="selectItem(25); activeLibrary = 'combined'">
+              <span style="background: linear-gradient(90deg, #409eff, #18a058); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">⚡ 综合商业实战</span>
             </el-menu-item>
           </el-sub-menu>
 

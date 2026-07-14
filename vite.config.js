@@ -19,6 +19,9 @@ export default defineConfig({
       '@':'/src'
     },
   },
+  optimizeDeps: {
+    exclude: ['@element-plus/icons-vue']
+  },
   server: {
     proxy: serverProxy
   }

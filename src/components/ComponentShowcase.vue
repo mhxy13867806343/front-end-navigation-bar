@@ -5,6 +5,7 @@ import BasicDemo from './showcase/BasicDemo.vue'
 import IntermediateDemo from './showcase/IntermediateDemo.vue'
 import AdvancedDemo from './showcase/AdvancedDemo.vue'
 import NaiveShowcase from './NaiveShowcase.vue'
+import CombinedDemo from './showcase/CombinedDemo.vue'
 
 const props = defineProps({
   activeLibrary: {
@@ -25,12 +26,17 @@ const localActiveLibrary = computed({
     <div class="showcase-header">
       <h2 class="showcase-title">🧩 在线组件示例库</h2>
       <p class="showcase-subtitle">
-        为您提供基于 Element Plus 与 Naive UI 双组件库的实时组件参数配置与交互展示演练场：
+        基于 Element Plus + Naive UI 双组件库的完整演练场 — 支持基础/中级/高级三难度分级及商业综合实战场景
       </p>
       <div style="margin-top: 12px; margin-bottom: 8px;">
         <el-radio-group v-model="localActiveLibrary" size="default">
-          <el-radio-button value="element">🧩 Element Plus 示例</el-radio-button>
-          <el-radio-button value="naive">🍀 Naive UI 示例</el-radio-button>
+          <el-radio-button value="element">🧩 Element Plus</el-radio-button>
+          <el-radio-button value="naive">🍀 Naive UI</el-radio-button>
+          <el-radio-button value="combined">
+            <span style="background: linear-gradient(90deg, #409eff, #18a058); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">
+              ⚡ 综合商业实战
+            </span>
+          </el-radio-button>
         </el-radio-group>
       </div>
     </div>
@@ -54,6 +60,17 @@ const localActiveLibrary = computed({
     <div v-else-if="localActiveLibrary === 'naive'">
       <n-config-provider>
         <NaiveShowcase />
+      </n-config-provider>
+    </div>
+
+    <!-- Combined Commercial Dashboard -->
+    <div v-else-if="localActiveLibrary === 'combined'">
+      <div class="combined-banner">
+        <span class="combined-badge">⚡ 商业级实战</span>
+        <span class="combined-desc">以下演示同时使用 Element Plus + Naive UI 双库组件协同搭建，展示接近商业后台系统的真实交互场景</span>
+      </div>
+      <n-config-provider>
+        <CombinedDemo />
       </n-config-provider>
     </div>
   </div>
@@ -84,6 +101,34 @@ const localActiveLibrary = computed({
 .showcase-tabs {
   border-radius: 12px;
   overflow: hidden;
+}
+
+.combined-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(64,158,255,0.08), rgba(24,160,88,0.08));
+  border: 1px solid rgba(64,158,255,0.25);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.combined-badge {
+  background: linear-gradient(90deg, #409eff, #18a058);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.combined-desc {
+  font-size: 13px;
+  color: var(--text-color-secondary, #606266);
+  line-height: 1.5;
 }
 </style>
 
