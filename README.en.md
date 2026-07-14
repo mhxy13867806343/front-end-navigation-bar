@@ -14,11 +14,19 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 - **Live Data Sync**: Fetches remote data in real time and merges it with local static data, automatically falling back to local data on failure
 - **Global Search**: Search across categories by name/description, with search history (up to 8 entries)
 - **Favorites**: Like/favorite tool cards, persisted locally, with a favorites history view
-- **AI News & Apps**: Daily AI news timeline, AI app store, AI tutorials/encyclopedia article lists
+- **AI News & Apps**: Daily AI news timeline, paged IT Home API-tag news, AI app store, AI tutorials/encyclopedia article lists
+- **Hotboards & Movie Data**: Supports Weibo, Bilibili hot search, Juejin, OSChina and more, plus box office and movie/TV ranking data
 - **API Toolbox**: Built-in collection of commonly used APIs
 - **Theme Switching**: One-click dark/light theme toggle with local persistence
 - **Custom Layout**: Adjustable grid columns (persisted locally), collapsible sidebar
 - **Context Menu**: Tool cards support "Open in new tab / Copy link"
+
+## 🆕 Recent Updates
+
+- Added `/api-uapis`, `/api-aa1`, and `/api-ithome` local proxies to avoid browser CORS issues.
+- Bilibili hot search now prefers the aa1 Bilibili endpoint and falls back to the existing hotboard source if needed.
+- The daily AI news source from `ai-bot.cn/daily-ai-news` is preserved, with an additional paged IT Home `NewsTag=API` source.
+- Movie/TV rankings now support the newer uapis `groups` response shape and display real API errors instead of misleading mock data.
 
 ## 🎮 Built-in Mini Games
 
@@ -84,7 +92,7 @@ npm run test:games
 │   ├── router/              # Router
 │   └── style/               # Global styles
 ├── scripts/                 # Validation and test scripts
-└── vite.config.js
+└── vite.config.ts
 ```
 
 ## 📄 License

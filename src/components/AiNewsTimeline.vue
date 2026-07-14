@@ -1,13 +1,17 @@
 <script setup lang="ts">
 
 import dailyNewsData from '../utlis/daily_ai_news.json'
-import { requestText } from '@/utils/request'
+import { requestJson, requestText } from '@/utils/request'
+
+type NewsSource = 'aiBot' | 'ithome'
 
 interface NewsItem {
   title: string
   link: string
   desc: string
   source: string
+  image?: string
+  commentCount?: number
 }
 
 interface NewsDay {
@@ -15,10 +19,52 @@ interface NewsDay {
   items: NewsItem[]
 }
 
+interface IthomeNewsRaw {
+  newsid?: number
+  title?: string
+  orderdate?: string
+  postdate?: string
+  description?: string
+  image?: string
+  commentcount?: number
+  url?: string | null
+}
+
+interface IthomeNewsResponse {
+  Success: number
+  Result?: IthomeNewsRaw[]
+}
+
 const newsTimeline = ref<NewsDay[]>(dailyNewsData as NewsDay[])
+const activeSource = ref<NewsSource>('aiBot')
 const isLiveMode = ref<boolean>(false) // true if fetched successfully in real-time
 const isLoading = ref<boolean>(false)
 const errorMessage = ref<string>('')
+const currentPage = ref<number>(1)
+const hasNextPage = ref<boolean>(true)
+
+const ITHOME_NEWS_TAG: string = 'API'
+
+const pageTitle = computed<string>((): string => {
+  return activeSource.value === 'aiBot' ? '📈 每日 AI 行业快讯热闻' : '📈 IT之家 API 标签资讯'
+})
+
+const pageSubtitle = computed<string>((): string => {
+  return activeSource.value === 'aiBot'
+    ? '跟踪全球人工智能最新技术突破、重大动态、企业融资及产品发布（自动刷新最新快讯）。'
+    : '调用 IT之家标签新闻接口，当前标签：API；可通过上一页/下一页按钮按 PageNo 分页获取。'
+})
+
+const loadingText = computed<string>((): string => {
+  return activeSource.value === 'aiBot'
+    ? '正在从 AI 社区抓取最新快讯，请稍候...'
+    : '正在从 IT之家 API 标签接口获取资讯，请稍候...'
+})
+
+const statusText = computed<string>((): string => {
+  if (!isLiveMode.value) return '本地历史模式'
+  return activeSource.value === 'ithome' ? `实时在线模式 · 第 ${currentPage.value} 页` : '实时在线模式'
+})
 
 const openLink = (link: string): void => {
   if (link) {
@@ -26,45 +72,40 @@ const openLink = (link: string): void => {
   }
 }
 
-// Client-side HTML parser using DOMParser
-const parseNewsHtml = (htmlText: string): NewsDay[] => {
+const parseAiBotNewsHtml = (htmlText: string): NewsDay[] => {
   const parser: DOMParser = new DOMParser()
   const doc: Document = parser.parseFromString(htmlText, 'text/html')
-  
-  const dateElements = doc.querySelectorAll('.news-date')
+  const dateElements: NodeListOf<Element> = doc.querySelectorAll('.news-date')
+
   if (dateElements.length === 0) {
     throw new Error('未找到资讯时间节点，可能是页面结构发生变化或被拦截。')
   }
-  
+
   const parsedData: NewsDay[] = []
-  
-  dateElements.forEach((dateEl) => {
+
+  dateElements.forEach((dateEl: Element): void => {
     const dateText: string = dateEl.textContent?.trim() || ''
     const items: NewsItem[] = []
-    
-    // Scan all next siblings until encountering the next .news-date
-    let nextSibling = dateEl.nextElementSibling
+    let nextSibling: Element | null = dateEl.nextElementSibling
+
     while (nextSibling && !nextSibling.classList.contains('news-date')) {
       if (nextSibling.classList.contains('news-item')) {
         const h2: Element | null = nextSibling.querySelector('h2')
         const p: Element | null = nextSibling.querySelector('p')
-        
+
         if (h2 && p) {
           const a: Element | null = h2.querySelector('a')
           const title: string = h2.textContent?.trim() || ''
           const link: string = a ? a.getAttribute('href') || '' : ''
-          
-          // Extract source from .news-time span
           const sourceSpan: Element | null = p.querySelector('.news-time')
           const sourceText: string = sourceSpan?.textContent || ''
           const source: string = sourceText ? sourceText.replace('来源：', '').trim() : ''
-          
-          // Clean the description text (remove the source tag text inside it)
           let desc: string = p.textContent?.trim() || ''
+
           if (sourceSpan) {
             desc = desc.replace(sourceText, '').trim()
           }
-          
+
           items.push({
             title,
             link,
@@ -75,7 +116,7 @@ const parseNewsHtml = (htmlText: string): NewsDay[] => {
       }
       nextSibling = nextSibling.nextElementSibling
     }
-    
+
     if (items.length > 0) {
       parsedData.push({
         date: dateText,
@@ -83,65 +124,180 @@ const parseNewsHtml = (htmlText: string): NewsDay[] => {
       })
     }
   })
-  
+
   return parsedData
 }
 
-const fetchLatestNews = async (): Promise<void> => {
-  isLoading.value = true
-  errorMessage.value = ''
-  
-  // We try local dev server proxy first, and fallback to direct/CORS proxies if needed
+const buildIthomeApiUrl = (pageNo: number): string => {
+  const params: URLSearchParams = new URLSearchParams({
+    NewsTag: ITHOME_NEWS_TAG,
+    PageNo: String(pageNo)
+  })
+
+  return `/api-ithome/api/news/newstaglistpageget?${params.toString()}`
+}
+
+const buildIthomeArticleLink = (newsId: number | undefined, url: string | null | undefined): string => {
+  if (url) return url
+  if (!newsId) return 'https://www.ithome.com/'
+
+  const idText: string = String(newsId).padStart(6, '0')
+  const prefix: string = idText.slice(0, 3)
+  const suffix: string = idText.slice(3)
+  return `https://www.ithome.com/0/${prefix}/${suffix}.htm`
+}
+
+const formatIthomeDate = (dateText: string | undefined): string => {
+  if (!dateText) return '未知日期'
+  const date: Date = new Date(dateText)
+  if (Number.isNaN(date.getTime())) return dateText
+  const year: number = date.getFullYear()
+  const month: string = String(date.getMonth() + 1).padStart(2, '0')
+  const day: string = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const mapIthomeNews = (items: IthomeNewsRaw[]): NewsDay[] => {
+  const grouped: Map<string, NewsItem[]> = new Map<string, NewsItem[]>()
+
+  items.forEach((item: IthomeNewsRaw): void => {
+    const dateKey: string = formatIthomeDate(item.postdate || item.orderdate)
+    const nextItems: NewsItem[] = grouped.get(dateKey) || []
+
+    nextItems.push({
+      title: item.title || '未命名资讯',
+      link: buildIthomeArticleLink(item.newsid, item.url),
+      desc: item.description || '',
+      source: 'IT之家 · API 标签',
+      image: item.image || '',
+      commentCount: item.commentcount || 0
+    })
+
+    grouped.set(dateKey, nextItems)
+  })
+
+  return Array.from(grouped.entries()).map(([date, items]: [string, NewsItem[]]): NewsDay => ({
+    date: `IT之家 API 标签资讯 · ${date}`,
+    items
+  }))
+}
+
+const fetchAiBotNews = async (): Promise<boolean> => {
   const targetUrls: string[] = [
-    '/api-news', // Local Vite proxy (works locally in development)
-    'https://api.codetabs.com/v1/proxy?quest=https://ai-bot.cn/daily-ai-news/', // Public CORS Proxy 1
-    'https://api.allorigins.win/raw?url=https://ai-bot.cn/daily-ai-news/' // Public CORS Proxy 2
+    '/api-news',
+    'https://api.codetabs.com/v1/proxy?quest=https://ai-bot.cn/daily-ai-news/',
+    'https://api.allorigins.win/raw?url=https://ai-bot.cn/daily-ai-news/'
   ]
-  
-  let success: boolean = false
-  
+
   for (const url of targetUrls) {
     try {
       const htmlText: string = await requestText(url, {
         headers: {
-          'Accept': 'text/html'
+          Accept: 'text/html'
         }
       })
-      const parsed = parseNewsHtml(htmlText)
-      if (parsed && parsed.length > 0) {
+      const parsed: NewsDay[] = parseAiBotNewsHtml(htmlText)
+
+      if (parsed.length > 0) {
         newsTimeline.value = parsed
         isLiveMode.value = true
-        success = true
-        break // Success! Stop checking other endpoints.
+        hasNextPage.value = false
+        return true
       }
     } catch (err: unknown) {
       const message: string = err instanceof Error ? err.message : String(err)
-      console.warn(`Failed to fetch news from ${url}:`, message)
+      console.warn(`Failed to fetch ai-bot daily news from ${url}:`, message)
     }
   }
-  
-  if (!success) {
-    console.log('Unable to reach live news feeds via proxy. Falling back to pre-packaged historical news dataset.')
-    newsTimeline.value = dailyNewsData // fall back to pre-loaded list
-    isLiveMode.value = false
+
+  newsTimeline.value = dailyNewsData as NewsDay[]
+  isLiveMode.value = false
+  hasNextPage.value = false
+  errorMessage.value = 'ai-bot 每日 AI 资讯暂不可用，已展示本地历史资讯。'
+  return false
+}
+
+const fetchIthomeNews = async (pageNo: number = currentPage.value): Promise<boolean> => {
+  const json: IthomeNewsResponse = await requestJson<IthomeNewsResponse>(buildIthomeApiUrl(pageNo))
+  const result: IthomeNewsRaw[] = json.Result || []
+
+  if (json.Success !== 1 || result.length === 0) {
+    currentPage.value = pageNo
+    newsTimeline.value = []
+    hasNextPage.value = false
+    errorMessage.value = pageNo > 1 ? '没有更多 IT之家 API 标签资讯了。' : 'IT之家 API 标签资讯暂无数据。'
+    return false
   }
-  isLoading.value = false
+
+  newsTimeline.value = mapIthomeNews(result)
+  currentPage.value = pageNo
+  isLiveMode.value = true
+  hasNextPage.value = true
+  return true
+}
+
+const fetchLatestNews = async (pageNo: number = currentPage.value): Promise<boolean> => {
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    return activeSource.value === 'aiBot' ? await fetchAiBotNews() : await fetchIthomeNews(pageNo)
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    console.warn(`Failed to fetch ${activeSource.value} news:`, message)
+
+    if (activeSource.value === 'aiBot' || pageNo === 1) {
+      newsTimeline.value = dailyNewsData as NewsDay[]
+      isLiveMode.value = false
+      errorMessage.value = activeSource.value === 'aiBot'
+        ? 'ai-bot 每日 AI 资讯暂不可用，已展示本地历史资讯。'
+        : 'IT之家接口暂不可用，已展示本地历史资讯。'
+    } else {
+      errorMessage.value = '下一页加载失败，请稍后重试。'
+    }
+    return false
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const countdown = ref<number>(60)
 const triggerManualRefresh = (): void => {
-  fetchLatestNews()
+  fetchLatestNews(currentPage.value)
+  countdown.value = 60
+}
+
+const loadNextPage = async (): Promise<void> => {
+  if (activeSource.value !== 'ithome') return
+  const nextPage: number = currentPage.value + 1
+  await fetchLatestNews(nextPage)
+}
+
+const loadPrevPage = async (): Promise<void> => {
+  if (activeSource.value !== 'ithome' || currentPage.value <= 1) return
+  const prevPage: number = currentPage.value - 1
+  hasNextPage.value = true
+  await fetchLatestNews(prevPage)
+}
+
+const switchNewsSource = (source: NewsSource): void => {
+  if (activeSource.value === source) return
+  activeSource.value = source
+  currentPage.value = 1
+  hasNextPage.value = source === 'ithome'
+  newsTimeline.value = source === 'aiBot' ? dailyNewsData as NewsDay[] : []
+  fetchLatestNews(1)
   countdown.value = 60
 }
 
 let timer: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
-  fetchLatestNews()
+  fetchLatestNews(1)
   timer = setInterval(() => {
     if (countdown.value > 1) {
       countdown.value--
     } else {
-      fetchLatestNews()
+      fetchLatestNews(currentPage.value)
       countdown.value = 60
     }
   }, 1000)
@@ -159,15 +315,32 @@ onUnmounted(() => {
     <!-- Header Controls -->
     <div class="news-timeline-header">
       <div class="title-wrap">
-        <h2 class="title">📈 每日 AI 行业快讯热闻</h2>
-        <p class="subtitle">跟踪全球人工智能最新技术突破、重大动态、企业融资及产品发布（自动刷新最新快讯）。</p>
+        <h2 class="title">{{ pageTitle }}</h2>
+        <p class="subtitle">{{ pageSubtitle }}</p>
       </div>
       
       <div class="header-badges">
+        <el-button-group>
+          <el-button
+            size="small"
+            :type="activeSource === 'aiBot' ? 'primary' : 'default'"
+            @click="switchNewsSource('aiBot')"
+          >
+            每日 AI 资讯
+          </el-button>
+          <el-button
+            size="small"
+            :type="activeSource === 'ithome' ? 'primary' : 'default'"
+            @click="switchNewsSource('ithome')"
+          >
+            IT之家 API
+          </el-button>
+        </el-button-group>
+
         <!-- Status indicator badge -->
         <div class="status-badge" :class="isLiveMode ? 'live' : 'cached'">
           <span class="dot">●</span>
-          <span>{{ isLiveMode ? '实时在线模式' : '本地历史模式' }}</span>
+          <span>{{ statusText }}</span>
         </div>
         
         <el-button 
@@ -181,6 +354,14 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <el-alert
+      v-if="errorMessage"
+      :title="errorMessage"
+      type="warning"
+      show-icon
+      :closable="false"
+    />
+
     <!-- Timeline Wrapper -->
     <div class="timeline-wrapper">
       <div class="timeline-axis-line"></div>
@@ -188,7 +369,7 @@ onUnmounted(() => {
       <!-- Loading skeleton screen -->
       <div v-if="isLoading" class="timeline-loading-box">
         <span class="loading-spinner"></span>
-        <span>正在从 AI 社区抓取最新快讯，请稍候...</span>
+        <span>{{ loadingText }}</span>
       </div>
 
       <!-- Main timeline list -->
@@ -221,10 +402,14 @@ onUnmounted(() => {
               </div>
               
               <p class="news-desc">{{ item.desc }}</p>
+              <img v-if="item.image" class="news-thumb" :src="item.image" :alt="item.title" loading="lazy" />
               
               <div class="news-card-footer">
                 <span class="source-tag" v-if="item.source">
                   🏷️ 来源：{{ item.source }}
+                </span>
+                <span class="source-tag" v-if="item.commentCount">
+                  💬 {{ item.commentCount }} 评论
                 </span>
                 <span class="action-hint">查看详情</span>
               </div>
@@ -232,6 +417,24 @@ onUnmounted(() => {
           </div>
         </div>
       </template>
+    </div>
+
+    <div v-if="activeSource === 'ithome'" class="pagination-actions">
+      <el-button round
+        :loading="isLoading"
+        :disabled="currentPage <= 1"
+        @click="loadPrevPage"
+      >
+        上一页
+      </el-button>
+      <el-button round
+        type="primary"
+        :loading="isLoading"
+        :disabled="!hasNextPage"
+        @click="loadNextPage"
+      >
+        下一页
+      </el-button>
     </div>
   </div>
 </template>
@@ -274,6 +477,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .status-badge {
@@ -418,11 +622,24 @@ onUnmounted(() => {
   margin: 0 0 12px 0;
 }
 
+.news-thumb {
+  display: block;
+  width: 160px;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin: 0 0 12px 0;
+}
+
 .news-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 11.5px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .source-tag {
@@ -441,6 +658,12 @@ onUnmounted(() => {
 
 .news-item-card:hover .action-hint {
   opacity: 1;
+}
+
+.pagination-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
 }
 
 /* Loading skeleton styles */

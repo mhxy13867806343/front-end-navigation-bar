@@ -47,6 +47,18 @@ export const serverProxy: ServerProxyMap = {
     Origin: 'https://juejin.cn',
     Referer: 'https://juejin.cn/'
   }),
+  '/api-uapis': createProxyEntry('/api-uapis', 'https://uapis.cn', {
+    Origin: 'https://uapis.cn',
+    Referer: 'https://uapis.cn/'
+  }),
+  '/api-aa1': createProxyEntry('/api-aa1', 'https://v.api.aa1.cn', {
+    Origin: 'https://v.api.aa1.cn',
+    Referer: 'https://api.aa1.cn/doc/bilibili-rs.html'
+  }),
+  '/api-ithome': createProxyEntry('/api-ithome', 'https://m.ithome.com', {
+    Origin: 'https://m.ithome.com',
+    Referer: 'https://m.ithome.com/'
+  }),
   '/api-helloworld': createProxyEntry('/api-helloworld', 'https://www.helloworld.net', {
     Referer: 'https://www.helloworld.net/'
   })

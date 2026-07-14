@@ -130,10 +130,11 @@ export interface MovieBoxOffice {
 export interface MovieRatingItem {
   rank: number
   title: string
-  score: number
-  hot_value: number
-  platform: string
-  channel: string
+  score?: number | string
+  hot_value?: number | string
+  platform?: string
+  channel?: string
+  url?: string
 }
 
 export interface TrackingStep {

@@ -41,7 +41,7 @@ const {
   programmerHistory, isProgrammerLoading, queryProgrammerToday,
   hotboardType, hotboardData, isHotboardLoading, hotboardPlatforms, queryHotboard,
   movieBoxOffice, isMovieBoxLoading, queryMovieBoxOffice,
-  movieRatings, movieRatingsChannel, movieRatingsPeriod, isMovieRatingsLoading, queryMovieRatings,
+  movieRatings, movieRatingsChannel, movieRatingsPeriod, movieRatingsError, isMovieRatingsLoading, queryMovieRatings,
   trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
   randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
   
@@ -1477,19 +1477,32 @@ watch(isDarkMode, () => {
                   <el-button type="primary" :loading="isMovieRatingsLoading" @click="queryMovieRatings">🔄 刷新排行</el-button>
                 </div>
 
+                <el-alert
+                  v-if="movieRatingsError"
+                  :title="movieRatingsError"
+                  type="warning"
+                  show-icon
+                  :closable="false"
+                  style="margin-bottom: 12px;"
+                />
+
                 <div v-if="movieRatings && movieRatings.length > 0" class="hotboard-list-wrapper">
                   <div v-for="(item, idx) in movieRatings" :key="idx" class="hotboard-list-item">
                     <span class="hot-idx" :class="{'top-three': idx < 3}">{{ idx + 1 }}</span>
                     <span class="hot-title">
-                      {{ item.title }} 
+                      <a v-if="item.url" :href="item.url" target="_blank" rel="noopener" style="color: inherit; text-decoration: none;">{{ item.title }}</a>
+                      <template v-else>{{ item.title }}</template>
                       <span style="font-size: 11px; color: var(--text-secondary); margin-left: 10px;">[{{ item.platform || item.channel || '' }}]</span>
                     </span>
                     <span class="hot-value" v-if="item.score">⭐ {{ item.score }}分</span>
                     <span class="hot-value" v-else-if="item.hot_value">🔥 {{ item.hot_value }}</span>
                   </div>
                 </div>
-                <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+                <div v-else-if="isMovieRatingsLoading" style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
                   <el-icon class="is-loading"><Loading /></el-icon> 正在获取影视热度排行评分列表...
+                </div>
+                <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+                  暂无影视热度排行数据
                 </div>
               </el-tab-pane>
             </el-tabs>

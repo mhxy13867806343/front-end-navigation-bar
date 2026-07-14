@@ -36,6 +36,70 @@ import { useDatabase } from './composables/useDatabase'
 import { useSearch } from './composables/useSearch'
 import { useRandomWebsites } from './composables/useRandomWebsites'
 
+const UAPIS_API_BASE: string = '/api-uapis'
+const AA1_API_BASE: string = '/api-aa1'
+
+function buildUapisUrl(path: string): string {
+  return `${UAPIS_API_BASE}${path}`
+}
+
+function buildAa1Url(path: string): string {
+  return `${AA1_API_BASE}${path}`
+}
+
+interface Aa1BilibiliHotItem {
+  title?: string
+  heat?: string | number
+  link?: string
+}
+
+interface Aa1BilibiliHotResponse {
+  code?: number
+  msg?: string
+  time?: string
+  data?: Aa1BilibiliHotItem[]
+}
+
+interface MovieRatingApiItem {
+  rank?: number
+  name?: string
+  title?: string
+  channel?: string
+  platform?: string
+  metric?: string | number
+  metric_rate?: string | number
+  score?: string | number
+  hot_value?: string | number
+  release_info?: string
+  detail_url?: string
+  url?: string
+}
+
+interface MovieRatingApiGroup {
+  channel?: string
+  channel_desc?: string
+  metric_label?: string
+  list?: MovieRatingApiItem[]
+  items?: MovieRatingApiItem[]
+}
+
+interface MovieRatingApiResponse {
+  code?: number | string
+  message?: string
+  data?: MovieRatingApiPayload
+  groups?: MovieRatingApiGroup[]
+  channels?: MovieRatingApiGroup[]
+  list?: MovieRatingApiItem[]
+  results?: MovieRatingApiItem[]
+}
+
+interface MovieRatingApiPayload {
+  groups?: MovieRatingApiGroup[]
+  channels?: MovieRatingApiGroup[]
+  list?: MovieRatingApiItem[]
+  results?: MovieRatingApiItem[]
+}
+
 export function useAppLogic() {
   // 环境判断
   const isProd = import.meta.env.PROD
@@ -388,7 +452,7 @@ export function useAppLogic() {
     let url = ''
     if (bingWallpaperForm.value.source === 'uapis') {
       const { date, random, resolution, format } = bingWallpaperForm.value
-      url = `https://uapis.cn/bing?resolution=${resolution}&format=${format}`
+      url = buildUapisUrl(`/bing?resolution=${resolution}&format=${format}`)
       if (date && !random) {
         url += `&date=${date}`
       }
@@ -530,14 +594,14 @@ export function useAppLogic() {
     isWeatherLoading.value = true
     try {
       // 1. Search region by keywords first
-      const res = await axios.get(`https://uapis.cn/api/v1/misc/district`, {
+      const res = await axios.get(buildUapisUrl('/api/v1/misc/district'), {
         params: { keywords: weatherSearchKeyword.value.trim() }
       })
       if (res.data && res.data.code === 200 && res.data.data && res.data.data.length > 0) {
         const primaryMatch = res.data.data[0]
         
         // 2. Query matched adcode to retrieve the matched region + its sub-districts!
-        const subRes = await axios.get(`https://uapis.cn/api/v1/misc/district`, {
+        const subRes = await axios.get(buildUapisUrl('/api/v1/misc/district'), {
           params: { adcode: primaryMatch.adcode }
         })
         
@@ -591,7 +655,7 @@ export function useAppLogic() {
   const queryWeatherByAdcode = async (adcode: string): Promise<void> => {
     isWeatherLoading.value = true
     try {
-      const res = await axios.get(`https://uapis.cn/api/v1/misc/weather`, {
+      const res = await axios.get(buildUapisUrl('/api/v1/misc/weather'), {
         params: { 
           adcode: adcode, 
           forecast: 'true',
@@ -621,7 +685,7 @@ export function useAppLogic() {
   const loadWeatherByIp = async (): Promise<void> => {
     isWeatherLoading.value = true
     try {
-      const res = await axios.get(`https://uapis.cn/api/v1/misc/weather`, {
+      const res = await axios.get(buildUapisUrl('/api/v1/misc/weather'), {
         params: { 
           forecast: 'true',
           extended: 'true',
@@ -792,6 +856,7 @@ export function useAppLogic() {
   const movieRatingsChannel = ref<string>('all')
   const movieRatingsPeriod = ref<string>('realtime')
   const isMovieRatingsLoading = ref<boolean>(false)
+  const movieRatingsError = ref<string>('')
 
   // 5. 快递物流追踪
   const trackingNumber = ref<string>('')
@@ -811,7 +876,7 @@ export function useAppLogic() {
     if (!holidayQueryDate.value) return
     isHolidayLoading.value = true
     try {
-      const res = await axios.get('https://uapis.cn/api/v1/misc/holiday-calendar', {
+      const res = await axios.get(buildUapisUrl('/api/v1/misc/holiday-calendar'), {
         params: { date: holidayQueryDate.value, include_nearby: true }
       })
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
@@ -843,7 +908,7 @@ export function useAppLogic() {
   const queryProgrammerToday = async () => {
     isProgrammerLoading.value = true
     try {
-      const res = await axios.get('https://uapis.cn/api/v1/history/programmer/today')
+      const res = await axios.get(buildUapisUrl('/api/v1/history/programmer/today'))
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
       const data = isEnvelope ? res.data.data : res.data
       programmerHistory.value = data.events || []
@@ -862,7 +927,34 @@ export function useAppLogic() {
   const queryHotboard = async () => {
     isHotboardLoading.value = true
     try {
-      if (hotboardType.value === 'oschina') {
+      if (hotboardType.value === 'bili') {
+        try {
+          const res = await axios.get<Aa1BilibiliHotResponse>(buildAa1Url('/api/bilibili-rs/'))
+          if (res.data.code !== 1 || !Array.isArray(res.data.data)) {
+            throw new Error(res.data.msg || 'B 站热搜接口返回异常')
+          }
+
+          hotboardData.value = res.data.data.map((item: Aa1BilibiliHotItem): HotboardItem => ({
+            title: item.title || '未命名热搜',
+            url: item.link || 'https://www.bilibili.com',
+            hot_value: item.heat || '热门'
+          }))
+        } catch (e: unknown) {
+          const message: string = e instanceof Error ? e.message : String(e)
+          console.warn('Unable to query aa1 Bilibili hot search, falling back to UApi:', message)
+          const res = await axios.get(buildUapisUrl('/api/v1/misc/hotboard'), {
+            params: { type: 'bili' }
+          })
+          const isEnvelope = res.data && res.data.code === 200 && res.data.data
+          const data = isEnvelope ? res.data.data : res.data
+          const list = data.list || data.results || []
+          hotboardData.value = list.map((item: Record<string, string | number>): HotboardItem => ({
+            title: String(item.title),
+            url: String(item.url),
+            hot_value: item.hot_value || item.hot || '🔥 热门'
+          }))
+        }
+      } else if (hotboardType.value === 'oschina') {
         try {
           const rssUrl = 'https://www.oschina.net/news/rss'
           const res = await axios.get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`)
@@ -889,7 +981,7 @@ export function useAppLogic() {
       } else if (hotboardType.value === 'juejin-pins') {
         try {
           // Use UApi hotboard for Juejin articles to bypass CORS and get real live Juejin data!
-          const res = await axios.get('https://uapis.cn/api/v1/misc/hotboard', {
+          const res = await axios.get(buildUapisUrl('/api/v1/misc/hotboard'), {
             params: { type: 'juejin' }
           })
           const isEnvelope = res.data && res.data.code === 200 && res.data.data
@@ -916,7 +1008,7 @@ export function useAppLogic() {
           ]
         }
       } else {
-        const res = await axios.get('https://uapis.cn/api/v1/misc/hotboard', {
+        const res = await axios.get(buildUapisUrl('/api/v1/misc/hotboard'), {
           params: { type: hotboardType.value }
         })
         const isEnvelope = res.data && res.data.code === 200 && res.data.data
@@ -964,7 +1056,7 @@ export function useAppLogic() {
   const queryMovieBoxOffice = async () => {
     isMovieBoxLoading.value = true
     try {
-      const res = await axios.get('https://uapis.cn/api/v1/misc/movie-box-office')
+      const res = await axios.get(buildUapisUrl('/api/v1/misc/movie-box-office'))
       const isEnvelope = res.data && res.data.code === 200 && res.data.data
       movieBoxOffice.value = isEnvelope ? res.data.data : res.data
     } catch (e) {
@@ -984,40 +1076,73 @@ export function useAppLogic() {
 
   const queryMovieRatings = async () => {
     isMovieRatingsLoading.value = true
+    movieRatingsError.value = ''
     try {
-      const res = await axios.get('https://uapis.cn/api/v1/misc/movie-rating-rank', {
+      const res = await axios.get<MovieRatingApiResponse>(buildUapisUrl('/api/v1/misc/movie-rating-rank'), {
         params: { channel: movieRatingsChannel.value, period: movieRatingsPeriod.value }
       })
-      const isEnvelope = res.data && res.data.code === 200 && res.data.data
-      const data = isEnvelope ? res.data.data : res.data
-      const itemsList: MovieRatingItem[] = []
-      if (data.channels && data.channels.length > 0) {
-        data.channels.forEach((ch: { channel: string; platform: string; items?: MovieRatingItem[] }): void => {
-          if (ch.items) {
-            ch.items.forEach((item: MovieRatingItem): void => {
-              itemsList.push({
-                ...item,
-                channel: ch.channel,
-                platform: ch.platform
-              })
-            })
-          }
-        })
-      } else if (data.list) {
-        movieRatings.value = data.list
-        isMovieRatingsLoading.value = false
-        return
+
+      if (res.data.code && res.data.code !== 200) {
+        throw new Error(res.data.message || '影视热度榜接口暂不可用')
       }
-      movieRatings.value = itemsList.sort((a,b) => (a.rank || 0) - (b.rank || 0))
-    } catch (e) {
+
+      const data: MovieRatingApiPayload | MovieRatingApiResponse = res.data.data || res.data
+      const itemsList: MovieRatingItem[] = mapMovieRatingResponse(data)
+
+      if (!itemsList.length) {
+        throw new Error('当前参数暂无影视热度榜数据')
+      }
+
+      movieRatings.value = itemsList
+    } catch (e: unknown) {
       console.error('获取电影排行失败:', e)
-      movieRatings.value = [
-        { rank: 1, title: 'AI 时代的倒影', score: 9.6, hot_value: 9845, platform: '腾讯视频', channel: 'web' },
-        { rank: 2, title: '编码人生', score: 9.4, hot_value: 8431, platform: '爱奇艺', channel: 'web' }
-      ]
+      movieRatings.value = []
+      movieRatingsError.value = getRequestErrorMessage(e, '影视热度榜接口暂不可用，请稍后重试')
     } finally {
       isMovieRatingsLoading.value = false
     }
+  }
+
+  const mapMovieRatingResponse = (data: MovieRatingApiPayload | MovieRatingApiResponse): MovieRatingItem[] => {
+    const groups: MovieRatingApiGroup[] = data.groups || data.channels || []
+    if (groups.length > 0) {
+      return groups.flatMap((group: MovieRatingApiGroup): MovieRatingItem[] => {
+        const list: MovieRatingApiItem[] = group.list || group.items || []
+        return list.map((item: MovieRatingApiItem, index: number): MovieRatingItem => {
+          return mapMovieRatingItem(item, group, index)
+        })
+      }).sort((a: MovieRatingItem, b: MovieRatingItem): number => (a.rank || 0) - (b.rank || 0))
+    }
+
+    const list: MovieRatingApiItem[] = data.list || data.results || []
+    return list.map((item: MovieRatingApiItem, index: number): MovieRatingItem => {
+      return mapMovieRatingItem(item, undefined, index)
+    })
+  }
+
+  const mapMovieRatingItem = (
+    item: MovieRatingApiItem,
+    group: MovieRatingApiGroup | undefined,
+    index: number
+  ): MovieRatingItem => {
+    const metricValue: string | number | undefined = item.score || item.hot_value || item.metric
+    return {
+      rank: item.rank || index + 1,
+      title: item.title || item.name || '未命名影视',
+      score: item.score,
+      hot_value: metricValue,
+      platform: item.platform || item.channel || group?.channel_desc || group?.channel || '',
+      channel: group?.channel || item.channel || '',
+      url: item.detail_url || item.url
+    }
+  }
+
+  const getRequestErrorMessage = (e: unknown, fallback: string): string => {
+    if (axios.isAxiosError(e)) {
+      const data = e.response?.data as { message?: string; code?: string | number } | undefined
+      return data?.message || e.message || fallback
+    }
+    return e instanceof Error ? e.message : fallback
   }
 
   const queryCourier = async () => {
@@ -1028,7 +1153,7 @@ export function useAppLogic() {
     isTrackingLoading.value = true
     try {
       if (!trackingCarrier.value) {
-        const detRes = await axios.get('https://uapis.cn/api/v1/misc/tracking/detect', {
+        const detRes = await axios.get(buildUapisUrl('/api/v1/misc/tracking/detect'), {
           params: { tracking_number: trackingNumber.value.trim() }
         })
         const isEnvelopeDet = detRes.data && detRes.data.code === 200 && detRes.data.data
@@ -1039,7 +1164,7 @@ export function useAppLogic() {
         }
       }
       
-      const qRes = await axios.get('https://uapis.cn/api/v1/misc/tracking/query', {
+      const qRes = await axios.get(buildUapisUrl('/api/v1/misc/tracking/query'), {
         params: { 
           tracking_number: trackingNumber.value.trim(),
           carrier_code: trackingCarrier.value,
@@ -1071,7 +1196,7 @@ export function useAppLogic() {
   const queryRandomImage = async () => {
     isRandomImageLoading.value = true
     try {
-      const url = `https://uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
+      const url = buildUapisUrl(`/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`)
       const checkRes = await axios.get(url, { maxRedirects: 0, validateStatus: () => true })
       if (checkRes.status === 302 && checkRes.headers.location) {
         randomImageUrl.value = checkRes.headers.location
@@ -1079,7 +1204,7 @@ export function useAppLogic() {
         randomImageUrl.value = url
       }
     } catch (e) {
-      randomImageUrl.value = `https://uapis.cn/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`
+      randomImageUrl.value = buildUapisUrl(`/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`)
     } finally {
       isRandomImageLoading.value = false
     }
@@ -1204,7 +1329,7 @@ export function useAppLogic() {
     qqError.value = ''
     qqUserInfo.value = null
     try {
-      const res = await axios.get(`https://uapis.cn/api/v1/social/qq/userinfo?qq=${qqNumber.value}`)
+      const res = await axios.get(buildUapisUrl(`/api/v1/social/qq/userinfo?qq=${qqNumber.value}`))
       if (res.data) {
         if (res.data.code && res.data.code !== 200) {
           qqError.value = res.data.message || '查询失败，未找到该QQ信息'
@@ -1298,7 +1423,7 @@ export function useAppLogic() {
     programmerHistory, isProgrammerLoading, queryProgrammerToday,
     hotboardType, hotboardData, isHotboardLoading, hotboardPlatforms, queryHotboard,
     movieBoxOffice, isMovieBoxLoading, queryMovieBoxOffice,
-    movieRatings, movieRatingsChannel, movieRatingsPeriod, isMovieRatingsLoading, queryMovieRatings,
+    movieRatings, movieRatingsChannel, movieRatingsPeriod, movieRatingsError, isMovieRatingsLoading, queryMovieRatings,
     trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
     randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
     
