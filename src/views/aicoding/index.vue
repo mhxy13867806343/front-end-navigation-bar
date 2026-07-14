@@ -10,6 +10,9 @@
           :class="{ active: sortType === tab.value }"
           @click="switchSort(tab.value)"
         >{{ tab.label }}</a>
+        <div class="tabs-right">
+          <RefreshCountdownButton :on-refresh="handleRefresh" />
+        </div>
       </nav>
 
       <!-- 分类栏（接口动态获取） -->
@@ -71,6 +74,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
 
 const API_BASE = '/api-juejin'
 
@@ -196,6 +200,10 @@ function reload() {
   fetchArticles(true)
 }
 
+async function handleRefresh() {
+  await Promise.all([fetchTags(), fetchArticles(true)])
+}
+
 function formatCount(n) {
   if (n >= 10000) return `${(n / 10000).toFixed(1)}w`
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
@@ -232,11 +240,16 @@ function formatTime(ts) {
 /* 热门/最新 Tab */
 .sort-tabs {
   display: flex;
+  align-items: flex-start;
   gap: 24px;
   background: #fff;
   border-radius: 6px 6px 0 0;
   padding: 12px 20px 0;
   border-bottom: 1px solid #e4e6eb;
+}
+.tabs-right {
+  margin-left: auto;
+  padding-bottom: 8px;
 }
 .sort-tabs a {
   color: #71777c;

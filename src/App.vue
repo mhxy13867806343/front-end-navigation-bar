@@ -8,6 +8,7 @@ import AiAppStore from './components/AiAppStore.vue'
 import AiNewsTimeline from './components/AiNewsTimeline.vue'
 import ApiToolbox from './components/ApiToolbox.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
+import RefreshCountdownButton from './components/RefreshCountdownButton.vue'
 
 const {
   isProd,
@@ -58,6 +59,37 @@ const isFlashRoute = computed(() => routeViewPaths.includes(route.path))
 const goFlash = () => router.push('/flash')
 const goAiCoding = () => router.push('/aicoding')
 const backFromFlash = () => router.push('/')
+
+const refreshWeather = async () => {
+  if (selectedAdcode.value) {
+    await queryWeatherByAdcode(selectedAdcode.value)
+  } else {
+    await loadWeatherByIp()
+  }
+}
+
+const refreshUtility = async () => {
+  switch (utilityActiveTab.value) {
+    case 'holiday':
+      await queryHolidayCalendar()
+      break
+    case 'programmer':
+      await queryProgrammerToday()
+      break
+    case 'hotboard':
+      await queryHotboard()
+      break
+    case 'movies':
+      await Promise.all([queryMovieBoxOffice(), queryMovieRatings()])
+      break
+    case 'courier':
+      if (trackingNumber.value) await queryCourier()
+      break
+    case 'image':
+      await queryRandomImage()
+      break
+  }
+}
 
 let weatherChartInstance = null
 const showCityPicker = ref(true)
@@ -839,9 +871,7 @@ watch(isDarkMode, () => {
           <el-button type="danger" plain @click="clearCustomBackground" v-if="hasCustomBg">
             ❌ 还原默认背景
           </el-button>
-          <el-button @click="updateBingPreview">
-            🔄 刷新生成壁纸
-          </el-button>
+          <RefreshCountdownButton :on-refresh="updateBingPreview" text="刷新生成壁纸" type="default" size="default" />
           <el-button type="primary" @click="applyCustomBackground">
             🌅 设为网页背景
           </el-button>
@@ -865,6 +895,9 @@ watch(isDarkMode, () => {
       @opened="renderWeatherChart"
     >
       <div v-loading="isWeatherLoading" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: flex-end;">
+          <RefreshCountdownButton :on-refresh="refreshWeather" text="刷新天气" />
+        </div>
         <el-row :gutter="12">
           <el-col :span="24">
             <el-cascader
@@ -1039,6 +1072,9 @@ watch(isDarkMode, () => {
       destroy-on-close
       class="utility-dialog"
     >
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+        <RefreshCountdownButton :on-refresh="refreshUtility" text="刷新当前数据" />
+      </div>
       <el-tabs v-model="utilityActiveTab" type="border-card">
         <!-- 1. 节假日万年历 -->
         <el-tab-pane name="holiday">
