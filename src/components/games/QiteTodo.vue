@@ -32,7 +32,26 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+
+interface TodoItem {
+  id: number
+  text: string
+  completed: boolean
+}
+
+type FieldValue = string | number | boolean
+type FieldMap = Record<string, FieldValue>
+
+type ComponentConstructor = new (el: HTMLElement) => unknown
+
+function getInputValue(el: Element, prop: string): string {
+  return String((el as unknown as Record<string, string>)[prop] || '')
+}
+
+function setElementValue(el: Element, prop: string, value: FieldValue): void {
+  ;(el as unknown as Record<string, FieldValue>)[prop] = value
+}
 
 export default {
   name: 'QiteTodo',
@@ -40,7 +59,11 @@ export default {
     onMounted(() => {
       // 1. Define MiniQite base class
       class BaseComponent {
-        constructor(el) {
+        el: HTMLElement
+        fields: Map<string, FieldValue>
+        flags: Map<string, boolean>
+
+        constructor(el: HTMLElement) {
           this.el = el;
           this.fields = new Map();
           this.flags = new Map();
@@ -54,59 +77,63 @@ export default {
           this.bindDOM();
         }
         
-        get(name) {
+        get(name: string): FieldValue | undefined {
           return this.fields.get(name);
         }
         
-        set(name, value) {
+        set(name: string | FieldMap, value?: FieldValue): void {
           if (typeof name === 'object') {
             for (const [k, v] of Object.entries(name)) {
               this.fields.set(k, v);
               this.updateDOMField(k, v);
             }
           } else {
-            this.fields.set(name, value);
-            this.updateDOMField(name, value);
+            this.fields.set(name, value ?? '');
+            this.updateDOMField(name, value ?? '');
           }
         }
         
-        bindDOM() {
-          this.el.querySelectorAll('[data-field]').forEach(el => {
-            const fieldName = el.dataset.field;
-            if (this.fields.has(fieldName)) {
-              el.textContent = this.fields.get(fieldName);
+        bindDOM(): void {
+          this.el.querySelectorAll<HTMLElement>('[data-field]').forEach((el: HTMLElement): void => {
+            const fieldName: string | undefined = el.dataset.field;
+            if (fieldName && this.fields.has(fieldName)) {
+              el.textContent = String(this.fields.get(fieldName) ?? '');
             }
           });
           
-          this.el.querySelectorAll('[data-field-map]').forEach(el => {
-            const [fieldName, prop] = el.dataset.fieldMap.split(':');
+          this.el.querySelectorAll<HTMLElement>('[data-field-map]').forEach((el: HTMLElement): void => {
+            const [fieldName, prop]: string[] = (el.dataset.fieldMap || '').split(':');
+            if (!fieldName || !prop) return;
             if (this.fields.has(fieldName)) {
-              el[prop] = this.fields.get(fieldName);
+              setElementValue(el, prop, this.fields.get(fieldName) ?? '');
             }
             
-            el.addEventListener('input', (e) => {
-              this.set(fieldName, e.target[prop]);
+            el.addEventListener('input', (e: Event): void => {
+              const target: EventTarget | null = e.target;
+              if (target instanceof Element) this.set(fieldName, getInputValue(target, prop));
             });
           });
         }
         
-        updateDOMField(name, value) {
-          this.el.querySelectorAll(`[data-field="${name}"]`).forEach(el => {
-            el.textContent = value;
+        updateDOMField(name: string, value: FieldValue): void {
+          this.el.querySelectorAll<HTMLElement>(`[data-field="${name}"]`).forEach((el: HTMLElement): void => {
+            el.textContent = String(value);
           });
           
-          this.el.querySelectorAll(`[data-field-map^="${name}:"]`).forEach(el => {
-            const [_, prop] = el.dataset.fieldMap.split(':');
-            el[prop] = value;
+          this.el.querySelectorAll<HTMLElement>(`[data-field-map^="${name}:"]`).forEach((el: HTMLElement): void => {
+            const [, prop]: string[] = (el.dataset.fieldMap || '').split(':');
+            if (prop) setElementValue(el, prop, value);
           });
         }
       }
 
       // 2. Define Custom TodoAppComponent
       class TodoAppComponent extends BaseComponent {
-        constructor(el) {
+        todos: TodoItem[]
+
+        constructor(el: HTMLElement) {
           super(el);
-          this.todos = JSON.parse(localStorage.getItem('qite-todos') || '[]');
+          this.todos = JSON.parse(localStorage.getItem('qite-todos') || '[]') as TodoItem[];
           this.set({
             new_todo: '',
             search_query: '',
@@ -114,30 +141,32 @@ export default {
             total_count: this.todos.length
           });
           
-          this.el.querySelector('[data-role="add-btn"]').addEventListener('click', () => this.addTodo());
+          this.el.querySelector<HTMLElement>('[data-role="add-btn"]')?.addEventListener('click', (): void => this.addTodo());
           
-          this.el.querySelector('.todo-input').addEventListener('keydown', (e) => {
+          this.el.querySelector<HTMLElement>('.todo-input')?.addEventListener('keydown', (e: KeyboardEvent): void => {
             if (e.key === 'Enter') this.addTodo();
           });
           
-          this.el.querySelectorAll('[data-role="filter-btn"]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              this.set('filter', e.target.dataset.filter);
-              this.el.querySelectorAll('[data-role="filter-btn"]').forEach(b => b.classList.remove('active'));
-              e.target.classList.add('active');
+          this.el.querySelectorAll<HTMLElement>('[data-role="filter-btn"]').forEach((btn: HTMLElement): void => {
+            btn.addEventListener('click', (e: MouseEvent): void => {
+              const target: HTMLElement | null = e.target instanceof HTMLElement ? e.target : null;
+              if (!target) return;
+              this.set('filter', target.dataset.filter || 'all');
+              this.el.querySelectorAll<HTMLElement>('[data-role="filter-btn"]').forEach((b: HTMLElement): void => b.classList.remove('active'));
+              target.classList.add('active');
               this.renderTodos();
             });
           });
           
-          this.el.querySelector('.search-input').addEventListener('input', () => {
+          this.el.querySelector<HTMLElement>('.search-input')?.addEventListener('input', (): void => {
             this.renderTodos();
           });
           
           this.renderTodos();
         }
         
-        addTodo() {
-          const text = this.get('new_todo')?.trim();
+        addTodo(): void {
+          const text: string = String(this.get('new_todo') || '').trim();
           if (!text) return;
           
           this.todos.push({
@@ -156,8 +185,8 @@ export default {
           this.renderTodos();
         }
         
-        toggleTodo(id) {
-          const todo = this.todos.find(t => t.id === id);
+        toggleTodo(id: number): void {
+          const todo: TodoItem | undefined = this.todos.find((t: TodoItem): boolean => t.id === id);
           if (todo) {
             todo.completed = !todo.completed;
             localStorage.setItem('qite-todos', JSON.stringify(this.todos));
@@ -165,29 +194,30 @@ export default {
           }
         }
         
-        deleteTodo(id) {
-          this.todos = this.todos.filter(t => t.id !== id);
+        deleteTodo(id: number): void {
+          this.todos = this.todos.filter((t: TodoItem): boolean => t.id !== id);
           localStorage.setItem('qite-todos', JSON.stringify(this.todos));
           this.set('total_count', this.todos.length);
           this.renderTodos();
         }
         
-        renderTodos() {
-          const searchQuery = (this.get('search_query') || '').toLowerCase();
-          const filter = this.get('filter') || 'all';
+        renderTodos(): void {
+          const searchQuery: string = String(this.get('search_query') || '').toLowerCase();
+          const filter: string = String(this.get('filter') || 'all');
           
-          let filtered = this.todos;
+          let filtered: TodoItem[] = this.todos;
           if (filter === 'active') {
-            filtered = filtered.filter(t => !t.completed);
+            filtered = filtered.filter((t: TodoItem): boolean => !t.completed);
           } else if (filter === 'completed') {
-            filtered = filtered.filter(t => t.completed);
+            filtered = filtered.filter((t: TodoItem): boolean => t.completed);
           }
           
           if (searchQuery) {
-            filtered = filtered.filter(t => t.text.toLowerCase().includes(searchQuery));
+            filtered = filtered.filter((t: TodoItem): boolean => t.text.toLowerCase().includes(searchQuery));
           }
           
-          const list = this.el.querySelector('[data-role="todo-list"]');
+          const list: HTMLElement | null = this.el.querySelector<HTMLElement>('[data-role="todo-list"]');
+          if (!list) return;
           list.innerHTML = '';
           
           if (filtered.length === 0) {
@@ -195,8 +225,8 @@ export default {
             return;
           }
           
-          filtered.forEach(todo => {
-            const li = document.createElement('li');
+          filtered.forEach((todo: TodoItem): void => {
+            const li: HTMLLIElement = document.createElement('li');
             li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
             li.innerHTML = `
               <div class="todo-item-left">
@@ -206,9 +236,9 @@ export default {
               <button class="todo-delete">🗑️</button>
             `;
             
-            li.querySelector('.todo-checkbox').addEventListener('click', () => this.toggleTodo(todo.id));
-            li.querySelector('.todo-text').addEventListener('click', () => this.toggleTodo(todo.id));
-            li.querySelector('.todo-delete').addEventListener('click', () => this.deleteTodo(todo.id));
+            li.querySelector<HTMLElement>('.todo-checkbox')?.addEventListener('click', (): void => this.toggleTodo(todo.id));
+            li.querySelector<HTMLElement>('.todo-text')?.addEventListener('click', (): void => this.toggleTodo(todo.id));
+            li.querySelector<HTMLElement>('.todo-delete')?.addEventListener('click', (): void => this.deleteTodo(todo.id));
             
             list.appendChild(li);
           });
@@ -216,12 +246,12 @@ export default {
       }
 
       // 3. Register Qite globally or namespace
-      const Qite = {
+      const Qite: { components: Record<string, ComponentConstructor>, init: (rootEl: HTMLElement) => void } = {
         components: {
           TodoApp: TodoAppComponent
         },
-        init(rootEl) {
-          const compName = rootEl.getAttribute('data-component');
+        init(rootEl: HTMLElement): void {
+          const compName: string | null = rootEl.getAttribute('data-component');
           if (compName && Qite.components[compName]) {
             new Qite.components[compName](rootEl);
           }

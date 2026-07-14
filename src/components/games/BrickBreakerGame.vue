@@ -1,6 +1,24 @@
-<script setup>
+<script setup lang="ts">
 
-import { circleRectCollision, readHighScore } from './gameUtils.js'
+import { circleRectCollision, readHighScore } from './gameUtils.ts'
+import type { CircleBounds, RectBounds } from './gameUtils.ts'
+
+type PaddleDirection = 'left' | 'right'
+
+interface Paddle extends RectBounds {
+  speed: number
+}
+
+interface Ball extends CircleBounds {
+  vx: number
+  vy: number
+}
+
+interface Brick extends RectBounds {
+  id: number
+  row: number
+  alive: boolean
+}
 
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 440
@@ -24,27 +42,27 @@ const MAX_FRAME_DELTA_SECONDS = 0.032
 const MAX_STEPS_PER_FRAME = 4
 const HIGH_SCORE_KEY = 'brickbreaker_high_score'
 
-const ROW_COLORS = ['#ff5c5c', '#ff8c42', '#f5cf46', '#65c96e', '#45a9e6', '#9b75df']
+const ROW_COLORS: string[] = ['#ff5c5c', '#ff8c42', '#f5cf46', '#65c96e', '#45a9e6', '#9b75df']
 
-const canvasRef = ref(null)
-const score = ref(0)
-const highScore = ref(readHighScore(HIGH_SCORE_KEY))
-const lives = ref(INITIAL_LIVES)
-const isPaused = ref(true)
-const isGameOver = ref(false)
-const isWin = ref(false)
-const isLaunched = ref(false)
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const score = ref<number>(0)
+const highScore = ref<number>(readHighScore(HIGH_SCORE_KEY))
+const lives = ref<number>(INITIAL_LIVES)
+const isPaused = ref<boolean>(true)
+const isGameOver = ref<boolean>(false)
+const isWin = ref<boolean>(false)
+const isLaunched = ref<boolean>(false)
 
-let speedLevel = 0
+let speedLevel: number = 0
 let paddle = createPaddle()
 let ball = createBall(speedLevel)
 let bricks = createBricks()
-let pressedDirections = new Set()
-let lastFrameAt = null
-let accumulator = 0
-let animationFrameId = null
+let pressedDirections: Set<PaddleDirection> = new Set<PaddleDirection>()
+let lastFrameAt: number | null = null
+let accumulator: number = 0
+let animationFrameId: number | null = null
 
-function createPaddle() {
+function createPaddle(): Paddle {
   return {
     x: (CANVAS_WIDTH - PADDLE_WIDTH) / 2,
     y: CANVAS_HEIGHT - 28,
@@ -54,13 +72,13 @@ function createPaddle() {
   }
 }
 
-function ballSpeedForLevel(level) {
+function ballSpeedForLevel(level: number): number {
   return Math.min(Math.hypot(INITIAL_BALL_VX, INITIAL_BALL_VY) + level * BALL_SPEED_INCREMENT, MAX_BALL_SPEED)
 }
 
-function createBall(level = speedLevel) {
-  const initialSpeed = Math.hypot(INITIAL_BALL_VX, INITIAL_BALL_VY)
-  const speed = ballSpeedForLevel(level)
+function createBall(level: number = speedLevel): Ball {
+  const initialSpeed: number = Math.hypot(INITIAL_BALL_VX, INITIAL_BALL_VY)
+  const speed: number = ballSpeedForLevel(level)
   return {
     x: CANVAS_WIDTH / 2,
     y: CANVAS_HEIGHT - 38,
@@ -70,10 +88,10 @@ function createBall(level = speedLevel) {
   }
 }
 
-function createBricks() {
-  return Array.from({ length: BRICK_ROWS * BRICK_COLUMNS }, (_, index) => {
-    const row = Math.floor(index / BRICK_COLUMNS)
-    const column = index % BRICK_COLUMNS
+function createBricks(): Brick[] {
+  return Array.from({ length: BRICK_ROWS * BRICK_COLUMNS }, (_: unknown, index: number): Brick => {
+    const row: number = Math.floor(index / BRICK_COLUMNS)
+    const column: number = index % BRICK_COLUMNS
     return {
       id: index + 1,
       row,
@@ -86,7 +104,7 @@ function createBricks() {
   })
 }
 
-function resetBall() {
+function resetBall(): void {
   ball = createBall(speedLevel)
   ball.x = paddle.x + paddle.width / 2
   isLaunched.value = false
@@ -94,7 +112,7 @@ function resetBall() {
   clearFrameTiming()
 }
 
-function resetGame() {
+function resetGame(): void {
   speedLevel = 0
   paddle = createPaddle()
   bricks = createBricks()
@@ -107,7 +125,7 @@ function resetGame() {
   draw()
 }
 
-function saveHighScore() {
+function saveHighScore(): void {
   if (score.value <= highScore.value) return
   highScore.value = score.value
   try {
@@ -117,7 +135,7 @@ function saveHighScore() {
   }
 }
 
-function finishGame(won) {
+function finishGame(won: boolean): void {
   isWin.value = won
   isGameOver.value = !won
   isPaused.value = true
@@ -127,7 +145,7 @@ function finishGame(won) {
   saveHighScore()
 }
 
-function launchOrTogglePause() {
+function launchOrTogglePause(): void {
   if (isGameOver.value || isWin.value) return
   if (!isLaunched.value) {
     isLaunched.value = true
@@ -138,30 +156,30 @@ function launchOrTogglePause() {
   clearFrameTiming()
 }
 
-function updatePaddle(deltaSeconds) {
-  const movingLeft = pressedDirections.has('left')
-  const movingRight = pressedDirections.has('right')
-  const direction = Number(movingRight) - Number(movingLeft)
+function updatePaddle(deltaSeconds: number): void {
+  const movingLeft: boolean = pressedDirections.has('left')
+  const movingRight: boolean = pressedDirections.has('right')
+  const direction: number = Number(movingRight) - Number(movingLeft)
   paddle.x = Math.max(0, Math.min(
     CANVAS_WIDTH - paddle.width,
     paddle.x + direction * paddle.speed * deltaSeconds
   ))
 }
 
-function applySpeedLevel(level) {
+function applySpeedLevel(level: number): void {
   speedLevel = level
-  const speed = Math.hypot(ball.vx, ball.vy)
+  const speed: number = Math.hypot(ball.vx, ball.vy)
   if (!speed) return
-  const progressionSpeed = ballSpeedForLevel(speedLevel)
+  const progressionSpeed: number = ballSpeedForLevel(speedLevel)
   ball.vx = ball.vx / speed * progressionSpeed
   ball.vy = ball.vy / speed * progressionSpeed
 }
 
-function reflectFromBrick(brick, previousX, previousY) {
-  const cameFromLeft = previousX + ball.radius <= brick.x
-  const cameFromRight = previousX - ball.radius >= brick.x + brick.width
-  const cameFromAbove = previousY + ball.radius <= brick.y
-  const cameFromBelow = previousY - ball.radius >= brick.y + brick.height
+function reflectFromBrick(brick: Brick, previousX: number, previousY: number): void {
+  const cameFromLeft: boolean = previousX + ball.radius <= brick.x
+  const cameFromRight: boolean = previousX - ball.radius >= brick.x + brick.width
+  const cameFromAbove: boolean = previousY + ball.radius <= brick.y
+  const cameFromBelow: boolean = previousY - ball.radius >= brick.y + brick.height
 
   if (cameFromLeft || cameFromRight) {
     ball.vx *= -1
@@ -174,11 +192,11 @@ function reflectFromBrick(brick, previousX, previousY) {
     return
   }
 
-  const horizontalPenetration = Math.min(
+  const horizontalPenetration: number = Math.min(
     Math.abs(ball.x + ball.radius - brick.x),
     Math.abs(brick.x + brick.width - (ball.x - ball.radius))
   )
-  const verticalPenetration = Math.min(
+  const verticalPenetration: number = Math.min(
     Math.abs(ball.y + ball.radius - brick.y),
     Math.abs(brick.y + brick.height - (ball.y - ball.radius))
   )
@@ -186,18 +204,18 @@ function reflectFromBrick(brick, previousX, previousY) {
   else ball.vy *= -1
 }
 
-function handlePaddleCollision() {
+function handlePaddleCollision(): void {
   if (ball.vy <= 0 || !circleRectCollision(ball, paddle)) return
-  const relativeHit = Math.max(-1, Math.min(1, (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2)))
-  const speed = Math.max(250, Math.hypot(ball.vx, ball.vy))
-  const horizontalRatio = relativeHit * 0.78
+  const relativeHit: number = Math.max(-1, Math.min(1, (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2)))
+  const speed: number = Math.max(250, Math.hypot(ball.vx, ball.vy))
+  const horizontalRatio: number = relativeHit * 0.78
   ball.vx = speed * horizontalRatio
   ball.vy = -Math.sqrt(Math.max(0, speed ** 2 - ball.vx ** 2))
   ball.y = paddle.y - ball.radius
 }
 
-function handleBrickCollision(previousX, previousY) {
-  const brick = bricks.find(item => item.alive && circleRectCollision(ball, item))
+function handleBrickCollision(previousX: number, previousY: number): void {
+  const brick: Brick | undefined = bricks.find((item: Brick): boolean => item.alive && circleRectCollision(ball, item))
   if (!brick) return
 
   brick.alive = false
@@ -205,13 +223,13 @@ function handleBrickCollision(previousX, previousY) {
   score.value += 10
   saveHighScore()
 
-  const clearedBricks = score.value / 10
-  const progressionLevel = Math.floor(clearedBricks / BRICK_COLUMNS)
+  const clearedBricks: number = score.value / 10
+  const progressionLevel: number = Math.floor(clearedBricks / BRICK_COLUMNS)
   if (progressionLevel !== speedLevel) applySpeedLevel(progressionLevel)
   if (clearedBricks === BRICK_ROWS * BRICK_COLUMNS) finishGame(true)
 }
 
-function loseLife() {
+function loseLife(): void {
   lives.value -= 1
   if (lives.value <= 0) {
     finishGame(false)
@@ -220,15 +238,15 @@ function loseLife() {
   resetBall()
 }
 
-function updateBall(deltaSeconds) {
+function updateBall(deltaSeconds: number): void {
   if (!isLaunched.value) {
     ball.x = paddle.x + paddle.width / 2
     ball.y = paddle.y - ball.radius - 2
     return
   }
 
-  const previousX = ball.x
-  const previousY = ball.y
+  const previousX: number = ball.x
+  const previousY: number = ball.y
   ball.x += ball.vx * deltaSeconds
   ball.y += ball.vy * deltaSeconds
 
@@ -255,23 +273,23 @@ function updateBall(deltaSeconds) {
   handleBrickCollision(previousX, previousY)
 }
 
-function update(deltaSeconds) {
+function update(deltaSeconds: number): void {
   updatePaddle(deltaSeconds)
   updateBall(deltaSeconds)
 }
 
-function clearFrameTiming() {
+function clearFrameTiming(): void {
   lastFrameAt = null
   accumulator = 0
 }
 
-function gameLoop(now) {
+function gameLoop(now: number): void {
   if (lastFrameAt === null) lastFrameAt = now
   const wallDeltaSeconds = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_FRAME_DELTA_SECONDS)
   lastFrameAt = now
   if (!isPaused.value && !isGameOver.value && !isWin.value) {
     accumulator += wallDeltaSeconds
-    let steps = 0
+    let steps: number = 0
     while (accumulator >= FIXED_STEP_SECONDS && steps < MAX_STEPS_PER_FRAME) {
       accumulator -= FIXED_STEP_SECONDS
       update(FIXED_STEP_SECONDS)
@@ -285,8 +303,8 @@ function gameLoop(now) {
   animationFrameId = requestAnimationFrame(gameLoop)
 }
 
-function drawBackground(ctx) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT)
+function drawBackground(ctx: CanvasRenderingContext2D): void {
+  const gradient: CanvasGradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT)
   gradient.addColorStop(0, '#111a29')
   gradient.addColorStop(1, '#081019')
   ctx.fillStyle = gradient
@@ -297,8 +315,8 @@ function drawBackground(ctx) {
   }
 }
 
-function drawBricks(ctx) {
-  bricks.forEach(brick => {
+function drawBricks(ctx: CanvasRenderingContext2D): void {
+  bricks.forEach((brick: Brick): void => {
     if (!brick.alive) return
     ctx.fillStyle = ROW_COLORS[brick.row]
     ctx.fillRect(brick.x, brick.y, brick.width, brick.height)
@@ -309,7 +327,7 @@ function drawBricks(ctx) {
   })
 }
 
-function drawOverlay(ctx) {
+function drawOverlay(ctx: CanvasRenderingContext2D): void {
   if (!isPaused.value && !isGameOver.value && !isWin.value) return
   ctx.fillStyle = 'rgba(3, 8, 15, 0.72)'
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -323,8 +341,8 @@ function drawOverlay(ctx) {
   ctx.textAlign = 'start'
 }
 
-function draw() {
-  const ctx = canvasRef.value?.getContext('2d')
+function draw(): void {
+  const ctx: CanvasRenderingContext2D | null = canvasRef.value?.getContext('2d') || null
   if (!ctx) return
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
   drawBackground(ctx)
@@ -350,18 +368,18 @@ function draw() {
   ctx.fillText(`SCORE ${String(score.value).padStart(3, '0')}`, 12, 22)
   ctx.fillStyle = '#ffffff'
   ctx.fillText(`LIFE ${lives.value}`, 172, 22)
-  ctx.fillText(`BRICKS ${bricks.filter(brick => brick.alive).length}`, 278, 22)
+  ctx.fillText(`BRICKS ${bricks.filter((brick: Brick): boolean => brick.alive).length}`, 278, 22)
   drawOverlay(ctx)
 }
 
-function keyToDirection(event) {
-  const key = event.key.toLowerCase()
+function keyToDirection(event: KeyboardEvent): PaddleDirection | null {
+  const key: string = event.key.toLowerCase()
   if (key === 'arrowleft' || key === 'a') return 'left'
   if (key === 'arrowright' || key === 'd') return 'right'
   return null
 }
 
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent): void {
   if (event.code === 'Space' || event.key === ' ') {
     event.preventDefault()
     if (!event.repeat) launchOrTogglePause()
@@ -373,28 +391,28 @@ function handleKeydown(event) {
   if (!isGameOver.value && !isWin.value) pressedDirections.add(direction)
 }
 
-function handleKeyup(event) {
-  const direction = keyToDirection(event)
+function handleKeyup(event: KeyboardEvent): void {
+  const direction: PaddleDirection | null = keyToDirection(event)
   if (!direction) return
   event.preventDefault()
   pressedDirections.delete(direction)
 }
 
-function releaseControls() {
+function releaseControls(): void {
   pressedDirections.clear()
 }
 
-function handleVisibilityChange() {
+function handleVisibilityChange(): void {
   lastFrameAt = null
   if (document.hidden) releaseControls()
 }
 
-function pressDirection(direction, event) {
+function pressDirection(direction: PaddleDirection, event?: Event): void {
   event?.preventDefault()
   if (!isGameOver.value && !isWin.value) pressedDirections.add(direction)
 }
 
-function releaseDirection(direction, event) {
+function releaseDirection(direction: PaddleDirection, event?: Event): void {
   event?.preventDefault()
   pressedDirections.delete(direction)
 }

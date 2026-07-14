@@ -1,20 +1,33 @@
-<script setup>
+<script setup lang="ts">
 
-const emit = defineEmits(['close'])
+interface MineCell {
+  r: number
+  c: number
+  isMine: boolean
+  isRevealed: boolean
+  isFlagged: boolean
+  neighborMines: number
+}
+
+type MineBoard = MineCell[][]
+
+const emit = defineEmits<{
+  close: []
+}>()
 
 const ROWS = 9
 const COLS = 9
 const MINES = 10
 
-const board = ref([])
-const isGameOver = ref(false)
-const isWin = ref(false)
-const minesLeft = ref(MINES)
-const timer = ref(0)
-const timerInterval = ref(null)
-const isFirstClick = ref(true)
+const board = ref<MineBoard>([])
+const isGameOver = ref<boolean>(false)
+const isWin = ref<boolean>(false)
+const minesLeft = ref<number>(MINES)
+const timer = ref<number>(0)
+const timerInterval = ref<ReturnType<typeof setInterval> | null>(null)
+const isFirstClick = ref<boolean>(true)
 
-const initGame = () => {
+const initGame = (): void => {
   isGameOver.value = false
   isWin.value = false
   minesLeft.value = MINES
@@ -23,8 +36,8 @@ const initGame = () => {
   if (timerInterval.value) clearInterval(timerInterval.value)
 
   // Initialize board empty cells
-  board.value = Array.from({ length: ROWS }, (_, r) =>
-    Array.from({ length: COLS }, (_, c) => ({
+  board.value = Array.from({ length: ROWS }, (_: unknown, r: number): MineCell[] =>
+    Array.from({ length: COLS }, (__: unknown, c: number): MineCell => ({
       r,
       c,
       isMine: false,
@@ -35,20 +48,20 @@ const initGame = () => {
   )
 }
 
-const startTimer = () => {
+const startTimer = (): void => {
   timerInterval.value = setInterval(() => {
     timer.value++
   }, 1000)
 }
 
-const placeMines = (excludeRow, excludeCol) => {
-  let minesPlaced = 0
+const placeMines = (excludeRow: number, excludeCol: number): void => {
+  let minesPlaced: number = 0
   while (minesPlaced < MINES) {
-    const r = Math.floor(Math.random() * ROWS)
-    const c = Math.floor(Math.random() * COLS)
+    const r: number = Math.floor(Math.random() * ROWS)
+    const c: number = Math.floor(Math.random() * COLS)
     
     // Avoid putting mine on the first clicked cell or its immediate neighbors to guarantee a safe start
-    const isExcluded = Math.abs(r - excludeRow) <= 1 && Math.abs(c - excludeCol) <= 1
+    const isExcluded: boolean = Math.abs(r - excludeRow) <= 1 && Math.abs(c - excludeCol) <= 1
 
     if (!board.value[r][c].isMine && !isExcluded) {
       board.value[r][c].isMine = true
@@ -60,11 +73,11 @@ const placeMines = (excludeRow, excludeCol) => {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       if (board.value[r][c].isMine) continue
-      let count = 0
+      let count: number = 0
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
-          const nr = r + dr
-          const nc = c + dc
+          const nr: number = r + dr
+          const nc: number = c + dc
           if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
             if (board.value[nr][nc].isMine) count++
           }
@@ -75,7 +88,7 @@ const placeMines = (excludeRow, excludeCol) => {
   }
 }
 
-const revealCell = (r, c) => {
+const revealCell = (r: number, c: number): void => {
   if (isGameOver.value || isWin.value || board.value[r][c].isRevealed || board.value[r][c].isFlagged) return
 
   if (isFirstClick.value) {
@@ -84,7 +97,7 @@ const revealCell = (r, c) => {
     startTimer()
   }
 
-  const cell = board.value[r][c]
+  const cell: MineCell = board.value[r][c]
   cell.isRevealed = true
 
   if (cell.isMine) {
@@ -96,8 +109,8 @@ const revealCell = (r, c) => {
     // Reveal neighbors recursively
     for (let dr = -1; dr <= 1; dr++) {
       for (let dc = -1; dc <= 1; dc++) {
-        const nr = r + dr
-        const nc = c + dc
+        const nr: number = r + dr
+        const nc: number = c + dc
         if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
           revealCell(nr, nc)
         }
@@ -108,17 +121,17 @@ const revealCell = (r, c) => {
   checkWin()
 }
 
-const flagCell = (event, r, c) => {
+const flagCell = (event: MouseEvent, r: number, c: number): void => {
   event.preventDefault()
   if (isGameOver.value || isWin.value || board.value[r][c].isRevealed) return
 
-  const cell = board.value[r][c]
+  const cell: MineCell = board.value[r][c]
   cell.isFlagged = !cell.isFlagged
   minesLeft.value += cell.isFlagged ? -1 : 1
   checkWin()
 }
 
-const endGame = (win) => {
+const endGame = (win: boolean): void => {
   if (timerInterval.value) clearInterval(timerInterval.value)
   isGameOver.value = !win
   isWin.value = win
@@ -133,11 +146,11 @@ const endGame = (win) => {
   }
 }
 
-const checkWin = () => {
-  let allRevealedOrMines = true
+const checkWin = (): void => {
+  let allRevealedOrMines: boolean = true
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const cell = board.value[r][c]
+      const cell: MineCell = board.value[r][c]
       if (!cell.isMine && !cell.isRevealed) {
         allRevealedOrMines = false
         break

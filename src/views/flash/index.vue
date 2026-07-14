@@ -168,44 +168,38 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import {
+  TOP_NAVS,
+  INITIAL_TABS,
+  NOTICES,
+  CURRENT_USER,
+  ACTIVE_USERS,
+  MAX_LEN,
+  escapeHtml,
+  renderContent,
+  formatTime,
+  createMockComment,
+  createMockFeed
+} from '@/vue-pages-text-fn-abc/flash'
+import type { FlashNavItem as NavItem, FeedTab, UserSummary, FlashComment, FlashFeed } from '@/vue-pages-text-fn-abc/vue-interface'
 
-const topNavs = [
-  { key: 'index', label: '首页' },
-  { key: 'news', label: '新闻' },
-  { key: 'blog', label: '博问' },
-  { key: 'ing', label: '闪存' },
-  { key: 'group', label: '小组' },
-  { key: 'job', label: '收藏' }
-]
+const topNavs = TOP_NAVS
+const tabs = reactive<FeedTab[]>(JSON.parse(JSON.stringify(INITIAL_TABS)))
+const currentUser = CURRENT_USER
 
-const tabs = [
-  { key: 'all', label: '全站' },
-  { key: 'follow', label: '关注' },
-  { key: 'my', label: '我的' },
-  { key: 'reply', label: '回复我', badge: 2 },
-  { key: 'mention', label: '提到我' },
-  { key: 'comment', label: '我回应' },
-  { key: 'lucky', label: '新人' }
-]
+const navOpen = ref<boolean>(false)
+const keyword = ref<string>('')
+const draft = ref<string>('')
+const isPrivate = ref<boolean>(false)
+const publishFocus = ref<boolean>(false)
+const activeTab = ref<string>('all')
+const page = ref<number>(1)
+const maxLen = MAX_LEN
 
-const currentUser = {
-  nickname: '前端小行家',
-  avatar: makeAvatar('前')
-}
+let idSeed: number = 100
 
-const navOpen = ref(false)
-const keyword = ref('')
-const draft = ref('')
-const isPrivate = ref(false)
-const publishFocus = ref(false)
-const activeTab = ref('all')
-const page = ref(1)
-const maxLen = 200
-
-let idSeed = 100
-
-const feeds = reactive([
+const feeds = reactive<FlashFeed[]>([
   mockFeed('清风徐来', '今天把项目的构建时间从 3 分钟优化到了 40 秒，vite 真香~', -5, [
     mockComment('山间明月', '怎么做到的？求分享'),
     mockComment('清风徐来', '主要是干掉了几个巨大的 barrel file，再加了依赖预构建')
@@ -220,115 +214,65 @@ const feeds = reactive([
   mockFeed('山间明月', 'TypeScript 5 的 decorators 终于稳定了，准备把旧项目迁移一波', -200)
 ])
 
-const notices = [
-  '发布内容请遵守社区规范',
-  '支持 @昵称 提到其他用户',
-  '闪存内容最多 200 字',
-  '恶意灌水将被限制发布'
-]
+const notices = NOTICES
+const activeUsers = ACTIVE_USERS
 
-const activeUsers = [
-  { nickname: '清风徐来', avatar: makeAvatar('清') },
-  { nickname: '夜航星', avatar: makeAvatar('夜') },
-  { nickname: '像素画师', avatar: makeAvatar('像') },
-  { nickname: '摸鱼大师', avatar: makeAvatar('摸') },
-  { nickname: '山间明月', avatar: makeAvatar('山') },
-  { nickname: '代码搬运工', avatar: makeAvatar('代') }
-]
-
-const remain = computed(() => maxLen - draft.value.length)
-const myFeedCount = computed(() => feeds.filter(f => f.mine).length)
-const myCommentCount = computed(() =>
-  feeds.reduce((n, f) => n + f.comments.filter(c => c.nickname === currentUser.nickname).length, 0)
+const remain = computed<number>(() => maxLen - draft.value.length)
+const myFeedCount = computed<number>(() => feeds.filter((f: FlashFeed): boolean => f.mine).length)
+const myCommentCount = computed<number>(() =>
+  feeds.reduce((n: number, f: FlashFeed): number => n + f.comments.filter((c: FlashComment): boolean => c.nickname === currentUser.nickname).length, 0)
 )
 
-const filteredFeeds = computed(() => {
-  let list = feeds
+const filteredFeeds = computed<FlashFeed[]>(() => {
+  let list: FlashFeed[] = feeds
   if (activeTab.value === 'my') {
-    list = feeds.filter(f => f.mine)
+    list = feeds.filter((f: FlashFeed): boolean => f.mine)
   } else if (activeTab.value === 'reply') {
-    list = feeds.filter(f => f.mine && f.comments.length)
+    list = feeds.filter((f: FlashFeed): boolean => f.mine && f.comments.length > 0)
   } else if (activeTab.value === 'mention') {
-    list = feeds.filter(f => f.content.includes(`@${currentUser.nickname}`))
+    list = feeds.filter((f: FlashFeed): boolean => f.content.includes(`@${currentUser.nickname}`))
   } else if (activeTab.value === 'comment') {
-    list = feeds.filter(f => f.comments.some(c => c.nickname === currentUser.nickname))
+    list = feeds.filter((f: FlashFeed): boolean => f.comments.some((c: FlashComment): boolean => c.nickname === currentUser.nickname))
   } else if (activeTab.value === 'follow' || activeTab.value === 'lucky') {
     list = feeds.slice(0, 3)
   }
   if (keyword.value.trim()) {
-    const k = keyword.value.trim()
-    list = list.filter(f => f.content.includes(k) || f.nickname.includes(k))
+    const k: string = keyword.value.trim()
+    list = list.filter((f: FlashFeed): boolean => f.content.includes(k) || f.nickname.includes(k))
   }
   return list
 })
 
-function mockFeed(nickname, content, minutesAgo, comments = [], mine = false) {
-  return {
-    id: ++idSeed,
-    nickname,
-    avatar: makeAvatar(nickname[0]),
-    content,
-    time: Date.now() + minutesAgo * 60 * 1000,
-    comments,
-    mine,
-    expanded: false,
-    replying: false,
-    replyDraft: ''
-  }
+function mockFeed(nickname: string, content: string, minutesAgo: number, comments: FlashComment[] = [], mine: boolean = false): FlashFeed {
+  return createMockFeed(++idSeed, nickname, content, minutesAgo, comments, mine)
 }
 
-function mockComment(nickname, content) {
-  return { id: ++idSeed, nickname, content, time: Date.now() - 10 * 60 * 1000 }
+function mockComment(nickname: string, content: string): FlashComment {
+  return createMockComment(++idSeed, nickname, content)
 }
 
-function makeAvatar(char) {
-  const colors = ['#4a90d9', '#5cb85c', '#f0ad4e', '#d9534f', '#8e6cc0', '#20a0a0']
-  const color = colors[char.charCodeAt(0) % colors.length]
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" rx="6" fill="${color}"/><text x="24" y="31" font-size="22" text-anchor="middle" fill="#fff" font-family="sans-serif">${char}</text></svg>`
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
-}
-
-function renderContent(content) {
-  return escapeHtml(content).replace(/@([\u4e00-\u9fa5\w-]+)/g, '<a class="at" href="javascript:;">@$1</a>')
-}
-
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]))
-}
-
-function formatTime(ts) {
-  const diff = Date.now() - ts
-  const min = Math.floor(diff / 60000)
-  if (min < 1) return '刚刚'
-  if (min < 60) return `${min} 分钟前`
-  const hour = Math.floor(min / 60)
-  if (hour < 24) return `${hour} 小时前`
-  const d = new Date(ts)
-  return `${d.getMonth() + 1}-${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
-
-function publish() {
-  const content = draft.value.trim()
+function publish(): void {
+  const content: string = draft.value.trim()
   if (!content) return
   feeds.unshift(mockFeed(currentUser.nickname, content + (isPrivate.value ? '（仅自己可见）' : ''), 0, [], true))
   draft.value = ''
   publishFocus.value = false
 }
 
-function switchTab(key) {
+function switchTab(key: string): void {
   activeTab.value = key
   page.value = 1
-  const tab = tabs.find(t => t.key === key)
+  const tab: FeedTab | undefined = tabs.find((t: FeedTab): boolean => t.key === key)
   if (tab && tab.badge) tab.badge = 0
 }
 
-function toggleReply(item) {
+function toggleReply(item: FlashFeed): void {
   item.replying = !item.replying
   if (item.replying) item.expanded = true
 }
 
-function submitReply(item) {
-  const content = item.replyDraft?.trim()
+function submitReply(item: FlashFeed): void {
+  const content: string = item.replyDraft?.trim()
   if (!content) return
   item.comments.push({ id: ++idSeed, nickname: currentUser.nickname, content, time: Date.now() })
   item.replyDraft = ''
@@ -336,12 +280,12 @@ function submitReply(item) {
   item.expanded = true
 }
 
-function removeFeed(item) {
-  const idx = feeds.indexOf(item)
+function removeFeed(item: FlashFeed): void {
+  const idx: number = feeds.indexOf(item)
   if (idx > -1) feeds.splice(idx, 1)
 }
 
-function onSearch() {
+function onSearch(): void {
   page.value = 1
 }
 </script>

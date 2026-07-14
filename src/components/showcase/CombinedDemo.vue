@@ -1,10 +1,9 @@
-<script setup>
+<script setup lang="ts">
 /**
  * CombinedDemo.vue — 综合商业演练场
  * 使用 Element Plus + Naive UI 双组件库联合搭建
  * 接近真实商业后台管理系统的交互体验
  */
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import {
   NButton, NStatistic, NCountdown, NTag, NProgress,
@@ -12,11 +11,65 @@ import {
   NTabs, NTabPane, NBadge, NTimeline, NTimelineItem,
   NAlert, NAvatar, NAvatarGroup, NSpace, NRate
 } from 'naive-ui'
+import type { DataTableColumns, TimelineItemProps } from 'naive-ui'
+
+interface StatsCard {
+  id: number
+  icon: string
+  label: string
+  value: number
+  suffix: string
+  trend: string
+  trendUp: boolean
+  color: string
+}
+
+interface UserRow {
+  id: number
+  avatar: string
+  name: string
+  role: string
+  dept: string
+  status: 'active' | 'blocked'
+  score: number
+  lastLogin: string
+}
+
+interface ActivityItem {
+  id: number
+  type: TimelineItemProps['type']
+  icon: string
+  user: string
+  action: string
+  time: string
+}
+
+interface KanbanCard {
+  id: number
+  title: string
+  tag: string
+  assignee: string
+  dueDate: string
+}
+
+interface KanbanColumn {
+  id: string
+  label: string
+  color: string
+  cards: KanbanCard[]
+}
+
+interface ResourceItem {
+  label: string
+  value: number
+  color: string
+  icon: string
+}
 
 // ==============================
 // 1. 仪表盘核心统计指标
 // ==============================
-const statsCards = ref([
+const statsCards = ref<StatsCard[]>([
   { id: 1, icon: '💰', label: '今日营业收入', value: 128450, suffix: '元', trend: '+12.8%', trendUp: true, color: '#18a058' },
   { id: 2, icon: '📦', label: '本月新增订单', value: 3842, suffix: '笔', trend: '+5.2%', trendUp: true, color: '#2080f0' },
   { id: 3, icon: '👤', label: '活跃用户总量', value: 96204, suffix: '人', trend: '-1.4%', trendUp: false, color: '#f0a020' },
@@ -24,25 +77,27 @@ const statsCards = ref([
 ])
 
 // 实时更新某指标模拟
-let timer = null
-onMounted(() => {
+let timer: ReturnType<typeof setInterval> | null = null
+onMounted((): void => {
   timer = setInterval(() => {
     statsCards.value[0].value += Math.floor(Math.random() * 80) + 10
   }, 2000)
 })
-onUnmounted(() => clearInterval(timer))
+onUnmounted((): void => {
+  if (timer !== null) clearInterval(timer)
+})
 
 // ==============================
 // 2. El-Table 用户管理数据
 // ==============================
-const userLoading = ref(false)
-const userSearchKw = ref('')
-const userPage = ref(1)
-const userPageSize = ref(6)
-const dialogAddUser = ref(false)
+const userLoading = ref<boolean>(false)
+const userSearchKw = ref<string>('')
+const userPage = ref<number>(1)
+const userPageSize = ref<number>(6)
+const dialogAddUser = ref<boolean>(false)
 
-const rawUsers = ref(
-  Array.from({ length: 30 }).map((_, i) => ({
+const rawUsers = ref<UserRow[]>(
+  Array.from({ length: 30 }).map((_: unknown, i: number): UserRow => ({
     id: i + 1,
     avatar: `https://picsum.photos/seed/${i + 10}/40/40`,
     name: ['张伟', '李娜', '王芳', '陈强', '刘洋', '赵丽', '钱思远', '孙明', '周婷', '吴浩'][i % 10] + (i > 9 ? i + 1 : ''),
@@ -54,29 +109,32 @@ const rawUsers = ref(
   }))
 )
 
-const filteredUsers = computed(() => {
-  const kw = userSearchKw.value.trim()
+const filteredUsers = computed<UserRow[]>(() => {
+  const kw: string = userSearchKw.value.trim()
   if (!kw) return rawUsers.value
-  return rawUsers.value.filter(u => u.name.includes(kw) || u.role.includes(kw) || u.dept.includes(kw))
+  return rawUsers.value.filter((u: UserRow): boolean => u.name.includes(kw) || u.role.includes(kw) || u.dept.includes(kw))
 })
 
-const pagedUsers = computed(() => {
-  const start = (userPage.value - 1) * userPageSize.value
+const pagedUsers = computed<UserRow[]>(() => {
+  const start: number = (userPage.value - 1) * userPageSize.value
   return filteredUsers.value.slice(start, start + userPageSize.value)
 })
 
-const selectedUserIds = ref([])
-const handleUserSelect = (rows) => { selectedUserIds.value = rows.map(r => r.id) }
+const selectedUserIds = ref<number[]>([])
+const handleUserSelect = (rows: UserRow[]): void => { selectedUserIds.value = rows.map((r: UserRow): number => r.id) }
 
 const editingUser = reactive({ name: '', role: '', dept: '' })
-const openAddUser = () => {
+const openAddUser = (): void => {
   editingUser.name = ''
   editingUser.role = '前端工程师'
   editingUser.dept = '技术中心'
   dialogAddUser.value = true
 }
-const confirmAddUser = () => {
-  if (!editingUser.name) return ElMessage.warning('请输入用户姓名')
+const confirmAddUser = (): void => {
+  if (!editingUser.name) {
+    ElMessage.warning('请输入用户姓名')
+    return
+  }
   rawUsers.value.unshift({
     id: Date.now(),
     avatar: `https://picsum.photos/seed/${Date.now() % 100}/40/40`,
@@ -91,27 +149,27 @@ const confirmAddUser = () => {
   ElMessage.success(`成功新增用户 【${editingUser.name}】`)
 }
 
-const deleteUser = (row) => {
-  const idx = rawUsers.value.findIndex(u => u.id === row.id)
+const deleteUser = (row: UserRow): void => {
+  const idx: number = rawUsers.value.findIndex((u: UserRow): boolean => u.id === row.id)
   if (idx !== -1) rawUsers.value.splice(idx, 1)
   ElMessage.warning(`已移除用户 【${row.name}】`)
 }
 
-const toggleUserStatus = (row) => {
+const toggleUserStatus = (row: UserRow): void => {
   row.status = row.status === 'active' ? 'blocked' : 'active'
   ElMessage.info(`用户 ${row.name} 状态已切换`)
 }
 
 // N-DataTable columns definition for user list
-const userTableColumns = computed(() => [
+const userTableColumns = computed<DataTableColumns<UserRow>>(() => [
   {
     type: 'selection',
-    disabled: (row) => row.status === 'blocked'
+    disabled: (row: UserRow): boolean => row.status === 'blocked'
   },
   {
     title: '头像 / 姓名',
     key: 'name',
-    render: (row) => {
+    render: (row: UserRow) => {
       return h('div', { style: 'display:flex;align-items:center;gap:8px;' }, [
         h('img', { src: row.avatar, style: 'width:32px;height:32px;border-radius:50%;object-fit:cover;' }),
         h('span', { style: 'font-weight:600;' }, row.name)
@@ -123,22 +181,21 @@ const userTableColumns = computed(() => [
   {
     title: '星级评分',
     key: 'score',
-    render: (row) => `⭐ ${row.score}`
+    render: (row: UserRow): string => `⭐ ${row.score}`
   },
   {
     title: '账户状态',
     key: 'status',
-    render: (row) => h(NTag, { type: row.status === 'active' ? 'success' : 'error', size: 'small' }, { default: () => row.status === 'active' ? '正常启用' : '已封禁' })
+    render: (row: UserRow) => h(NTag, { type: row.status === 'active' ? 'success' : 'error', size: 'small' }, { default: (): string => row.status === 'active' ? '正常启用' : '已封禁' })
   },
   { title: '上次登录', key: 'lastLogin' }
 ])
 
-import { h } from 'vue'
 
 // ==============================
 // 3. 通知活动流（El + Naive 联合）
 // ==============================
-const activities = ref([
+const activities = ref<ActivityItem[]>([
   { id: 1, type: 'success', icon: '🚀', user: '张伟', action: '成功推送版本 v2.14.3 发布通知至所有用户', time: '3分钟前' },
   { id: 2, type: 'info', icon: '📋', user: '李娜', action: '新建了企业级组件交互演练场并完成基础配置', time: '15分钟前' },
   { id: 3, type: 'warning', icon: '⚠️', user: '系统', action: '检测到服务器内存占用率已达临界值 85%', time: '32分钟前' },
@@ -147,8 +204,8 @@ const activities = ref([
   { id: 6, type: 'error', icon: '🔴', user: '运维系统', action: '生产环境 Redis 集群节点 Node-4 异常宕机告警', time: '3小时前' }
 ])
 
-const unreadCount = ref(3)
-const markAllRead = () => {
+const unreadCount = ref<number>(3)
+const markAllRead = (): void => {
   unreadCount.value = 0
   ElNotification({ title: '全部已读', message: '通知中心所有未读消息已标记为已读', type: 'success' })
 }
@@ -156,7 +213,7 @@ const markAllRead = () => {
 // ==============================
 // 4. 任务看板 (Kanban-like)
 // ==============================
-const kanbanCols = reactive([
+const kanbanCols = reactive<KanbanColumn[]>([
   {
     id: 'todo', label: '📋 待开发', color: '#e0e0e0',
     cards: [
@@ -186,7 +243,7 @@ const kanbanCols = reactive([
   }
 ])
 
-const addCard = (col) => {
+const addCard = (col: KanbanColumn): void => {
   col.cards.push({
     id: Date.now(),
     title: '新建任务卡片',
@@ -200,7 +257,7 @@ const addCard = (col) => {
 // ==============================
 // 5. 综合系统设置面板
 // ==============================
-const settingsTab = ref('notify')
+const settingsTab = ref<string>('notify')
 const systemSettings = reactive({
   emailNotify: true,
   smsNotify: false,
@@ -218,14 +275,14 @@ const themeOptions = [
   { label: '🎨 系统自动', value: 'auto' }
 ]
 
-const saveSettings = () => {
+const saveSettings = (): void => {
   ElMessage.success('系统配置参数已成功持久化保存！')
 }
 
 // ==============================
 // 6. 环形图表 - 资源占用
 // ==============================
-const resourceData = ref([
+const resourceData = ref<ResourceItem[]>([
   { label: 'CPU 使用率', value: 42, color: '#2080f0', icon: '🖥️' },
   { label: '内存占用率', value: 78, color: '#f0a020', icon: '💾' },
   { label: '磁盘 I/O', value: 35, color: '#18a058', icon: '💿' },
@@ -233,15 +290,17 @@ const resourceData = ref([
 ])
 
 // 模拟资源波动
-let resourceTimer = null
-onMounted(() => {
+let resourceTimer: ReturnType<typeof setInterval> | null = null
+onMounted((): void => {
   resourceTimer = setInterval(() => {
-    resourceData.value.forEach(item => {
+    resourceData.value.forEach((item: ResourceItem): void => {
       item.value = Math.min(99, Math.max(10, item.value + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 5)))
     })
   }, 1500)
 })
-onUnmounted(() => clearInterval(resourceTimer))
+onUnmounted((): void => {
+  if (resourceTimer !== null) clearInterval(resourceTimer)
+})
 
 // ==============================
 // 7. N-Countdown 倒计时与发布日程

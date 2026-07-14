@@ -1,28 +1,129 @@
-<script setup>
+<script setup lang="ts">
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 import apiCategoriesData from '../utlis/api_list.json'
+import { jsonHeaders, request, requestJson } from '@/utils/request'
+
+type ApiValue = string | number | boolean
+type QueryInputs = Record<string, ApiValue>
+
+interface ApiResponse<T = unknown> {
+  code?: number
+  data?: T
+  message?: string
+}
+
+interface UserProfile {
+  nickname?: string
+  username?: string
+  account_id?: string | number
+  email?: string
+  bio?: string
+  gender?: string
+  age?: number
+  location?: string
+}
+
+interface MomentItem {
+  id: string | number
+  account_id?: string | number
+  created_at?: string
+  content?: string
+}
+
+interface ArticleItem {
+  id: string | number
+  category?: string
+  title?: string
+  desc?: string
+  content?: string
+  created_at?: string
+}
+
+interface JsonStoreItem {
+  id: string | number
+  name?: string
+  content?: string
+  created_at?: string
+}
+
+interface CloudFileItem {
+  id: string | number
+  filename?: string
+  file_type?: string
+}
+
+interface ApiParamOption {
+  label: string
+  value: ApiValue
+}
+
+interface ApiParam {
+  name: string
+  label?: string
+  description?: string
+  type: 'text' | 'number' | 'select' | 'switch' | string
+  placeholder?: string
+  required?: boolean
+  default?: ApiValue
+  options?: ApiParamOption[]
+}
+
+interface ApiEndpoint {
+  name: string
+  desc?: string
+  path: string
+  method: string
+  params: ApiParam[]
+  pathParams: ApiParam[]
+  hasBody: boolean
+  bodyPlaceholder: string
+  categoryName?: string
+}
+
+interface ArticleForm {
+  title: string
+  desc: string
+  content: string
+  category: string
+}
+
+interface JsonForm {
+  name: string
+  content: string
+}
+
+interface ProfileForm {
+  nickname: string
+  email: string
+  bio: string
+  gender: string
+  age: number
+  location: string
+}
+
+const apiCategories = apiCategoriesData as Record<string, ApiEndpoint[]>
 
 // Main mode toggle: 'app' (Application Workspace) or 'sandbox' (Developer API Sandbox)
-const activeMode = ref('app')
+const activeMode = ref<string>('app')
 
 // JWT Auth Token state
-const authToken = ref(localStorage.getItem('auth_token') || '')
-const userProfile = ref(null)
+const authToken = ref<string>(localStorage.getItem('auth_token') || '')
+const userProfile = ref<UserProfile | null>(null)
 
-const saveToken = () => {
+const saveToken = (): void => {
   localStorage.setItem('auth_token', authToken.value)
 }
 
 // ----------------------------------------------------
 // Mode 1: App Workspace - Auth & Register State
 // ----------------------------------------------------
-const authTab = ref('login') // 'login' or 'register'
-const username = ref('')
-const password = ref('')
-const isAuthLoading = ref(false)
+const authTab = ref<string>('login') // 'login' or 'register'
+const username = ref<string>('')
+const password = ref<string>('')
+const isAuthLoading = ref<boolean>(false)
 
-const handleAuth = async () => {
+const handleAuth = async (): Promise<void> => {
   if (username.value.length < 3) {
     ElMessage.warning('用户名长度不能小于 3 位')
     return
@@ -33,26 +134,21 @@ const handleAuth = async () => {
   }
 
   isAuthLoading.value = true
-  const path = authTab.value === 'login' ? '/api/auth/login' : '/api/auth/register'
-  const url = `https://api.apiopen.top${path}`
+  const path: string = authTab.value === 'login' ? '/api/auth/login' : '/api/auth/register'
+  const url: string = `https://api.apiopen.top${path}`
 
   try {
-    const response = await fetch(url, {
+    const json = await requestJson<ApiResponse<{ token?: string; accessToken?: string }>>(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
       body: JSON.stringify({
         username: username.value,
         password: password.value
       })
     })
-    const json = await response.json()
     
     if (json && json.code === 200) {
       if (authTab.value === 'login') {
-        authToken.value = json.data.token || json.data.accessToken
+        authToken.value = json.data?.token || json.data?.accessToken || ''
         saveToken()
         ElMessage.success('🔓 登录成功！已成功加载个人工作台。')
         fetchUserProfile()
@@ -64,26 +160,25 @@ const handleAuth = async () => {
     } else {
       ElMessage.error(json.message || '操作失败，请重试')
     }
-  } catch (err) {
-    ElMessage.error(`网络故障: ${err.message}`)
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    ElMessage.error(`网络故障: ${message}`)
   } finally {
     isAuthLoading.value = false
   }
 }
 
-const fetchUserProfile = async () => {
+const fetchUserProfile = async (): Promise<void> => {
   if (!authToken.value) return
   try {
-    const response = await fetch('https://api.apiopen.top/api/users/profile', {
+    const json = await requestJson<ApiResponse<UserProfile>>('https://api.apiopen.top/api/users/profile', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       }
     })
-    const json = await response.json()
     if (json && json.code === 200) {
-      let data = json.data
+      const data: UserProfile | undefined = json.data
       if (data) {
         if (!data.nickname || data.nickname.includes('?')) {
           data.nickname = '爱丽丝 (Alice)'
@@ -95,17 +190,17 @@ const fetchUserProfile = async () => {
           data.location = '北京'
         }
       }
-      userProfile.value = data
+      userProfile.value = data || null
     } else if (json && json.code === 401) {
       // Token expired
       logout()
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   }
 }
 
-const logout = () => {
+const logout = (): void => {
   authToken.value = ''
   saveToken()
   userProfile.value = null
@@ -113,22 +208,17 @@ const logout = () => {
 }
 
 // Quick Login with alice
-const isLoggingIn = ref(false)
-const quickLogin = async () => {
+const isLoggingIn = ref<boolean>(false)
+const quickLogin = async (): Promise<void> => {
   isLoggingIn.value = true
   try {
-    const response = await fetch('https://api.apiopen.top/api/auth/login', {
+    const json = await requestJson<ApiResponse<{ token?: string }>>('https://api.apiopen.top/api/auth/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
       body: JSON.stringify({
         username: 'alice',
         password: 'password123'
       })
     })
-    const json = await response.json()
     if (json && json.code === 200 && json.data && json.data.token) {
       authToken.value = json.data.token
       saveToken()
@@ -137,8 +227,9 @@ const quickLogin = async () => {
     } else {
       ElMessage.error(`登录失败: ${json.message || '未知错误'}`)
     }
-  } catch (err) {
-    ElMessage.error(`网络错误: ${err.message}`)
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    ElMessage.error(`网络错误: ${message}`)
   } finally {
     isLoggingIn.value = false
   }
@@ -147,52 +238,46 @@ const quickLogin = async () => {
 // ----------------------------------------------------
 // Mode 1: App Workspace - Content Tabs (Dashboard)
 // ----------------------------------------------------
-const currentAppTab = ref('moments') // 'moments', 'articles', 'json', 'files', 'profile'
+const currentAppTab = ref<string>('moments') // 'moments', 'articles', 'json', 'files', 'profile'
 
 // Moments State
-const momentsList = ref([])
-const newMomentText = ref('')
-const isMomentsLoading = ref(false)
+const momentsList = ref<MomentItem[]>([])
+const newMomentText = ref<string>('')
+const isMomentsLoading = ref<boolean>(false)
 
-const fetchMoments = async () => {
+const fetchMoments = async (): Promise<void> => {
   isMomentsLoading.value = true
   try {
-    const response = await fetch('https://api.apiopen.top/api/moments?page=1&size=20', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
+    const json = await requestJson<ApiResponse<{ list?: MomentItem[] } | MomentItem[]>>('https://api.apiopen.top/api/moments?page=1&size=20', {
+      method: 'GET'
     })
-    const json = await response.json()
     if (json && json.code === 200) {
-      momentsList.value = json.data.list || json.data || []
+      const data = json.data
+      momentsList.value = Array.isArray(data) ? data : data?.list || []
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   } finally {
     isMomentsLoading.value = false
   }
 }
 
-const publishMoment = async () => {
+const publishMoment = async (): Promise<void> => {
   if (!newMomentText.value.trim()) {
     ElMessage.warning('请输入动态内容')
     return
   }
   try {
-    const response = await fetch('https://api.apiopen.top/api/moments', {
+    const json = await requestJson<ApiResponse>('https://api.apiopen.top/api/moments', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       },
       body: JSON.stringify({
         content: newMomentText.value,
         attachments: ''
       })
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('🎉 动态发布成功！')
       newMomentText.value = ''
@@ -200,76 +285,72 @@ const publishMoment = async () => {
     } else {
       ElMessage.error(json.message || '发布失败')
     }
-  } catch (err) {
-    ElMessage.error(`请求异常: ${err.message}`)
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    ElMessage.error(`请求异常: ${message}`)
   }
 }
 
-const likeMoment = async (momentId) => {
+const likeMoment = async (momentId: string | number): Promise<void> => {
   try {
-    const response = await fetch(`https://api.apiopen.top/api/moments/${momentId}/like`, {
+    const json = await requestJson<ApiResponse>(`https://api.apiopen.top/api/moments/${momentId}/like`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       }
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('👍 点赞成功！')
       fetchMoments()
     } else {
       ElMessage.warning(json.message || '已点过赞了')
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   }
 }
 
 // Articles State
-const articlesList = ref([])
-const isArticlesLoading = ref(false)
-const showCreateArticleDialog = ref(false)
-const newArticle = reactive({
+const articlesList = ref<ArticleItem[]>([])
+const isArticlesLoading = ref<boolean>(false)
+const showCreateArticleDialog = ref<boolean>(false)
+const newArticle = reactive<ArticleForm>({
   title: '',
   desc: '',
   content: '',
   category: '技术'
 })
 
-const fetchArticles = async () => {
+const fetchArticles = async (): Promise<void> => {
   isArticlesLoading.value = true
   try {
-    const response = await fetch('https://api.apiopen.top/api/articles/my?page=1&size=20', {
+    const json = await requestJson<ApiResponse<{ list?: ArticleItem[] } | ArticleItem[]>>('https://api.apiopen.top/api/articles/my?page=1&size=20', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       }
     })
-    const json = await response.json()
     if (json && json.code === 200) {
-      articlesList.value = json.data.list || json.data || []
+      const data = json.data
+      articlesList.value = Array.isArray(data) ? data : data?.list || []
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   } finally {
     isArticlesLoading.value = false
   }
 }
 
-const createArticleSubmit = async () => {
+const createArticleSubmit = async (): Promise<void> => {
   if (!newArticle.title || !newArticle.content) {
     ElMessage.warning('标题和内容为必填项')
     return
   }
   try {
-    const response = await fetch('https://api.apiopen.top/api/articles', {
+    const json = await requestJson<ApiResponse>('https://api.apiopen.top/api/articles', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       },
       body: JSON.stringify({
         title: newArticle.title,
@@ -278,7 +359,6 @@ const createArticleSubmit = async () => {
         category: newArticle.category
       })
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('📝 文章发表成功！')
       showCreateArticleDialog.value = false
@@ -289,42 +369,41 @@ const createArticleSubmit = async () => {
     } else {
       ElMessage.error(json.message || '发表失败')
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   }
 }
 
 // JSON Warehouse State
-const jsonList = ref([])
-const isJsonLoading = ref(false)
-const showCreateJsonDialog = ref(false)
-const newJsonObj = reactive({
+const jsonList = ref<JsonStoreItem[]>([])
+const isJsonLoading = ref<boolean>(false)
+const showCreateJsonDialog = ref<boolean>(false)
+const newJsonObj = reactive<JsonForm>({
   name: '',
   content: ''
 })
 
-const fetchJsons = async () => {
+const fetchJsons = async (): Promise<void> => {
   isJsonLoading.value = true
   try {
-    const response = await fetch('https://api.apiopen.top/api/json/my?page=1&size=20', {
+    const json = await requestJson<ApiResponse<{ list?: JsonStoreItem[] } | JsonStoreItem[]>>('https://api.apiopen.top/api/json/my?page=1&size=20', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       }
     })
-    const json = await response.json()
     if (json && json.code === 200) {
-      jsonList.value = json.data.list || json.data || []
+      const data = json.data
+      jsonList.value = Array.isArray(data) ? data : data?.list || []
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   } finally {
     isJsonLoading.value = false
   }
 }
 
-const createJsonSubmit = async () => {
+const createJsonSubmit = async (): Promise<void> => {
   if (!newJsonObj.name || !newJsonObj.content) {
     ElMessage.warning('仓库名和 JSON 内容为必填项')
     return
@@ -332,25 +411,22 @@ const createJsonSubmit = async () => {
   try {
     // Validate JSON formatting
     JSON.parse(newJsonObj.content)
-  } catch (e) {
+  } catch (_e: unknown) {
     ElMessage.error('JSON 内容格式非法，请输入合法的 JSON 报文')
     return
   }
 
   try {
-    const response = await fetch('https://api.apiopen.top/api/json', {
+    const json = await requestJson<ApiResponse>('https://api.apiopen.top/api/json', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       },
       body: JSON.stringify({
         name: newJsonObj.name,
         content: newJsonObj.content
       })
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('🗄️ JSON 数据保存成功！')
       showCreateJsonDialog.value = false
@@ -360,111 +436,107 @@ const createJsonSubmit = async () => {
     } else {
       ElMessage.error(json.message || '保存失败')
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   }
 }
 
-const deleteJsonRecord = async (id) => {
+const deleteJsonRecord = async (id: string | number): Promise<void> => {
   try {
     await ElMessageBox.confirm('确定要删除这条 JSON 仓库记录吗？', '提示', { type: 'warning' })
-    const response = await fetch(`https://api.apiopen.top/api/json/${id}`, {
+    const json = await requestJson<ApiResponse>(`https://api.apiopen.top/api/json/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       }
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('删除成功')
       fetchJsons()
     } else {
       ElMessage.error(json.message || '删除失败')
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.log(err)
   }
 }
 
 // File Cloud Drive State
-const filesList = ref([])
-const isFilesLoading = ref(false)
-const fileInputRef = ref(null)
+const filesList = ref<CloudFileItem[]>([])
+const isFilesLoading = ref<boolean>(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
-const fetchFiles = async () => {
+const fetchFiles = async (): Promise<void> => {
   isFilesLoading.value = true
   try {
-    const response = await fetch('https://api.apiopen.top/api/files/my?page=1&size=20', {
+    const json = await requestJson<ApiResponse<{ list?: CloudFileItem[] } | CloudFileItem[]>>('https://api.apiopen.top/api/files/my?page=1&size=20', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       }
     })
-    const json = await response.json()
     if (json && json.code === 200) {
-      filesList.value = json.data.list || json.data || []
+      const data = json.data
+      filesList.value = Array.isArray(data) ? data : data?.list || []
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   } finally {
     isFilesLoading.value = false
   }
 }
 
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0]
+const handleFileUpload = async (event: Event): Promise<void> => {
+  const target = event.target as HTMLInputElement | null
+  const file: File | undefined = target?.files?.[0]
   if (!file) return
 
-  const formData = new FormData()
+  const formData: FormData = new FormData()
   formData.append('file', file)
 
   ElMessage.info('文件上传中，请稍候...')
   try {
-    const response = await fetch('https://api.apiopen.top/api/files/upload', {
+    const json = await requestJson<ApiResponse>('https://api.apiopen.top/api/files/upload', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken.value}`
       },
       body: formData
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('📁 文件上传成功！')
       fetchFiles()
     } else {
       ElMessage.error(json.message || '文件上传失败')
     }
-  } catch (err) {
-    ElMessage.error(`网络故障: ${err.message}`)
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    ElMessage.error(`网络故障: ${message}`)
   }
 }
 
-const deleteFileRecord = async (id) => {
+const deleteFileRecord = async (id: string | number): Promise<void> => {
   try {
     await ElMessageBox.confirm('确定要从云端删除这个文件吗？', '提示', { type: 'warning' })
-    const response = await fetch(`https://api.apiopen.top/api/files/${id}`, {
+    const json = await requestJson<ApiResponse>(`https://api.apiopen.top/api/files/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       }
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('删除文件成功')
       fetchFiles()
     } else {
       ElMessage.error(json.message || '删除失败')
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.log(err)
   }
 }
 
 // User Profile Settings State
-const profileForm = reactive({
+const profileForm = reactive<ProfileForm>({
   nickname: '',
   email: '',
   bio: '',
@@ -473,7 +545,7 @@ const profileForm = reactive({
   location: ''
 })
 
-const initProfileForm = () => {
+const initProfileForm = (): void => {
   if (userProfile.value) {
     profileForm.nickname = userProfile.value.nickname || ''
     profileForm.email = userProfile.value.email || ''
@@ -484,31 +556,28 @@ const initProfileForm = () => {
   }
 }
 
-const updateProfileSubmit = async () => {
+const updateProfileSubmit = async (): Promise<void> => {
   try {
-    const response = await fetch('https://api.apiopen.top/api/users/profile', {
+    const json = await requestJson<ApiResponse>('https://api.apiopen.top/api/users/profile', {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken.value}`,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${authToken.value}`
       },
       body: JSON.stringify(profileForm)
     })
-    const json = await response.json()
     if (json && json.code === 200) {
       ElMessage.success('👤 个人资料修改成功！')
       fetchUserProfile()
     } else {
       ElMessage.error(json.message || '更新失败')
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error(err)
   }
 }
 
 // Watchers to trigger load events when changing workspace tabs
-watch(currentAppTab, (newTab) => {
+watch(currentAppTab, (newTab: string): void => {
   if (!authToken.value) return
   if (newTab === 'moments') fetchMoments()
   else if (newTab === 'articles') fetchArticles()
@@ -528,7 +597,7 @@ onMounted(() => {
 // ----------------------------------------------------
 // Mode 2: Sandbox Developer Settings (Old variables)
 // ----------------------------------------------------
-const categoriesList = [
+const categoriesList: string[] = [
   '所有接口列表',
   '认证',
   'JSON仓库',
@@ -539,46 +608,46 @@ const categoriesList = [
   '用户管理',
   '社交'
 ]
-const selectedCategory = ref('所有接口列表')
-const selectedApi = ref(null)
-const activeEndpoints = computed(() => {
+const selectedCategory = ref<string>('所有接口列表')
+const selectedApi = ref<ApiEndpoint | null>(null)
+const activeEndpoints = computed<ApiEndpoint[]>(() => {
   if (selectedCategory.value === '所有接口列表') {
-    const list = []
-    Object.entries(apiCategoriesData).forEach(([catName, endpoints]) => {
-      endpoints.forEach(ep => {
+    const list: ApiEndpoint[] = []
+    Object.entries(apiCategories).forEach(([catName, endpoints]: [string, ApiEndpoint[]]): void => {
+      endpoints.forEach((ep: ApiEndpoint): void => {
         list.push({ ...ep, categoryName: catName })
       })
     })
     return list
   }
-  return apiCategoriesData[selectedCategory.value] || []
+  return apiCategories[selectedCategory.value] || []
 })
 
-const pathInputs = reactive({})
-const queryInputs = reactive({})
-const sandboxBodyContent = ref('')
-const sandboxLoading = ref(false)
-const sandboxResponse = ref(null)
-const sandboxHeaders = ref('')
-const sandboxRequestUrl = ref('')
+const pathInputs = reactive<QueryInputs>({})
+const queryInputs = reactive<QueryInputs>({})
+const sandboxBodyContent = ref<string>('')
+const sandboxLoading = ref<boolean>(false)
+const sandboxResponse = ref<string | null>(null)
+const sandboxHeaders = ref<string>('')
+const sandboxRequestUrl = ref<string>('')
 
-watch(selectedApi, (newApi) => {
+watch(selectedApi, (newApi: ApiEndpoint | null): void => {
   sandboxResponse.value = null
   sandboxRequestUrl.value = ''
   sandboxHeaders.value = ''
   if (!newApi) return
-  Object.keys(pathInputs).forEach(k => delete pathInputs[k])
+  Object.keys(pathInputs).forEach((k: string): boolean => delete pathInputs[k])
   if (newApi.pathParams) {
-    newApi.pathParams.forEach(p => { pathInputs[p.name] = p.default || '' })
+    newApi.pathParams.forEach((p: ApiParam): void => { pathInputs[p.name] = p.default || '' })
   }
-  Object.keys(queryInputs).forEach(k => delete queryInputs[k])
+  Object.keys(queryInputs).forEach((k: string): boolean => delete queryInputs[k])
   if (newApi.params) {
-    newApi.params.forEach(p => { queryInputs[p.name] = p.default !== undefined ? p.default : '' })
+    newApi.params.forEach((p: ApiParam): void => { queryInputs[p.name] = p.default !== undefined ? p.default : '' })
   }
   sandboxBodyContent.value = newApi.hasBody ? newApi.bodyPlaceholder : ''
 }, { immediate: true })
 
-watch(activeEndpoints, (newList) => {
+watch(activeEndpoints, (newList: ApiEndpoint[]): void => {
   if (newList && newList.length > 0) {
     selectedApi.value = newList[0]
   } else {
@@ -586,46 +655,46 @@ watch(activeEndpoints, (newList) => {
   }
 }, { immediate: true })
 
-const sendSandboxRequest = async () => {
+const sendSandboxRequest = async (): Promise<void> => {
   if (!selectedApi.value) return
   sandboxLoading.value = true
   sandboxResponse.value = null
   sandboxHeaders.value = ''
-  const api = selectedApi.value
-  let path = api.path
+  const api: ApiEndpoint = selectedApi.value
+  let path: string = api.path
   if (api.pathParams) {
-    api.pathParams.forEach(p => {
-      const val = pathInputs[p.name] || ''
+    api.pathParams.forEach((p: ApiParam): void => {
+      const val: string = String(pathInputs[p.name] || '')
       path = path.replace(`{${p.name}}`, val)
     })
   }
-  let url = `https://api.apiopen.top${path}`
-  const queryParams = new URLSearchParams()
-  Object.keys(queryInputs).forEach(key => {
-    const val = queryInputs[key]
+  let url: string = `https://api.apiopen.top${path}`
+  const queryParams: URLSearchParams = new URLSearchParams()
+  Object.keys(queryInputs).forEach((key: string): void => {
+    const val: ApiValue = queryInputs[key]
     if (val !== undefined && val !== null && val !== '') {
-      queryParams.append(key, val)
+      queryParams.append(key, String(val))
     }
   })
-  const queryString = queryParams.toString()
+  const queryString: string = queryParams.toString()
   if (queryString) url += `?${queryString}`
   sandboxRequestUrl.value = url
 
-  const headers = { 'Accept': 'application/json' }
+  const headers: Record<string, string> = jsonHeaders()
   if (authToken.value) headers['Authorization'] = `Bearer ${authToken.value}`
-  const options = { method: api.method, headers }
+  const options: RequestInit = { method: api.method, headers }
   if (api.hasBody && sandboxBodyContent.value) {
-    headers['Content-Type'] = 'application/json'
+    Object.assign(headers, jsonHeaders(headers, true))
     options.body = sandboxBodyContent.value
   }
 
   try {
-    const response = await fetch(url, options)
+    const response: Response = await request(url, options)
     sandboxHeaders.value = `Status: ${response.status} ${response.statusText}\nContent-Type: ${response.headers.get('content-type')}`
-    const json = await response.json()
+    const json: ApiResponse<{ token?: string; accessToken?: string }> = await response.json() as ApiResponse<{ token?: string; accessToken?: string }>
     sandboxResponse.value = JSON.stringify(json, null, 2)
     if (api.path === '/api/auth/login' && json && json.code === 200 && json.data) {
-      const token = json.data.token || json.data.accessToken
+      const token: string | undefined = json.data.token || json.data.accessToken
       if (token) {
         authToken.value = token
         saveToken()
@@ -633,21 +702,22 @@ const sendSandboxRequest = async () => {
         fetchUserProfile()
       }
     }
-  } catch (err) {
-    sandboxResponse.value = `Error: ${err.message}`
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    sandboxResponse.value = `Error: ${message}`
   } finally {
     sandboxLoading.value = false
   }
 }
 
-const copySandboxResponse = () => {
+const copySandboxResponse = (): void => {
   if (!sandboxResponse.value) return
   navigator.clipboard.writeText(sandboxResponse.value).then(() => {
     ElMessage.success('复制成功！')
   })
 }
 
-const getMethodClass = (method) => {
+const getMethodClass = (method: string): string => {
   switch (method.toUpperCase()) {
     case 'GET': return 'method-get'
     case 'POST': return 'method-post'
@@ -655,6 +725,11 @@ const getMethodClass = (method) => {
     case 'DELETE': return 'method-delete'
     default: return 'method-default'
   }
+}
+
+const clearToken = (): void => {
+  authToken.value = ''
+  saveToken()
 }
 </script>
 
@@ -917,7 +992,7 @@ const getMethodClass = (method) => {
                     style="display: none" 
                     @change="handleFileUpload"
                   />
-                  <el-button type="primary" size="small" @click="() => fileInputRef.click()">
+                  <el-button type="primary" size="small" @click="() => fileInputRef?.click()">
                     📤 上传文件到云盘
                   </el-button>
                 </div>

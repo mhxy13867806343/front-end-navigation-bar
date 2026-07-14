@@ -43,32 +43,32 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { ElDialog } from 'element-plus'
 
-const showDialog = ref(false)
-const hourHandStyle = ref({})
-const minuteHandStyle = ref({})
-const secondHandStyle = ref({})
-const formattedTime = ref('')
-const formattedDate = ref('')
-let animationFrameId = null
-let lastUpdateTime = 0
+const showDialog = ref<boolean>(false)
+const hourHandStyle = ref<Record<string, string>>({})
+const minuteHandStyle = ref<Record<string, string>>({})
+const secondHandStyle = ref<Record<string, string>>({})
+const formattedTime = ref<string>('')
+const formattedDate = ref<string>('')
+let animationFrameId: number | null = null
+let lastUpdateTime: number = 0
 
-const updateClock = (timestamp) => {
+const updateClock = (timestamp: number): void => {
   // 控制更新频率为每秒一次
   if (timestamp - lastUpdateTime >= 1000 / 60) {
-    const now = new Date()
-    const seconds = now.getSeconds()
-    const minutes = now.getMinutes()
-    const hours = now.getHours()
-    const milliseconds = now.getMilliseconds()
+    const now: Date = new Date()
+    const seconds: number = now.getSeconds()
+    const minutes: number = now.getMinutes()
+    const hours: number = now.getHours()
+    const milliseconds: number = now.getMilliseconds()
 
     // 更流畅的指针动画，考虑毫秒
-    const secondsDegrees = ((seconds + milliseconds / 1000) / 60) * 360 + 90
-    const minutesDegrees = ((minutes + seconds / 60) / 60) * 360 + 90
-    const hoursDegrees = ((hours % 12 + minutes / 60) / 12) * 360 + 90
+    const secondsDegrees: number = ((seconds + milliseconds / 1000) / 60) * 360 + 90
+    const minutesDegrees: number = ((minutes + seconds / 60) / 60) * 360 + 90
+    const hoursDegrees: number = ((hours % 12 + minutes / 60) / 12) * 360 + 90
 
     secondHandStyle.value = {
       transform: `rotate(${secondsDegrees}deg)`,
@@ -86,9 +86,9 @@ const updateClock = (timestamp) => {
     // 更新时间和日期文本
     formattedTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
     
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
+    const year: number = now.getFullYear()
+    const month: string = String(now.getMonth() + 1).padStart(2, '0')
+    const day: string = String(now.getDate()).padStart(2, '0')
     formattedDate.value = `${year}-${month}-${day}`
 
     lastUpdateTime = timestamp

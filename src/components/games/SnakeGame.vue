@@ -1,30 +1,37 @@
-<script setup>
+<script setup lang="ts">
 
-const emit = defineEmits(['close'])
+interface GridPoint {
+  x: number
+  y: number
+}
+
+const emit = defineEmits<{
+  close: []
+}>()
 
 const CANVAS_SIZE = 400
 const GRID_SIZE = 20
 const TILE_COUNT = CANVAS_SIZE / GRID_SIZE
 
-const canvasRef = ref(null)
-const score = ref(0)
-const highScore = ref(parseInt(localStorage.getItem('snake_high_score')) || 0)
-const isGameOver = ref(false)
-const isPaused = ref(true)
-const gameInterval = ref(null)
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const score = ref<number>(0)
+const highScore = ref<number>(parseInt(localStorage.getItem('snake_high_score') || '0') || 0)
+const isGameOver = ref<boolean>(false)
+const isPaused = ref<boolean>(true)
+const gameInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
 // Snake state
-const snake = ref([
+const snake = ref<GridPoint[]>([
   { x: 10, y: 10 },
   { x: 9, y: 10 },
   { x: 8, y: 10 }
 ])
-const food = ref({ x: 5, y: 5 })
-const dx = ref(1)
-const dy = ref(0)
-const speed = ref(120)
+const food = ref<GridPoint>({ x: 5, y: 5 })
+const dx = ref<number>(1)
+const dy = ref<number>(0)
+const speed = ref<number>(120)
 
-const initGame = () => {
+const initGame = (): void => {
   snake.value = [
     { x: 10, y: 10 },
     { x: 9, y: 10 },
@@ -40,9 +47,9 @@ const initGame = () => {
   draw()
 }
 
-const generateFood = () => {
-  let newFood
-  while (!newFood || snake.value.some(segment => segment.x === newFood.x && segment.y === newFood.y)) {
+const generateFood = (): void => {
+  let newFood: GridPoint | null = null
+  while (!newFood || snake.value.some((segment: GridPoint): boolean => segment.x === newFood?.x && segment.y === newFood?.y)) {
     newFood = {
       x: Math.floor(Math.random() * TILE_COUNT),
       y: Math.floor(Math.random() * TILE_COUNT)
@@ -51,7 +58,7 @@ const generateFood = () => {
   food.value = newFood
 }
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent): void => {
   if (isGameOver.value) return
   if (e.key === ' ' || e.code === 'Space') {
     togglePause()
@@ -89,7 +96,7 @@ const handleKeydown = (e) => {
   }
 }
 
-const togglePause = () => {
+const togglePause = (): void => {
   if (isGameOver.value) return
   isPaused.value = !isPaused.value
   if (!isPaused.value) {
@@ -99,9 +106,9 @@ const togglePause = () => {
   }
 }
 
-const update = () => {
+const update = (): void => {
   // Move head
-  const head = { x: snake.value[0].x + dx.value, y: snake.value[0].y + dy.value }
+  const head: GridPoint = { x: snake.value[0].x + dx.value, y: snake.value[0].y + dy.value }
 
   // Collision with walls
   if (head.x < 0 || head.x >= TILE_COUNT || head.y < 0 || head.y >= TILE_COUNT) {
@@ -110,7 +117,7 @@ const update = () => {
   }
 
   // Collision with self
-  if (snake.value.some(segment => segment.x === head.x && segment.y === head.y)) {
+  if (snake.value.some((segment: GridPoint): boolean => segment.x === head.x && segment.y === head.y)) {
     endGame()
     return
   }
@@ -132,17 +139,18 @@ const update = () => {
   draw()
 }
 
-const endGame = () => {
+const endGame = (): void => {
   isGameOver.value = true
   isPaused.value = true
   if (gameInterval.value) clearInterval(gameInterval.value)
   draw()
 }
 
-const draw = () => {
-  const canvas = canvasRef.value
+const draw = (): void => {
+  const canvas: HTMLCanvasElement | null = canvasRef.value
   if (!canvas) return
-  const ctx = canvas.getContext('2d')
+  const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d')
+  if (!ctx) return
   
   // Clear canvas
   ctx.fillStyle = '#1e1e24'
@@ -151,7 +159,7 @@ const draw = () => {
   // Draw grid helper (subtle)
   ctx.strokeStyle = '#2d2d35'
   ctx.lineWidth = 0.5
-  for (let i = 0; i <= TILE_COUNT; i++) {
+  for (let i: number = 0; i <= TILE_COUNT; i++) {
     ctx.beginPath()
     ctx.moveTo(i * GRID_SIZE, 0)
     ctx.lineTo(i * GRID_SIZE, CANVAS_SIZE)
@@ -167,7 +175,7 @@ const draw = () => {
   ctx.shadowBlur = 8
   ctx.shadowColor = '#ff4757'
   ctx.beginPath()
-  const foodRadius = GRID_SIZE / 2 - 2
+  const foodRadius: number = GRID_SIZE / 2 - 2
   ctx.arc(
     food.value.x * GRID_SIZE + GRID_SIZE / 2,
     food.value.y * GRID_SIZE + GRID_SIZE / 2,
@@ -179,8 +187,8 @@ const draw = () => {
   ctx.shadowBlur = 0 // reset
 
   // Draw snake (cyan neon gradient)
-  snake.value.forEach((segment, index) => {
-    const isHead = index === 0
+  snake.value.forEach((segment: GridPoint, index: number): void => {
+    const isHead: boolean = index === 0
     ctx.fillStyle = isHead ? '#00d2d3' : '#1dd1a1'
     ctx.shadowBlur = isHead ? 6 : 0
     ctx.shadowColor = '#00d2d3'

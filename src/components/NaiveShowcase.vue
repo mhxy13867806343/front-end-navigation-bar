@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 
 import { 
   NButton, NButtonGroup, NIcon, NText, NSpace, NCard,

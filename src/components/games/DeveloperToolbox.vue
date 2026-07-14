@@ -288,14 +288,38 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { ElMessage } from 'element-plus'
 import CryptoJS from 'crypto-js'
 import copy from 'clipboard-copy'
 import { toolRegistry } from '@/utils/tool'
 
-const tabs = [
+type TabId = 'format' | 'crypto' | 'timestamp' | 'radix' | 'regex' | 'js_libs'
+type SubModuleId = string
+type FormatType = 'json' | 'xml' | 'sql'
+type MinifyType = 'json' | 'xml'
+type CryptoAlgo = 'md5' | 'sha256' | 'b64encode' | 'b64decode' | 'urlencode' | 'urldecode'
+type ToolRegistryItem = (typeof toolRegistry)[number]
+type ParamInputs = Record<string, string>
+type RegistryRunner = (...args: unknown[]) => unknown
+
+interface ToolboxTab {
+  id: TabId
+  name: string
+  icon: string
+}
+
+interface SubModule {
+  id: SubModuleId
+  name: string
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error || '未知错误')
+}
+
+const tabs: ToolboxTab[] = [
   { id: 'format', name: '格式化校验', icon: '📝' },
   { id: 'crypto', name: '编解码 & 哈希', icon: '🔒' },
   { id: 'timestamp', name: '时间戳转换', icon: '⏰' },
@@ -304,10 +328,10 @@ const tabs = [
   { id: 'js_libs', name: '自定义 JS 工具库', icon: '📦' }
 ]
 
-const activeTab = ref('format')
+const activeTab = ref<TabId>('format')
 
 // 6. JS helper libraries logic
-const subModules = [
+const subModules: SubModule[] = [
   { id: 'format', name: '格式化 (format.js)' },
   { id: 'loads', name: '解析 (loads.js)' },
   { id: 'es6', name: 'ES6 常用 (es6.js)' },
@@ -323,40 +347,40 @@ const subModules = [
   { id: 'url', name: '链接解析 (url.js)' }
 ]
 
-const activeSubModule = ref('format')
-const selectedFuncId = ref('')
-const paramInputs = ref({})
-const jsLibsOutput = ref('')
+const activeSubModule = ref<SubModuleId>('format')
+const selectedFuncId = ref<string>('')
+const paramInputs = ref<ParamInputs>({})
+const jsLibsOutput = ref<string>('')
 
-const filteredFuncs = computed(() => {
-  return toolRegistry.filter(t => t.module === activeSubModule.value)
+const filteredFuncs = computed<ToolRegistryItem[]>(() => {
+  return toolRegistry.filter((t: ToolRegistryItem): boolean => t.module === activeSubModule.value)
 })
 
-const currentFunc = computed(() => {
-  return toolRegistry.find(t => t.id === selectedFuncId.value)
+const currentFunc = computed<ToolRegistryItem | undefined>(() => {
+  return toolRegistry.find((t: ToolRegistryItem): boolean => t.id === selectedFuncId.value)
 })
 
-const selectSubModule = (subId) => {
+const selectSubModule = (subId: SubModuleId): void => {
   activeSubModule.value = subId
-  const firstFunc = toolRegistry.find(t => t.module === subId)
+  const firstFunc: ToolRegistryItem | undefined = toolRegistry.find((t: ToolRegistryItem): boolean => t.module === subId)
   if (firstFunc) {
     selectedFuncId.value = firstFunc.id
     onFuncSelect()
   }
 }
 
-const onFuncSelect = () => {
-  const f = currentFunc.value
+const onFuncSelect = (): void => {
+  const f: ToolRegistryItem | undefined = currentFunc.value
   if (!f) return
-  const inputs = {}
-  f.params.forEach(p => {
-    inputs[p.name] = p.default
+  const inputs: ParamInputs = {}
+  f.params.forEach((p: ToolRegistryItem['params'][number]): void => {
+    inputs[p.name] = String(p.default)
   })
   paramInputs.value = inputs
   jsLibsOutput.value = ''
 }
 
-const copyPlainText = async (text, successMessage = '结果已复制到剪贴板！') => {
+const copyPlainText = async (text: string | undefined, successMessage: string = '结果已复制到剪贴板！'): Promise<void> => {
   if (!text) {
     ElMessage.warning('暂无可复制内容')
     return
@@ -365,21 +389,21 @@ const copyPlainText = async (text, successMessage = '结果已复制到剪贴板
   try {
     await copy(text)
     ElMessage.success(successMessage)
-  } catch (e) {
-    ElMessage.error(`复制失败: ${e.message || '浏览器拒绝访问剪贴板'}`)
+  } catch (e: unknown) {
+    ElMessage.error(`复制失败: ${getErrorMessage(e) || '浏览器拒绝访问剪贴板'}`)
   }
 }
 
-const copyCurrentFuncCode = async () => {
+const copyCurrentFuncCode = async (): Promise<void> => {
   await copyPlainText(currentFunc.value?.code, '源码已复制到剪贴板！')
 }
 
-const runRegistryFunc = () => {
-  const f = currentFunc.value
+const runRegistryFunc = (): void => {
+  const f: ToolRegistryItem | undefined = currentFunc.value
   if (!f) return
   
   try {
-    const args = f.params.map(p => {
+    const args: unknown[] = f.params.map((p: ToolRegistryItem['params'][number]): unknown => {
       let rawVal = paramInputs.value[p.name]
       
       // Auto-parse JSON arrays/objects if input looks like JSON
@@ -393,32 +417,32 @@ const runRegistryFunc = () => {
       return rawVal
     })
 
-    const result = f.fn(...args)
+    const result: unknown = (f.fn as RegistryRunner)(...args)
     
     if (typeof result === 'object' && result !== null) {
       jsLibsOutput.value = `[执行成功] 返回值 (Object):\n${JSON.stringify(result, null, 2)}`
     } else {
       jsLibsOutput.value = `[执行成功] 返回值 (String/Number):\n${result}`
     }
-  } catch (e) {
-    jsLibsOutput.value = `[执行失败] 运行时抛出异常:\n${e.message}`
+  } catch (e: unknown) {
+    jsLibsOutput.value = `[执行失败] 运行时抛出异常:\n${getErrorMessage(e)}`
   }
 }
 
 // 1. Format
-const formatInput = ref('')
-const formatOutput = ref('')
+const formatInput = ref<string>('')
+const formatOutput = ref<string>('')
 
-const clearText = () => {
+const clearText = (): void => {
   formatInput.value = ''
   formatOutput.value = ''
 }
 
-const copyOutput = async () => {
+const copyOutput = async (): Promise<void> => {
   await copyPlainText(formatOutput.value)
 }
 
-const formatText = (type) => {
+const formatText = (type: FormatType): void => {
   if (!formatInput.value) {
     ElMessage.warning('请输入待格式化内容')
     return
@@ -426,20 +450,20 @@ const formatText = (type) => {
   
   if (type === 'json') {
     try {
-      const parsed = JSON.parse(formatInput.value)
+      const parsed: unknown = JSON.parse(formatInput.value)
       formatOutput.value = JSON.stringify(parsed, null, 2)
       ElMessage.success('JSON 格式化成功')
-    } catch (e) {
-      ElMessage.error(`JSON 格式校验失败: ${e.message}`)
+    } catch (e: unknown) {
+      ElMessage.error(`JSON 格式校验失败: ${getErrorMessage(e)}`)
     }
   } else if (type === 'xml') {
     try {
-      let formatted = ''
-      let reg = /(>)(<)(\/*)/g
-      let xml = formatInput.value.replace(reg, '$1\r\n$2$3')
-      let pad = 0
-      xml.split('\r\n').forEach(node => {
-        let indent = 0
+      let formatted: string = ''
+      const reg: RegExp = /(>)(<)(\/*)/g
+      const xml: string = formatInput.value.replace(reg, '$1\r\n$2$3')
+      let pad: number = 0
+      xml.split('\r\n').forEach((node: string): void => {
+        let indent: number = 0
         if (node.match(/.+<\/\w[^>]*>$/)) {
           indent = 0
         } else if (node.match(/^<\/\w/)) {
@@ -449,8 +473,8 @@ const formatText = (type) => {
         } else {
           indent = 0
         }
-        let padding = ''
-        for (let i = 0; i < pad; i++) {
+        let padding: string = ''
+        for (let i: number = 0; i < pad; i++) {
           padding += '  '
         }
         formatted += padding + node + '\r\n'
@@ -462,7 +486,7 @@ const formatText = (type) => {
       ElMessage.error('XML 格式化失败')
     }
   } else if (type === 'sql') {
-    let sql = formatInput.value
+    const sql: string = formatInput.value
       .replace(/\s+/g, ' ')
       .replace(/\s*,/g, ',\r\n ')
       .replace(/\b(SELECT|FROM|WHERE|LEFT JOIN|RIGHT JOIN|INNER JOIN|GROUP BY|ORDER BY|HAVING|LIMIT|AND|OR|ON)\b/ig, '\r\n$1')
@@ -472,15 +496,15 @@ const formatText = (type) => {
   }
 }
 
-const minifyText = (type) => {
+const minifyText = (type: MinifyType): void => {
   if (!formatInput.value) return
   if (type === 'json') {
     try {
-      const parsed = JSON.parse(formatInput.value)
+      const parsed: unknown = JSON.parse(formatInput.value)
       formatOutput.value = JSON.stringify(parsed)
       ElMessage.success('JSON 压缩成功')
-    } catch (e) {
-      ElMessage.error(`JSON 校验失败: ${e.message}`)
+    } catch (e: unknown) {
+      ElMessage.error(`JSON 校验失败: ${getErrorMessage(e)}`)
     }
   } else if (type === 'xml') {
     formatOutput.value = formatInput.value.replace(/>\s*</g, '><').trim()
@@ -489,19 +513,19 @@ const minifyText = (type) => {
 }
 
 // 2. Crypto & Encoding
-const cryptoInput = ref('')
-const cryptoOutput = ref('')
+const cryptoInput = ref<string>('')
+const cryptoOutput = ref<string>('')
 
-const clearCrypto = () => {
+const clearCrypto = (): void => {
   cryptoInput.value = ''
   cryptoOutput.value = ''
 }
 
-const copyCrypto = async () => {
+const copyCrypto = async (): Promise<void> => {
   await copyPlainText(cryptoOutput.value)
 }
 
-const runCrypto = (algo) => {
+const runCrypto = (algo: CryptoAlgo): void => {
   if (!cryptoInput.value) {
     ElMessage.warning('请输入要计算的文本')
     return
@@ -513,10 +537,10 @@ const runCrypto = (algo) => {
     } else if (algo === 'sha256') {
       cryptoOutput.value = CryptoJS.SHA256(cryptoInput.value).toString()
     } else if (algo === 'b64encode') {
-      const strWord = CryptoJS.enc.Utf8.parse(cryptoInput.value)
+      const strWord: CryptoJS.lib.WordArray = CryptoJS.enc.Utf8.parse(cryptoInput.value)
       cryptoOutput.value = CryptoJS.enc.Base64.stringify(strWord)
     } else if (algo === 'b64decode') {
-      const parsedWord = CryptoJS.enc.Base64.parse(cryptoInput.value)
+      const parsedWord: CryptoJS.lib.WordArray = CryptoJS.enc.Base64.parse(cryptoInput.value)
       cryptoOutput.value = parsedWord.toString(CryptoJS.enc.Utf8)
     } else if (algo === 'urlencode') {
       cryptoOutput.value = encodeURIComponent(cryptoInput.value)
@@ -524,36 +548,36 @@ const runCrypto = (algo) => {
       cryptoOutput.value = decodeURIComponent(cryptoInput.value)
     }
     ElMessage.success('计算成功')
-  } catch (e) {
-    ElMessage.error(`计算出错: ${e.message}`)
+  } catch (e: unknown) {
+    ElMessage.error(`计算出错: ${getErrorMessage(e)}`)
   }
 }
 
 // 3. Unix Timestamp
-const currentTimestamp = ref(Math.floor(Date.now() / 1000))
-const currentTimestampMs = ref(Date.now())
-const tsToConvert = ref(Math.floor(Date.now() / 1000).toString())
-const tsToDateResult = ref('')
-const dateToConvert = ref(new Date().toISOString().replace('T', ' ').substring(0, 19))
-const dateToTsResult = ref('')
-let tsTimer = null
+const currentTimestamp = ref<number>(Math.floor(Date.now() / 1000))
+const currentTimestampMs = ref<number>(Date.now())
+const tsToConvert = ref<string>(Math.floor(Date.now() / 1000).toString())
+const tsToDateResult = ref<string>('')
+const dateToConvert = ref<string>(new Date().toISOString().replace('T', ' ').substring(0, 19))
+const dateToTsResult = ref<string>('')
+let tsTimer: ReturnType<typeof setInterval> | null = null
 
-const convertTimestampToDate = () => {
+const convertTimestampToDate = (): void => {
   if (!tsToConvert.value) return
-  const tsStr = tsToConvert.value.trim()
-  const tsInt = parseInt(tsStr, 10)
+  const tsStr: string = tsToConvert.value.trim()
+  const tsInt: number = parseInt(tsStr, 10)
   if (isNaN(tsInt)) {
     ElMessage.error('输入的时间戳非法')
     return
   }
-  const date = tsStr.length === 13 ? new Date(tsInt) : new Date(tsInt * 1000)
+  const date: Date = tsStr.length === 13 ? new Date(tsInt) : new Date(tsInt * 1000)
   tsToDateResult.value = date.toLocaleString('zh-CN', { hour12: false })
 }
 
-const convertDateToTimestamp = () => {
+const convertDateToTimestamp = (): void => {
   if (!dateToConvert.value) return
-  const val = dateToConvert.value.trim()
-  const d = new Date(val)
+  const val: string = dateToConvert.value.trim()
+  const d: Date = new Date(val)
   if (isNaN(d.getTime())) {
     ElMessage.error('输入的日期格式非法，请使用: YYYY-MM-DD HH:mm:ss')
     return
@@ -562,26 +586,26 @@ const convertDateToTimestamp = () => {
 }
 
 // 4. Radix/Base converter
-const radixVal2 = ref('')
-const radixVal8 = ref('')
-const radixVal10 = ref('')
-const radixVal16 = ref('')
+const radixVal2 = ref<string>('')
+const radixVal8 = ref<string>('')
+const radixVal10 = ref<string>('')
+const radixVal16 = ref<string>('')
 
-const clearRadix = () => {
+const clearRadix = (): void => {
   radixVal2.value = ''
   radixVal8.value = ''
   radixVal10.value = ''
   radixVal16.value = ''
 }
 
-const onRadixInput = (base, val) => {
+const onRadixInput = (base: number, val: string): void => {
   if (!val) {
     clearRadix()
     return
   }
   
   try {
-    const decimal = parseInt(val, base)
+    const decimal: number = parseInt(val, base)
     if (isNaN(decimal)) {
       throw new Error('数值非法')
     }
@@ -596,33 +620,33 @@ const onRadixInput = (base, val) => {
 }
 
 // 5. Regex Tester
-const regexPattern = ref('\\d+')
-const regexText = ref('Welcome to HooksVue 2026 navigation!')
-const regexGlobal = ref(true)
-const regexIgnore = ref(false)
-const regexMulti = ref(true)
-const regexResultHtml = ref('')
+const regexPattern = ref<string>('\\d+')
+const regexText = ref<string>('Welcome to HooksVue 2026 navigation!')
+const regexGlobal = ref<boolean>(true)
+const regexIgnore = ref<boolean>(false)
+const regexMulti = ref<boolean>(true)
+const regexResultHtml = ref<string>('')
 
-const runRegexTest = () => {
+const runRegexTest = (): void => {
   if (!regexPattern.value) {
     regexResultHtml.value = regexText.value
     return
   }
   
   try {
-    let flags = ''
+    let flags: string = ''
     if (regexGlobal.value) flags += 'g'
     if (regexIgnore.value) flags += 'i'
     if (regexMulti.value) flags += 'm'
     
-    const re = new RegExp(regexPattern.value, flags)
-    const escapedText = regexText.value
+    const re: RegExp = new RegExp(regexPattern.value, flags)
+    const escapedText: string = regexText.value
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
     
     if (!regexGlobal.value) {
-      const match = escapedText.match(re)
+      const match: RegExpMatchArray | null = escapedText.match(re)
       if (match) {
         regexResultHtml.value = escapedText.replace(re, '<span class="regex-highlight">$&</span>')
       } else {
@@ -631,8 +655,8 @@ const runRegexTest = () => {
     } else {
       regexResultHtml.value = escapedText.replace(re, '<span class="regex-highlight">$&</span>')
     }
-  } catch (e) {
-    regexResultHtml.value = `<span style="color: #ff4757;">正则表达式错误: ${e.message}</span>`
+  } catch (e: unknown) {
+    regexResultHtml.value = `<span style="color: #ff4757;">正则表达式错误: ${getErrorMessage(e)}</span>`
   }
 }
 
@@ -648,7 +672,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (tsTimer) clearInterval(tsTimer)
+  if (tsTimer !== null) clearInterval(tsTimer)
 })
 </script>
 

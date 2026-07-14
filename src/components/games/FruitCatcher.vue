@@ -160,10 +160,46 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+
+type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'expert'
+type SpeedPreset = 'auto' | 'custom' | '0.5' | '1.0' | '1.5' | '2.0' | '2.5' | '3.0'
+type FruitPattern = 'normal' | 'tornado'
+
+interface GameSettings {
+  difficulty: Difficulty
+  maxFruits: number
+  maxBombs: number
+  fruitSize: number
+  bombSize: number
+}
+
+interface DifficultySetting {
+  maxFruits: number
+  pattern: FruitPattern
+}
+
+interface FruitItem {
+  id: number
+  x: number
+  y: number
+  speed: number
+  isBomb: boolean
+  caught: boolean
+  exploding: boolean
+  amplitude: number
+  angle: number
+}
+
+interface CollisionRect {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
 
 // 游戏基础设置
-const gameSettings = ref({
+const gameSettings = ref<GameSettings>({
   difficulty: 'beginner',
   maxFruits: 2,
   maxBombs: 1,
@@ -172,13 +208,13 @@ const gameSettings = ref({
 })
 
 // 临时设置（用于设置对话框）
-const tempSettings = ref({...gameSettings.value})
+const tempSettings = ref<GameSettings>({...gameSettings.value})
 
 // 显示设置对话框
-const showSettings = ref(false)
+const showSettings = ref<boolean>(false)
 
 // 监听设置对话框的打开
-watch(() => showSettings.value, (newVal) => {
+watch(() => showSettings.value, (newVal: boolean): void => {
   if (newVal) {
     // 当对话框打开时，复制当前设置到临时设置
     tempSettings.value = { ...gameSettings.value }
@@ -186,7 +222,7 @@ watch(() => showSettings.value, (newVal) => {
 })
 
 // 处理设置应用
-const handleApplySettings = () => {
+const handleApplySettings = (): void => {
   // 将临时设置应用到游戏设置
   gameSettings.value = { ...tempSettings.value }
   // 关闭设置对话框
@@ -204,7 +240,7 @@ const handleApplySettings = () => {
 }
 
 // 应用设置
-const applySettings = () => {
+const applySettings = (): void => {
   // 更新游戏难度
   difficulty.value = gameSettings.value.difficulty
   // 更新样式变量
@@ -213,30 +249,30 @@ const applySettings = () => {
 }
 
 // 游戏状态
-const score = ref(0)
-const stars = ref(3)
-const maxStars = 5
-const fruits = ref([])
-const isPlaying = ref(false)
-const difficulty = ref('beginner')
-const gameContainer = ref(null)
-const lastFruitBatchTime = ref(0)
-const basketPosition = ref(300)
-const bombHits = ref(0)
-const gameOver = ref(false)
+const score = ref<number>(0)
+const stars = ref<number>(3)
+const maxStars: number = 5
+const fruits = ref<FruitItem[]>([])
+const isPlaying = ref<boolean>(false)
+const difficulty = ref<Difficulty>('beginner')
+const gameContainer = ref<HTMLDivElement | null>(null)
+const lastFruitBatchTime = ref<number>(0)
+const basketPosition = ref<number>(300)
+const bombHits = ref<number>(0)
+const gameOver = ref<boolean>(false)
 
 // 速度控制
-const customSpeedMultiplier = ref(0.5)
-const speedPreset = ref('auto')
-const isAutoSpeed = ref(true)
+const customSpeedMultiplier = ref<number>(0.5)
+const speedPreset = ref<SpeedPreset>('auto')
+const isAutoSpeed = ref<boolean>(true)
 
 // 暂停状态
-const isPaused = ref(false)
-const lastTimestamp = ref(0)
-const pausedFruits = ref([])
+const isPaused = ref<boolean>(false)
+const lastTimestamp = ref<number>(0)
+const pausedFruits = ref<FruitItem[]>([])
 
 // 难度设置
-const difficultySettings = {
+const difficultySettings: Record<Difficulty, DifficultySetting> = {
   beginner: {
     maxFruits: 1,
     pattern: 'normal'
@@ -256,28 +292,28 @@ const difficultySettings = {
 }
 
 // 创建新水果
-const createFruitBatch = () => {
-  const containerWidth = gameContainer.value?.clientWidth
-  const maxFruits = gameSettings.value.maxFruits
-  const maxBombs = gameSettings.value.maxBombs
+const createFruitBatch = (): void => {
+  const containerWidth: number = gameContainer.value?.clientWidth || 0
+  const maxFruits: number = gameSettings.value.maxFruits
+  const maxBombs: number = gameSettings.value.maxBombs
   
   // 计算当前场上的炸弹数量
-  const currentBombs = fruits.value.filter(f => f.isBomb).length
+  const currentBombs: number = fruits.value.filter((f: FruitItem): boolean => f.isBomb).length
   
   // 根据最大水果数量创建水果
-  const count = Math.min(maxFruits, difficultySettings[difficulty.value].maxFruits)
+  const count: number = Math.min(maxFruits, difficultySettings[difficulty.value].maxFruits)
   
   for (let i = 0; i < count; i++) {
     // 只有当当前炸弹数量小于最大炸弹数量时，才有机会生成炸弹
-    const canCreateBomb = currentBombs < maxBombs
-    const isBomb = canCreateBomb && Math.random() < 0.2 // 20% 概率生成炸弹
+    const canCreateBomb: boolean = currentBombs < maxBombs
+    const isBomb: boolean = canCreateBomb && Math.random() < 0.2 // 20% 概率生成炸弹
     
-    const x = Math.random() * (containerWidth - 30)
-    const y = -30
-    const baseSpeed = 3 // 增加基础速度
-    const speed = baseSpeed * (0.8 + Math.random() * 0.4) // 随机速度变化
-    const amplitude = Math.random() * 20 + 30
-    const angle = Math.random() * Math.PI * 2
+    const x: number = Math.random() * Math.max(0, containerWidth - 30)
+    const y: number = -30
+    const baseSpeed: number = 3 // 增加基础速度
+    const speed: number = baseSpeed * (0.8 + Math.random() * 0.4) // 随机速度变化
+    const amplitude: number = Math.random() * 20 + 30
+    const angle: number = Math.random() * Math.PI * 2
 
     fruits.value.push({
       id: Date.now() + i,
@@ -294,7 +330,7 @@ const createFruitBatch = () => {
 }
 
 // 根据分数获取速度倍率
-const getSpeedMultiplier = (currentScore) => {
+const getSpeedMultiplier = (currentScore: number): number => {
   if (!isAutoSpeed.value) {
     return customSpeedMultiplier.value
   }
@@ -310,7 +346,7 @@ const getSpeedMultiplier = (currentScore) => {
 }
 
 // 处理速度预设变化
-const onPresetChange = (value) => {
+const onPresetChange = (value: SpeedPreset): void => {
   if (value === 'auto') {
     isAutoSpeed.value = true
   } else {
@@ -320,7 +356,7 @@ const onPresetChange = (value) => {
 }
 
 // 处理自定义速度变化
-const onSpeedChange = (value) => {
+const onSpeedChange = (value: number | undefined): void => {
   if (speedPreset.value !== 'custom') {
     speedPreset.value = 'custom'
   }
@@ -328,7 +364,7 @@ const onSpeedChange = (value) => {
 }
 
 // 检查游戏结束条件
-const checkGameOver = () => {
+const checkGameOver = (): void => {
   if (stars.value <= 0 || bombHits.value >= 3) {
     gameOver.value = true
     isPlaying.value = false
@@ -336,7 +372,7 @@ const checkGameOver = () => {
 }
 
 // 处理键盘事件
-const handleKeyPress = (event) => {
+const handleKeyPress = (event: KeyboardEvent): void => {
   if (event.code === 'Space' && isPlaying.value) {
     event.preventDefault()
     togglePause()
@@ -344,7 +380,7 @@ const handleKeyPress = (event) => {
 }
 
 // 暂停/继续游戏
-const togglePause = () => {
+const togglePause = (): void => {
   isPaused.value = !isPaused.value
   
   if (!isPaused.value) {
@@ -355,7 +391,7 @@ const togglePause = () => {
 }
 
 // 更新游戏状态
-const updateGame = (timestamp) => {
+const updateGame = (timestamp: number): void => {
   if (!isPlaying.value || !gameContainer.value) return
   
   // 如果游戏暂停，不更新游戏状态
@@ -363,11 +399,11 @@ const updateGame = (timestamp) => {
     return
   }
 
-  const deltaTime = timestamp - lastTimestamp.value
+  const deltaTime: number = timestamp - lastTimestamp.value
   lastTimestamp.value = timestamp
   
-  const speedMultiplier = getSpeedMultiplier(score.value)
-  const interval = 2000 / speedMultiplier
+  const speedMultiplier: number = getSpeedMultiplier(score.value)
+  const interval: number = 2000 / speedMultiplier
   
   if (timestamp - lastFruitBatchTime.value > interval) {
     createFruitBatch()
@@ -375,13 +411,13 @@ const updateGame = (timestamp) => {
   }
 
   // 获取容器和篮子的尺寸
-  const containerWidth = gameContainer.value?.clientWidth
-  const containerHeight = gameContainer.value?.clientHeight
-  const basketWidth = 80 // 增加篮子的碰撞宽度
-  const basketHeight = 50 // 篮子高度
+  const containerWidth: number = gameContainer.value.clientWidth
+  const containerHeight: number = gameContainer.value.clientHeight
+  const basketWidth: number = 80 // 增加篮子的碰撞宽度
+  const basketHeight: number = 50 // 篮子高度
 
   // 篮子的碰撞区域
-  const basketRect = {
+  const basketRect: CollisionRect = {
     left: basketPosition.value,
     right: basketPosition.value + basketWidth,
     top: containerHeight - basketHeight - 10,
@@ -389,7 +425,7 @@ const updateGame = (timestamp) => {
   }
 
   // 更新所有水果
-  fruits.value.forEach((fruit, index) => {
+  fruits.value.forEach((fruit: FruitItem): void => {
     if (fruit.caught || fruit.exploding) return
 
     // 更新位置
@@ -403,8 +439,8 @@ const updateGame = (timestamp) => {
     }
 
     // 水果的碰撞区域
-    const fruitSize = 30
-    const fruitRect = {
+    const fruitSize: number = 30
+    const fruitRect: CollisionRect = {
       left: fruit.x,
       right: fruit.x + fruitSize,
       top: fruit.y,
@@ -412,7 +448,7 @@ const updateGame = (timestamp) => {
     }
 
     // 改进的碰撞检测
-    const isColliding = !(
+    const isColliding: boolean = !(
       fruitRect.right < basketRect.left ||
       fruitRect.left > basketRect.right ||
       fruitRect.bottom < basketRect.top ||
@@ -429,7 +465,7 @@ const updateGame = (timestamp) => {
         bombHits.value++
         
         setTimeout(() => {
-          fruits.value = fruits.value.filter(f => f !== fruit)
+          fruits.value = fruits.value.filter((f: FruitItem): boolean => f !== fruit)
           checkGameOver()
         }, 500)
       } else {
@@ -443,7 +479,7 @@ const updateGame = (timestamp) => {
         
         // 移除已捕获的水果
         setTimeout(() => {
-          fruits.value = fruits.value.filter(f => f !== fruit)
+          fruits.value = fruits.value.filter((f: FruitItem): boolean => f !== fruit)
         }, 200)
       }
       return // 碰撞后直接返回，避免重复处理
@@ -455,7 +491,7 @@ const updateGame = (timestamp) => {
         stars.value = Math.max(0, stars.value - 1)
         checkGameOver()
       }
-      fruits.value = fruits.value.filter(f => f !== fruit)
+      fruits.value = fruits.value.filter((f: FruitItem): boolean => f !== fruit)
     }
   })
 
@@ -465,26 +501,27 @@ const updateGame = (timestamp) => {
 }
 
 // 监听游戏设置变化
-watch(() => gameSettings.value, (newSettings) => {
+watch(() => gameSettings.value, (newSettings: GameSettings): void => {
   // 更新水果和炸弹的样式
   document.documentElement.style.setProperty('--fruit-size', `${newSettings.fruitSize}px`)
   document.documentElement.style.setProperty('--bomb-size', `${newSettings.bombSize}px`)
 }, { deep: true })
 
 // 监听设置对话框打开
-watch(() => showSettings.value, (show) => {
+watch(() => showSettings.value, (show: boolean): void => {
   if (show) {
     tempSettings.value = { ...gameSettings.value }
   }
 })
 
 // 移动篮子
-const moveBasket = (event) => {
+const moveBasket = (event: MouseEvent): void => {
   if (!isPlaying.value || isPaused.value) return
   
-  const rect = gameContainer.value?.getBoundingClientRect()
-  const x = event.clientX - rect.left
-  const basketWidth = 80 // 篮子宽度
+  const rect: DOMRect | undefined = gameContainer.value?.getBoundingClientRect()
+  if (!rect) return
+  const x: number = event.clientX - rect.left
+  const basketWidth: number = 80 // 篮子宽度
   
   requestAnimationFrame(() => {
     basketPosition.value = Math.max(0, Math.min(rect.width - basketWidth, x - basketWidth / 2))
@@ -492,7 +529,7 @@ const moveBasket = (event) => {
 }
 
 // 开始游戏
-const startGame = () => {
+const startGame = (): void => {
   if (isPlaying.value) return
   
   resetGame()
@@ -512,13 +549,13 @@ const startGame = () => {
 }
 
 // 重置游戏
-const resetGame = () => {
+const resetGame = (): void => {
   score.value = 0
   stars.value = 3
   fruits.value = []
   isPlaying.value = false
   lastFruitBatchTime.value = 0
-  basketPosition.value = gameContainer.value?.clientWidth / 2 - 50
+  basketPosition.value = (gameContainer.value?.clientWidth || 0) / 2 - 50
   bombHits.value = 0
   gameOver.value = false
   
@@ -527,11 +564,11 @@ const resetGame = () => {
 }
 
 // 切换难度
-const cycleDifficulty = () => {
+const cycleDifficulty = (): void => {
   if (!isPlaying.value) {
-    const difficulties = ['beginner', 'intermediate', 'advanced', 'expert'];
-    const currentIndex = difficulties.indexOf(difficulty.value);
-    const nextIndex = (currentIndex + 1) % difficulties.length;
+    const difficulties: Difficulty[] = ['beginner', 'intermediate', 'advanced', 'expert'];
+    const currentIndex: number = difficulties.indexOf(difficulty.value);
+    const nextIndex: number = (currentIndex + 1) % difficulties.length;
     difficulty.value = difficulties[nextIndex];
   }
 };

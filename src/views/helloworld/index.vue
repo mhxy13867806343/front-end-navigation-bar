@@ -113,66 +113,109 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { requestText } from '@/utils/request'
 import $ from 'jquery'
+import {
+  SORT_TABS,
+  API_BASE,
+  SITE_ORIGIN,
+  ERR_NO_DATA,
+  checkCategoryTitle
+} from '@/vue-pages-text-fn-abc/helloworld'
+import type { SortTab } from '@/vue-pages-text-fn-abc/helloworld'
 
-const API_BASE = '/api-helloworld'
+interface HelloArticle {
+  title: string
+  brief: string
+  author: string
+  time: string
+  readCount: string
+  likeCount: string
+  commentCount: string
+  url: string
+  cover: string
+}
 
-const sortTabs = [
-  { label: '文章', value: 'articles' },
-  { label: '作者榜', value: 'authors' },
-  { label: '推荐课程', value: 'lessons' }
-]
+interface HelloAuthor {
+  name: string
+  job: string
+  url: string
+  avatar: string
+}
 
-const activeTab = ref('articles')
-const activeTag = ref('')
-const tags = ref([])
-const articles = ref([])
-const authors = ref([])
-const lessons = ref([])
-const directions = ref([])
-const languages = ref([])
-const loading = ref(false)
-const error = ref('')
-const lastUpdated = ref('')
+interface HelloLesson {
+  title: string
+  price: string
+  learnCount: string
+  url: string
+  cover: string
+}
 
-const hasRenderableData = computed(() => {
+interface ParsedHomeData {
+  articles: HelloArticle[]
+  authors: HelloAuthor[]
+  lessons: HelloLesson[]
+  tags: string[]
+  directions: string[]
+  languages: string[]
+}
+
+const sortTabs = SORT_TABS
+
+const activeTab = ref<SortTab['value']>('articles')
+const activeTag = ref<string>('')
+const tags = ref<string[]>([])
+const articles = ref<HelloArticle[]>([])
+const authors = ref<HelloAuthor[]>([])
+const lessons = ref<HelloLesson[]>([])
+const directions = ref<string[]>([])
+const languages = ref<string[]>([])
+const loading = ref<boolean>(false)
+const error = ref<string>('')
+const lastUpdated = ref<string>('')
+
+const hasRenderableData = computed<number>(() => {
   return articles.value.length || authors.value.length || lessons.value.length
 })
 
-const filteredArticles = computed(() => {
+const filteredArticles = computed<HelloArticle[]>(() => {
   if (!activeTag.value) return articles.value
-  const keyword = activeTag.value.toLowerCase()
-  return articles.value.filter((item) => {
-    const content = `${item.title} ${item.brief}`.toLowerCase()
+  const keyword: string = activeTag.value.toLowerCase()
+  return articles.value.filter((item: HelloArticle): boolean => {
+    const content: string = `${item.title} ${item.brief}`.toLowerCase()
     return content.includes(keyword)
   })
 })
 
-function normalizeText(text) {
+function normalizeText(text: unknown): string {
   return String(text || '')
     .replace(/\s+/g, ' ')
     .trim()
 }
 
-function toAbsoluteUrl(url) {
+function toAbsoluteUrl(url: string | undefined): string {
   if (!url) return ''
   if (/^https?:\/\//i.test(url)) return url
-  return `https://www.helloworld.net${url}`
+  return `${SITE_ORIGIN}${url}`
 }
 
-function textOf($node) {
+function textOf($node: JQuery<HTMLElement>): string {
   return normalizeText($node?.text() || '')
 }
 
-function parseHomeHtml(html) {
-  const nodes = $.parseHTML(html, document, false) || []
-  const $root = $('<div>').append(nodes)
+function parseHomeHtml(html: string): ParsedHomeData {
+  const nodes: Node[] = $.parseHTML(html, document, false) || []
+  const $root: JQuery<HTMLElement> = $('<div>')
+  const rootElement: HTMLElement | undefined = $root.get(0)
+  nodes.forEach((node: Node): void => {
+    rootElement?.appendChild(node)
+  })
 
-  const articleList = $root.find('.blog-item').map((_, element) => {
-    const $item = $(element)
-    const $titleLink = $item.find('.title').first()
-    const nums = $item.find('.num').map((__, node) => textOf($(node))).get()
+  const articleList: HelloArticle[] = $root.find('.blog-item').map((_, element: HTMLElement): HelloArticle => {
+    const $item: JQuery<HTMLElement> = $(element)
+    const $titleLink: JQuery<HTMLElement> = $item.find('.title').first()
+    const nums: string[] = $item.find('.num').map((__, node: HTMLElement): string => textOf($(node))).get()
 
     return {
       title: textOf($titleLink),
@@ -185,11 +228,11 @@ function parseHomeHtml(html) {
       url: toAbsoluteUrl($titleLink.attr('href') || ''),
       cover: toAbsoluteUrl($item.find('.item-right').first().attr('src') || '')
     }
-  }).get().filter((item) => item.title && item.url)
+  }).get().filter((item: HelloArticle): boolean => Boolean(item.title && item.url))
 
-  const authorList = $root.find('.author-item').map((_, element) => {
-    const $item = $(element)
-    const $link = $item.find('.author-info').first()
+  const authorList: HelloAuthor[] = $root.find('.author-item').map((_, element: HTMLElement): HelloAuthor => {
+    const $item: JQuery<HTMLElement> = $(element)
+    const $link: JQuery<HTMLElement> = $item.find('.author-info').first()
 
     return {
       name: textOf($item.find('.name').first()),
@@ -197,10 +240,10 @@ function parseHomeHtml(html) {
       url: toAbsoluteUrl($link.attr('href') || ''),
       avatar: toAbsoluteUrl($item.find('.avatar').first().attr('src') || '')
     }
-  }).get().filter((item) => item.name && item.url)
+  }).get().filter((item: HelloAuthor): boolean => Boolean(item.name && item.url))
 
-  const lessonList = $root.find('a[href^="/lesson/detail/"]').map((_, element) => {
-    const $item = $(element)
+  const lessonList: HelloLesson[] = $root.find('a[href^="/lesson/detail/"]').map((_, element: HTMLElement): HelloLesson => {
+    const $item: JQuery<HTMLElement> = $(element)
     return {
       title: textOf($item.find('h2').first()),
       price: textOf($item.find('.price').first()) || '未知价格',
@@ -208,23 +251,23 @@ function parseHomeHtml(html) {
       url: toAbsoluteUrl($item.attr('href') || ''),
       cover: toAbsoluteUrl($item.find('img').first().attr('src') || '')
     }
-  }).get().filter((item) => item.title && item.url)
+  }).get().filter((item: HelloLesson): boolean => Boolean(item.title && item.url))
 
-  const tagList = $root.find('.index-tag-item').map((_, element) => textOf($(element))).get().filter(Boolean)
+  const tagList: string[] = $root.find('.index-tag-item').map((_, element: HTMLElement): string => textOf($(element))).get().filter(Boolean)
 
-  let directionList = []
-  let languageList = []
+  let directionList: string[] = []
+  let languageList: string[] = []
 
-  $root.find('.left-body-bar > div').each((_, element) => {
-    const $group = $(element)
-    const title = textOf($group.find('.menu-title').first())
-    const values = $group.find('.name').map((__, node) => textOf($(node))).get().filter(Boolean)
+  $root.find('.left-body-bar > div').each((_, element: HTMLElement): void => {
+    const $group: JQuery<HTMLElement> = $(element)
+    const title: string = textOf($group.find('.menu-title').first())
+    const values: string[] = $group.find('.name').map((__, node: HTMLElement): string => textOf($(node))).get().filter(Boolean)
 
-    if (title === '技术方向') {
+    const check = checkCategoryTitle(title)
+    if (check.isDirection) {
       directionList = values
     }
-
-    if (title === '编程语言') {
+    if (check.isLanguage) {
       languageList = values
     }
   })
@@ -239,25 +282,19 @@ function parseHomeHtml(html) {
   }
 }
 
-async function fetchHomeData() {
+async function fetchHomeData(): Promise<void> {
   loading.value = true
   error.value = ''
 
   try {
-    const response = await fetch(`${API_BASE}/`, {
+    const html: string = await requestText(`${API_BASE}/`, {
       method: 'GET',
       headers: {
         Accept: 'text/html'
       },
       cache: 'no-store'
     })
-
-    if (!response.ok) {
-      throw new Error(`请求失败：${response.status}`)
-    }
-
-    const html = await response.text()
-    const parsed = parseHomeHtml(html)
+    const parsed: ParsedHomeData = parseHomeHtml(html)
 
     articles.value = parsed.articles
     authors.value = parsed.authors
@@ -267,18 +304,19 @@ async function fetchHomeData() {
     languages.value = parsed.languages
 
     if (!articles.value.length && !authors.value.length && !lessons.value.length) {
-      throw new Error('已请求成功，但未解析出列表数据')
+      throw new Error(ERR_NO_DATA)
     }
 
     lastUpdated.value = new Date().toLocaleString('zh-CN')
-  } catch (e) {
-    error.value = `加载失败：${e.message || e}`
+  } catch (e: unknown) {
+    const message: string = e instanceof Error ? e.message : String(e)
+    error.value = `加载失败：${message}`
   } finally {
     loading.value = false
   }
 }
 
-onMounted(() => {
+onMounted((): void => {
   fetchHomeData()
 })
 </script>

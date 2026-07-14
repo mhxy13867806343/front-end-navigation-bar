@@ -13,43 +13,36 @@
   </el-button>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { ButtonProps } from 'element-plus'
 
-const props = defineProps({
-  // 刷新回调，支持返回 Promise，期间按钮呈 loading 状态
-  onRefresh: {
-    type: Function,
-    default: null
-  },
-  // 倒计时秒数
-  seconds: {
-    type: Number,
-    default: 60
-  },
-  // 按钮文案
-  text: {
-    type: String,
-    default: '刷新'
-  },
-  type: {
-    type: String,
-    default: 'primary'
-  },
-  size: {
-    type: String,
-    default: 'small'
-  }
+interface RefreshCountdownButtonProps {
+  onRefresh?: (() => Promise<void> | void) | null
+  seconds?: number
+  text?: string
+  type?: ButtonProps['type']
+  size?: ButtonProps['size']
+}
+
+const props = withDefaults(defineProps<RefreshCountdownButtonProps>(), {
+  onRefresh: null,
+  seconds: 60,
+  text: '刷新',
+  type: 'primary',
+  size: 'small'
 })
 
-const emit = defineEmits(['refresh'])
+const emit = defineEmits<{
+  refresh: []
+}>()
 
-const loading = ref(false)
-const countdown = ref(0)
-let timer = null
+const loading = ref<boolean>(false)
+const countdown = ref<number>(0)
+let timer: ReturnType<typeof setInterval> | null = null
 
-const disabled = computed(() => countdown.value > 0 && !loading.value)
+const disabled = computed<boolean>(() => countdown.value > 0 && !loading.value)
 
-async function handleClick() {
+async function handleClick(): Promise<void> {
   if (loading.value || countdown.value > 0) return
   loading.value = true
   try {
@@ -65,21 +58,21 @@ async function handleClick() {
   }
 }
 
-function startCountdown() {
+function startCountdown(): void {
   countdown.value = props.seconds
-  clearInterval(timer)
+  if (timer !== null) clearInterval(timer)
   timer = setInterval(() => {
     countdown.value--
     if (countdown.value <= 0) {
       countdown.value = 0
-      clearInterval(timer)
+      if (timer !== null) clearInterval(timer)
       timer = null
     }
   }, 1000)
 }
 
 onBeforeUnmount(() => {
-  clearInterval(timer)
+  if (timer !== null) clearInterval(timer)
 })
 </script>
 

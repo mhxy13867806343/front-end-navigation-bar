@@ -1,29 +1,30 @@
-<script setup>
+<script setup lang="ts">
 
 import { 
   Edit, Delete, Search, Star, Message, Loading, Share, 
   Connection, Cpu, DataAnalysis, Monitor, Operation, 
   User, Setting, Tools, Trophy, Link as LinkIcon 
 } from '@element-plus/icons-vue'
+import type { InputInstance } from 'element-plus'
 
 // ------ Dynamic Tag List ------
-const dynamicTags = ref(['Vue 3', 'Vite', 'Element Plus'])
-const inputVisible = ref(false)
-const inputValue = ref('')
-const saveTagInputRef = ref(null)
+const dynamicTags = ref<string[]>(['Vue 3', 'Vite', 'Element Plus'])
+const inputVisible = ref<boolean>(false)
+const inputValue = ref<string>('')
+const saveTagInputRef = ref<InputInstance | null>(null)
 
-const handleClose = (tag) => {
+const handleClose = (tag: string): void => {
   dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
 }
 
-const showInput = () => {
+const showInput = (): void => {
   inputVisible.value = true
   nextTick(() => {
     saveTagInputRef.value?.input?.focus()
   })
 }
 
-const handleInputConfirm = () => {
+const handleInputConfirm = (): void => {
   if (inputValue.value) {
     dynamicTags.value.push(inputValue.value)
   }

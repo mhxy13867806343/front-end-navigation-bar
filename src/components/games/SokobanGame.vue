@@ -38,19 +38,32 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+
+type CellType = '#' | '.' | '$' | '*' | '@' | '+' | '&' | ' '
+type GameMap = CellType[][]
+
+interface Position {
+  x: number
+  y: number
+}
+
+interface MoveHistoryItem {
+  map: GameMap
+  player: Position
+}
 
 // 游戏元素定义
-const WALL = '#'
-const FLOOR = '.'
-const BOX = '$'
-const TARGET = '*'
-const PLAYER = '@'
-const BOX_ON_TARGET = '+'
-const PLAYER_ON_TARGET = '&'
+const WALL: CellType = '#'
+const FLOOR: CellType = '.'
+const BOX: CellType = '$'
+const TARGET: CellType = '*'
+const PLAYER: CellType = '@'
+const BOX_ON_TARGET: CellType = '+'
+const PLAYER_ON_TARGET: CellType = '&'
 
 // 游戏关卡
-const levels = [
+const levels: string[][] = [
   [
     "########",
     "#      #",
@@ -71,21 +84,21 @@ const levels = [
   ]
 ]
 
-const currentLevel = ref(0)
-const currentMap = ref([])
-const playerPos = ref({ x: 0, y: 0 })
-const moves = ref(0)
-const isLevelComplete = ref(false)
-const moveHistory = ref([])
-const canUndo = computed(() => moveHistory.value.length > 0)
+const currentLevel = ref<number>(0)
+const currentMap = ref<GameMap>([])
+const playerPos = ref<Position>({ x: 0, y: 0 })
+const moves = ref<number>(0)
+const isLevelComplete = ref<boolean>(false)
+const moveHistory = ref<MoveHistoryItem[]>([])
+const canUndo = computed<boolean>(() => moveHistory.value.length > 0)
 
-const gridStyle = computed(() => ({
+const gridStyle = computed<{ gridTemplateColumns: string }>(() => ({
   gridTemplateColumns: `repeat(${currentMap.value[0]?.length || 0}, 40px)`
 }))
 
 // 初始化当前关卡
-const initLevel = () => {
-  currentMap.value = levels[currentLevel.value].map(row => row.split(''))
+const initLevel = (): void => {
+  currentMap.value = levels[currentLevel.value].map((row: string): CellType[] => row.split('') as CellType[])
   moves.value = 0
   isLevelComplete.value = false
   moveHistory.value = []
@@ -102,7 +115,7 @@ const initLevel = () => {
 }
 
 // 检查是否完成关卡
-const checkComplete = () => {
+const checkComplete = (): boolean => {
   for (let y = 0; y < currentMap.value.length; y++) {
     for (let x = 0; x < currentMap.value[y].length; x++) {
       if (currentMap.value[y][x] === BOX) {
@@ -111,23 +124,24 @@ const checkComplete = () => {
     }
   }
   isLevelComplete.value = true
+  return true
 }
 
 // 移动玩家
-const movePlayer = (dx, dy) => {
-  const newX = playerPos.value.x + dx
-  const newY = playerPos.value.y + dy
-  const boxX = newX + dx
-  const boxY = newY + dy
+const movePlayer = (dx: number, dy: number): void => {
+  const newX: number = playerPos.value.x + dx
+  const newY: number = playerPos.value.y + dy
+  const boxX: number = newX + dx
+  const boxY: number = newY + dy
 
   // 检查是否可以移动
   if (currentMap.value[newY][newX] === WALL) return
 
   // 保存移动前的状态
-  const mapState = currentMap.value.map(row => [...row])
-  const playerState = { ...playerPos.value }
+  const mapState: GameMap = currentMap.value.map((row: CellType[]): CellType[] => [...row])
+  const playerState: Position = { ...playerPos.value }
 
-  let canMove = true
+  let canMove: boolean = true
   
   if (currentMap.value[newY][newX] === BOX || currentMap.value[newY][newX] === BOX_ON_TARGET) {
     // 推箱子
@@ -180,7 +194,7 @@ const movePlayer = (dx, dy) => {
 }
 
 // 处理键盘事件
-const handleKeyDown = (e) => {
+const handleKeyDown = (e: KeyboardEvent): void => {
   if (isLevelComplete.value) return
 
   switch (e.key) {
@@ -208,7 +222,7 @@ const handleKeyDown = (e) => {
 }
 
 // 获取单元格的样式类
-const getCellClass = (cell) => {
+const getCellClass = (cell: CellType): string => {
   switch (cell) {
     case WALL: return 'wall'
     case BOX: return 'box'
@@ -221,15 +235,16 @@ const getCellClass = (cell) => {
 }
 
 // 重新开始当前关卡
-const restartLevel = () => {
+const restartLevel = (): void => {
   initLevel()
 }
 
 // 撤销移动
-const undoMove = () => {
+const undoMove = (): void => {
   if (!canUndo.value) return
   
-  const lastState = moveHistory.value.pop()
+  const lastState: MoveHistoryItem | undefined = moveHistory.value.pop()
+  if (!lastState) return
   currentMap.value = lastState.map
   playerPos.value = lastState.player
   moves.value--
@@ -237,7 +252,7 @@ const undoMove = () => {
 }
 
 // 下一关
-const nextLevel = () => {
+const nextLevel = (): void => {
   if (currentLevel.value < levels.length - 1) {
     currentLevel.value++
     initLevel()
@@ -245,19 +260,19 @@ const nextLevel = () => {
 }
 
 // 重新开始游戏
-const restartGame = () => {
+const restartGame = (): void => {
   currentLevel.value = 0
   initLevel()
 }
 
 // 监听键盘焦点
-const gameContainer = ref(null)
+const gameContainer = ref<HTMLDivElement | null>(null)
 onMounted(() => {
   initLevel()
   gameContainer.value?.focus()
 })
 
-watch(isLevelComplete, (newValue) => {
+watch(isLevelComplete, (newValue: boolean): void => {
   if (newValue) {
     setTimeout(() => {
       gameContainer.value?.blur()

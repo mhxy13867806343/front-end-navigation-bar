@@ -270,11 +270,11 @@
                     <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
                       <el-input v-model="option.label" placeholder="选项名" class="option-label" />
                       <el-input v-model="option.value" placeholder="选项值" class="option-value" />
-                      <el-button type="danger" link @click="currentItem.props.options.splice(index, 1)">
+                      <el-button type="danger" link @click="currentItem.props.options?.splice(index, 1)">
                         <el-icon><Delete /></el-icon>
                       </el-button>
                     </div>
-                    <el-button type="primary" link @click="currentItem.props.options.push({ label: '', value: '' })">
+                    <el-button type="primary" link @click="(currentItem.props.options ||= []).push({ label: '', value: '' })">
                       添加选项
                     </el-button>
                   </el-form-item>
@@ -290,11 +290,11 @@
                     <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
                       <el-input v-model="option.label" placeholder="选项名" class="option-label" />
                       <el-input v-model="option.value" placeholder="选项值" class="option-value" />
-                      <el-button type="danger" link @click="currentItem.props.options.splice(index, 1)">
+                      <el-button type="danger" link @click="currentItem.props.options?.splice(index, 1)">
                         <el-icon><Delete /></el-icon>
                       </el-button>
                     </div>
-                    <el-button type="primary" link @click="currentItem.props.options.push({ label: '', value: '' })">
+                    <el-button type="primary" link @click="(currentItem.props.options ||= []).push({ label: '', value: '' })">
                       添加选项
                     </el-button>
                   </el-form-item>
@@ -307,11 +307,11 @@
                     <div v-for="(option, index) in currentItem.props.options" :key="index" class="option-item">
                       <el-input v-model="option.label" placeholder="选项名" class="option-label" />
                       <el-input v-model="option.value" placeholder="选项值" class="option-value" />
-                      <el-button type="danger" link @click="currentItem.props.options.splice(index, 1)">
+                      <el-button type="danger" link @click="currentItem.props.options?.splice(index, 1)">
                         <el-icon><Delete /></el-icon>
                       </el-button>
                     </div>
-                    <el-button type="primary" link @click="currentItem.props.options.push({ label: '', value: '' })">
+                    <el-button type="primary" link @click="(currentItem.props.options ||= []).push({ label: '', value: '' })">
                       添加选项
                     </el-button>
                   </el-form-item>
@@ -489,7 +489,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { Delete, Plus, CopyDocument, Download, Upload } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -507,16 +507,24 @@ import {
 } from '@element-plus/icons-vue'
 import draggable from 'vuedraggable'
 import DynamicFormPreview from './DynamicFormPreview.vue'
+import type {
+  DynamicComponentConfig,
+  DynamicFormItem,
+  DynamicFormPayload,
+  DynamicProps
+} from '@/types/dynamicForm'
 
-const formItems = ref([])
-const currentItem = ref(null)
-const previewVisible = ref(false)
-const formData = reactive({})
-const activeTab = ref('基础属性')
-const activeComponentType = ref('基础组件')
+type DefaultFormItemConfig = Omit<DynamicFormItem, 'id'> & { props: DynamicProps }
+
+const formItems = ref<DynamicFormItem[]>([])
+const currentItem = ref<DynamicFormItem | null>(null)
+const previewVisible = ref<boolean>(false)
+const formData = reactive<Record<string, unknown>>({})
+const activeTab = ref<string>('基础属性')
+const activeComponentType = ref<string>('基础组件')
 
 // 基础组件列表
-const basicComponents = reactive([
+const basicComponents = reactive<DynamicComponentConfig[]>([
   {
     type: 'input',
     label: '单行文本',
@@ -617,7 +625,7 @@ const basicComponents = reactive([
 ])
 
 // 高级组件列表
-const advancedComponents = reactive([
+const advancedComponents = reactive<DynamicComponentConfig[]>([
   {
     type: 'date',
     label: '日期选择',
@@ -650,19 +658,19 @@ const advancedComponents = reactive([
 ])
 
 // 计算属性：表单是否为空
-const isFormEmpty = computed(() => {
+const isFormEmpty = computed<boolean>(() => {
   return formItems.value.length === 0
 })
 
 // 克隆组件
-const cloneComponent = (component) => {
+const cloneComponent = (component: DynamicComponentConfig | DynamicFormItem): DynamicFormItem | null => {
   try {
-    const newItem = JSON.parse(JSON.stringify(component))
+    const newItem: DynamicFormItem = JSON.parse(JSON.stringify(component)) as DynamicFormItem
     newItem.id = Date.now().toString()
     newItem.field = `field_${newItem.id}`
     
     // 添加默认配置
-    const defaultProps = getDefaultProps(component.type)
+    const defaultProps: DefaultFormItemConfig = getDefaultProps(component.type)
     newItem.style = defaultProps.style
     newItem.animation = defaultProps.animation
     newItem.events = defaultProps.events
@@ -694,7 +702,7 @@ const cloneComponent = (component) => {
 }
 
 // 添加组件
-const addComponent = (component) => {
+const addComponent = (component: DynamicComponentConfig): void => {
   try {
     const newItem = cloneComponent(component)
     if (!newItem) return
@@ -702,15 +710,15 @@ const addComponent = (component) => {
     formItems.value.push(newItem)
     currentItem.value = newItem
     ElMessage.success('添加成功')
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('添加组件失败:', error)
     ElMessage.error('添加失败')
   }
 }
 
 // 复制组件
-const copyItem = (item) => {
-  const newItem = cloneComponent(item)
+const copyItem = (item: DynamicFormItem): void => {
+  const newItem: DynamicFormItem | null = cloneComponent(item)
   if (!newItem) return
   
   formItems.value.push(newItem)
@@ -718,7 +726,7 @@ const copyItem = (item) => {
 }
 
 // 删除组件
-const deleteItem = (index) => {
+const deleteItem = (index: number): void => {
   formItems.value.splice(index, 1)
   if (currentItem.value && currentItem.value.id === formItems.value[index]?.id) {
     currentItem.value = null
@@ -726,12 +734,12 @@ const deleteItem = (index) => {
 }
 
 // 选择组件
-const selectItem = (item) => {
+const selectItem = (item: DynamicFormItem): void => {
   currentItem.value = item
 }
 
 // 预览表单
-const handlePreview = () => {
+const handlePreview = (): void => {
   if (isFormEmpty.value) {
     ElMessage.warning('请先添加表单组件')
     return
@@ -740,13 +748,13 @@ const handlePreview = () => {
 }
 
 // 保存表单
-const handleSave = () => {
+const handleSave = (): void => {
   if (isFormEmpty.value) {
     ElMessage.warning('请先添加表单组件')
     return
   }
 
-  const formData = {
+  const formData: DynamicFormPayload = {
     items: formItems.value,
     layout: {
       labelWidth: '100px',
@@ -769,7 +777,7 @@ const handleSave = () => {
   .then(() => {
     saveToLocal(formData)
   })
-  .catch((action) => {
+  .catch((action: string): void => {
     if (action === 'cancel') {
       uploadToServer(formData)
     }
@@ -777,7 +785,7 @@ const handleSave = () => {
 }
 
 // 清空表单
-const handleClear = () => {
+const handleClear = (): void => {
   if (isFormEmpty.value) {
     ElMessage.warning('表单已经是空的了')
     return
@@ -801,14 +809,15 @@ const handleClear = () => {
 }
 
 // 处理设计区域的点击
-const handleDesignAreaClick = (event) => {
-  if (event.target.classList.contains('form-design-area')) {
+const handleDesignAreaClick = (event: MouseEvent): void => {
+  const target = event.target as HTMLElement | null
+  if (target?.classList.contains('form-design-area')) {
     currentItem.value = null
   }
 }
 
 // 获取组件类型
-const getComponentType = (element) => {
+const getComponentType = (element: DynamicFormItem): string => {
   switch (element.type) {
     case 'input':
       return 'el-input'
@@ -828,10 +837,12 @@ const getComponentType = (element) => {
 }
 
 // 初始化组件时的默认配置
-const getDefaultProps = (type) => {
-  const commonProps = {
+const getDefaultProps = (type: string): DefaultFormItemConfig => {
+  const commonProps: DefaultFormItemConfig = {
     label: '新建组件',
     field: '',
+    type,
+    props: {},
     size: 'default',
     disabled: false,
     required: false,
@@ -860,63 +871,75 @@ const getDefaultProps = (type) => {
       return {
         ...commonProps,
         type: 'input',
-        placeholder: '请输入',
-        maxlength: null,
-        showWordLimit: false,
-        clearable: true,
-        readonly: false
+        props: {
+          placeholder: '请输入',
+          maxlength: null,
+          showWordLimit: false,
+          clearable: true,
+          readonly: false
+        }
       }
     case 'number':
       return {
         ...commonProps,
         type: 'number',
-        placeholder: '请输入数字',
-        min: null,
-        max: null,
-        step: 1,
-        precision: 0,
-        controlsPosition: ''
+        props: {
+          placeholder: '请输入数字',
+          min: null,
+          max: null,
+          step: 1,
+          precision: 0,
+          controlsPosition: ''
+        }
       }
     case 'select':
       return {
         ...commonProps,
         type: 'select',
-        placeholder: '请选择',
-        clearable: true,
-        multiple: false,
-        options: [
-          { label: '选项1', value: '1' },
-          { label: '选项2', value: '2' }
-        ]
+        props: {
+          placeholder: '请选择',
+          clearable: true,
+          multiple: false,
+          options: [
+            { label: '选项1', value: '1' },
+            { label: '选项2', value: '2' }
+          ]
+        }
       }
     case 'radio':
       return {
         ...commonProps,
         type: 'radio',
-        options: [
-          { label: '选项1', value: '1' },
-          { label: '选项2', value: '2' }
-        ]
+        props: {
+          options: [
+            { label: '选项1', value: '1' },
+            { label: '选项2', value: '2' }
+          ]
+        }
       }
     case 'checkbox':
       return {
         ...commonProps,
         type: 'checkbox',
-        options: [
-          { label: '选项1', value: '1' },
-          { label: '选项2', value: '2' }
-        ],
-        min: null,
-        max: null
+        props: {
+          options: [
+            { label: '选项1', value: '1' },
+            { label: '选项2', value: '2' }
+          ],
+          min: null,
+          max: null
+        }
       }
     case 'button':
       return {
         ...commonProps,
         type: 'button',
-        buttonType: '主要按钮',
-        text: '按钮',
-        icon: '',
-        onClick: ''
+        props: {
+          buttonType: '主要按钮',
+          text: '按钮',
+          icon: '',
+          onClick: ''
+        }
       }
     default:
       return commonProps
@@ -924,27 +947,27 @@ const getDefaultProps = (type) => {
 }
 
 // 处理按钮类型变化
-const handleButtonTypeChange = (value) => {
+const handleButtonTypeChange = (value: string): void => {
   if (value === '自定义') {
     activeTab.value = '样式设置'
   }
 }
 
 // JSON格式化显示
-const formattedJson = computed(() => {
+const formattedJson = computed<string>(() => {
   if (!currentItem.value) return ''
   return JSON.stringify(currentItem.value, null, 2)
 })
 
 // 复制JSON
-const copyJson = () => {
+const copyJson = (): void => {
   navigator.clipboard.writeText(formattedJson.value)
   ElMessage.success('复制成功')
 }
 
 // 获取事件占位符文本
-const getEventPlaceholder = (type) => {
-  const placeholders = {
+const getEventPlaceholder = (type: string): string => {
+  const placeholders: Record<string, string> = {
     navigate: '输入路由路径，如 /home',
     link: '输入URL地址',
     function: '输入函数名称'
@@ -953,8 +976,8 @@ const getEventPlaceholder = (type) => {
 }
 
 // 获取组件显示标签
-const getComponentLabel = (type) => {
-  const labels = {
+const getComponentLabel = (type: string): string => {
+  const labels: Record<string, string> = {
     input: '输入框',
     textarea: '多行文本',
     number: '数字输入',
@@ -973,15 +996,15 @@ const getComponentLabel = (type) => {
 }
 
 // 保存到本地
-const saveToLocal = (formData) => {
+const saveToLocal = (formData: DynamicFormPayload): void => {
   // 生成时间戳文件名
-  const now = new Date()
-  const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`
-  const fileName = `form-data_${timestamp}.json`
+  const now: Date = new Date()
+  const timestamp: string = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`
+  const fileName: string = `form-data_${timestamp}.json`
 
-  const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
+  const blob: Blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' })
+  const url: string = URL.createObjectURL(blob)
+  const a: HTMLAnchorElement = document.createElement('a')
   a.href = url
   a.download = fileName
   a.click()
@@ -990,7 +1013,7 @@ const saveToLocal = (formData) => {
 }
 
 // 上传到服务器
-const uploadToServer = (formData) => {
+const uploadToServer = (_formData: DynamicFormPayload): void => {
   // 这里模拟上传到服务器的操作
   setTimeout(() => {
     ElMessage.success('上传成功')

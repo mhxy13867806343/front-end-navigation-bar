@@ -1,29 +1,36 @@
-<script setup>
+<script setup lang="ts">
 
-const emit = defineEmits(['close'])
+type PlayerMark = 'X' | 'O'
+type CellValue = PlayerMark | ''
+type WinnerValue = PlayerMark | 'Draw' | null
+type WinningCombo = [number, number, number]
 
-const board = ref(Array(9).fill(''))
-const isXNext = ref(true)
-const isGameOver = ref(false)
-const winner = ref(null)
-const winningLine = ref([])
-const vsAI = ref(true)
+const emit = defineEmits<{
+  close: []
+}>()
 
-const WINNING_COMBOS = [
+const board = ref<CellValue[]>(Array<CellValue>(9).fill(''))
+const isXNext = ref<boolean>(true)
+const isGameOver = ref<boolean>(false)
+const winner = ref<WinnerValue>(null)
+const winningLine = ref<number[]>([])
+const vsAI = ref<boolean>(true)
+
+const WINNING_COMBOS: WinningCombo[] = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
   [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
   [0, 4, 8], [2, 4, 6]             // Diagonals
 ]
 
-const initGame = () => {
-  board.value = Array(9).fill('')
+const initGame = (): void => {
+  board.value = Array<CellValue>(9).fill('')
   isXNext.value = true
   isGameOver.value = false
   winner.value = null
   winningLine.value = []
 }
 
-const checkWinner = () => {
+const checkWinner = (): void => {
   for (const combo of WINNING_COMBOS) {
     const [a, b, c] = combo
     if (board.value[a] && board.value[a] === board.value[b] && board.value[a] === board.value[c]) {
@@ -41,7 +48,7 @@ const checkWinner = () => {
   }
 }
 
-const makeMove = (index) => {
+const makeMove = (index: number): void => {
   if (board.value[index] !== '' || isGameOver.value) return
 
   board.value[index] = isXNext.value ? 'X' : 'O'
@@ -57,7 +64,7 @@ const makeMove = (index) => {
   }
 }
 
-const makeAIMove = () => {
+const makeAIMove = (): void => {
   if (isGameOver.value) return
 
   // 1. Minimax or simple strategy
@@ -76,12 +83,12 @@ const makeAIMove = () => {
   }
 }
 
-const getBestMove = () => {
+const getBestMove = (): number | null => {
   // Check if AI (O) can win in next move
   for (const combo of WINNING_COMBOS) {
-    const counts = combo.map(i => board.value[i])
-    const oCount = counts.filter(x => x === 'O').length
-    const emptyCount = counts.filter(x => x === '').length
+    const counts: CellValue[] = combo.map((i: number): CellValue => board.value[i])
+    const oCount: number = counts.filter((x: CellValue): boolean => x === 'O').length
+    const emptyCount: number = counts.filter((x: CellValue): boolean => x === '').length
     if (oCount === 2 && emptyCount === 1) {
       return combo[counts.indexOf('')]
     }
@@ -89,9 +96,9 @@ const getBestMove = () => {
 
   // Check if player (X) can win in next move (Block them)
   for (const combo of WINNING_COMBOS) {
-    const counts = combo.map(i => board.value[i])
-    const xCount = counts.filter(x => x === 'X').length
-    const emptyCount = counts.filter(x => x === '').length
+    const counts: CellValue[] = combo.map((i: number): CellValue => board.value[i])
+    const xCount: number = counts.filter((x: CellValue): boolean => x === 'X').length
+    const emptyCount: number = counts.filter((x: CellValue): boolean => x === '').length
     if (xCount === 2 && emptyCount === 1) {
       return combo[counts.indexOf('')]
     }
@@ -101,13 +108,15 @@ const getBestMove = () => {
   if (board.value[4] === '') return 4
 
   // Take corners
-  const corners = [0, 2, 6, 8].filter(i => board.value[i] === '')
+  const corners: number[] = [0, 2, 6, 8].filter((i: number): boolean => board.value[i] === '')
   if (corners.length > 0) {
     return corners[Math.floor(Math.random() * corners.length)]
   }
 
   // Take random
-  const emptyCells = board.value.map((val, idx) => val === '' ? idx : null).filter(val => val !== null)
+  const emptyCells: number[] = board.value
+    .map((val: CellValue, idx: number): number | null => val === '' ? idx : null)
+    .filter((val: number | null): val is number => val !== null)
   if (emptyCells.length > 0) {
     return emptyCells[Math.floor(Math.random() * emptyCells.length)]
   }

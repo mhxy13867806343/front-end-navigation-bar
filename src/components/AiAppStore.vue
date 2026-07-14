@@ -1,51 +1,70 @@
-<script setup>
+<script setup lang="ts">
 
 import fallbackAppsData from '../utlis/daily_ai_apps.json'
+import { requestText } from '@/utils/request'
 
-const appCategories = ref(fallbackAppsData)
-const selectedCategory = ref(fallbackAppsData[0]?.id || '')
-const isLiveMode = ref(false)
-const isLoading = ref(false)
-const countdown = ref(60)
+interface AiAppItem {
+  title: string
+  link: string
+  desc: string
+  icon: string
+  tag: string
+  downloads: number
+  likes: number
+  android: boolean
+  ios: boolean
+}
 
-const selectCategory = (id) => {
+interface AiAppCategory {
+  id: string
+  name: string
+  apps: AiAppItem[]
+}
+
+const appCategories = ref<AiAppCategory[]>(fallbackAppsData as AiAppCategory[])
+const selectedCategory = ref<string>(fallbackAppsData[0]?.id || '')
+const isLiveMode = ref<boolean>(false)
+const isLoading = ref<boolean>(false)
+const countdown = ref<number>(60)
+
+const selectCategory = (id: string): void => {
   selectedCategory.value = id
 }
 
-const currentCategoryApps = computed(() => {
-  const cat = appCategories.value.find(c => c.id === selectedCategory.value)
+const currentCategoryApps = computed<AiAppItem[]>(() => {
+  const cat: AiAppCategory | undefined = appCategories.value.find((c: AiAppCategory): boolean => c.id === selectedCategory.value)
   return cat ? cat.apps : []
 })
 
-const openLink = (link) => {
+const openLink = (link: string): void => {
   if (link) {
     window.open(link, '_blank')
   }
 }
 
 // Browser DOM parser for real-time live content
-const parseAppsHtml = (htmlText) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(htmlText, 'text/html')
+const parseAppsHtml = (htmlText: string): AiAppCategory[] => {
+  const parser: DOMParser = new DOMParser()
+  const doc: Document = parser.parseFromString(htmlText, 'text/html')
   
   const headers = doc.querySelectorAll('h4.text-gray')
   if (headers.length === 0) {
     throw new Error('未找到应用分类结构')
   }
   
-  const parsedData = []
+  const parsedData: AiAppCategory[] = []
   
   headers.forEach((headerEl) => {
-    const tagIcon = headerEl.querySelector('.site-tag')
-    const catId = tagIcon ? tagIcon.getAttribute('id') : ''
+    const tagIcon: Element | null = headerEl.querySelector('.site-tag')
+    const catId: string = tagIcon ? tagIcon.getAttribute('id') || '' : ''
     if (!catId) return
     
-    const catName = headerEl.textContent.trim()
+    const catName: string = headerEl.textContent?.trim() || ''
     
     // Find the row containing cards
-    let rowEl = null
-    let nextSibling = headerEl.nextElementSibling || headerEl.parentElement?.nextElementSibling
-    for (let k = 0; k < 5; k++) {
+    let rowEl: Element | null = null
+    let nextSibling: Element | null | undefined = headerEl.nextElementSibling || headerEl.parentElement?.nextElementSibling
+    for (let k: number = 0; k < 5; k++) {
       if (nextSibling) {
         if (nextSibling.classList.contains('row')) {
           rowEl = nextSibling
@@ -63,48 +82,48 @@ const parseAppsHtml = (htmlText) => {
     if (!rowEl) return
     
     const cards = rowEl.querySelectorAll('.card-app')
-    const apps = []
+    const apps: AiAppItem[] = []
     
     cards.forEach((card) => {
       // Icon URL
-      const mediaContent = card.querySelector('.media-content')
-      let icon = ''
+      const mediaContent: Element | null = card.querySelector('.media-content')
+      let icon: string = ''
       if (mediaContent) {
         const bgVal = mediaContent.getAttribute('data-bg') || mediaContent.getAttribute('style') || ''
         const match = bgVal.match(/url\(([^)]+)\)/)
         if (match) {
-          icon = match[1].replace(/&amp;/g, '&')
+          icon = (match[1] || '').replace(/&amp;/g, '&')
         }
       }
       
       // Title & Link
-      const titleLink = card.querySelector('a.text-md')
+      const titleLink: Element | null = card.querySelector('a.text-md')
       if (!titleLink) return
-      const title = titleLink.textContent.trim()
-      const link = titleLink.getAttribute('href') || ''
+      const title: string = titleLink.textContent?.trim() || ''
+      const link: string = titleLink.getAttribute('href') || ''
       
       // Description
-      const descEl = card.querySelector('.app-content .text-muted')
-      const desc = descEl ? descEl.textContent.trim() : ''
+      const descEl: Element | null = card.querySelector('.app-content .text-muted')
+      const desc: string = descEl ? descEl.textContent?.trim() || '' : ''
       
       // Category Tag
-      const tagEl = card.querySelector('.tga a')
-      const tag = tagEl ? tagEl.textContent.trim() : ''
+      const tagEl: Element | null = card.querySelector('.tga a')
+      const tag: string = tagEl ? tagEl.textContent?.trim() || '' : ''
       
       // Downloads
-      const downEl = card.querySelector('.down')
-      const downloadsText = downEl ? downEl.textContent.trim() : '0'
-      const downloads = parseInt(downloadsText.replace(/[^\d]/g, ''), 10) || 0
+      const downEl: Element | null = card.querySelector('.down')
+      const downloadsText: string = downEl ? downEl.textContent?.trim() || '0' : '0'
+      const downloads: number = parseInt(downloadsText.replace(/[^\d]/g, ''), 10) || 0
       
       // Likes
-      const likeEl = card.querySelector('[class^="home-like-"], .like-count')
-      const likesText = likeEl ? likeEl.textContent.trim() : '0'
-      const likes = parseInt(likesText.replace(/[^\d]/g, ''), 10) || 0
+      const likeEl: Element | null = card.querySelector('[class^="home-like-"], .like-count')
+      const likesText: string = likeEl ? likeEl.textContent?.trim() || '0' : '0'
+      const likes: number = parseInt(likesText.replace(/[^\d]/g, ''), 10) || 0
       
       // Platforms
-      const platformEl = card.querySelector('.app-platform')
-      const hasAndroid = platformEl ? (platformEl.querySelector('.icon-android') !== null || platformEl.innerHTML.includes('android')) : false
-      const hasIos = platformEl ? (platformEl.querySelector('.icon-app-store-fill') !== null || platformEl.querySelector('.icon-apple') !== null || platformEl.innerHTML.includes('apple')) : false
+      const platformEl: Element | null = card.querySelector('.app-platform')
+      const hasAndroid: boolean = platformEl ? (platformEl.querySelector('.icon-android') !== null || platformEl.innerHTML.includes('android')) : false
+      const hasIos: boolean = platformEl ? (platformEl.querySelector('.icon-app-store-fill') !== null || platformEl.querySelector('.icon-apple') !== null || platformEl.innerHTML.includes('apple')) : false
       
       apps.push({
         title,
@@ -131,38 +150,36 @@ const parseAppsHtml = (htmlText) => {
   return parsedData
 }
 
-const fetchLatestApps = async () => {
+const fetchLatestApps = async (): Promise<void> => {
   isLoading.value = true
   
-  const targetUrls = [
+  const targetUrls: string[] = [
     '/api-app-store', // Dev proxy config
     'https://api.codetabs.com/v1/proxy?quest=https://ai-bot.cn/ai-app-store/',
     'https://api.allorigins.win/raw?url=https://ai-bot.cn/ai-app-store/'
   ]
   
-  let success = false
+  let success: boolean = false
   for (const url of targetUrls) {
     try {
-      const response = await fetch(url, {
+      const htmlText: string = await requestText(url, {
         headers: { 'Accept': 'text/html' }
       })
-      if (response.ok) {
-        const htmlText = await response.text()
-        const parsed = parseAppsHtml(htmlText)
-        if (parsed && parsed.length > 0) {
-          appCategories.value = parsed
-          isLiveMode.value = true
-          success = true
-          
-          // Keep category selected if it still exists
-          if (!parsed.some(c => c.id === selectedCategory.value)) {
-            selectedCategory.value = parsed[0]?.id || ''
-          }
-          break
+      const parsed = parseAppsHtml(htmlText)
+      if (parsed && parsed.length > 0) {
+        appCategories.value = parsed
+        isLiveMode.value = true
+        success = true
+        
+        // Keep category selected if it still exists
+        if (!parsed.some((c: AiAppCategory): boolean => c.id === selectedCategory.value)) {
+          selectedCategory.value = parsed[0]?.id || ''
         }
+        break
       }
-    } catch (err) {
-      console.warn(`Failed to fetch app store from ${url}:`, err.message)
+    } catch (err: unknown) {
+      const message: string = err instanceof Error ? err.message : String(err)
+      console.warn(`Failed to fetch app store from ${url}:`, message)
     }
   }
   
@@ -174,12 +191,12 @@ const fetchLatestApps = async () => {
   isLoading.value = false
 }
 
-const triggerManualRefresh = () => {
+const triggerManualRefresh = (): void => {
   fetchLatestApps()
   countdown.value = 60
 }
 
-let timer = null
+let timer: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
   fetchLatestApps()
   timer = setInterval(() => {

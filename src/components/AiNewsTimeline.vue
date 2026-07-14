@@ -1,54 +1,68 @@
-<script setup>
+<script setup lang="ts">
 
 import dailyNewsData from '../utlis/daily_ai_news.json'
+import { requestText } from '@/utils/request'
 
-const newsTimeline = ref(dailyNewsData)
-const isLiveMode = ref(false) // true if fetched successfully in real-time
-const isLoading = ref(false)
-const errorMessage = ref('')
+interface NewsItem {
+  title: string
+  link: string
+  desc: string
+  source: string
+}
 
-const openLink = (link) => {
+interface NewsDay {
+  date: string
+  items: NewsItem[]
+}
+
+const newsTimeline = ref<NewsDay[]>(dailyNewsData as NewsDay[])
+const isLiveMode = ref<boolean>(false) // true if fetched successfully in real-time
+const isLoading = ref<boolean>(false)
+const errorMessage = ref<string>('')
+
+const openLink = (link: string): void => {
   if (link) {
     window.open(link, '_blank')
   }
 }
 
 // Client-side HTML parser using DOMParser
-const parseNewsHtml = (htmlText) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(htmlText, 'text/html')
+const parseNewsHtml = (htmlText: string): NewsDay[] => {
+  const parser: DOMParser = new DOMParser()
+  const doc: Document = parser.parseFromString(htmlText, 'text/html')
   
   const dateElements = doc.querySelectorAll('.news-date')
   if (dateElements.length === 0) {
     throw new Error('未找到资讯时间节点，可能是页面结构发生变化或被拦截。')
   }
   
-  const parsedData = []
+  const parsedData: NewsDay[] = []
   
   dateElements.forEach((dateEl) => {
-    const dateText = dateEl.textContent.trim()
-    const items = []
+    const dateText: string = dateEl.textContent?.trim() || ''
+    const items: NewsItem[] = []
     
     // Scan all next siblings until encountering the next .news-date
     let nextSibling = dateEl.nextElementSibling
     while (nextSibling && !nextSibling.classList.contains('news-date')) {
       if (nextSibling.classList.contains('news-item')) {
-        const h2 = nextSibling.querySelector('h2')
-        const p = nextSibling.querySelector('p')
+        const h2: Element | null = nextSibling.querySelector('h2')
+        const p: Element | null = nextSibling.querySelector('p')
         
         if (h2 && p) {
-          const a = h2.querySelector('a')
-          const title = h2.textContent.trim()
-          const link = a ? a.getAttribute('href') : ''
+          const a: Element | null = h2.querySelector('a')
+          const title: string = h2.textContent?.trim() || ''
+          const link: string = a ? a.getAttribute('href') || '' : ''
           
           // Extract source from .news-time span
-          const sourceSpan = p.querySelector('.news-time')
-          const source = sourceSpan ? sourceSpan.textContent.replace('来源：', '').trim() : ''
+          const sourceSpan: Element | null = p.querySelector('.news-time')
+          const sourceText: string = sourceSpan?.textContent || ''
+          const source: string = sourceText ? sourceText.replace('来源：', '').trim() : ''
           
           // Clean the description text (remove the source tag text inside it)
-          let desc = p.textContent.trim()
+          let desc: string = p.textContent?.trim() || ''
           if (sourceSpan) {
-            desc = desc.replace(sourceSpan.textContent, '').trim()
+            desc = desc.replace(sourceText, '').trim()
           }
           
           items.push({
@@ -73,38 +87,36 @@ const parseNewsHtml = (htmlText) => {
   return parsedData
 }
 
-const fetchLatestNews = async () => {
+const fetchLatestNews = async (): Promise<void> => {
   isLoading.value = true
   errorMessage.value = ''
   
   // We try local dev server proxy first, and fallback to direct/CORS proxies if needed
-  const targetUrls = [
+  const targetUrls: string[] = [
     '/api-news', // Local Vite proxy (works locally in development)
     'https://api.codetabs.com/v1/proxy?quest=https://ai-bot.cn/daily-ai-news/', // Public CORS Proxy 1
     'https://api.allorigins.win/raw?url=https://ai-bot.cn/daily-ai-news/' // Public CORS Proxy 2
   ]
   
-  let success = false
+  let success: boolean = false
   
   for (const url of targetUrls) {
     try {
-      const response = await fetch(url, {
+      const htmlText: string = await requestText(url, {
         headers: {
           'Accept': 'text/html'
         }
       })
-      if (response.ok) {
-        const htmlText = await response.text()
-        const parsed = parseNewsHtml(htmlText)
-        if (parsed && parsed.length > 0) {
-          newsTimeline.value = parsed
-          isLiveMode.value = true
-          success = true
-          break // Success! Stop checking other endpoints.
-        }
+      const parsed = parseNewsHtml(htmlText)
+      if (parsed && parsed.length > 0) {
+        newsTimeline.value = parsed
+        isLiveMode.value = true
+        success = true
+        break // Success! Stop checking other endpoints.
       }
-    } catch (err) {
-      console.warn(`Failed to fetch news from ${url}:`, err.message)
+    } catch (err: unknown) {
+      const message: string = err instanceof Error ? err.message : String(err)
+      console.warn(`Failed to fetch news from ${url}:`, message)
     }
   }
   
@@ -116,13 +128,13 @@ const fetchLatestNews = async () => {
   isLoading.value = false
 }
 
-const countdown = ref(60)
-const triggerManualRefresh = () => {
+const countdown = ref<number>(60)
+const triggerManualRefresh = (): void => {
   fetchLatestNews()
   countdown.value = 60
 }
 
-let timer = null
+let timer: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
   fetchLatestNews()
   timer = setInterval(() => {

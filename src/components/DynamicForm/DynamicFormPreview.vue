@@ -135,34 +135,34 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import type { DynamicFormItem, DynamicFormValue } from '@/types/dynamicForm'
 
-const props = defineProps({
-  formItems: {
-    type: Array,
-    required: true,
-    default: () => []
-  }
+const props = withDefaults(defineProps<{
+  formItems: DynamicFormItem[]
+}>(), {
+  formItems: (): DynamicFormItem[] => []
 })
 
-const formRef = ref(null)
-const formData = reactive({})
+const formRef = ref<FormInstance | null>(null)
+const formData = reactive<Record<string, DynamicFormValue>>({})
 
 // 监听表单项变化，初始化表单数据
 watch(
   () => props.formItems,
-  (items) => {
+  (items: DynamicFormItem[]): void => {
     // 清理不存在的字段
-    Object.keys(formData).forEach(key => {
-      if (!items.some(item => item.field === key)) {
+    Object.keys(formData).forEach((key: string): void => {
+      if (!items.some((item: DynamicFormItem): boolean => item.field === key)) {
         delete formData[key]
       }
     })
 
     // 初始化新字段
-    items.forEach(item => {
+    items.forEach((item: DynamicFormItem): void => {
       if (!(item.field in formData)) {
         if (item.type === 'number') {
           formData[item.field] = item.props?.min || 0
@@ -180,21 +180,21 @@ watch(
 )
 
 // 提交表单
-const submitForm = async () => {
+const submitForm = async (): Promise<void> => {
   if (!formRef.value) return
   
   try {
     await formRef.value.validate()
     console.log('表单数据:', formData)
     ElMessage.success('提交成功')
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('表单验证失败:', error)
     ElMessage.error('请检查表单填写是否正确')
   }
 }
 
 // 重置表单
-const resetForm = () => {
+const resetForm = (): void => {
   if (!formRef.value) return
   formRef.value.resetFields()
 }

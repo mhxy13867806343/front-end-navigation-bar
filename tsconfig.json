@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "checkJs": false,
+    "noEmit": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "useDefineForClassFields": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["vite/client", "node", "jquery"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "config/**/*.ts",
+    "scripts/**/*.ts",
+    "scripts/**/*.mts",
+    "scripts/**/*.cts",
+    "scratch/**/*.ts",
+    "vite.config.ts",
+    "env.d.ts"
+  ],
+  "exclude": ["node_modules", "dist", "**/*.js", "**/*.mjs", "**/*.cjs"],
+  "vueCompilerOptions": {
+    "strictTemplates": false
+  }
+}

@@ -1,21 +1,25 @@
-<script setup>
+<script setup lang="ts">
 
-const emit = defineEmits(['close'])
+type TetrisGrid = number[][]
+
+const emit = defineEmits<{
+  close: []
+}>()
 
 const COLS = 10
 const ROWS = 20
 const BLOCK_SIZE = 20
 
-const canvasRef = ref(null)
-const score = ref(0)
-const lines = ref(0)
-const highScore = ref(parseInt(localStorage.getItem('tetris_high_score')) || 0)
-const isGameOver = ref(false)
-const isPaused = ref(true)
-const gameInterval = ref(null)
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const score = ref<number>(0)
+const lines = ref<number>(0)
+const highScore = ref<number>(parseInt(localStorage.getItem('tetris_high_score') || '0') || 0)
+const isGameOver = ref<boolean>(false)
+const isPaused = ref<boolean>(true)
+const gameInterval = ref<ReturnType<typeof setInterval> | null>(null)
 
 // Tetromino colors
-const COLORS = [
+const COLORS: string[] = [
   'none',
   '#00f0f0', // I (Cyan)
   '#f0a000', // L (Orange)
@@ -27,7 +31,7 @@ const COLORS = [
 ]
 
 // Shapes of tetrominoes
-const SHAPES = [
+const SHAPES: TetrisGrid[] = [
   [],
   [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]], // I
   [[0,0,2], [2,2,2], [0,0,0]],                 // L
@@ -39,18 +43,20 @@ const SHAPES = [
 ]
 
 // Grid representing the game board
-const grid = ref(Array.from({ length: ROWS }, () => Array(COLS).fill(0)))
+const createEmptyGrid = (): TetrisGrid => Array.from({ length: ROWS }, (): number[] => Array<number>(COLS).fill(0))
+
+const grid = ref<TetrisGrid>(createEmptyGrid())
 
 // Current falling tetromino state
-const currentType = ref(0)
-const currentShape = ref([])
-const currentX = ref(3)
-const currentY = ref(-2)
+const currentType = ref<number>(0)
+const currentShape = ref<TetrisGrid>([])
+const currentX = ref<number>(3)
+const currentY = ref<number>(-2)
 
-const spawnTetromino = () => {
-  const type = Math.floor(Math.random() * 7) + 1
+const spawnTetromino = (): void => {
+  const type: number = Math.floor(Math.random() * 7) + 1
   currentType.value = type
-  currentShape.value = JSON.parse(JSON.stringify(SHAPES[type]))
+  currentShape.value = SHAPES[type].map((row: number[]): number[] => [...row])
   currentX.value = Math.floor((COLS - currentShape.value[0].length) / 2)
   currentY.value = 0
 
@@ -60,7 +66,7 @@ const spawnTetromino = () => {
   }
 }
 
-const checkCollision = (ax, ay, shape) => {
+const checkCollision = (ax: number, ay: number, shape: TetrisGrid): boolean => {
   for (let r = 0; r < shape.length; r++) {
     for (let c = 0; c < shape[r].length; c++) {
       if (shape[r][c] !== 0) {
@@ -82,8 +88,8 @@ const checkCollision = (ax, ay, shape) => {
   return false
 }
 
-const mergeTetromino = () => {
-  const shape = currentShape.value
+const mergeTetromino = (): void => {
+  const shape: TetrisGrid = currentShape.value
   for (let r = 0; r < shape.length; r++) {
     for (let c = 0; c < shape[r].length; c++) {
       if (shape[r][c] !== 0) {
@@ -97,10 +103,10 @@ const mergeTetromino = () => {
   }
 }
 
-const clearLines = () => {
-  let cleared = 0
+const clearLines = (): void => {
+  let cleared: number = 0
   for (let r = ROWS - 1; r >= 0; r--) {
-    if (grid.value[r].every(val => val !== 0)) {
+    if (grid.value[r].every((val: number): boolean => val !== 0)) {
       grid.value.splice(r, 1)
       grid.value.unshift(Array(COLS).fill(0))
       cleared++
@@ -117,7 +123,7 @@ const clearLines = () => {
   }
 }
 
-const moveDown = () => {
+const moveDown = (): void => {
   if (isPaused.value || isGameOver.value) return
   if (!checkCollision(currentX.value, currentY.value + 1, currentShape.value)) {
     currentY.value++
@@ -129,7 +135,7 @@ const moveDown = () => {
   draw()
 }
 
-const moveLeft = () => {
+const moveLeft = (): void => {
   if (isPaused.value || isGameOver.value) return
   if (!checkCollision(currentX.value - 1, currentY.value, currentShape.value)) {
     currentX.value--
@@ -137,7 +143,7 @@ const moveLeft = () => {
   }
 }
 
-const moveRight = () => {
+const moveRight = (): void => {
   if (isPaused.value || isGameOver.value) return
   if (!checkCollision(currentX.value + 1, currentY.value, currentShape.value)) {
     currentX.value++
@@ -145,11 +151,11 @@ const moveRight = () => {
   }
 }
 
-const rotateShape = () => {
+const rotateShape = (): void => {
   if (isPaused.value || isGameOver.value) return
-  const shape = currentShape.value
-  const size = shape.length
-  const rotated = Array.from({ length: size }, () => Array(size).fill(0))
+  const shape: TetrisGrid = currentShape.value
+  const size: number = shape.length
+  const rotated: TetrisGrid = Array.from({ length: size }, (): number[] => Array<number>(size).fill(0))
 
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
@@ -170,7 +176,7 @@ const rotateShape = () => {
   draw()
 }
 
-const dropHard = () => {
+const dropHard = (): void => {
   if (isPaused.value || isGameOver.value) return
   while (!checkCollision(currentX.value, currentY.value + 1, currentShape.value)) {
     currentY.value++
@@ -181,7 +187,7 @@ const dropHard = () => {
   draw()
 }
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent): void => {
   if (isGameOver.value) return
   if (e.key === ' ' || e.code === 'Space') {
     togglePause()
@@ -223,7 +229,7 @@ const handleKeydown = (e) => {
   }
 }
 
-const togglePause = () => {
+const togglePause = (): void => {
   if (isGameOver.value) return
   isPaused.value = !isPaused.value
   if (!isPaused.value) {
@@ -233,8 +239,8 @@ const togglePause = () => {
   }
 }
 
-const initGame = () => {
-  grid.value = Array.from({ length: ROWS }, () => Array(COLS).fill(0))
+const initGame = (): void => {
+  grid.value = createEmptyGrid()
   score.value = 0
   lines.value = 0
   isGameOver.value = false
@@ -244,17 +250,18 @@ const initGame = () => {
   draw()
 }
 
-const endGame = () => {
+const endGame = (): void => {
   isGameOver.value = true
   isPaused.value = true
   if (gameInterval.value) clearInterval(gameInterval.value)
   draw()
 }
 
-const draw = () => {
-  const canvas = canvasRef.value
+const draw = (): void => {
+  const canvas: HTMLCanvasElement | null = canvasRef.value
   if (!canvas) return
-  const ctx = canvas.getContext('2d')
+  const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d')
+  if (!ctx) return
   
   // Clear canvas
   ctx.fillStyle = '#1e1e24'
@@ -300,7 +307,7 @@ const draw = () => {
   }
 }
 
-const drawBlock = (ctx, x, y, color) => {
+const drawBlock = (ctx: CanvasRenderingContext2D, x: number, y: number, color: string): void => {
   ctx.fillStyle = color
   ctx.shadowBlur = 4
   ctx.shadowColor = color

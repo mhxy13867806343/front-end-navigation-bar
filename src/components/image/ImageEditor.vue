@@ -67,41 +67,70 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
 import { UploadFilled } from '@element-plus/icons-vue'
+import type { UploadFile } from 'element-plus'
 
-const imageUrl = ref('')
-const cropperRef = ref(null)
-const aspectRatio = ref(0)
-const coordinates = ref(null)
-const flipXFlag = ref(false)
-const flipYFlag = ref(false)
-const currentWidth = ref(0)
-const originalWidth = ref(0)
-const MAX_SCALE = 5
-const rotationAngle = ref(0)
-const imageState = ref(null)
-const hasEdits = ref(false)
-const isCropped = ref(false)
+interface CropperCoordinates {
+  width: number
+  height: number
+  left: number
+  top: number
+}
 
-const currentAspectRatio = computed(() => aspectRatio.value || null)
-const canZoomOut = computed(() => currentWidth.value > originalWidth.value * 0.5)
-const canZoomIn = computed(() => currentWidth.value < originalWidth.value * MAX_SCALE)
-const showReset = computed(() => hasEdits.value && imageState.value && isCropped.value)
+interface CropperChangeEvent {
+  coordinates: CropperCoordinates
+}
 
-const defaultSize = {
+interface CropperInstance {
+  getCanvas: () => HTMLCanvasElement
+  getResult: () => { canvas: HTMLCanvasElement }
+}
+
+interface ImageState {
+  imageUrl: string
+  currentWidth: number
+  rotationAngle: number
+  flipX: boolean
+  flipY: boolean
+  coordinates: CropperCoordinates | null
+}
+
+const imageUrl = ref<string>('')
+const cropperRef = ref<CropperInstance | null>(null)
+const aspectRatio = ref<number>(0)
+const coordinates = ref<CropperCoordinates | null>(null)
+const flipXFlag = ref<boolean>(false)
+const flipYFlag = ref<boolean>(false)
+const currentWidth = ref<number>(0)
+const originalWidth = ref<number>(0)
+const MAX_SCALE: number = 5
+const rotationAngle = ref<number>(0)
+const imageState = ref<ImageState | null>(null)
+const hasEdits = ref<boolean>(false)
+const isCropped = ref<boolean>(false)
+
+const currentAspectRatio = computed<number | null>(() => aspectRatio.value || null)
+const canZoomOut = computed<boolean>(() => currentWidth.value > originalWidth.value * 0.5)
+const canZoomIn = computed<boolean>(() => currentWidth.value < originalWidth.value * MAX_SCALE)
+const showReset = computed<boolean>(() => Boolean(hasEdits.value && imageState.value && isCropped.value))
+
+const defaultSize: { width: number, height: number } = {
   width: 400,
   height: 300
 }
 
-const handleFileChange = (file) => {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    const img = new Image()
-    img.onload = () => {
+const handleFileChange = (file: UploadFile): void => {
+  if (!file.raw) return
+  const reader: FileReader = new FileReader()
+  reader.onload = (): void => {
+    if (typeof reader.result !== 'string') return
+    const result: string = reader.result
+    const img: HTMLImageElement = new Image()
+    img.onload = (): void => {
       originalWidth.value = img.width
       currentWidth.value = img.width
       rotationAngle.value = 0
@@ -111,17 +140,17 @@ const handleFileChange = (file) => {
       hasEdits.value = false
       isCropped.value = false
     }
-    img.src = e.target.result
-    imageUrl.value = e.target.result
+    img.src = result
+    imageUrl.value = result
   }
   reader.readAsDataURL(file.raw)
 }
 
-const onChange = ({ coordinates: coords }) => {
+const onChange = ({ coordinates: coords }: CropperChangeEvent): void => {
   coordinates.value = coords
 }
 
-const saveState = () => {
+const saveState = (): void => {
   imageState.value = {
     imageUrl: imageUrl.value,
     currentWidth: currentWidth.value,
@@ -133,71 +162,90 @@ const saveState = () => {
   hasEdits.value = true
 }
 
-const flipX = () => {
-  flipXFlag.value = !flipXFlag.value
-  const imageData = cropperRef.value.getCanvas()
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  
+const updateCropper = (): void => {
+  hasEdits.value = true
+}
+
+function getCropperCanvas(): HTMLCanvasElement | null {
+  return cropperRef.value?.getCanvas() || null
+}
+
+function createCanvasFromImage(imageData: HTMLCanvasElement): { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D } | null {
+  const canvas: HTMLCanvasElement = document.createElement('canvas')
+  const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d')
+  if (!ctx) return null
   canvas.width = imageData.width
   canvas.height = imageData.height
+  return { canvas, ctx }
+}
+
+const flipX = (): void => {
+  flipXFlag.value = !flipXFlag.value
+  const imageData: HTMLCanvasElement | null = getCropperCanvas()
+  if (!imageData) return
+  const created = createCanvasFromImage(imageData)
+  if (!created) return
+  const { canvas, ctx } = created
   
   ctx.scale(flipXFlag.value ? -1 : 1, 1)
   ctx.drawImage(imageData, flipXFlag.value ? -canvas.width : 0, 0)
   
-  const dataUrl = canvas.toDataURL()
+  const dataUrl: string = canvas.toDataURL()
   imageUrl.value = dataUrl
   saveState()
 }
 
-const flipY = () => {
+const flipY = (): void => {
   flipYFlag.value = !flipYFlag.value
-  const imageData = cropperRef.value.getCanvas()
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  
-  canvas.width = imageData.width
-  canvas.height = imageData.height
+  const imageData: HTMLCanvasElement | null = getCropperCanvas()
+  if (!imageData) return
+  const created = createCanvasFromImage(imageData)
+  if (!created) return
+  const { canvas, ctx } = created
   
   ctx.scale(1, flipYFlag.value ? -1 : 1)
   ctx.drawImage(imageData, 0, flipYFlag.value ? -canvas.height : 0)
   
-  const dataUrl = canvas.toDataURL()
+  const dataUrl: string = canvas.toDataURL()
   imageUrl.value = dataUrl
   saveState()
 }
 
-const zoom = (factor) => {
-  const newWidth = Math.round(currentWidth.value * (1 + factor))
+const zoom = (factor: number): void => {
+  const newWidth: number = Math.round(currentWidth.value * (1 + factor))
   
   if (newWidth < originalWidth.value * 0.5 || newWidth > originalWidth.value * MAX_SCALE) {
     return
   }
 
-  const imageData = cropperRef.value.getCanvas()
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
+  const imageData: HTMLCanvasElement | null = getCropperCanvas()
+  if (!imageData) return
+  const canvas: HTMLCanvasElement = document.createElement('canvas')
+  const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d')
+  if (!ctx) return
   
   canvas.width = newWidth
   canvas.height = Math.round(imageData.height * (newWidth / imageData.width))
   
   ctx.drawImage(imageData, 0, 0, canvas.width, canvas.height)
   
-  const dataUrl = canvas.toDataURL()
+  const dataUrl: string = canvas.toDataURL()
   imageUrl.value = dataUrl
   currentWidth.value = newWidth
   saveState()
 }
 
-const rotate = (deg) => {
+const rotate = (deg: number): void => {
   rotationAngle.value = (rotationAngle.value + deg) % 360
-  const imageData = cropperRef.value.getCanvas()
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
+  const imageData: HTMLCanvasElement | null = getCropperCanvas()
+  if (!imageData) return
+  const canvas: HTMLCanvasElement = document.createElement('canvas')
+  const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d')
+  if (!ctx) return
   
-  const angle = rotationAngle.value * Math.PI / 180
-  const sin = Math.sin(angle)
-  const cos = Math.cos(angle)
+  const angle: number = rotationAngle.value * Math.PI / 180
+  const sin: number = Math.sin(angle)
+  const cos: number = Math.cos(angle)
   
   if (Math.abs(sin) > Math.abs(cos)) {
     canvas.width = imageData.height
@@ -211,16 +259,16 @@ const rotate = (deg) => {
   ctx.rotate(angle)
   ctx.drawImage(imageData, -imageData.width / 2, -imageData.height / 2)
   
-  const dataUrl = canvas.toDataURL()
+  const dataUrl: string = canvas.toDataURL()
   imageUrl.value = dataUrl
   saveState()
 }
 
-const crop = () => {
+const crop = (): void => {
   if (!cropperRef.value) return
   
-  const canvas = cropperRef.value.getResult().canvas
-  const dataUrl = canvas.toDataURL()
+  const canvas: HTMLCanvasElement = cropperRef.value.getResult().canvas
+  const dataUrl: string = canvas.toDataURL()
   
   imageUrl.value = dataUrl
   currentWidth.value = canvas.width
@@ -232,7 +280,7 @@ const crop = () => {
   saveState()
 }
 
-const reset = () => {
+const reset = (): void => {
   if (imageState.value) {
     imageUrl.value = imageState.value.imageUrl
     currentWidth.value = imageState.value.currentWidth
@@ -244,11 +292,11 @@ const reset = () => {
   }
 }
 
-const saveToLocal = () => {
+const saveToLocal = (): void => {
   if (!imageUrl.value) return
   
   // 创建一个链接元素
-  const link = document.createElement('a')
+  const link: HTMLAnchorElement = document.createElement('a')
   link.download = `edited_image_${Date.now()}.png` // 生成文件名
   link.href = imageUrl.value
   

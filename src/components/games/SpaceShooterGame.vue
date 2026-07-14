@@ -1,6 +1,42 @@
-<script setup>
+<script setup lang="ts">
 
-import { readHighScore, rectsOverlap } from './gameUtils.js'
+import { readHighScore, rectsOverlap } from './gameUtils.ts'
+import type { RectBounds } from './gameUtils.ts'
+
+type GamePhase = 'ready' | 'playing' | 'paused' | 'gameover'
+type MoveDirection = 'left' | 'right' | 'up' | 'down'
+type InputAction = MoveDirection | 'fire'
+
+interface Player extends RectBounds {}
+
+interface Bullet extends RectBounds {
+  vx: number
+  vy: number
+}
+
+interface Enemy extends RectBounds {
+  id: number
+  hp: number
+  maxHp: number
+  speed: number
+  drift: number
+  phase: number
+  nextShotAt: number
+}
+
+interface DifficultyConfig {
+  level: number
+  spawnSeconds: number
+  fallSpeed: number
+  bulletSpeed: number
+}
+
+interface Star {
+  x: number
+  y: number
+  radius: number
+  alpha: number
+}
 
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 520
@@ -15,37 +51,37 @@ const MAX_WALL_DELTA_SECONDS = 0.25
 const MAX_STEPS_PER_FRAME = 30
 const HIGH_SCORE_KEY = 'spaceshooter_high_score'
 
-const canvasRef = ref(null)
-const score = ref(0)
-const highScore = ref(readHighScore(HIGH_SCORE_KEY))
-const lives = ref(3)
-const wave = ref(1)
-const phase = ref('ready')
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const score = ref<number>(0)
+const highScore = ref<number>(readHighScore(HIGH_SCORE_KEY))
+const lives = ref<number>(3)
+const wave = ref<number>(1)
+const phase = ref<GamePhase>('ready')
 
 let player = createPlayer()
-let playerBullets = []
-let enemyBullets = []
-let enemies = []
-let pressedKeys = new Set()
-let fireHeld = false
-let pointerId = null
-let nextEnemyId = 1
-let gameTime = 0
-let spawnElapsed = 0
-let lastPlayerShotAt = -PLAYER_SHOT_COOLDOWN
-let invulnerableUntil = 0
-let lastFrameAt = null
-let accumulator = 0
-let animationFrameId = null
+let playerBullets: Bullet[] = []
+let enemyBullets: Bullet[] = []
+let enemies: Enemy[] = []
+let pressedKeys: Set<InputAction> = new Set<InputAction>()
+let fireHeld: boolean = false
+let pointerId: number | null = null
+let nextEnemyId: number = 1
+let gameTime: number = 0
+let spawnElapsed: number = 0
+let lastPlayerShotAt: number = -PLAYER_SHOT_COOLDOWN
+let invulnerableUntil: number = 0
+let lastFrameAt: number | null = null
+let accumulator: number = 0
+let animationFrameId: number | null = null
 
-const stars = Array.from({ length: 54 }, (_, index) => ({
+const stars: Star[] = Array.from({ length: 54 }, (_: unknown, index: number): Star => ({
   x: (index * 67 + 19) % CANVAS_WIDTH,
   y: (index * 101 + 31) % CANVAS_HEIGHT,
   radius: index % 7 === 0 ? 1.5 : 0.8,
   alpha: 0.25 + (index % 5) * 0.12
 }))
 
-function createPlayer() {
+function createPlayer(): Player {
   return {
     x: (CANVAS_WIDTH - PLAYER_WIDTH) / 2,
     y: CANVAS_HEIGHT - PLAYER_HEIGHT - 22,
@@ -54,7 +90,7 @@ function createPlayer() {
   }
 }
 
-function difficultyFor(currentScore = score.value) {
+function difficultyFor(currentScore: number = score.value): DifficultyConfig {
   if (currentScore >= 1800) return { level: 5, spawnSeconds: 0.48, fallSpeed: 142, bulletSpeed: 210 }
   if (currentScore >= 1200) return { level: 4, spawnSeconds: 0.60, fallSpeed: 126, bulletSpeed: 196 }
   if (currentScore >= 800) return { level: 3, spawnSeconds: 0.74, fallSpeed: 110, bulletSpeed: 184 }
@@ -62,12 +98,12 @@ function difficultyFor(currentScore = score.value) {
   return { level: 1, spawnSeconds: 1.12, fallSpeed: 78, bulletSpeed: 158 }
 }
 
-function clearFrameTiming() {
+function clearFrameTiming(): void {
   lastFrameAt = null
   accumulator = 0
 }
 
-function saveHighScore() {
+function saveHighScore(): void {
   if (score.value <= highScore.value) return
   highScore.value = score.value
   try {
@@ -77,12 +113,12 @@ function saveHighScore() {
   }
 }
 
-function resetGame() {
+function resetGame(): void {
   player = createPlayer()
   playerBullets = []
   enemyBullets = []
   enemies = []
-  pressedKeys = new Set()
+  pressedKeys = new Set<InputAction>()
   fireHeld = false
   pointerId = null
   nextEnemyId = 1
@@ -98,7 +134,7 @@ function resetGame() {
   draw()
 }
 
-function startGame() {
+function startGame(): void {
   if (phase.value === 'gameover') return
   if (phase.value === 'ready' || phase.value === 'paused') {
     phase.value = 'playing'
@@ -106,12 +142,12 @@ function startGame() {
   }
 }
 
-function restartGame() {
+function restartGame(): void {
   resetGame()
   startGame()
 }
 
-function togglePause() {
+function togglePause(): void {
   if (phase.value === 'playing') phase.value = 'paused'
   else if (phase.value === 'paused') phase.value = 'playing'
   else return
@@ -120,7 +156,7 @@ function togglePause() {
   clearFrameTiming()
 }
 
-function finishGame() {
+function finishGame(): void {
   if (phase.value === 'gameover') return
   phase.value = 'gameover'
   pressedKeys.clear()
@@ -129,7 +165,7 @@ function finishGame() {
   saveHighScore()
 }
 
-function shootPlayer() {
+function shootPlayer(): void {
   if (phase.value === 'ready' || phase.value === 'paused') startGame()
   if (phase.value !== 'playing' || gameTime - lastPlayerShotAt < PLAYER_SHOT_COOLDOWN) return
   playerBullets.push({
@@ -137,21 +173,22 @@ function shootPlayer() {
     y: player.y - 12,
     width: 4,
     height: 13,
+    vx: 0,
     vy: -390
   })
   lastPlayerShotAt = gameTime
 }
 
-function spawnEnemy() {
-  const difficulty = difficultyFor()
-  const advanced = score.value >= 800
-  const width = advanced ? 34 : 30
-  const height = advanced ? 30 : 26
-  const laneCount = 7
-  const lane = (nextEnemyId * 3 + difficulty.level) % laneCount
-  const laneWidth = (CANVAS_WIDTH - width - 24) / (laneCount - 1)
-  const hp = advanced ? 2 : 1
-  const enemy = {
+function spawnEnemy(): void {
+  const difficulty: DifficultyConfig = difficultyFor()
+  const advanced: boolean = score.value >= 800
+  const width: number = advanced ? 34 : 30
+  const height: number = advanced ? 30 : 26
+  const laneCount: number = 7
+  const lane: number = (nextEnemyId * 3 + difficulty.level) % laneCount
+  const laneWidth: number = (CANVAS_WIDTH - width - 24) / (laneCount - 1)
+  const hp: number = advanced ? 2 : 1
+  const enemy: Enemy = {
     id: nextEnemyId++,
     x: 12 + lane * laneWidth,
     y: -height - 4,
@@ -167,15 +204,15 @@ function spawnEnemy() {
   enemies.push(enemy)
 }
 
-function shootEnemy(enemy) {
-  const difficulty = difficultyFor()
-  const originX = enemy.x + enemy.width / 2
-  const originY = enemy.y + enemy.height
-  const targetX = player.x + player.width / 2
-  const targetY = player.y + player.height / 2
-  const dx = targetX - originX
-  const dy = targetY - originY
-  const length = Math.max(1, Math.hypot(dx, dy))
+function shootEnemy(enemy: Enemy): void {
+  const difficulty: DifficultyConfig = difficultyFor()
+  const originX: number = enemy.x + enemy.width / 2
+  const originY: number = enemy.y + enemy.height
+  const targetX: number = player.x + player.width / 2
+  const targetY: number = player.y + player.height / 2
+  const dx: number = targetX - originX
+  const dy: number = targetY - originY
+  const length: number = Math.max(1, Math.hypot(dx, dy))
   enemyBullets.push({
     x: originX - 3,
     y: originY,
@@ -187,9 +224,9 @@ function shootEnemy(enemy) {
   enemy.nextShotAt = gameTime + Math.max(620, 1550 - difficulty.level * 125) + (enemy.id % 4) * 150
 }
 
-function movePlayer(deltaSeconds) {
-  let dx = 0
-  let dy = 0
+function movePlayer(deltaSeconds: number): void {
+  let dx: number = 0
+  let dy: number = 0
   if (pressedKeys.has('left')) dx -= 1
   if (pressedKeys.has('right')) dx += 1
   if (pressedKeys.has('up')) dy -= 1
@@ -202,8 +239,8 @@ function movePlayer(deltaSeconds) {
   player.y = clamp(player.y + dy * PLAYER_SPEED * deltaSeconds, PLAYER_MIN_Y, CANVAS_HEIGHT - player.height)
 }
 
-function updateEnemies(deltaSeconds) {
-  const difficulty = difficultyFor()
+function updateEnemies(deltaSeconds: number): void {
+  const difficulty: DifficultyConfig = difficultyFor()
   spawnElapsed += deltaSeconds
   while (spawnElapsed >= difficulty.spawnSeconds) {
     spawnElapsed -= difficulty.spawnSeconds
@@ -218,44 +255,44 @@ function updateEnemies(deltaSeconds) {
   }
 }
 
-function updateBullets(deltaSeconds) {
+function updateBullets(deltaSeconds: number): void {
   for (const bullet of playerBullets) bullet.y += bullet.vy * deltaSeconds
   for (const bullet of enemyBullets) {
     bullet.x += bullet.vx * deltaSeconds
     bullet.y += bullet.vy * deltaSeconds
   }
-  playerBullets = playerBullets.filter(bullet => bullet.y + bullet.height >= 0)
-  enemyBullets = enemyBullets.filter(bullet => (
+  playerBullets = playerBullets.filter((bullet: Bullet): boolean => bullet.y + bullet.height >= 0)
+  enemyBullets = enemyBullets.filter((bullet: Bullet): boolean => (
     bullet.x + bullet.width >= 0 && bullet.x <= CANVAS_WIDTH &&
     bullet.y + bullet.height >= 0 && bullet.y <= CANVAS_HEIGHT
   ))
 }
 
-function resolvePlayerShots() {
-  const hitBullets = new Set()
-  const defeatedEnemies = new Set()
+function resolvePlayerShots(): void {
+  const hitBullets: Set<number> = new Set<number>()
+  const defeatedEnemies: Set<number> = new Set<number>()
 
   for (let bulletIndex = 0; bulletIndex < playerBullets.length; bulletIndex += 1) {
-    const bullet = playerBullets[bulletIndex]
-    const enemy = enemies.find(item => !defeatedEnemies.has(item.id) && rectsOverlap(bullet, item))
+    const bullet: Bullet = playerBullets[bulletIndex]
+    const enemy: Enemy | undefined = enemies.find((item: Enemy): boolean => !defeatedEnemies.has(item.id) && rectsOverlap(bullet, item))
     if (!enemy) continue
     hitBullets.add(bulletIndex)
     enemy.hp -= 1
     if (enemy.hp <= 0) defeatedEnemies.add(enemy.id)
   }
 
-  if (hitBullets.size > 0) playerBullets = playerBullets.filter((_, index) => !hitBullets.has(index))
+  if (hitBullets.size > 0) playerBullets = playerBullets.filter((_: Bullet, index: number): boolean => !hitBullets.has(index))
   if (defeatedEnemies.size === 0) return
   for (const enemy of enemies) {
     if (!defeatedEnemies.has(enemy.id)) continue
     score.value += enemy.maxHp === 2 ? 140 : 100
   }
-  enemies = enemies.filter(enemy => !defeatedEnemies.has(enemy.id))
+  enemies = enemies.filter((enemy: Enemy): boolean => !defeatedEnemies.has(enemy.id))
   wave.value = difficultyFor().level
   saveHighScore()
 }
 
-function damagePlayer() {
+function damagePlayer(): boolean {
   if (gameTime < invulnerableUntil || phase.value !== 'playing') return false
   lives.value -= 1
   invulnerableUntil = gameTime + INVULNERABLE_MS
@@ -263,23 +300,23 @@ function damagePlayer() {
   return true
 }
 
-function resolvePlayerThreats() {
-  const touchingBulletIndexes = new Set()
-  const touchingEnemyIds = new Set()
-  enemyBullets.forEach((bullet, index) => {
+function resolvePlayerThreats(): void {
+  const touchingBulletIndexes: Set<number> = new Set<number>()
+  const touchingEnemyIds: Set<number> = new Set<number>()
+  enemyBullets.forEach((bullet: Bullet, index: number): void => {
     if (rectsOverlap(bullet, player)) touchingBulletIndexes.add(index)
   })
-  enemies.forEach(enemy => {
+  enemies.forEach((enemy: Enemy): void => {
     if (enemy.y + enemy.height >= CANVAS_HEIGHT || rectsOverlap(enemy, player)) touchingEnemyIds.add(enemy.id)
   })
 
   if (touchingBulletIndexes.size === 0 && touchingEnemyIds.size === 0) return
-  enemyBullets = enemyBullets.filter((_, index) => !touchingBulletIndexes.has(index))
-  enemies = enemies.filter(enemy => !touchingEnemyIds.has(enemy.id))
+  enemyBullets = enemyBullets.filter((_: Bullet, index: number): boolean => !touchingBulletIndexes.has(index))
+  enemies = enemies.filter((enemy: Enemy): boolean => !touchingEnemyIds.has(enemy.id))
   damagePlayer()
 }
 
-function update(deltaSeconds) {
+function update(deltaSeconds: number): void {
   gameTime += deltaSeconds * 1000
   movePlayer(deltaSeconds)
   if (fireHeld || pressedKeys.has('fire')) shootPlayer()
@@ -289,8 +326,8 @@ function update(deltaSeconds) {
   resolvePlayerThreats()
 }
 
-function drawBackground(ctx) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT)
+function drawBackground(ctx: CanvasRenderingContext2D): void {
+  const gradient: CanvasGradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT)
   gradient.addColorStop(0, '#071326')
   gradient.addColorStop(0.62, '#0c2440')
   gradient.addColorStop(1, '#151a3a')
@@ -298,7 +335,7 @@ function drawBackground(ctx) {
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
   for (const star of stars) {
-    const y = (star.y + gameTime * (0.008 + star.radius * 0.004)) % CANVAS_HEIGHT
+    const y: number = (star.y + gameTime * (0.008 + star.radius * 0.004)) % CANVAS_HEIGHT
     ctx.globalAlpha = star.alpha
     ctx.fillStyle = '#d8f4ff'
     ctx.beginPath()
@@ -316,8 +353,8 @@ function drawBackground(ctx) {
   ctx.setLineDash([])
 }
 
-function drawPlayer(ctx) {
-  const invulnerable = gameTime < invulnerableUntil
+function drawPlayer(ctx: CanvasRenderingContext2D): void {
+  const invulnerable: boolean = gameTime < invulnerableUntil
   if (invulnerable && Math.floor(gameTime / 90) % 2 === 0) return
   ctx.save()
   ctx.translate(player.x, player.y)
@@ -337,7 +374,7 @@ function drawPlayer(ctx) {
   ctx.restore()
 }
 
-function drawEnemy(ctx, enemy) {
+function drawEnemy(ctx: CanvasRenderingContext2D, enemy: Enemy): void {
   ctx.save()
   ctx.translate(enemy.x, enemy.y)
   ctx.fillStyle = enemy.maxHp === 2 ? '#ee6cff' : '#ff5c73'
@@ -360,7 +397,7 @@ function drawEnemy(ctx, enemy) {
   ctx.restore()
 }
 
-function drawBullets(ctx) {
+function drawBullets(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = '#ffeb72'
   for (const bullet of playerBullets) {
     ctx.shadowColor = '#ffdf36'
@@ -376,7 +413,7 @@ function drawBullets(ctx) {
   }
 }
 
-function drawHud(ctx) {
+function drawHud(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = 'rgba(5, 13, 28, 0.7)'
   ctx.fillRect(8, 8, CANVAS_WIDTH - 16, 34)
   ctx.fillStyle = '#e8f8ff'
@@ -393,23 +430,23 @@ function drawHud(ctx) {
   ctx.textBaseline = 'alphabetic'
 }
 
-function draw() {
-  const ctx = canvasRef.value?.getContext('2d')
+function draw(): void {
+  const ctx: CanvasRenderingContext2D | null = canvasRef.value?.getContext('2d') || null
   if (!ctx) return
   drawBackground(ctx)
-  enemies.forEach(enemy => drawEnemy(ctx, enemy))
+  enemies.forEach((enemy: Enemy): void => drawEnemy(ctx, enemy))
   drawBullets(ctx)
   drawPlayer(ctx)
   drawHud(ctx)
 }
 
-function gameLoop(now) {
+function gameLoop(now: number): void {
   if (lastFrameAt === null) lastFrameAt = now
-  const wallDeltaSeconds = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_WALL_DELTA_SECONDS)
+  const wallDeltaSeconds: number = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_WALL_DELTA_SECONDS)
   lastFrameAt = now
   if (phase.value === 'playing') {
     accumulator += wallDeltaSeconds
-    let steps = 0
+    let steps: number = 0
     while (accumulator >= FIXED_STEP_SECONDS && steps < MAX_STEPS_PER_FRAME) {
       accumulator -= FIXED_STEP_SECONDS
       update(FIXED_STEP_SECONDS)
@@ -423,12 +460,12 @@ function gameLoop(now) {
   animationFrameId = requestAnimationFrame(gameLoop)
 }
 
-function clamp(value, min, max) {
+function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value))
 }
 
-function directionForKey(event) {
-  const key = event.key.toLowerCase()
+function directionForKey(event: KeyboardEvent): MoveDirection | null {
+  const key: string = event.key.toLowerCase()
   if (event.key === 'ArrowLeft' || key === 'a') return 'left'
   if (event.key === 'ArrowRight' || key === 'd') return 'right'
   if (event.key === 'ArrowUp' || key === 'w') return 'up'
@@ -436,8 +473,8 @@ function directionForKey(event) {
   return null
 }
 
-function handleKeydown(event) {
-  const direction = directionForKey(event)
+function handleKeydown(event: KeyboardEvent): void {
+  const direction: MoveDirection | null = directionForKey(event)
   if (direction) {
     event.preventDefault()
     pressedKeys.add(direction)
@@ -457,25 +494,26 @@ function handleKeydown(event) {
   if ((event.key === 'r' || event.key === 'R') && !event.repeat) restartGame()
 }
 
-function handleKeyup(event) {
-  const direction = directionForKey(event)
+function handleKeyup(event: KeyboardEvent): void {
+  const direction: MoveDirection | null = directionForKey(event)
   if (direction) pressedKeys.delete(direction)
   if (event.code === 'Space' || event.key === ' ') pressedKeys.delete('fire')
 }
 
-function moveToPointer(event) {
-  const canvas = canvasRef.value
+function moveToPointer(event: PointerEvent): void {
+  const canvas: HTMLCanvasElement | null = canvasRef.value
   if (!canvas) return
-  const rect = canvas.getBoundingClientRect()
-  const x = (event.clientX - rect.left) * CANVAS_WIDTH / rect.width
-  const y = (event.clientY - rect.top) * CANVAS_HEIGHT / rect.height
+  const rect: DOMRect = canvas.getBoundingClientRect()
+  const x: number = (event.clientX - rect.left) * CANVAS_WIDTH / rect.width
+  const y: number = (event.clientY - rect.top) * CANVAS_HEIGHT / rect.height
   player.x = clamp(x - player.width / 2, 0, CANVAS_WIDTH - player.width)
   player.y = clamp(y - player.height / 2, PLAYER_MIN_Y, CANVAS_HEIGHT - player.height)
 }
 
-function handleCanvasPointerDown(event) {
+function handleCanvasPointerDown(event: PointerEvent): void {
   if (phase.value === 'gameover') return
-  event.currentTarget.setPointerCapture?.(event.pointerId)
+  const target: EventTarget | null = event.currentTarget
+  if (target instanceof HTMLCanvasElement) target.setPointerCapture?.(event.pointerId)
   pointerId = event.pointerId
   startGame()
   moveToPointer(event)
@@ -483,42 +521,42 @@ function handleCanvasPointerDown(event) {
   shootPlayer()
 }
 
-function handleCanvasPointerMove(event) {
+function handleCanvasPointerMove(event: PointerEvent): void {
   if (pointerId !== event.pointerId) return
   moveToPointer(event)
 }
 
-function releaseCanvasPointer(event) {
+function releaseCanvasPointer(event: PointerEvent): void {
   if (pointerId !== event.pointerId) return
   pointerId = null
   fireHeld = false
 }
 
-function pressDirection(direction) {
+function pressDirection(direction: MoveDirection): void {
   startGame()
   pressedKeys.add(direction)
 }
 
-function releaseDirection(direction) {
+function releaseDirection(direction: MoveDirection): void {
   pressedKeys.delete(direction)
 }
 
-function pressFire() {
+function pressFire(): void {
   fireHeld = true
   shootPlayer()
 }
 
-function releaseFire() {
+function releaseFire(): void {
   fireHeld = false
 }
 
-function releaseInput() {
+function releaseInput(): void {
   pressedKeys.clear()
   fireHeld = false
   pointerId = null
 }
 
-function handleVisibilityChange() {
+function handleVisibilityChange(): void {
   if (document.hidden && phase.value === 'playing') phase.value = 'paused'
   releaseInput()
   clearFrameTiming()

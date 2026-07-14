@@ -72,38 +72,94 @@
   </div>
 </template>
 
-<script setup>
-
+<script setup lang="ts">
+import { requestJson } from '@/utils/request'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
+import { API_BASE, SORT_TABS } from '@/vue-pages-text-fn-abc/aicoding'
+import type { SortTab } from '@/vue-pages-text-fn-abc/aicoding'
 
-const API_BASE = '/api-juejin'
+interface AiCodingTag {
+  tag_id: string
+  tag_name: string
+}
 
-const sortTabs = [
-  { label: '热门', value: 1 },
-  { label: '最新', value: 2 }
-]
+interface AiCodingArticle {
+  id: string
+  title: string
+  brief: string
+  cover: string
+  viewCount: number
+  diggCount: number
+  commentCount: number
+  ctime: number
+  author: string
+  tags: string[]
+  url: string
+}
 
-const sortType = ref(1)
-const tags = ref([])
-const activeTagId = ref('')
-const articles = ref([])
-const cursor = ref('')
-const hasMore = ref(true)
-const loading = ref(false)
-const error = ref('')
+interface JuejinTagRaw {
+  tag_id: string
+  tag?: {
+    tag_name?: string
+  }
+}
 
-let requestSeq = 0
+interface JuejinArticleRaw {
+  article_pack?: {
+    article_id: string
+    article_info?: {
+      title?: string
+      brief_content?: string
+      cover_image?: string
+      view_count?: number
+      digg_count?: number
+      comment_count?: number
+      ctime?: string | number
+    }
+    author_user_info?: {
+      user_name?: string
+    }
+    tags?: Array<{ tag_name?: string }>
+  }
+}
 
-onMounted(() => {
+interface JuejinListResponse<T> {
+  err_no: number
+  err_msg?: string
+  data?: T[]
+  cursor?: string
+  has_more?: boolean
+}
+
+interface ArticleQueryBody {
+  sort_type: number
+  cursor: string
+  limit: number
+  tag_ids?: string[]
+}
+
+const sortTabs = SORT_TABS
+
+const sortType = ref<number>(1)
+const tags = ref<AiCodingTag[]>([])
+const activeTagId = ref<string>('')
+const articles = ref<AiCodingArticle[]>([])
+const cursor = ref<string>('')
+const hasMore = ref<boolean>(true)
+const loading = ref<boolean>(false)
+const error = ref<string>('')
+
+let requestSeq: number = 0
+
+onMounted((): void => {
   fetchTags()
   fetchArticles(true)
 })
 
-async function fetchTags() {
+async function fetchTags(): Promise<void> {
   try {
-    const res = await fetch(`${API_BASE}/tag_api/v1/query_tag_list`, {
+    const json = await requestJson<JuejinListResponse<JuejinTagRaw>>(`${API_BASE}/tag_api/v1/query_tag_list`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         key_word: '',
         status: [0],
@@ -113,19 +169,18 @@ async function fetchTags() {
         limit: 100
       })
     })
-    const json = await res.json()
-    if (json.err_no !== 0) throw new Error(json.err_msg)
-    tags.value = (json.data || []).map(item => ({
+    if (json.err_no !== 0) throw new Error(json.err_msg || '获取分类失败')
+    tags.value = (json.data || []).map((item: JuejinTagRaw): AiCodingTag => ({
       tag_id: item.tag_id,
       tag_name: item.tag?.tag_name || ''
-    })).filter(t => t.tag_name)
-  } catch (e) {
+    })).filter((t: AiCodingTag): boolean => Boolean(t.tag_name))
+  } catch (e: unknown) {
     console.error('获取分类失败:', e)
   }
 }
 
-async function fetchArticles(reset = false) {
-  const seq = ++requestSeq
+async function fetchArticles(reset: boolean = false): Promise<void> {
+  const seq: number = ++requestSeq
   loading.value = true
   error.value = ''
   if (reset) {
@@ -134,92 +189,91 @@ async function fetchArticles(reset = false) {
     hasMore.value = true
   }
   try {
-    const body = {
+    const body: ArticleQueryBody = {
       sort_type: sortType.value,
       cursor: cursor.value,
       limit: 10
     }
     if (activeTagId.value) body.tag_ids = [activeTagId.value]
-    const res = await fetch(`${API_BASE}/content_api/v1/aicoding/content`, {
+    const json = await requestJson<JuejinListResponse<JuejinArticleRaw>>(`${API_BASE}/content_api/v1/aicoding/content`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     })
-    const json = await res.json()
     if (seq !== requestSeq) return
-    if (json.err_no !== 0) throw new Error(json.err_msg)
-    const list = (json.data || []).map(mapArticle).filter(Boolean)
+    if (json.err_no !== 0) throw new Error(json.err_msg || '获取文章失败')
+    const list: AiCodingArticle[] = (json.data || []).map(mapArticle).filter((item: AiCodingArticle | null): item is AiCodingArticle => Boolean(item))
     articles.value = reset ? list : [...articles.value, ...list]
     cursor.value = json.cursor || ''
     hasMore.value = !!json.has_more
-  } catch (e) {
+  } catch (e: unknown) {
     if (seq !== requestSeq) return
-    error.value = `加载失败：${e.message || e}`
+    const message: string = e instanceof Error ? e.message : String(e)
+    error.value = `加载失败：${message}`
   } finally {
     if (seq === requestSeq) loading.value = false
   }
 }
 
-function mapArticle(item) {
+function mapArticle(item: JuejinArticleRaw): AiCodingArticle | null {
   const pack = item.article_pack
   if (!pack || !pack.article_info) return null
   const info = pack.article_info
   return {
     id: pack.article_id,
-    title: info.title,
-    brief: info.brief_content,
+    title: info.title || '未命名文章',
+    brief: info.brief_content || '',
     cover: info.cover_image || '',
     viewCount: info.view_count || 0,
     diggCount: info.digg_count || 0,
     commentCount: info.comment_count || 0,
     ctime: Number(info.ctime) * 1000,
     author: pack.author_user_info?.user_name || '匿名',
-    tags: (pack.tags || []).map(t => t.tag_name).filter(Boolean),
+    tags: (pack.tags || []).map((t: { tag_name?: string }): string => t.tag_name || '').filter(Boolean),
     url: `https://juejin.cn/post/${pack.article_id}`
   }
 }
 
-function switchSort(value) {
+function switchSort(value: number): void {
   if (sortType.value === value) return
   sortType.value = value
   fetchArticles(true)
 }
 
-function switchTag(tagId) {
+function switchTag(tagId: string): void {
   if (activeTagId.value === tagId) return
   activeTagId.value = tagId
   fetchArticles(true)
 }
 
-function loadMore() {
+function loadMore(): void {
   if (loading.value || !hasMore.value) return
   fetchArticles(false)
 }
 
-function reload() {
+function reload(): void {
   fetchArticles(true)
 }
 
-async function handleRefresh() {
+async function handleRefresh(): Promise<void> {
   await Promise.all([fetchTags(), fetchArticles(true)])
 }
 
-function formatCount(n) {
+function formatCount(n: number): string {
   if (n >= 10000) return `${(n / 10000).toFixed(1)}w`
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
   return String(n)
 }
 
-function formatTime(ts) {
-  const diff = Date.now() - ts
-  const min = Math.floor(diff / 60000)
+function formatTime(ts: number): string {
+  const diff: number = Date.now() - ts
+  const min: number = Math.floor(diff / 60000)
   if (min < 1) return '刚刚'
   if (min < 60) return `${min}分钟前`
-  const hour = Math.floor(min / 60)
+  const hour: number = Math.floor(min / 60)
   if (hour < 24) return `${hour}小时前`
-  const day = Math.floor(hour / 24)
+  const day: number = Math.floor(hour / 24)
   if (day < 30) return `${day}天前`
-  const d = new Date(ts)
+  const d: Date = new Date(ts)
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 </script>

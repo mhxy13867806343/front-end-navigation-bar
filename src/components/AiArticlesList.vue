@@ -1,26 +1,46 @@
-<script setup>
+<script setup lang="ts">
 
 // Import fallback datasets
 import fallbackTutorials from '../utlis/daily_ai_tutorials.json'
 import fallbackQa from '../utlis/daily_ai_qa.json'
 import fallbackEncyclopedia from '../utlis/daily_ai_encyclopedia.json'
 import fallbackHallOfFame from '../utlis/daily_ai_hall_of_fame.json'
+import { requestText } from '@/utils/request'
+
+type ArticleType = 'tutorials' | 'qa' | 'encyclopedia' | 'hall_of_fame'
+
+interface ArticleItem {
+  title: string
+  link: string
+  desc: string
+  thumbnail: string
+  category: string
+  date: string
+}
+
+interface PageMeta {
+  title: string
+  subtitle: string
+  proxyPath: string
+  fallbackData: ArticleItem[]
+  url: string
+}
 
 const props = defineProps({
   type: {
     type: String,
     required: true,
-    validator: (value) => ['tutorials', 'qa', 'encyclopedia', 'hall_of_fame'].includes(value)
+    validator: (value: unknown): boolean => ['tutorials', 'qa', 'encyclopedia', 'hall_of_fame'].includes(String(value))
   }
-})
+}) as { type: ArticleType }
 
-const articlesList = ref([])
-const isLiveMode = ref(false)
-const isLoading = ref(false)
-const countdown = ref(60)
+const articlesList = ref<ArticleItem[]>([])
+const isLiveMode = ref<boolean>(false)
+const isLoading = ref<boolean>(false)
+const countdown = ref<number>(60)
 
 // Category details
-const pageMeta = {
+const pageMeta: Record<ArticleType, PageMeta> = {
   tutorials: {
     title: '📚 AI 教程专栏',
     subtitle: '提供各种热门AI工具与学习资源，快速学习有趣又有用的玩法技巧。',
@@ -51,56 +71,56 @@ const pageMeta = {
   }
 }
 
-const openLink = (link) => {
+const openLink = (link: string): void => {
   if (link) {
     window.open(link, '_blank')
   }
 }
 
 // Browser DOM parser for dynamic list compilation
-const parseArticlesHtml = (htmlText) => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(htmlText, 'text/html')
+const parseArticlesHtml = (htmlText: string): ArticleItem[] => {
+  const parser: DOMParser = new DOMParser()
+  const doc: Document = parser.parseFromString(htmlText, 'text/html')
   
   const cards = doc.querySelectorAll('.list-item')
   if (cards.length === 0) {
     throw new Error('未找到内容列表结构')
   }
   
-  const items = []
+  const items: ArticleItem[] = []
   
   cards.forEach((card) => {
     // Thumbnail image
-    const mediaA = card.querySelector('.media-content')
-    let thumbnail = ''
+    const mediaA: Element | null = card.querySelector('.media-content')
+    let thumbnail: string = ''
     if (mediaA) {
       thumbnail = mediaA.getAttribute('data-src') || mediaA.getAttribute('src') || ''
       if (!thumbnail) {
         const styleBg = mediaA.getAttribute('style') || ''
         const bgMatch = styleBg.match(/url\(([^)]+)\)/)
         if (bgMatch) {
-          thumbnail = bgMatch[1]
+          thumbnail = bgMatch[1] || ''
         }
       }
     }
     
     // Title & Link
-    const titleA = card.querySelector('.list-title')
+    const titleA: Element | null = card.querySelector('.list-title')
     if (!titleA) return
-    const title = titleA.textContent.trim()
-    const link = titleA.getAttribute('href') || ''
+    const title: string = titleA.textContent?.trim() || ''
+    const link: string = titleA.getAttribute('href') || ''
     
     // Description
-    const descEl = card.querySelector('.list-desc, .list-desc div, p')
-    const desc = descEl ? descEl.textContent.trim() : ''
+    const descEl: Element | null = card.querySelector('.list-desc, .list-desc div, p')
+    const desc: string = descEl ? descEl.textContent?.trim() || '' : ''
     
     // Category Tag
-    const catEl = card.querySelector('.list-footer a, .category-tag')
-    const category = catEl ? catEl.textContent.trim() : ''
+    const catEl: Element | null = card.querySelector('.list-footer a, .category-tag')
+    const category: string = catEl ? catEl.textContent?.trim() || '' : ''
     
     // Time
-    const timeEl = card.querySelector('time')
-    const dateText = timeEl ? timeEl.textContent.trim() : ''
+    const timeEl: Element | null = card.querySelector('time')
+    const dateText: string = timeEl ? timeEl.textContent?.trim() || '' : ''
     
     items.push({
       title,
@@ -115,34 +135,32 @@ const parseArticlesHtml = (htmlText) => {
   return items
 }
 
-const fetchArticles = async () => {
+const fetchArticles = async (): Promise<void> => {
   isLoading.value = true
-  const meta = pageMeta[props.type]
+  const meta: PageMeta = pageMeta[props.type]
   
-  const targetUrls = [
+  const targetUrls: string[] = [
     meta.proxyPath, // Local dev proxy
     `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(meta.url)}`,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(meta.url)}`
   ]
   
-  let success = false
+  let success: boolean = false
   for (const url of targetUrls) {
     try {
-      const response = await fetch(url, {
+      const htmlText: string = await requestText(url, {
         headers: { 'Accept': 'text/html' }
       })
-      if (response.ok) {
-        const htmlText = await response.text()
-        const parsed = parseArticlesHtml(htmlText)
-        if (parsed && parsed.length > 0) {
-          articlesList.value = parsed
-          isLiveMode.value = true
-          success = true
-          break
-        }
+      const parsed = parseArticlesHtml(htmlText)
+      if (parsed && parsed.length > 0) {
+        articlesList.value = parsed
+        isLiveMode.value = true
+        success = true
+        break
       }
-    } catch (err) {
-      console.warn(`Failed to fetch ${props.type} from ${url}:`, err.message)
+    } catch (err: unknown) {
+      const message: string = err instanceof Error ? err.message : String(err)
+      console.warn(`Failed to fetch ${props.type} from ${url}:`, message)
     }
   }
   
@@ -154,13 +172,13 @@ const fetchArticles = async () => {
   isLoading.value = false
 }
 
-const triggerManualRefresh = () => {
+const triggerManualRefresh = (): void => {
   fetchArticles()
   countdown.value = 60
 }
 
-let timer = null
-const startTimer = () => {
+let timer: ReturnType<typeof setInterval> | null = null
+const startTimer = (): void => {
   if (timer) clearInterval(timer)
   countdown.value = 60
   timer = setInterval(() => {
@@ -173,7 +191,7 @@ const startTimer = () => {
   }, 1000)
 }
 
-watch(() => props.type, () => {
+watch((): ArticleType => props.type, (): void => {
   fetchArticles()
   startTimer()
 }, { immediate: true })

@@ -1,6 +1,21 @@
-<script setup>
+<script setup lang="ts">
 
-import { circleRectCollision, readHighScore } from './gameUtils.js'
+import { circleRectCollision, readHighScore } from './gameUtils.ts'
+import type { CircleBounds, RectBounds } from './gameUtils.ts'
+
+type GamePhase = 'ready' | 'playing' | 'paused' | 'gameover'
+
+interface Bird extends CircleBounds {
+  velocityY: number
+}
+
+interface PipePair {
+  id: number
+  x: number
+  gapTop: number
+  gapBottom: number
+  scored: boolean
+}
 
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 520
@@ -22,27 +37,27 @@ const MAX_WALL_DELTA_SECONDS = 0.25
 const MAX_STEPS_PER_FRAME = 30
 const HIGH_SCORE_KEY = 'flappybird_high_score'
 
-const canvasRef = ref(null)
-const score = ref(0)
-const highScore = ref(readHighScore(HIGH_SCORE_KEY))
-const phase = ref('ready')
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const score = ref<number>(0)
+const highScore = ref<number>(readHighScore(HIGH_SCORE_KEY))
+const phase = ref<GamePhase>('ready')
 
 let bird = createBird()
-let pipes = []
-let nextPipeId = 1
-let spawnElapsed = 0
-let lastFrameAt = null
-let accumulator = 0
-let animationFrameId = null
+let pipes: PipePair[] = []
+let nextPipeId: number = 1
+let spawnElapsed: number = 0
+let lastFrameAt: number | null = null
+let accumulator: number = 0
+let animationFrameId: number | null = null
 
-function createBird() {
+function createBird(): Bird {
   return { x: BIRD_X, y: CANVAS_HEIGHT / 2, radius: BIRD_RADIUS, velocityY: 0 }
 }
 
-function createPipePair() {
-  const minGapTop = SAFE_TOP
-  const maxGapTop = GROUND_Y - SAFE_BOTTOM - PIPE_GAP
-  const gapTop = minGapTop + Math.random() * (maxGapTop - minGapTop)
+function createPipePair(): PipePair {
+  const minGapTop: number = SAFE_TOP
+  const maxGapTop: number = GROUND_Y - SAFE_BOTTOM - PIPE_GAP
+  const gapTop: number = minGapTop + Math.random() * (maxGapTop - minGapTop)
   return {
     id: nextPipeId++,
     x: CANVAS_WIDTH + 8,
@@ -52,7 +67,7 @@ function createPipePair() {
   }
 }
 
-function saveHighScore() {
+function saveHighScore(): void {
   if (score.value <= highScore.value) return
   highScore.value = score.value
   try {
@@ -62,12 +77,12 @@ function saveHighScore() {
   }
 }
 
-function clearFrameTiming() {
+function clearFrameTiming(): void {
   lastFrameAt = null
   accumulator = 0
 }
 
-function resetGame() {
+function resetGame(): void {
   bird = createBird()
   pipes = []
   nextPipeId = 1
@@ -78,13 +93,13 @@ function resetGame() {
   draw()
 }
 
-function restartGame(event) {
+function restartGame(event?: Event): void {
   event?.stopPropagation()
   resetGame()
   flap()
 }
 
-function flap() {
+function flap(): void {
   if (phase.value === 'gameover') return
   if (phase.value === 'ready' || phase.value === 'paused') {
     phase.value = 'playing'
@@ -93,7 +108,7 @@ function flap() {
   bird.velocityY = FLAP_VELOCITY
 }
 
-function togglePause(event) {
+function togglePause(event?: Event): void {
   event?.stopPropagation()
   if (phase.value === 'playing') phase.value = 'paused'
   else if (phase.value === 'paused') phase.value = 'playing'
@@ -101,18 +116,18 @@ function togglePause(event) {
   clearFrameTiming()
 }
 
-function finishGame() {
+function finishGame(): void {
   if (phase.value === 'gameover') return
   phase.value = 'gameover'
   clearFrameTiming()
   saveHighScore()
 }
 
-function pipeVisibleRight(pipe) {
+function pipeVisibleRight(pipe: PipePair): number {
   return pipe.x + PIPE_WIDTH + PIPE_CAP_OVERHANG
 }
 
-function pipeRectangles(pipe) {
+function pipeRectangles(pipe: PipePair): RectBounds[] {
   return [
     { x: pipe.x, y: 0, width: PIPE_WIDTH, height: pipe.gapTop - PIPE_CAP_HEIGHT },
     {
@@ -136,7 +151,7 @@ function pipeRectangles(pipe) {
   ]
 }
 
-function update(deltaSeconds) {
+function update(deltaSeconds: number): void {
   bird.velocityY += GRAVITY * deltaSeconds
   bird.y += bird.velocityY * deltaSeconds
 
@@ -154,19 +169,19 @@ function update(deltaSeconds) {
       saveHighScore()
     }
   }
-  pipes = pipes.filter(pipe => pipeVisibleRight(pipe) >= 0)
+  pipes = pipes.filter((pipe: PipePair): boolean => pipeVisibleRight(pipe) >= 0)
 
   if (bird.y - bird.radius <= 0 || bird.y + bird.radius >= GROUND_Y) {
     finishGame()
     return
   }
 
-  if (pipes.some(pipe => pipeRectangles(pipe).some(rect => circleRectCollision(bird, rect)))) {
+  if (pipes.some((pipe: PipePair): boolean => pipeRectangles(pipe).some((rect: RectBounds): boolean => circleRectCollision(bird, rect)))) {
     finishGame()
   }
 }
 
-function drawCloud(ctx, x, y, scale = 1) {
+function drawCloud(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number = 1): void {
   ctx.beginPath()
   ctx.arc(x, y, 13 * scale, 0, Math.PI * 2)
   ctx.arc(x + 18 * scale, y - 7 * scale, 17 * scale, 0, Math.PI * 2)
@@ -174,8 +189,8 @@ function drawCloud(ctx, x, y, scale = 1) {
   ctx.fill()
 }
 
-function drawBackground(ctx) {
-  const sky = ctx.createLinearGradient(0, 0, 0, GROUND_Y)
+function drawBackground(ctx: CanvasRenderingContext2D): void {
+  const sky: CanvasGradient = ctx.createLinearGradient(0, 0, 0, GROUND_Y)
   sky.addColorStop(0, '#72d8ec')
   sky.addColorStop(1, '#d8f5e5')
   ctx.fillStyle = sky
@@ -194,8 +209,8 @@ function drawBackground(ctx) {
   }
 }
 
-function drawPipe(ctx, pipe) {
-  const gradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0)
+function drawPipe(ctx: CanvasRenderingContext2D, pipe: PipePair): void {
+  const gradient: CanvasGradient = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0)
   gradient.addColorStop(0, '#62c94d')
   gradient.addColorStop(0.48, '#b4ef65')
   gradient.addColorStop(1, '#2f913b')
@@ -214,8 +229,8 @@ function drawPipe(ctx, pipe) {
   ctx.strokeRect(pipe.x + 1.5, pipe.gapBottom + PIPE_CAP_HEIGHT, PIPE_WIDTH - 3, GROUND_Y - pipe.gapBottom - PIPE_CAP_HEIGHT + 2)
 }
 
-function drawBird(ctx) {
-  const tilt = Math.max(-0.45, Math.min(0.8, bird.velocityY / 440))
+function drawBird(ctx: CanvasRenderingContext2D): void {
+  const tilt: number = Math.max(-0.45, Math.min(0.8, bird.velocityY / 440))
   ctx.save()
   ctx.translate(bird.x, bird.y)
   ctx.rotate(tilt)
@@ -256,7 +271,7 @@ function drawBird(ctx) {
   ctx.restore()
 }
 
-function drawGround(ctx) {
+function drawGround(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = '#d9bd62'
   ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y)
   ctx.fillStyle = '#79be43'
@@ -273,7 +288,7 @@ function drawGround(ctx) {
   }
 }
 
-function drawHud(ctx) {
+function drawHud(ctx: CanvasRenderingContext2D): void {
   ctx.textAlign = 'center'
   ctx.lineJoin = 'round'
   ctx.font = '900 42px ui-rounded, system-ui, sans-serif'
@@ -285,18 +300,18 @@ function drawHud(ctx) {
   ctx.textAlign = 'start'
 }
 
-function draw() {
+function draw(): void {
   const ctx = canvasRef.value?.getContext('2d')
   if (!ctx) return
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
   drawBackground(ctx)
-  pipes.forEach(pipe => drawPipe(ctx, pipe))
+  pipes.forEach((pipe: PipePair): void => drawPipe(ctx, pipe))
   drawGround(ctx)
   drawBird(ctx)
   drawHud(ctx)
 }
 
-function gameLoop(now) {
+function gameLoop(now: number): void {
   if (lastFrameAt === null) lastFrameAt = now
   const wallDeltaSeconds = Math.min(Math.max(0, (now - lastFrameAt) / 1000), MAX_WALL_DELTA_SECONDS)
   lastFrameAt = now
@@ -316,13 +331,13 @@ function gameLoop(now) {
   animationFrameId = requestAnimationFrame(gameLoop)
 }
 
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent): void {
   if (event.code !== 'Space' && event.key !== ' ') return
   event.preventDefault()
   if (!event.repeat) flap()
 }
 
-function handleVisibilityChange() {
+function handleVisibilityChange(): void {
   if (document.hidden && phase.value === 'playing') phase.value = 'paused'
   clearFrameTiming()
 }

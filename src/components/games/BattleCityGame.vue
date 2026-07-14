@@ -1,6 +1,48 @@
-<script setup>
+<script setup lang="ts">
 
-import { readHighScore, rectsOverlap } from './gameUtils.js'
+import { readHighScore, rectsOverlap } from './gameUtils.ts'
+import type { RectBounds } from './gameUtils.ts'
+
+type TankDirection = 'up' | 'down' | 'left' | 'right'
+type ControlAction = TankDirection | 'fire'
+type TerminalResult = 'win' | 'loss' | null
+
+interface DirectionVector {
+  x: number
+  y: number
+}
+
+interface Tank extends RectBounds {
+  direction: TankDirection
+  speed: number
+}
+
+interface EnemyTank extends Tank {
+  id: number
+  lastDirectionAt: number
+  nextTurnDelay: number
+  lastShotAt: number
+  nextShotDelay: number
+}
+
+interface Base extends RectBounds {
+  alive: boolean
+}
+
+interface Brick extends RectBounds {
+  id: number
+}
+
+interface Bullet extends RectBounds {
+  vx: number
+  vy: number
+  owner: 'player' | 'enemy'
+}
+
+interface ControlButton {
+  action: TankDirection
+  label: string
+}
 
 const CANVAS_SIZE = 400
 const TOTAL_ENEMIES = 12
@@ -9,48 +51,55 @@ const PLAYER_SHOT_COOLDOWN = 220
 const HIGH_SCORE_KEY = 'battlecity_high_score'
 const TANK_SIZE = 24
 
-const DIRECTIONS = {
+const DIRECTIONS: Record<TankDirection, DirectionVector> = {
   up: { x: 0, y: -1 },
   down: { x: 0, y: 1 },
   left: { x: -1, y: 0 },
   right: { x: 1, y: 0 }
 }
 
-const canvasRef = ref(null)
-const score = ref(0)
-const highScore = ref(readHighScore(HIGH_SCORE_KEY))
-const lives = ref(3)
-const remainingEnemies = ref(TOTAL_ENEMIES)
-const isPaused = ref(true)
-const isGameOver = ref(false)
-const isWin = ref(false)
+const controlButtons: ControlButton[] = [
+  { action: 'up', label: '▲' },
+  { action: 'left', label: '◀' },
+  { action: 'down', label: '▼' },
+  { action: 'right', label: '▶' }
+]
+
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+const score = ref<number>(0)
+const highScore = ref<number>(readHighScore(HIGH_SCORE_KEY))
+const lives = ref<number>(3)
+const remainingEnemies = ref<number>(TOTAL_ENEMIES)
+const isPaused = ref<boolean>(true)
+const isGameOver = ref<boolean>(false)
+const isWin = ref<boolean>(false)
 
 let player = createPlayer()
 let base = createBase()
-let bricks = []
-let bullets = []
-let enemies = []
-let pressedKeys = new Set()
-let spawnedEnemies = 0
-let defeatedEnemies = 0
-let nextEnemyId = 1
-let terminalResult = null
-let gameTime = 0
-let lastSpawnAt = 0
-let lastPlayerShotAt = -PLAYER_SHOT_COOLDOWN
-let lastFrameAt = null
-let animationFrameId = null
+let bricks: Brick[] = []
+let bullets: Bullet[] = []
+let enemies: EnemyTank[] = []
+let pressedKeys: Set<ControlAction> = new Set<ControlAction>()
+let spawnedEnemies: number = 0
+let defeatedEnemies: number = 0
+let nextEnemyId: number = 1
+let terminalResult: TerminalResult = null
+let gameTime: number = 0
+let lastSpawnAt: number = 0
+let lastPlayerShotAt: number = -PLAYER_SHOT_COOLDOWN
+let lastFrameAt: number | null = null
+let animationFrameId: number | null = null
 
-function createPlayer() {
+function createPlayer(): Tank {
   return { x: 188, y: 316, width: TANK_SIZE, height: TANK_SIZE, direction: 'up', speed: 126 }
 }
 
-function createBase() {
+function createBase(): Base {
   return { x: 184, y: 364, width: 32, height: 28, alive: true }
 }
 
-function createBricks() {
-  const blocks = [
+function createBricks(): Brick[] {
+  const blocks: Array<[number, number]> = [
     [48, 72], [64, 72], [80, 72], [144, 72], [160, 72], [224, 72], [240, 72], [304, 72], [320, 72], [336, 72],
     [48, 88], [144, 88], [240, 88], [336, 88],
     [96, 144], [112, 144], [128, 144], [192, 144], [208, 144], [272, 144], [288, 144],
@@ -59,16 +108,16 @@ function createBricks() {
     [80, 280], [96, 280], [144, 280], [240, 280], [288, 280], [304, 280],
     [160, 344], [160, 360], [160, 376], [224, 344], [224, 360], [224, 376], [176, 344], [208, 344]
   ]
-  return blocks.map(([x, y], index) => ({ id: index + 1, x, y, width: 16, height: 16 }))
+  return blocks.map(([x, y]: [number, number], index: number): Brick => ({ id: index + 1, x, y, width: 16, height: 16 }))
 }
 
-function resetGame() {
+function resetGame(): void {
   player = createPlayer()
   base = createBase()
   bricks = createBricks()
   bullets = []
   enemies = []
-  pressedKeys = new Set()
+  pressedKeys = new Set<ControlAction>()
   spawnedEnemies = 0
   defeatedEnemies = 0
   nextEnemyId = 1
@@ -86,13 +135,13 @@ function resetGame() {
   draw()
 }
 
-function togglePause() {
+function togglePause(): void {
   if (isGameOver.value || isWin.value) return
   isPaused.value = !isPaused.value
   lastFrameAt = null
 }
 
-function finishGame(won = false) {
+function finishGame(won: boolean = false): boolean {
   if (terminalResult !== null) return false
   terminalResult = won ? 'win' : 'loss'
   isWin.value = won
@@ -103,7 +152,7 @@ function finishGame(won = false) {
   return true
 }
 
-function saveHighScore() {
+function saveHighScore(): void {
   if (score.value <= highScore.value) return
   highScore.value = score.value
   try {
@@ -113,44 +162,45 @@ function saveHighScore() {
   }
 }
 
-function getTankRect(tank, x = tank.x, y = tank.y) {
+function getTankRect(tank: Tank, x: number = tank.x, y: number = tank.y): RectBounds {
   return { x, y, width: tank.width, height: tank.height }
 }
 
-function canOccupy(tank, x, y, includeEnemies = false) {
-  const next = getTankRect(tank, x, y)
+function canOccupy(tank: Tank, x: number, y: number, includeEnemies: boolean = false): boolean {
+  const next: RectBounds = getTankRect(tank, x, y)
   if (next.x < 0 || next.y < 0 || next.x + next.width > CANVAS_SIZE || next.y + next.height > CANVAS_SIZE) return false
-  if (bricks.some(brick => rectsOverlap(next, brick))) return false
+  if (bricks.some((brick: Brick): boolean => rectsOverlap(next, brick))) return false
   if (base.alive && rectsOverlap(next, base)) return false
-  if (includeEnemies && enemies.some(enemy => enemy !== tank && rectsOverlap(next, enemy))) return false
+  if (includeEnemies && enemies.some((enemy: EnemyTank): boolean => enemy !== tank && rectsOverlap(next, enemy))) return false
   return true
 }
 
-function movePlayer(deltaSeconds) {
-  const directionName = ['up', 'down', 'left', 'right'].find(direction => pressedKeys.has(direction))
+function movePlayer(deltaSeconds: number): void {
+  const directionName: TankDirection | undefined = (['up', 'down', 'left', 'right'] as TankDirection[])
+    .find((direction: TankDirection): boolean => pressedKeys.has(direction))
   if (!directionName) return
-  const direction = DIRECTIONS[directionName]
+  const direction: DirectionVector = DIRECTIONS[directionName]
   player.direction = directionName
-  const distance = player.speed * deltaSeconds
-  const nextX = player.x + direction.x * distance
-  const nextY = player.y + direction.y * distance
+  const distance: number = player.speed * deltaSeconds
+  const nextX: number = player.x + direction.x * distance
+  const nextY: number = player.y + direction.y * distance
   if (canOccupy(player, nextX, nextY, true)) {
     player = { ...player, x: nextX, y: nextY }
   }
 }
 
-function bulletOrigin(tank) {
-  const direction = DIRECTIONS[tank.direction]
+function bulletOrigin(tank: Tank): Pick<RectBounds, 'x' | 'y'> {
+  const direction: DirectionVector = DIRECTIONS[tank.direction]
   return {
     x: tank.x + tank.width / 2 - 3 + direction.x * (tank.width / 2 + 1),
     y: tank.y + tank.height / 2 - 3 + direction.y * (tank.height / 2 + 1)
   }
 }
 
-function shootPlayer(now) {
+function shootPlayer(now: number): void {
   if (isPaused.value || isGameOver.value || isWin.value || now - lastPlayerShotAt < PLAYER_SHOT_COOLDOWN) return
-  const origin = bulletOrigin(player)
-  const direction = DIRECTIONS[player.direction]
+  const origin: Pick<RectBounds, 'x' | 'y'> = bulletOrigin(player)
+  const direction: DirectionVector = DIRECTIONS[player.direction]
   bullets = [...bullets, {
     x: origin.x, y: origin.y, width: 6, height: 6,
     vx: direction.x * 255, vy: direction.y * 255, owner: 'player'
@@ -158,18 +208,18 @@ function shootPlayer(now) {
   lastPlayerShotAt = now
 }
 
-function chooseAimDirection(enemy) {
-  const target = enemy.id % 2 === 0 && base.alive ? base : player
-  const dx = target.x + target.width / 2 - (enemy.x + enemy.width / 2)
-  const dy = target.y + target.height / 2 - (enemy.y + enemy.height / 2)
+function chooseAimDirection(enemy: EnemyTank): TankDirection {
+  const target: RectBounds = enemy.id % 2 === 0 && base.alive ? base : player
+  const dx: number = target.x + target.width / 2 - (enemy.x + enemy.width / 2)
+  const dy: number = target.y + target.height / 2 - (enemy.y + enemy.height / 2)
   if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? 'left' : 'right'
   return dy < 0 ? 'up' : 'down'
 }
 
-function shootEnemy(enemy, now) {
-  const directionName = chooseAimDirection(enemy)
-  const direction = DIRECTIONS[directionName]
-  const origin = bulletOrigin({ ...enemy, direction: directionName })
+function shootEnemy(enemy: EnemyTank, now: number): void {
+  const directionName: TankDirection = chooseAimDirection(enemy)
+  const direction: DirectionVector = DIRECTIONS[directionName]
+  const origin: Pick<RectBounds, 'x' | 'y'> = bulletOrigin({ ...enemy, direction: directionName })
   bullets = [...bullets, {
     x: origin.x, y: origin.y, width: 6, height: 6,
     vx: direction.x * 168, vy: direction.y * 168, owner: 'enemy'
@@ -178,11 +228,11 @@ function shootEnemy(enemy, now) {
   enemy.nextShotDelay = 1050 + (enemy.id % 4) * 210
 }
 
-function spawnEnemy(now) {
+function spawnEnemy(now: number): void {
   if (spawnedEnemies >= TOTAL_ENEMIES || enemies.length >= MAX_ACTIVE_ENEMIES || now - lastSpawnAt < 850) return
-  const spawnXs = [24, 116, 208, 352]
-  const id = nextEnemyId++
-  const enemy = {
+  const spawnXs: number[] = [24, 116, 208, 352]
+  const id: number = nextEnemyId++
+  const enemy: EnemyTank = {
     id,
     x: spawnXs[(id - 1) % spawnXs.length], y: 34,
     width: TANK_SIZE, height: TANK_SIZE, direction: 'down', speed: 62 + (id % 3) * 7,
@@ -195,21 +245,21 @@ function spawnEnemy(now) {
   lastSpawnAt = now
 }
 
-function turnEnemy(enemy, now, forced = false) {
-  const order = ['down', 'left', 'right', 'up']
-  const current = order.indexOf(enemy.direction)
+function turnEnemy(enemy: EnemyTank, now: number, forced: boolean = false): void {
+  const order: TankDirection[] = ['down', 'left', 'right', 'up']
+  const current: number = order.indexOf(enemy.direction)
   enemy.direction = order[(current + enemy.id + (forced ? 1 : 0)) % order.length]
   enemy.lastDirectionAt = now
   enemy.nextTurnDelay = 580 + ((enemy.id + spawnedEnemies) % 5) * 170
 }
 
-function updateEnemies(deltaSeconds, now) {
+function updateEnemies(deltaSeconds: number, now: number): void {
   for (const enemy of enemies) {
     if (now - enemy.lastDirectionAt >= enemy.nextTurnDelay) turnEnemy(enemy, now)
-    const direction = DIRECTIONS[enemy.direction]
-    const distance = enemy.speed * deltaSeconds
-    const nextX = enemy.x + direction.x * distance
-    const nextY = enemy.y + direction.y * distance
+    const direction: DirectionVector = DIRECTIONS[enemy.direction]
+    const distance: number = enemy.speed * deltaSeconds
+    const nextX: number = enemy.x + direction.x * distance
+    const nextY: number = enemy.y + direction.y * distance
     if (canOccupy(enemy, nextX, nextY, true) && !rectsOverlap(getTankRect(enemy, nextX, nextY), player)) {
       enemy.x = nextX
       enemy.y = nextY
@@ -220,26 +270,26 @@ function updateEnemies(deltaSeconds, now) {
   }
 }
 
-function updateBullets(deltaSeconds) {
-  bullets = bullets.map(bullet => ({
+function updateBullets(deltaSeconds: number): void {
+  bullets = bullets.map((bullet: Bullet): Bullet => ({
     ...bullet,
     x: bullet.x + bullet.vx * deltaSeconds,
     y: bullet.y + bullet.vy * deltaSeconds
   }))
 
-  const removedBullets = new Set()
-  const removedBricks = new Set()
-  const removedEnemies = new Set()
-  let playerHit = false
+  const removedBullets: Set<number> = new Set<number>()
+  const removedBricks: Set<number> = new Set<number>()
+  const removedEnemies: Set<number> = new Set<number>()
+  let playerHit: boolean = false
 
-  bullets.forEach((bullet, bulletIndex) => {
+  bullets.forEach((bullet: Bullet, bulletIndex: number): void => {
     if (terminalResult !== null) return
     if (bullet.x + bullet.width < 0 || bullet.y + bullet.height < 0 || bullet.x > CANVAS_SIZE || bullet.y > CANVAS_SIZE) {
       removedBullets.add(bulletIndex)
       return
     }
 
-    const brick = bricks.find(item => !removedBricks.has(item.id) && rectsOverlap(bullet, item))
+    const brick: Brick | undefined = bricks.find((item: Brick): boolean => !removedBricks.has(item.id) && rectsOverlap(bullet, item))
     if (brick) {
       removedBricks.add(brick.id)
       removedBullets.add(bulletIndex)
@@ -247,7 +297,7 @@ function updateBullets(deltaSeconds) {
     }
 
     if (bullet.owner === 'player') {
-      const enemy = enemies.find(item => !removedEnemies.has(item.id) && rectsOverlap(bullet, item))
+      const enemy: EnemyTank | undefined = enemies.find((item: EnemyTank): boolean => !removedEnemies.has(item.id) && rectsOverlap(bullet, item))
       if (enemy) {
         removedEnemies.add(enemy.id)
         removedBullets.add(bulletIndex)
@@ -276,10 +326,10 @@ function updateBullets(deltaSeconds) {
     }
   })
 
-  bullets = bullets.filter((_, index) => !removedBullets.has(index))
-  bricks = bricks.filter(brick => !removedBricks.has(brick.id))
+  bullets = bullets.filter((_: Bullet, index: number): boolean => !removedBullets.has(index))
+  bricks = bricks.filter((brick: Brick): boolean => !removedBricks.has(brick.id))
   if (removedEnemies.size && terminalResult === null) {
-    enemies = enemies.filter(enemy => !removedEnemies.has(enemy.id))
+    enemies = enemies.filter((enemy: EnemyTank): boolean => !removedEnemies.has(enemy.id))
     defeatedEnemies += removedEnemies.size
     score.value += removedEnemies.size * 100
     remainingEnemies.value = Math.max(0, TOTAL_ENEMIES - defeatedEnemies)
@@ -288,7 +338,7 @@ function updateBullets(deltaSeconds) {
   }
 }
 
-function update(deltaSeconds, now) {
+function update(deltaSeconds: number, now: number): void {
   movePlayer(deltaSeconds)
   if (pressedKeys.has('fire')) shootPlayer(now)
   spawnEnemy(now)
@@ -296,9 +346,9 @@ function update(deltaSeconds, now) {
   updateBullets(deltaSeconds)
 }
 
-function gameLoop(now) {
+function gameLoop(now: number): void {
   if (lastFrameAt === null) lastFrameAt = now
-  const deltaSeconds = Math.min((now - lastFrameAt) / 1000, 0.032)
+  const deltaSeconds: number = Math.min((now - lastFrameAt) / 1000, 0.032)
   lastFrameAt = now
   if (!isPaused.value && terminalResult === null) {
     gameTime += deltaSeconds * 1000
@@ -308,7 +358,7 @@ function gameLoop(now) {
   animationFrameId = requestAnimationFrame(gameLoop)
 }
 
-function drawTank(ctx, tank, color, accent) {
+function drawTank(ctx: CanvasRenderingContext2D, tank: Tank, color: string, accent: string): void {
   const { x, y, width, height, direction } = tank
   ctx.fillStyle = '#171717'
   if (direction === 'up' || direction === 'down') {
@@ -323,14 +373,14 @@ function drawTank(ctx, tank, color, accent) {
   ctx.fillStyle = accent
   ctx.fillRect(x + 8, y + 8, width - 16, height - 16)
   ctx.fillStyle = color
-  const directionVector = DIRECTIONS[direction]
-  const centerX = x + width / 2
-  const centerY = y + height / 2
+  const directionVector: DirectionVector = DIRECTIONS[direction]
+  const centerX: number = x + width / 2
+  const centerY: number = y + height / 2
   if (directionVector.x) ctx.fillRect(directionVector.x < 0 ? x - 4 : centerX, centerY - 2, width / 2 + 4, 4)
   else ctx.fillRect(centerX - 2, directionVector.y < 0 ? y - 4 : centerY, 4, height / 2 + 4)
 }
 
-function drawBrick(ctx, brick) {
+function drawBrick(ctx: CanvasRenderingContext2D, brick: Brick): void {
   ctx.fillStyle = '#a94728'
   ctx.fillRect(brick.x, brick.y, brick.width, brick.height)
   ctx.fillStyle = '#e17a45'
@@ -348,7 +398,7 @@ function drawBrick(ctx, brick) {
   ctx.stroke()
 }
 
-function drawBase(ctx) {
+function drawBase(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = base.alive ? '#d8c47c' : '#5d5143'
   ctx.fillRect(base.x, base.y, base.width, base.height)
   ctx.fillStyle = base.alive ? '#f3e6ad' : '#1f1f1f'
@@ -361,7 +411,7 @@ function drawBase(ctx) {
   ctx.fill()
 }
 
-function drawOverlay(ctx) {
+function drawOverlay(ctx: CanvasRenderingContext2D): void {
   if (!isPaused.value && !isGameOver.value && !isWin.value) return
   ctx.fillStyle = 'rgba(0, 0, 0, 0.62)'
   ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
@@ -375,8 +425,8 @@ function drawOverlay(ctx) {
   ctx.textAlign = 'start'
 }
 
-function draw() {
-  const ctx = canvasRef.value?.getContext('2d')
+function draw(): void {
+  const ctx: CanvasRenderingContext2D | null = canvasRef.value?.getContext('2d') || null
   if (!ctx) return
   ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
   ctx.fillStyle = '#191b18'
@@ -385,12 +435,12 @@ function draw() {
   for (let y = 0; y < CANVAS_SIZE; y += 16) {
     for (let x = (y / 16) % 2 * 8; x < CANVAS_SIZE; x += 16) ctx.fillRect(x, y, 2, 2)
   }
-  bricks.forEach(brick => drawBrick(ctx, brick))
+  bricks.forEach((brick: Brick): void => drawBrick(ctx, brick))
   drawBase(ctx)
   if (lives.value > 0) drawTank(ctx, player, '#f5d442', '#fff1a6')
-  enemies.forEach(enemy => drawTank(ctx, enemy, '#d84b3e', '#ff9b62'))
+  enemies.forEach((enemy: EnemyTank): void => drawTank(ctx, enemy, '#d84b3e', '#ff9b62'))
   ctx.fillStyle = '#fff6b7'
-  bullets.forEach(bullet => ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height))
+  bullets.forEach((bullet: Bullet): void => ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height))
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0.72)'
   ctx.fillRect(0, 0, CANVAS_SIZE, 27)
@@ -403,8 +453,8 @@ function draw() {
   drawOverlay(ctx)
 }
 
-function keyToAction(event) {
-  const key = event.key.toLowerCase()
+function keyToAction(event: KeyboardEvent): ControlAction | null {
+  const key: string = event.key.toLowerCase()
   if (key === 'arrowup' || key === 'w') return 'up'
   if (key === 'arrowdown' || key === 's') return 'down'
   if (key === 'arrowleft' || key === 'a') return 'left'
@@ -413,7 +463,7 @@ function keyToAction(event) {
   return null
 }
 
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent): void {
   if (event.key.toLowerCase() === 'p') {
     event.preventDefault()
     if (!event.repeat) togglePause()
@@ -427,30 +477,30 @@ function handleKeydown(event) {
   if (action === 'fire') shootPlayer(gameTime)
 }
 
-function handleKeyup(event) {
-  const action = keyToAction(event)
+function handleKeyup(event: KeyboardEvent): void {
+  const action: ControlAction | null = keyToAction(event)
   if (!action) return
   event.preventDefault()
   pressedKeys.delete(action)
 }
 
-function releaseControls() {
+function releaseControls(): void {
   pressedKeys.clear()
 }
 
-function handleVisibilityChange() {
+function handleVisibilityChange(): void {
   lastFrameAt = null
   if (document.hidden) releaseControls()
 }
 
-function pressControl(action, event) {
+function pressControl(action: ControlAction, event?: Event): void {
   event?.preventDefault()
   if (isPaused.value || isGameOver.value || isWin.value) return
   pressedKeys.add(action)
   if (action === 'fire') shootPlayer(gameTime)
 }
 
-function releaseControl(action, event) {
+function releaseControl(action: ControlAction, event?: Event): void {
   event?.preventDefault()
   pressedKeys.delete(action)
 }
@@ -498,12 +548,7 @@ onUnmounted(() => {
     <div class="touch-controls" aria-label="触控操作区">
       <div class="direction-pad">
         <button
-          v-for="control in [
-            { action: 'up', label: '▲' },
-            { action: 'left', label: '◀' },
-            { action: 'down', label: '▼' },
-            { action: 'right', label: '▶' }
-          ]"
+          v-for="control in controlButtons"
           :key="control.action"
           type="button"
           :class="`direction-${control.action}`"

@@ -1,5 +1,4 @@
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
 import { NConfigProvider } from 'naive-ui'
 import BasicDemo from './showcase/BasicDemo.vue'
 import IntermediateDemo from './showcase/IntermediateDemo.vue'

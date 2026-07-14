@@ -1,20 +1,32 @@
-<script setup>
+<script setup lang="ts">
 
-const emit = defineEmits(['close'])
+type Board2048 = number[][]
+type MoveDirection = 0 | 1 | 2 | 3
 
-const board = ref([
+interface EmptyCell {
+  r: number
+  c: number
+}
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const createEmptyBoard = (): Board2048 => [
   [0, 0, 0, 0],
   [0, 0, 0, 0],
   [0, 0, 0, 0],
   [0, 0, 0, 0]
-])
+]
 
-const score = ref(0)
-const highScore = ref(parseInt(localStorage.getItem('2048_high_score')) || 0)
-const isGameOver = ref(false)
+const board = ref<Board2048>(createEmptyBoard())
 
-const addRandomTile = () => {
-  const emptyCells = []
+const score = ref<number>(0)
+const highScore = ref<number>(parseInt(localStorage.getItem('2048_high_score') || '0') || 0)
+const isGameOver = ref<boolean>(false)
+
+const addRandomTile = (): void => {
+  const emptyCells: EmptyCell[] = []
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
       if (board.value[r][c] === 0) {
@@ -24,26 +36,21 @@ const addRandomTile = () => {
   }
   
   if (emptyCells.length > 0) {
-    const { r, c } = emptyCells[Math.floor(Math.random() * emptyCells.length)]
+    const { r, c }: EmptyCell = emptyCells[Math.floor(Math.random() * emptyCells.length)]
     board.value[r][c] = Math.random() < 0.9 ? 2 : 4
   }
 }
 
-const initGame = () => {
-  board.value = [
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0]
-  ]
+const initGame = (): void => {
+  board.value = createEmptyBoard()
   score.value = 0
   isGameOver.value = false
   addRandomTile()
   addRandomTile()
 }
 
-const getTileBg = (val) => {
-  const mapping = {
+const getTileBg = (val: number): string => {
+  const mapping: Record<number, string> = {
     2: '#eee4da',
     4: '#ede0c8',
     8: '#f2b179',
@@ -59,13 +66,13 @@ const getTileBg = (val) => {
   return mapping[val] || '#3c3a32'
 }
 
-const getTileColor = (val) => {
+const getTileColor = (val: number): string => {
   return val <= 4 ? '#776e65' : '#f9f6f2'
 }
 
 // Slide row left
-const slideLeft = (row) => {
-  let arr = row.filter(val => val !== 0)
+const slideLeft = (row: number[]): number[] => {
+  let arr: number[] = row.filter((val: number): boolean => val !== 0)
   for (let i = 0; i < arr.length - 1; i++) {
     if (arr[i] === arr[i + 1]) {
       arr[i] *= 2
@@ -73,17 +80,17 @@ const slideLeft = (row) => {
       arr[i + 1] = 0
     }
   }
-  arr = arr.filter(val => val !== 0)
+  arr = arr.filter((val: number): boolean => val !== 0)
   while (arr.length < 4) {
     arr.push(0)
   }
   return arr
 }
 
-const rotateBoard = () => {
+const rotateBoard = (): void => {
   // Transpose and reverse rows -> 90 deg clockwise
-  const n = 4
-  const temp = Array.from({ length: 4 }, () => Array(4).fill(0))
+  const n: number = 4
+  const temp: Board2048 = Array.from({ length: 4 }, (): number[] => Array<number>(4).fill(0))
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
       temp[c][n - 1 - r] = board.value[r][c]
@@ -92,11 +99,11 @@ const rotateBoard = () => {
   board.value = temp
 }
 
-const moveLeft = () => {
-  let moved = false
+const moveLeft = (): boolean => {
+  let moved: boolean = false
   for (let r = 0; r < 4; r++) {
-    const original = [...board.value[r]]
-    const next = slideLeft(board.value[r])
+    const original: number[] = [...board.value[r]]
+    const next: number[] = slideLeft(board.value[r])
     if (JSON.stringify(original) !== JSON.stringify(next)) {
       moved = true
     }
@@ -105,9 +112,9 @@ const moveLeft = () => {
   return moved
 }
 
-const move = (dir) => {
+const move = (dir: MoveDirection): void => {
   if (isGameOver.value) return
-  let moved = false
+  let moved: boolean = false
 
   // 0: Left, 1: Up, 2: Right, 3: Down
   if (dir === 0) {
@@ -136,7 +143,7 @@ const move = (dir) => {
   }
 }
 
-const checkGameOver = () => {
+const checkGameOver = (): void => {
   // Any empty cell?
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
@@ -155,7 +162,7 @@ const checkGameOver = () => {
   isGameOver.value = true
 }
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent): void => {
   switch (e.key) {
     case 'ArrowLeft':
     case 'a':

@@ -1,23 +1,32 @@
-<script setup>
+<script setup lang="ts">
 
 import { ElMessage } from 'element-plus'
 import { User, Calendar as CalendarIcon, Clock, Search, Message } from '@element-plus/icons-vue'
 
+type MessageType = 'success' | 'warning' | 'info' | 'error'
+
+interface TableRow {
+  name: string
+  type: string
+  price: string
+  region: string
+}
+
 // ------ 表单控件 ------
-const inputValue = ref('')
-const passwordValue = ref('')
-const textareaValue = ref('')
-const inputPrefixValue = ref('')
-const inputPrependValue = ref('')
+const inputValue = ref<string>('')
+const passwordValue = ref<string>('')
+const textareaValue = ref<string>('')
+const inputPrefixValue = ref<string>('')
+const inputPrependValue = ref<string>('')
 
 // v2.14.0 Input OTP 一次性密码
-const otpValue = ref('')
+const otpValue = ref<string>('')
 
 // v2.9.0 Input Tag 标签输入框
-const inputTagValue = ref(['Vite', 'Vue', 'Pinia'])
+const inputTagValue = ref<string[]>(['Vite', 'Vue', 'Pinia'])
 
-const selectValue = ref('')
-const selectMultipleValue = ref([])
+const selectValue = ref<string>('')
+const selectMultipleValue = ref<string[]>([])
 const selectOptions = [
   {
     label: '主流框架',
@@ -35,7 +44,7 @@ const selectOptions = [
   }
 ]
 
-const cascaderValue = ref([])
+const cascaderValue = ref<string[]>([])
 const cascaderOptions = [
   {
     value: 'frontend',
@@ -55,21 +64,23 @@ const cascaderOptions = [
   }
 ]
 
-const inputNumberValue = ref(3)
-const radioValue = ref('option1')
-const radioButtonValue = ref('beijing')
-const radioBorderValue = ref('shanghai')
+const inputNumberValue = ref<number>(3)
+const radioValue = ref<string>('option1')
+const radioButtonValue = ref<string>('beijing')
+const radioBorderValue = ref<string>('shanghai')
 
-const checkboxList = ref(['vue'])
-const checkboxBorderList = ref(['vite'])
+const checkboxList = ref<string[]>(['vue'])
+const checkboxBorderList = ref<string[]>(['vite'])
 
-const switchValue = ref(true)
-const switchCustomValue = ref(false)
-const rateValue = ref(4)
-const dateValue = ref('')
-const dateRangeValue = ref('')
-const timeValue = ref('')
-const colorValue = ref('#409EFF')
+const switchValue = ref<boolean>(true)
+const switchCustomValue = ref<boolean>(false)
+const rateValue = ref<number>(4)
+const sliderValue = ref<number>(35)
+const sliderRangeValue = ref<[number, number]>([20, 70])
+const dateValue = ref<string>('')
+const dateRangeValue = ref<[Date, Date] | ''>('')
+const timeValue = ref<string>('')
+const colorValue = ref<string>('#409EFF')
 
 // DatePicker shortcuts helper
 const dateShortcuts = [
@@ -96,28 +107,28 @@ const dateShortcuts = [
 ]
 
 // ------ 数据展示 ------
-const tableData = [
+const tableData: TableRow[] = [
   { name: 'DeepSeek', type: 'AI聊天助手', price: '免费', region: '国内' },
   { name: 'ChatGPT', type: 'AI聊天助手', price: '20$/月', region: '国外' },
   { name: 'Midjourney', type: 'AI绘画', price: '10$/月', region: '国外' },
   { name: '通义千问', type: 'AI聊天助手', price: '免费', region: '国内' }
 ]
-const selectedTableRows = ref([])
-const handleSelectionChange = (val) => {
+const selectedTableRows = ref<TableRow[]>([])
+const handleSelectionChange = (val: TableRow[]): void => {
   selectedTableRows.value = val
 }
 
-const currentPage = ref(1)
-const progressValue = ref(75)
-const activeCollapse = ref(['1'])
-const innerTab = ref('first')
+const currentPage = ref<number>(1)
+const progressValue = ref<number>(75)
+const activeCollapse = ref<string[]>(['1'])
+const innerTab = ref<string>('first')
 
-const showSkeleton = ref(true)
+const showSkeleton = ref<boolean>(true)
 
-const showMessage = (type) => {
+const showMessage = (type: MessageType): void => {
   ElMessage({ message: `这是一条 ${type} 消息提示`, type })
 }
-const handleDropdownCommand = (command) => {
+const handleDropdownCommand = (command: string): void => {
   ElMessage.info(`点击了：${command}`)
 }
 </script>

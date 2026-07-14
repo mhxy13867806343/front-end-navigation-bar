@@ -1,6 +1,7 @@
-<script setup>
+<script setup lang="ts">
 
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import type { FormInstance, FormRules, UploadFile } from 'element-plus'
 import { 
   Document, Menu as MenuIcon, Setting, Location, CopyDocument, 
   Delete, View, Download, Plus, Star, CaretTop, CaretBottom 
@@ -10,19 +11,71 @@ import {
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import en from 'element-plus/es/locale/lang/en'
 
+interface AdvancedForm {
+  username: string
+  email: string
+  password: string
+  nickname: string
+  gender: string
+  interests: string[]
+  desc: string
+  agree: boolean
+}
+
+interface FrameworkOption {
+  value: string
+}
+
+interface TreeNodeData {
+  id?: number | string
+  value?: string
+  label: string
+  children?: TreeNodeData[]
+}
+
+interface TreeRefLike {
+  filter: (value: string) => void
+}
+
+interface TreeNodeLike {
+  parent: {
+    data: TreeNodeData | TreeNodeData[]
+  }
+}
+
+interface MenuItem {
+  path: string
+  name: string
+  icon: string
+  role: 'admin' | 'editor' | null
+  isTemp?: boolean
+}
+
+interface OrderRow {
+  id: number
+  product: string
+  price: number
+  count: number
+  status: string
+}
+
+interface SummaryColumn {
+  property?: string
+}
+
 // ------ Config Provider 全局配置 ------
-const currentLocale = ref(zhCn)
-const toggleLocale = () => {
+const currentLocale = ref<typeof zhCn | typeof en>(zhCn)
+const toggleLocale = (): void => {
   currentLocale.value = currentLocale.value.name === 'zh-cn' ? en : zhCn
   ElMessage.success(`语言已切换至: ${currentLocale.value.name === 'zh-cn' ? '中文 (zh-cn)' : 'English (en)'}`)
 }
 
 // ------ Form 多步骤校验表单 (保留历史数据) ------
-const formRef = ref(null)
-const formStep = ref(0)
-const isSubmitting = ref(false)
+const formRef = ref<FormInstance | null>(null)
+const formStep = ref<number>(0)
+const isSubmitting = ref<boolean>(false)
 
-const form = reactive({
+const form = reactive<AdvancedForm>({
   username: '',
   email: '',
   password: '',
@@ -33,7 +86,7 @@ const form = reactive({
   agree: false
 })
 
-const rules = {
+const rules: FormRules<AdvancedForm> = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
@@ -51,16 +104,16 @@ const rules = {
   ]
 }
 
-const nextStep = () => {
+const nextStep = (): void => {
   if (formStep.value === 0) {
-    formRef.value.validateField(['username', 'email', 'password']).then(() => {
+    formRef.value?.validateField(['username', 'email', 'password']).then(() => {
       formStep.value = 1
       ElMessage.success('第一步校验通过，数据已暂存')
     }).catch(() => {
       ElMessage.error('第一步校验未通过，请检查输入')
     })
   } else if (formStep.value === 1) {
-    formRef.value.validateField(['nickname']).then(() => {
+    formRef.value?.validateField(['nickname']).then(() => {
       formStep.value = 2
       ElMessage.success('第二步校验通过')
     }).catch(() => {
@@ -69,14 +122,14 @@ const nextStep = () => {
   }
 }
 
-const prevStep = () => {
+const prevStep = (): void => {
   if (formStep.value > 0) {
     formStep.value--
     ElMessage.info('返回上一步，历史输入数据已保留')
   }
 }
 
-const submitForm = () => {
+const submitForm = (): void => {
   if (!form.agree) {
     ElMessage.warning('请先勾选确认信息无误协议')
     return
@@ -91,7 +144,7 @@ const submitForm = () => {
     )
     // 重置步骤和表单
     formStep.value = 0
-    formRef.value.resetFields()
+    formRef.value?.resetFields()
     form.interests = []
     form.desc = ''
     form.agree = false
@@ -99,19 +152,19 @@ const submitForm = () => {
 }
 
 // ------ Autocomplete / Mention ------
-const autocompleteValue = ref('')
-const frameworks = [
+const autocompleteValue = ref<string>('')
+const frameworks: FrameworkOption[] = [
   { value: 'Vue 3' }, { value: 'Vue Router' }, { value: 'Vuex' }, { value: 'Vite' },
   { value: 'React' }, { value: 'Redux' }, { value: 'Next.js' },
   { value: 'Angular' }, { value: 'Astro' }, { value: 'Svelte' }
 ]
-const queryFrameworks = (queryString, cb) => {
-  const results = queryString
-    ? frameworks.filter(f => f.value.toLowerCase().includes(queryString.toLowerCase()))
+const queryFrameworks = (queryString: string, cb: (results: FrameworkOption[]) => void): void => {
+  const results: FrameworkOption[] = queryString
+    ? frameworks.filter((f: FrameworkOption): boolean => f.value.toLowerCase().includes(queryString.toLowerCase()))
     : frameworks
   cb(results)
 }
-const mentionValue = ref('')
+const mentionValue = ref<string>('')
 const mentionOptions = [
   { value: 'HooksVue' },
   { value: 'ElementPlus' },
@@ -120,15 +173,15 @@ const mentionOptions = [
 ]
 
 // ------ 虚拟化 Select ------
-const selectV2Value = ref('')
-const selectV2Options = Array.from({ length: 1000 }).map((_, idx) => ({
+const selectV2Value = ref<string>('')
+const selectV2Options = Array.from({ length: 1000 }).map((_: unknown, idx: number) => ({
   value: `option-${idx + 1}`,
   label: `选项 ${idx + 1}`
 }))
 
 // ------ TreeSelect / Tree ------
-const treeSelectValue = ref('')
-const treeSelectData = [
+const treeSelectValue = ref<string>('')
+const treeSelectData: TreeNodeData[] = [
   {
     value: 'frontend',
     label: '前端',
@@ -145,13 +198,13 @@ const treeSelectData = [
 ]
 
 // ------ Tree 过滤与动态增删 ------
-const filterText = ref('')
-const treeRef = ref(null)
+const filterText = ref<string>('')
+const treeRef = ref<TreeRefLike | null>(null)
 const defaultProps = {
   children: 'children',
   label: 'label'
 }
-const editableTreeData = ref([
+const editableTreeData = ref<TreeNodeData[]>([
   {
     id: 1,
     label: '研发中心',
@@ -184,18 +237,18 @@ const editableTreeData = ref([
   }
 ])
 
-const filterNode = (value, data) => {
+const filterNode = (value: string, data: TreeNodeData): boolean => {
   if (!value) return true
   return data.label.includes(value)
 }
 
-watch(filterText, (val) => {
+watch(filterText, (val: string): void => {
   treeRef.value?.filter(val)
 })
 
-let nodeId = 100
-const appendNode = (data) => {
-  const newChild = { id: nodeId++, label: '新部门/岗位', children: [] }
+let nodeId: number = 100
+const appendNode = (data: TreeNodeData): void => {
+  const newChild: TreeNodeData = { id: nodeId++, label: '新部门/岗位', children: [] }
   if (!data.children) {
     data.children = []
   }
@@ -204,24 +257,23 @@ const appendNode = (data) => {
   ElMessage.success('成功添加子节点')
 }
 
-const removeNode = (node, data) => {
+const removeNode = (node: TreeNodeLike, data: TreeNodeData): void => {
   const parent = node.parent
-  const children = parent.data.children || parent.data
-  const index = children.findIndex((d) => d.id === data.id)
+  const children: TreeNodeData[] = Array.isArray(parent.data) ? parent.data : parent.data.children || []
+  const index: number = children.findIndex((d: TreeNodeData): boolean => d.id === data.id)
   children.splice(index, 1)
   editableTreeData.value = [...editableTreeData.value]
   ElMessage.warning('节点已移除')
 }
 
 // ------ Virtualized Tree 虚拟化树形控件 ------
-const createVirtualTreeData = (maxDeep, maxChildren, minNodesNumber, deep = 1, key = 'node') => {
-  let id = 0
-  const getRandom = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
-  const nodes = []
-  const count = getRandom(minNodesNumber, maxChildren)
-  for (let i = 0; i < count; i++) {
-    const nodeKey = `${key}-${deep}-${i}`
-    const node = {
+const createVirtualTreeData = (maxDeep: number, maxChildren: number, minNodesNumber: number, deep: number = 1, key: string = 'node'): TreeNodeData[] => {
+  const getRandom = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1) + min)
+  const nodes: TreeNodeData[] = []
+  const count: number = getRandom(minNodesNumber, maxChildren)
+  for (let i: number = 0; i < count; i++) {
+    const nodeKey: string = `${key}-${deep}-${i}`
+    const node: TreeNodeData = {
       id: nodeKey,
       label: `虚拟节点 L${deep} - ${i}`
     }
@@ -232,31 +284,31 @@ const createVirtualTreeData = (maxDeep, maxChildren, minNodesNumber, deep = 1, k
   }
   return nodes
 }
-const virtualTreeData = ref(createVirtualTreeData(3, 8, 3))
+const virtualTreeData = ref<TreeNodeData[]>(createVirtualTreeData(3, 8, 3))
 
 // ------ 动态路由 & 权限菜单 ------
-const currentRole = ref('admin')
-const hasMountedRoute = ref(false)
-const defaultMenus = [
+const currentRole = ref<'admin' | 'editor' | 'guest'>('admin')
+const hasMountedRoute = ref<boolean>(false)
+const defaultMenus: MenuItem[] = [
   { path: '/dashboard', name: '系统数据大屏', icon: '📊', role: null },
   { path: '/showcase', name: 'Element Plus 组件库', icon: '🧩', role: null },
   { path: '/settings', name: '系统全局配置 (Admin)', icon: '⚙️', role: 'admin' },
   { path: '/articles', name: '文章管理中心 (Editor/Admin)', icon: '📝', role: 'editor' }
 ]
 
-const filteredMenus = computed(() => {
-  const menus = [...defaultMenus]
+const filteredMenus = computed<MenuItem[]>(() => {
+  const menus: MenuItem[] = [...defaultMenus]
   if (hasMountedRoute.value) {
     menus.push({ path: '/temp-page', name: '动态载入临时页面', icon: '🔌', role: null, isTemp: true })
   }
   if (currentRole.value === 'admin') return menus
   if (currentRole.value === 'editor') {
-    return menus.filter(m => m.role !== 'admin')
+    return menus.filter((m: MenuItem): boolean => m.role !== 'admin')
   }
-  return menus.filter(m => !m.role)
+  return menus.filter((m: MenuItem): boolean => !m.role)
 })
 
-const handleMountRoute = () => {
+const handleMountRoute = (): void => {
   hasMountedRoute.value = true
   ElNotification({
     title: '🔌 动态路由注入成功',
@@ -266,7 +318,7 @@ const handleMountRoute = () => {
   })
 }
 
-const handleUnmountRoute = () => {
+const handleUnmountRoute = (): void => {
   hasMountedRoute.value = false
   ElNotification({
     title: '🔌 动态路由已卸载',
@@ -277,20 +329,21 @@ const handleUnmountRoute = () => {
 }
 
 // ------ Transfer / Upload ------
-const transferValue = ref([1, 4])
-const transferData = Array.from({ length: 10 }).map((_, idx) => ({
+const transferValue = ref<number[]>([1, 4])
+const transferData = Array.from({ length: 10 }).map((_: unknown, idx: number) => ({
   key: idx + 1,
   label: `技术选项 ${idx + 1}`,
   disabled: idx % 5 === 0
 }))
-const fileList = ref([])
-const handleUploadChange = () => {
+const fileList = ref<UploadFile[]>([])
+const handleUploadChange = (): void => {
   ElMessage.info('演示模式：文件不会真正上传')
 }
 
 // Simulated Avatar Upload
-const avatarUrl = ref('')
-const handleAvatarSuccess = (uploadFile) => {
+const avatarUrl = ref<string>('')
+const handleAvatarSuccess = (uploadFile: UploadFile): void => {
+  if (!uploadFile.raw) return
   avatarUrl.value = URL.createObjectURL(uploadFile.raw)
   ElMessage.success('头像模拟上传并预览成功！')
 }
@@ -303,12 +356,12 @@ const expandTableData = [
 ]
 
 // ------ 综合表格：搜索 + 分页 + 自定义计算 + 合计行 ------
-const orderSearch = ref('')
-const orderPage = ref(1)
-const orderPageSize = ref(5)
-const orderData = ref(
-  Array.from({ length: 28 }).map((_, idx) => {
-    const products = ['AI 会员套餐', 'GPU 算力包', 'API 调用额度', '存储扩容包', '模型微调服务', '数据标注包', '私有化部署']
+const orderSearch = ref<string>('')
+const orderPage = ref<number>(1)
+const orderPageSize = ref<number>(5)
+const orderData = ref<OrderRow[]>(
+  Array.from({ length: 28 }).map((_: unknown, idx: number): OrderRow => {
+    const products: string[] = ['AI 会员套餐', 'GPU 算力包', 'API 调用额度', '存储扩容包', '模型微调服务', '数据标注包', '私有化部署']
     return {
       id: idx + 1,
       product: `${products[idx % products.length]} #${idx + 1}`,
@@ -319,36 +372,36 @@ const orderData = ref(
   })
 )
 
-const filteredOrders = computed(() => {
-  const kw = orderSearch.value.trim().toLowerCase()
+const filteredOrders = computed<OrderRow[]>(() => {
+  const kw: string = orderSearch.value.trim().toLowerCase()
   if (!kw) return orderData.value
   return orderData.value.filter(
-    row => row.product.toLowerCase().includes(kw) || row.status.includes(kw)
+    (row: OrderRow): boolean => row.product.toLowerCase().includes(kw) || row.status.includes(kw)
   )
 })
 
-const pagedOrders = computed(() => {
-  const start = (orderPage.value - 1) * orderPageSize.value
+const pagedOrders = computed<OrderRow[]>(() => {
+  const start: number = (orderPage.value - 1) * orderPageSize.value
   return filteredOrders.value.slice(start, start + orderPageSize.value)
 })
 
-const handleOrderSearch = () => {
+const handleOrderSearch = (): void => {
   orderPage.value = 1
 }
 
-const calcAmount = (row) => Number((row.price * row.count).toFixed(2))
+const calcAmount = (row: OrderRow): number => Number((row.price * row.count).toFixed(2))
 
-const orderSummary = ({ columns }) => {
-  const sums = []
-  columns.forEach((column, index) => {
+const orderSummary = ({ columns }: { columns: SummaryColumn[] }): Array<string | number> => {
+  const sums: Array<string | number> = []
+  columns.forEach((column: SummaryColumn, index: number): void => {
     if (index === 0) {
       sums[index] = '当页合计'
       return
     }
     if (column.property === 'count') {
-      sums[index] = pagedOrders.value.reduce((acc, row) => acc + row.count, 0)
+      sums[index] = pagedOrders.value.reduce((acc: number, row: OrderRow): number => acc + row.count, 0)
     } else if (column.property === 'amount') {
-      const total = pagedOrders.value.reduce((acc, row) => acc + calcAmount(row), 0)
+      const total: number = pagedOrders.value.reduce((acc: number, row: OrderRow): number => acc + calcAmount(row), 0)
       sums[index] = `¥ ${total.toFixed(2)}`
     } else {
       sums[index] = ''

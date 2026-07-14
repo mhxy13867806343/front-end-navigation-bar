@@ -202,50 +202,117 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { List, Refresh, Switch } from '@element-plus/icons-vue'
 import axios from 'axios'
 import debounce from 'lodash/debounce'
+import type { AxiosResponse } from 'axios'
 
-const searchQuery = ref('')
-const searchResults = ref([])
-const searchHistory = ref([])
-const playlist = ref([])
-const currentIndex = ref(0)
-const isPlaying = ref(false)
-const progress = ref(0)
-const volume = ref(100)
-const audio = new Audio()
-const isLoading = ref(false)
-const progressBar = ref(null)
-const isDragging = ref(false)
-const hasShownError = ref(false)
-const isUnmounting = ref(false)
-const currentSongBg = ref('')
+type PlayMode = 'sequence' | 'single' | 'random'
+
+interface SongItem {
+  id: number
+  name: string
+  artist: string
+  album: string
+  duration: number
+  url?: string
+}
+
+interface ApiArtist {
+  name: string
+}
+
+interface ApiAlbum {
+  name: string
+  picUrl?: string
+}
+
+interface ApiSong {
+  id: number
+  name: string
+  artists: ApiArtist[]
+  album: ApiAlbum
+  duration: number
+  fee?: number
+}
+
+interface SearchResponse {
+  result?: {
+    songs?: ApiSong[]
+  }
+}
+
+interface SongUrlResponse {
+  data?: Array<{ url?: string | null }>
+}
+
+interface LyricResponse {
+  lrc?: {
+    lyric?: string
+  }
+}
+
+interface SongDetailResponse {
+  songs?: Array<{ al?: ApiAlbum }>
+}
+
+interface LyricLine {
+  time: number
+  text: string
+}
+
+const emptySong: SongItem = {
+  id: 0,
+  name: '',
+  artist: '',
+  album: '',
+  duration: 0,
+  url: ''
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error || '未知错误')
+}
+
+const searchQuery = ref<string>('')
+const searchResults = ref<SongItem[]>([])
+const searchHistory = ref<string[]>([])
+const playlist = ref<SongItem[]>([])
+const currentIndex = ref<number>(0)
+const isPlaying = ref<boolean>(false)
+const progress = ref<number>(0)
+const volume = ref<number>(100)
+const audio: HTMLAudioElement = new Audio()
+const isLoading = ref<boolean>(false)
+const progressBar = ref<HTMLDivElement | null>(null)
+const isDragging = ref<boolean>(false)
+const hasShownError = ref<boolean>(false)
+const isUnmounting = ref<boolean>(false)
+const currentSongBg = ref<string>('')
 
 // 歌词相关
-const lyrics = ref([])
-const currentLyricIndex = ref(-1)
+const lyrics = ref<LyricLine[]>([])
+const currentLyricIndex = ref<number>(-1)
 
 // 接收dark mode prop
-const props = defineProps({
-  isDark: {
-    type: Boolean,
-    default: false
-  }
+const props = withDefaults(defineProps<{
+  isDark?: boolean
+}>(), {
+  isDark: false
 })
 
-const currentSong = computed(() => playlist.value[currentIndex.value] || {})
-const hasNext = computed(() => playlist.value.length > 1)
-const hasPrev = computed(() => playlist.value.length > 1)
+const currentSong = computed<SongItem>(() => playlist.value[currentIndex.value] || emptySong)
+const hasNext = computed<boolean>(() => playlist.value.length > 1)
+const hasPrev = computed<boolean>(() => playlist.value.length > 1)
 
 // API基础URL
 const API_BASE = 'https://ncm.nekogan.com'
 
 // 防抖函数
-const debounceSearch = debounce(() => {
+const debounceSearch = debounce((): void => {
   if (searchQuery.value.trim()) {
     searchMusic()
   } else {
@@ -254,12 +321,12 @@ const debounceSearch = debounce(() => {
 }, 500)
 
 // 搜索音乐
-const searchMusic = async () => {
+const searchMusic = async (): Promise<void> => {
   if (!searchQuery.value.trim()) return
   isLoading.value = true
 
   try {
-    const response = await axios.get(`${API_BASE}/search`, {
+    const response: AxiosResponse<SearchResponse> = await axios.get<SearchResponse>(`${API_BASE}/search`, {
       params: {
         keywords: searchQuery.value,
         type: 1
@@ -268,11 +335,11 @@ const searchMusic = async () => {
 
     if (response.data && response.data.result && response.data.result.songs) {
       searchResults.value = response.data.result.songs
-        .filter(song => song.fee !== 1)
-        .map(song => ({
+        .filter((song: ApiSong): boolean => song.fee !== 1)
+        .map((song: ApiSong): SongItem => ({
           id: song.id,
           name: song.name,
-          artist: song.artists.map(artist => artist.name).join(', '),
+          artist: song.artists.map((artist: ApiArtist): string => artist.name).join(', '),
           album: song.album.name,
           duration: song.duration
         }))
@@ -294,16 +361,16 @@ const searchMusic = async () => {
 }
 
 // 获取音乐URL
-const getMusicUrl = async (songId) => {
+const getMusicUrl = async (songId: number): Promise<string | null> => {
   try {
-    const response = await axios.get(`${API_BASE}/song/url`, {
+    const response: AxiosResponse<SongUrlResponse> = await axios.get<SongUrlResponse>(`${API_BASE}/song/url`, {
       params: {
         id: songId
       }
     })
 
     if (response.data && response.data.data && response.data.data[0]) {
-      return response.data.data[0].url
+      return response.data.data[0].url || null
     }
     return null
   } catch (error) {
@@ -313,20 +380,20 @@ const getMusicUrl = async (songId) => {
 }
 
 // 添加到播放列表
-const addToPlaylist = async (song) => {
-  const url = await getMusicUrl(song.id)
+const addToPlaylist = async (song: SongItem): Promise<void> => {
+  const url: string | null = await getMusicUrl(song.id)
   if (!url) {
     ElMessage.warning('该歌曲暂时无法播放')
     return
   }
 
-  const exists = playlist.value.some(item => item.id === song.id)
+  const exists: boolean = playlist.value.some((item: SongItem): boolean => item.id === song.id)
   if (exists) {
     ElMessage.warning('该歌曲已在播放列表中')
     return
   }
 
-  const songWithUrl = { ...song, url }
+  const songWithUrl: SongItem = { ...song, url }
   playlist.value.unshift(songWithUrl)
   saveToStorage()
 
@@ -342,7 +409,7 @@ const addToPlaylist = async (song) => {
 }
 
 // 从播放列表移除
-const removeFromPlaylist = (index) => {
+const removeFromPlaylist = (index: number): void => {
   if (index === currentIndex.value) {
     // 如果删除的是当前播放的歌曲
     audio.pause()
@@ -379,14 +446,14 @@ const removeFromPlaylist = (index) => {
 }
 
 // 播放控制
-const togglePlay = () => {
+const togglePlay = (): void => {
   if (!currentSong.value.url) return
 
   if (isPlaying.value) {
     audio.pause()
     isPlaying.value = false
   } else {
-    audio.play().catch(error => {
+    audio.play().catch((error: unknown): void => {
       console.error('播放失败:', error)
       isPlaying.value = false
       if (!hasShownError.value) {
@@ -398,14 +465,14 @@ const togglePlay = () => {
   }
 }
 
-const playSong = async (index) => {
+const playSong = async (index: number): Promise<void> => {
   try {
     if (playlist.value.length === 0) {
       return
     }
 
     currentIndex.value = index
-    const song = playlist.value[index]
+    const song: SongItem | undefined = playlist.value[index]
 
     if (!song) {
       throw new Error('找不到歌曲')
@@ -419,7 +486,7 @@ const playSong = async (index) => {
     isPlaying.value = false
 
     // 获取音乐URL
-    const newUrl = await getMusicUrl(song.id)
+    const newUrl: string | null = await getMusicUrl(song.id)
     if (!newUrl) {
       throw new Error('获取音乐地址失败')
     }
@@ -430,7 +497,7 @@ const playSong = async (index) => {
     try {
       await audio.play()
       isPlaying.value = true
-    } catch (playError) {
+    } catch (playError: unknown) {
       throw new Error('播放失败')
     }
 
@@ -440,7 +507,7 @@ const playSong = async (index) => {
     // 获取歌曲背景图片
     await getSongDetail(song.id)
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('播放失败:', error)
     isPlaying.value = false
     if (!hasShownError.value) {
@@ -450,13 +517,13 @@ const playSong = async (index) => {
     removeFromPlaylist(index)
 
     // 如果还有下一首歌，自动播放下一首
-    if (hasNext.value && error.message !== '找不到歌曲') {
+    if (hasNext.value && getErrorMessage(error) !== '找不到歌曲') {
       next()
     }
   }
 }
 
-const getNextIndex = () => {
+const getNextIndex = (): number => {
   if (!playlist.value.length) return -1
   
   switch (playMode.value) {
@@ -470,7 +537,7 @@ const getNextIndex = () => {
   }
 }
 
-const getPrevIndex = () => {
+const getPrevIndex = (): number => {
   if (!playlist.value.length) return -1
   
   switch (playMode.value) {
@@ -484,95 +551,95 @@ const getPrevIndex = () => {
   }
 }
 
-const prev = () => {
+const prev = (): void => {
   if (!playlist.value.length) return
-  const index = getPrevIndex()
+  const index: number = getPrevIndex()
   if (index !== -1) {
     playSong(index)
   }
 }
 
-const next = () => {
+const next = (): void => {
   if (!playlist.value.length) return
-  const index = getNextIndex()
+  const index: number = getNextIndex()
   if (index !== -1) {
     playSong(index)
   }
 }
 
-const seek = (event) => {
+const seek = (event: MouseEvent): void => {
   updateProgress(event)
 }
 
-const startDragging = (event) => {
+const startDragging = (event: MouseEvent): void => {
   isDragging.value = true
   updateProgress(event)
 }
 
-const stopDragging = () => {
+const stopDragging = (): void => {
   if (isDragging.value) {
     isDragging.value = false
   }
 }
 
-const onDrag = (event) => {
+const onDrag = (event: MouseEvent): void => {
   if (isDragging.value) {
     updateProgress(event)
   }
 }
 
-const updateProgress = (event) => {
+const updateProgress = (event: MouseEvent): void => {
   if (!audio.duration || !progressBar.value) return
-  const rect = progressBar.value.getBoundingClientRect()
-  let percent = (event.clientX - rect.left) / rect.width
+  const rect: DOMRect = progressBar.value.getBoundingClientRect()
+  let percent: number = (event.clientX - rect.left) / rect.width
   // 确保百分比在0-1之间
   percent = Math.max(0, Math.min(1, percent))
-  const time = percent * audio.duration
+  const time: number = percent * audio.duration
   audio.currentTime = time
   // 立即更新歌词位置
   updateCurrentLyric()
 }
 
-const updateVolume = () => {
+const updateVolume = (): void => {
   audio.volume = volume.value / 100
 }
 
 // 格式化时间
-const formatTime = (seconds) => {
+const formatTime = (seconds: number): string => {
   if (!seconds) return '0:00'
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
+  const mins: number = Math.floor(seconds / 60)
+  const secs: number = Math.floor(seconds % 60)
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
 // 获取歌词
-const getLyrics = async (id) => {
+const getLyrics = async (id: number): Promise<void> => {
   try {
-    const response = await axios.get(`${API_BASE}/lyric?id=${id}`)
+    const response: AxiosResponse<LyricResponse> = await axios.get<LyricResponse>(`${API_BASE}/lyric?id=${id}`)
     if (response.data.lrc?.lyric) {
       // 解析歌词
-      const lyricText = response.data.lrc.lyric
-      const lyricLines = lyricText.split('\n')
-      const parsedLyrics = lyricLines
-        .map(line => {
-          const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/
-          const match = line.match(timeRegex)
+      const lyricText: string = response.data.lrc.lyric
+      const lyricLines: string[] = lyricText.split('\n')
+      const parsedLyrics: LyricLine[] = lyricLines
+        .map((line: string): LyricLine | null => {
+          const timeRegex: RegExp = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/
+          const match: RegExpMatchArray | null = line.match(timeRegex)
           if (match) {
             const [_, minutes, seconds, milliseconds] = match
             // 将毫秒标准化为3位数
-            const ms = milliseconds.padEnd(3, '0')
+            const ms: string = milliseconds.padEnd(3, '0')
             // 计算总毫秒数
-            const timeInMs = (parseInt(minutes) * 60 * 1000) + 
+            const timeInMs: number = (parseInt(minutes) * 60 * 1000) + 
                            (parseInt(seconds) * 1000) + 
                            parseInt(ms)
-            const text = line.replace(timeRegex, '').trim()
+            const text: string = line.replace(timeRegex, '').trim()
             if (text) {
               return { time: timeInMs, text }
             }
           }
           return null
         })
-        .filter(item => item !== null)
+        .filter((item: LyricLine | null): item is LyricLine => item !== null)
       
       lyrics.value = parsedLyrics
     } else {
@@ -585,49 +652,51 @@ const getLyrics = async (id) => {
 }
 
 // 更新当前歌词
-const updateCurrentLyric = () => {
+const updateCurrentLyric = (): void => {
   if (!lyrics.value.length) return
   
-  const currentTime = audio.currentTime
-  let index = lyrics.value.findIndex(lyric => lyric.time > currentTime * 1000)
+  const currentTime: number = audio.currentTime
+  let index: number = lyrics.value.findIndex((lyric: LyricLine): boolean => lyric.time > currentTime * 1000)
   if (index === -1) {
     index = lyrics.value.length
   }
   currentLyricIndex.value = index - 1
 }
 
+const handleAudioPlay = (): void => {
+  isPlaying.value = true
+}
+
+const handleAudioPause = (): void => {
+  isPlaying.value = false
+}
+
+const handleAudioTimeUpdate = (): void => {
+  if (!isDragging.value) {
+    progress.value = (audio.currentTime / audio.duration) * 100 || 0
+    updateCurrentLyric()
+  }
+}
+
+const handleAudioError = (e: Event): void => {
+  console.error('音频播放错误:', e)
+  isPlaying.value = false
+  if (!hasShownError.value) {
+    ElMessage.error('播放失败，请尝试其他歌曲')
+    hasShownError.value = true
+  }
+}
+
 // 事件监听
-onMounted(() => {
+onMounted((): void => {
   loadFromStorage()
 
-  // 添加音频事件监听器
-  audio.addEventListener('play', () => {
-    isPlaying.value = true
-  })
-
-  audio.addEventListener('pause', () => {
-    isPlaying.value = false
-  })
-
+  audio.addEventListener('play', handleAudioPlay)
+  audio.addEventListener('pause', handleAudioPause)
   audio.addEventListener('ended', handleEnded)
+  audio.addEventListener('timeupdate', handleAudioTimeUpdate)
+  audio.addEventListener('error', handleAudioError)
 
-  audio.addEventListener('timeupdate', () => {
-    if (!isDragging.value) {
-      progress.value = (audio.currentTime / audio.duration) * 100 || 0
-      updateCurrentLyric()
-    }
-  })
-
-  audio.addEventListener('error', (e) => {
-    console.error('音频播放错误:', e)
-    isPlaying.value = false
-    if (!hasShownError.value) {
-      ElMessage.error('播放失败，请尝试其他歌曲')
-      hasShownError.value = true
-    }
-  })
-
-  // 监听窗口大小变化
   window.addEventListener('resize', handleResize)
 })
 
@@ -645,11 +714,11 @@ onUnmounted(() => {
   }
 
   // 移除所有事件监听器
-  audio.removeEventListener('play', null)
-  audio.removeEventListener('pause', null)
-  audio.removeEventListener('ended', null)
-  audio.removeEventListener('timeupdate', null)
-  audio.removeEventListener('error', null)
+  audio.removeEventListener('play', handleAudioPlay)
+  audio.removeEventListener('pause', handleAudioPause)
+  audio.removeEventListener('ended', handleEnded)
+  audio.removeEventListener('timeupdate', handleAudioTimeUpdate)
+  audio.removeEventListener('error', handleAudioError)
 
   // 移除窗口大小变化事件监听器
   window.removeEventListener('resize', handleResize)
@@ -659,13 +728,13 @@ onUnmounted(() => {
 })
 
 // 从本地存储加载数据
-const loadFromStorage = () => {
+const loadFromStorage = (): void => {
   try {
     const savedPlaylist = localStorage.getItem('music_player_playlist')
     const savedHistory = localStorage.getItem('music_player_history')
 
     if (savedPlaylist) {
-      playlist.value = JSON.parse(savedPlaylist)
+      playlist.value = JSON.parse(savedPlaylist) as SongItem[]
       // 如果有播放列表，尝试继续播放上次的歌曲
       if (playlist.value.length > 0) {
         const lastIndex = localStorage.getItem('last_playing_index')
@@ -680,7 +749,7 @@ const loadFromStorage = () => {
     }
 
     if (savedHistory) {
-      searchHistory.value = JSON.parse(savedHistory)
+      searchHistory.value = JSON.parse(savedHistory) as string[]
     }
   } catch (error) {
     console.error('加载本地数据失败:', error)
@@ -688,7 +757,7 @@ const loadFromStorage = () => {
 }
 
 // 保存数据到本地存储
-const saveToStorage = () => {
+const saveToStorage = (): void => {
   try {
     localStorage.setItem('music_player_playlist', JSON.stringify(playlist.value))
     localStorage.setItem('music_player_history', JSON.stringify(searchHistory.value))
@@ -700,11 +769,11 @@ const saveToStorage = () => {
 }
 
 // 添加搜索历史
-const addToHistory = (query) => {
+const addToHistory = (query: string): void => {
   if (!query.trim()) return
 
   // 移除重复项
-  searchHistory.value = searchHistory.value.filter(item => item !== query)
+  searchHistory.value = searchHistory.value.filter((item: string): boolean => item !== query)
   // 添加到开头
   searchHistory.value.unshift(query)
   // 限制历史记录数量
@@ -715,13 +784,13 @@ const addToHistory = (query) => {
 }
 
 // 从历史记录搜索
-const searchFromHistory = (query) => {
+const searchFromHistory = (query: string): void => {
   searchQuery.value = query
   searchMusic()
 }
 
 // 清空历史记录
-const clearHistory = () => {
+const clearHistory = (): void => {
   ElMessageBox.confirm(
     '确定要清空所有搜索历史吗？',
     '清空历史记录',
@@ -738,7 +807,7 @@ const clearHistory = () => {
 }
 
 // 清空播放列表
-const clearPlaylist = () => {
+const clearPlaylist = (): void => {
   ElMessageBox.confirm(
     '确定要清空播放列表吗？当前播放将停止。',
     '清空播放列表',
@@ -765,20 +834,20 @@ const clearPlaylist = () => {
 }
 
 // 播放模式相关
-const playMode = ref('sequence') // 默认顺序播放
-const showPlayMode = ref(false) // 控制下拉菜单显示
-const singlePlayCount = ref(-1) // 单曲播放次数，-1表示无限循环
+const playMode = ref<PlayMode>('sequence') // 默认顺序播放
+const showPlayMode = ref<boolean>(false) // 控制下拉菜单显示
+const singlePlayCount = ref<number>(-1) // 单曲播放次数，-1表示无限循环
 
 // 处理音乐播放结束
-const handleEnded = () => {
-  const nextIndex = getNextIndex()
+const handleEnded = (): void => {
+  const nextIndex: number = getNextIndex()
   if (nextIndex !== -1) {
     playSong(nextIndex)
   }
 }
 
 // 监听播放模式变化
-watch(playMode, (newMode) => {
+watch(playMode, (newMode: PlayMode): void => {
   if (newMode !== 'single') {
     // 切换到其他模式时重置播放次数
     singlePlayCount.value = -1
@@ -786,15 +855,15 @@ watch(playMode, (newMode) => {
 })
 
 // 监听播放列表变化
-watch(playlist, (newVal) => {
+watch(playlist, (newVal: SongItem[]): void => {
   showPlayMode.value = newVal.length > 0
   saveToStorage()
 }, { deep: true })
 
 // 切换播放模式
-const changePlayMode = (mode) => {
+const changePlayMode = (mode: PlayMode): void => {
   playMode.value = mode
-  let message = ''
+  let message: string = ''
   switch (mode) {
     case 'sequence':
       message = '顺序播放'
@@ -810,15 +879,15 @@ const changePlayMode = (mode) => {
 }
 
 // 设置单曲播放次数
-const setSinglePlayCount = () => {
+const setSinglePlayCount = (): void => {
   ElMessageBox.prompt('请输入播放次数（1-99，-1表示无限循环）', '设置播放次数', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     inputPattern: /^(-1|[1-9][0-9]?)$/,
     inputErrorMessage: '请输入-1或1-99的数字',
     inputValue: singlePlayCount.value.toString()
-  }).then(({ value }) => {
-    const count = parseInt(value)
+  }).then(({ value }: { value: string }): void => {
+    const count: number = parseInt(value)
     if (count >= -1 && (count === -1 || count <= 99)) {
       singlePlayCount.value = count
       ElMessage.success(`已设置播放次数：${count === -1 ? '无限循环' : count + '次'}`)
@@ -827,11 +896,11 @@ const setSinglePlayCount = () => {
 }
 
 // 获取歌曲背景图片
-const getSongDetail = async (id) => {
+const getSongDetail = async (id: number): Promise<void> => {
   try {
-    const response = await axios.get(`${API_BASE}/song/detail?ids=${id}`)
+    const response: AxiosResponse<SongDetailResponse> = await axios.get<SongDetailResponse>(`${API_BASE}/song/detail?ids=${id}`)
     if (response.data.songs && response.data.songs[0]) {
-      const song = response.data.songs[0]
+      const song: { al?: ApiAlbum } = response.data.songs[0]
       // 获取专辑图片作为背景
       currentSongBg.value = song.al?.picUrl || ''
     }
@@ -841,7 +910,7 @@ const getSongDetail = async (id) => {
 }
 
 // 歌词点击跳转
-const seekToLyric = (time) => {
+const seekToLyric = (time: number): void => {
   if (audio && time >= 0) {
     audio.currentTime = time / 1000 // 将毫秒转换为秒
     if (!isPlaying.value) {
@@ -851,10 +920,10 @@ const seekToLyric = (time) => {
 }
 
 // 处理搜索结果点击
-const handleSearchResultClick = async (song) => {
+const handleSearchResultClick = async (song: SongItem): Promise<void> => {
   try {
     // 获取音乐URL
-    const musicUrl = await getMusicUrl(song.id)
+    const musicUrl: string | null = await getMusicUrl(song.id)
     if (!musicUrl) {
       ElMessage.error('无法播放该歌曲')
       return
@@ -873,7 +942,7 @@ const handleSearchResultClick = async (song) => {
     await getSongDetail(song.id)
     
     // 播放歌曲
-    const index = playlist.value.findIndex(item => item.id === song.id)
+    const index: number = playlist.value.findIndex((item: SongItem): boolean => item.id === song.id)
     if (index !== -1) {
       playSong(index)
     }
@@ -888,24 +957,24 @@ const handleSearchResultClick = async (song) => {
 }
 
 // 动态计算播放器高度
-const windowHeight = ref(window.innerHeight)
+const windowHeight = ref<number>(window.innerHeight)
 
-const playerStyle = computed(() => {
-  const calculatedHeight = (windowHeight.value / 2) + 100
-  const maxHeight = 1500
-  const finalHeight = Math.min(calculatedHeight, maxHeight)
+const playerStyle = computed<{ height: string }>(() => {
+  const calculatedHeight: number = (windowHeight.value / 2) + 100
+  const maxHeight: number = 1500
+  const finalHeight: number = Math.min(calculatedHeight, maxHeight)
   return {
     height: `${finalHeight}px`
   }
 })
 
 // 监听窗口大小变化
-const handleResize = () => {
+const handleResize = (): void => {
   windowHeight.value = window.innerHeight
 }
 
 // 音量图标计算属性
-const volumeIcon = computed(() => {
+const volumeIcon = computed<string>(() => {
   if (volume.value === 0) {
     return '🔇' // 静音
   } else if (volume.value < 30) {
@@ -918,7 +987,7 @@ const volumeIcon = computed(() => {
 })
 
 // 切换静音
-const toggleMute = () => {
+const toggleMute = (): void => {
   if (volume.value === 0) {
     // 如果当前是静音，恢复到上次的音量
     volume.value = lastVolume.value || 50
@@ -931,7 +1000,7 @@ const toggleMute = () => {
 }
 
 // 保存上次的音量值
-const lastVolume = ref(50)
+const lastVolume = ref<number>(50)
 </script>
 
 <style scoped>

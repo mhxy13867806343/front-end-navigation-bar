@@ -1,5 +1,5 @@
-<script setup>
-import { useAppLogic } from './App.js'
+<script setup lang="ts">
+import { useAppLogic } from './App.ts'
 
 // Import components used directly in the template
 import AnalogClock from './components/AnalogClock.vue'
@@ -57,19 +57,21 @@ const {
 
 import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
+import type { ECharts, EChartsOption } from 'echarts'
+import type { CityInfo, CityLetterMap, CascaderNode, CurrentWeather, WeatherForecast } from './types/app'
 import chinaCitiesAz from './ajson/china-cities-az.json'
 import chinaCascaderOptions from './ajson/china-cascader-options.json'
 
 const route = useRoute()
 const router = useRouter()
-const routeViewPaths = ['/flash', '/aicoding', '/helloworld']
-const isFlashRoute = computed(() => routeViewPaths.includes(route.path))
-const goFlash = () => router.push('/flash')
-const goAiCoding = () => router.push('/aicoding')
-const goHelloWorld = () => router.push('/helloworld')
-const backFromFlash = () => router.push('/')
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld']
+const isFlashRoute = computed<boolean>(() => routeViewPaths.includes(route.path))
+const goFlash = (): Promise<void | Error> => router.push('/flash')
+const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
+const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
+const backFromFlash = (): Promise<void | Error> => router.push('/')
 
-const activeMenuIndex = computed(() => {
+const activeMenuIndex = computed<string>(() => {
   if (activeItem.value === 25) {
     if (activeLibrary.value === 'element') return 'showcase-element'
     if (activeLibrary.value === 'naive') return 'showcase-naive'
@@ -78,7 +80,7 @@ const activeMenuIndex = computed(() => {
   return activeSubItem.value ? activeSubItem.value.toString() : activeItem.value.toString()
 })
 
-const refreshWeather = async () => {
+const refreshWeather = async (): Promise<void> => {
   if (selectedAdcode.value) {
     await queryWeatherByAdcode(selectedAdcode.value)
   } else {
@@ -86,7 +88,7 @@ const refreshWeather = async () => {
   }
 }
 
-const refreshUtility = async () => {
+const refreshUtility = async (): Promise<void> => {
   switch (utilityActiveTab.value) {
     case 'holiday':
       await queryHolidayCalendar()
@@ -109,30 +111,31 @@ const refreshUtility = async () => {
   }
 }
 
-let weatherChartInstance = null
-const showCityPicker = ref(true)
-const cascaderValue = ref([])
-const activeLetter = ref('A')
+let weatherChartInstance: ECharts | null = null
+const showCityPicker = ref<boolean>(true)
+const cascaderValue = ref<string[]>([])
+const activeLetter = ref<string>('A')
 
-const isCitySelected = (city) => {
+const isCitySelected = (city: CityInfo): boolean => {
   if (!currentWeather.value) return false
   const activeCity = currentWeather.value.city || ''
   return activeCity.includes(city.name) || city.name.includes(activeCity)
 }
 
-watch(() => currentWeather.value, (newWeather) => {
+watch(() => currentWeather.value as CurrentWeather | null, (newWeather: CurrentWeather | null): void => {
   if (newWeather && newWeather.city) {
     const cityName = newWeather.city
-    for (const letter in chinaCitiesAz) {
-      const found = chinaCitiesAz[letter].find(c => cityName.includes(c.name) || c.name.includes(cityName))
+    const cityMap: CityLetterMap = chinaCitiesAz as CityLetterMap
+    for (const letter in cityMap) {
+      const found: CityInfo | undefined = cityMap[letter].find((c: CityInfo): boolean => cityName.includes(c.name) || c.name.includes(cityName))
       if (found) {
-        activeLetter.value = found.letter
+        activeLetter.value = found.letter || letter
         break
       }
     }
   }
 }, { immediate: true, deep: true })
-const getWeatherEmoji = (code) => {
+const getWeatherEmoji = (code: string | number | undefined): string => {
   const iconCode = String(code || '')
   if (iconCode.startsWith('100')) return '☀️'
   if (iconCode.startsWith('101') || iconCode.startsWith('102') || iconCode.startsWith('103') || iconCode.startsWith('151') || iconCode.startsWith('152') || iconCode.startsWith('153')) return '☁️'
@@ -145,9 +148,9 @@ const getWeatherEmoji = (code) => {
   return '🌤️'
 }
 
-const findCascaderPath = (targetAdcode) => {
-  const path = []
-  const search = (nodes, currentPath) => {
+const findCascaderPath = (targetAdcode: string): string[] => {
+  const path: string[] = []
+  const search = (nodes: CascaderNode[], currentPath: string[]): boolean => {
     for (const node of nodes) {
       const newPath = [...currentPath, node.value]
       if (node.value === targetAdcode) {
@@ -164,13 +167,13 @@ const findCascaderPath = (targetAdcode) => {
   return path
 }
 
-const handleCascaderChange = async (val) => {
+const handleCascaderChange = async (val: string[]): Promise<void> => {
   if (!val || val.length === 0) return
   const targetAdcode = val[val.length - 1]
-  const pathNodes = []
-  const findNodes = (nodes, idx) => {
+  const pathNodes: string[] = []
+  const findNodes = (nodes: CascaderNode[], idx: number): void => {
     if (idx >= val.length) return
-    const found = nodes.find(n => n.value === val[idx])
+    const found: CascaderNode | undefined = nodes.find((n: CascaderNode): boolean => n.value === val[idx])
     if (found) {
       pathNodes.push(found.label)
       if (found.children) findNodes(found.children, idx + 1)
@@ -183,7 +186,7 @@ const handleCascaderChange = async (val) => {
   await queryWeatherByAdcode(targetAdcode)
 }
 
-const selectCityFromPicker = async (city) => {
+const selectCityFromPicker = async (city: CityInfo): Promise<void> => {
   weatherSearchKeyword.value = city.name
   const path = findCascaderPath(city.adcode)
   if (path.length > 0) {
@@ -192,7 +195,7 @@ const selectCityFromPicker = async (city) => {
   await queryWeatherByAdcode(city.adcode)
 }
 
-const renderWeatherChart = () => {
+const renderWeatherChart = (): void => {
   nextTick(() => {
     const chartDom = document.getElementById('weather-echarts-container')
     if (!chartDom) return
@@ -205,7 +208,7 @@ const renderWeatherChart = () => {
       renderer: 'canvas'
     })
 
-    const list = forecastList.value && forecastList.value.length > 0 ? forecastList.value : [
+    const list: WeatherForecast[] = forecastList.value && forecastList.value.length > 0 ? forecastList.value : [
       { date: '今天', temp_high: 32, temp_low: 25, weather: '晴' },
       { date: '明天', temp_high: 33, temp_low: 26, weather: '多云' },
       { date: '后天', temp_high: 34, temp_low: 25, weather: '雷阵雨' },
@@ -215,18 +218,18 @@ const renderWeatherChart = () => {
       { date: '周日', temp_high: 34, temp_low: 25, weather: '晴' }
     ]
 
-    const dates = list.map(item => item.week || item.date || item.day || '')
-    const highs = list.map(item => parseInt(item.temp_high || item.high || 0, 10))
-    const lows = list.map(item => parseInt(item.temp_low || item.low || 0, 10))
-    const weathers = list.map(item => item.weather_day || item.weather || '')
+    const dates: string[] = list.map((item: WeatherForecast): string => item.week || item.date || item.day || '')
+    const highs: number[] = list.map((item: WeatherForecast): number => parseInt(String(item.temp_high || item.high || 0), 10))
+    const lows: number[] = list.map((item: WeatherForecast): number => parseInt(String(item.temp_low || item.low || 0), 10))
+    const weathers: string[] = list.map((item: WeatherForecast): string => item.weather_day || item.weather || '')
 
-    const option = {
+    const option: EChartsOption = {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',
-        formatter: function (params) {
-          let res = params[0].name + '<br/>'
-          params.forEach((item) => {
+        formatter: function (params: any): string {
+          let res: string = params[0].name + '<br/>'
+          params.forEach((item: any): void => {
             res += item.marker + item.seriesName + ': ' + item.value + '°C (' + weathers[item.dataIndex] + ')<br/>'
           })
           return res
@@ -670,7 +673,7 @@ watch(isDarkMode, () => {
 
           <!-- Pill Switcher for IDE Tools -->
           <!-- Pill Switchers dynamically rendered based on active category -->
-          <div v-if="activeSubTabs[activeItem] && !searchQuery" class="ide-tab-container">
+          <div v-if="activeSubTabs[Number(activeItem)] && !searchQuery" class="ide-tab-container">
             <div class="pill-switcher">
               <template v-if="activeItem === 1">
                 <button 
@@ -793,7 +796,7 @@ watch(isDarkMode, () => {
         <span class="context-menu-icon">🔗</span>
         新标签页打开
       </div>
-      <div class="context-menu-item" @click="copyLink">
+      <div class="context-menu-item" @click="() => copyLink()">
         <span class="context-menu-icon">📋</span>
         复制链接
       </div>
@@ -1133,7 +1136,7 @@ watch(isDarkMode, () => {
             <!-- 当前选中的字母对应的城市列表 -->
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               <el-button
-                v-for="city in chinaCitiesAz[activeLetter]"
+                v-for="city in (chinaCitiesAz as CityLetterMap)[activeLetter]"
                 :key="city.adcode"
                 size="small"
                 plain
@@ -1309,8 +1312,8 @@ watch(isDarkMode, () => {
                       <h5 style="margin: 0 0 8px 0; color: var(--text-secondary);">⏰ 临近重要节日：</h5>
                       <div style="font-size: 12px; line-height: 1.6; color: var(--text-secondary);">
                         <div v-if="holidayData.nearby.next && holidayData.nearby.next.length > 0">
-                          下一个节日：<strong>{{ holidayData.nearby.next[0].events[0]?.name }}</strong> 
-                          ({{ holidayData.nearby.next[0].date }})
+                          下一个节日：<strong>{{ holidayData.nearby.next[0]?.events?.[0]?.name || holidayData.nearby.next[0]?.name }}</strong> 
+                          ({{ holidayData.nearby.next[0]?.date }})
                         </div>
                       </div>
                     </div>
