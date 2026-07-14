@@ -64,6 +64,7 @@ import {
 } from '@/vue-pages-text-fn-abc/formOptions'
 
 import { useRoute, useRouter } from 'vue-router'
+import { Loading } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
 import type { CityInfo, CityLetterMap, CascaderNode, CurrentWeather, WeatherForecast } from './types/app'
@@ -916,7 +917,7 @@ watch(isDarkMode, () => {
               class="custom-video-player"
             ></video>
             <div v-else class="media-placeholder">
-              <el-icon class="is-loading"><loading /></el-icon>
+              <el-icon class="is-loading"><Loading /></el-icon>
               <span>正在获取小姐姐视频中...</span>
             </div>
           </div>
@@ -932,7 +933,7 @@ watch(isDarkMode, () => {
               />
             </div>
             <div v-else class="media-placeholder">
-              <el-icon class="is-loading"><loading /></el-icon>
+              <el-icon class="is-loading"><Loading /></el-icon>
               <span>正在探索唯美照片中...</span>
             </div>
           </div>
@@ -1338,7 +1339,7 @@ watch(isDarkMode, () => {
               </el-row>
             </div>
             <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
-              <el-icon class="is-loading"><loading /></el-icon> 正在努力获取日历信息中...
+              <el-icon class="is-loading"><Loading /></el-icon> 正在努力获取日历信息中...
             </div>
           </div>
         </el-tab-pane>
@@ -1380,7 +1381,7 @@ watch(isDarkMode, () => {
               </el-timeline>
             </div>
             <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
-              <el-icon class="is-loading"><loading /></el-icon> 正在探寻程序员历史的群星闪耀时刻...
+              <el-icon class="is-loading"><Loading /></el-icon> 正在探寻程序员历史的群星闪耀时刻...
             </div>
           </div>
         </el-tab-pane>
@@ -1407,7 +1408,7 @@ watch(isDarkMode, () => {
               </div>
             </div>
             <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
-              <el-icon class="is-loading"><loading /></el-icon> 正在爬取当下最炙手可热的新闻热搜...
+              <el-icon class="is-loading"><Loading /></el-icon> 正在爬取当下最炙手可热的新闻热搜...
             </div>
           </div>
         </el-tab-pane>
@@ -1443,7 +1444,7 @@ watch(isDarkMode, () => {
                   </el-table>
                 </div>
                 <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
-                  <el-icon class="is-loading"><loading /></el-icon> 正在获取最新院线实时票房榜单...
+                  <el-icon class="is-loading"><Loading /></el-icon> 正在获取最新院线实时票房榜单...
                 </div>
               </el-tab-pane>
 
@@ -1480,7 +1481,7 @@ watch(isDarkMode, () => {
                   </div>
                 </div>
                 <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
-                  <el-icon class="is-loading"><loading /></el-icon> 正在获取影视热度排行评分列表...
+                  <el-icon class="is-loading"><Loading /></el-icon> 正在获取影视热度排行评分列表...
                 </div>
               </el-tab-pane>
             </el-tabs>
