@@ -115,6 +115,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { parse } from 'node-html-parser'
 
 const API_BASE = '/api-helloworld'
 
@@ -149,12 +150,6 @@ const filteredArticles = computed(() => {
   })
 })
 
-function toAbsoluteUrl(url) {
-  if (!url) return ''
-  if (/^https?:\/\//i.test(url)) return url
-  return `https://www.helloworld.net${url}`
-}
-
 function decodeHtml(text) {
   return String(text || '')
     .replace(/&quot;/g, '"')
@@ -167,107 +162,75 @@ function decodeHtml(text) {
     .trim()
 }
 
-function getSection(html, startMarker, endMarker) {
-  const start = html.indexOf(startMarker)
-  if (start === -1) return ''
-  const fromStart = html.slice(start)
-  if (!endMarker) return fromStart
-  const end = fromStart.indexOf(endMarker)
-  return end === -1 ? fromStart : fromStart.slice(0, end)
+function toAbsoluteUrl(url) {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  return `https://www.helloworld.net${url}`
 }
 
-function parseMenuSection(html, title) {
-  const section = getSection(
-    html,
-    `<h3 class="menu-title">${title}</h3>`,
-    '</ul>'
-  )
-  return Array.from(section.matchAll(/<span class="name">([^<]+)<\/span>/g)).map((match) => decodeHtml(match[1]))
+function textOf(node) {
+  return decodeHtml(node?.textContent || '')
 }
 
-function parseArticles(html) {
-  const articleSection = getSection(
-    html,
-    '<div class="blog_list_container">',
-    '<div class="right-list">'
-  )
-  const blocks = articleSection.split('<div class="blog-item"').slice(1)
+function parseHomeHtml(html) {
+  const root = parse(html)
 
-  return blocks.map((block) => {
-    const articleId = block.match(/href="\/p\/([^"]+)"/)
-    const title = block.match(/class="title[^"]*"[^>]*>\s*([^<]+)\s*<\/a>/)
-    const intro = block.match(/class="intro[^"]*"[^>]*>\s*([\s\S]*?)\s*<\/div>/)
-    const author = block.match(/class="name"[^>]*>\s*([^<]+)\s*<\/a>/)
-    const time = block.match(/class="time"[^>]*>\s*([^<]+)\s*<\/div>/)
-    const nums = Array.from(block.matchAll(/<span class="num"[^>]*>(\d+)<\/span>/g)).map((match) => match[1])
-    const cover = block.match(/<img src="([^"]+)" class="item-right"/)
+  const articleList = root.querySelectorAll('.blog-item').map((item) => {
+    const titleLink = item.querySelector('.title')
+    const nums = item.querySelectorAll('.num').map((node) => textOf(node))
 
     return {
-      title: decodeHtml(title?.[1]),
-      brief: decodeHtml(intro?.[1]),
-      author: decodeHtml(author?.[1]),
-      time: decodeHtml(time?.[1]),
+      title: textOf(titleLink),
+      brief: textOf(item.querySelector('.intro')),
+      author: textOf(item.querySelector('.name')),
+      time: textOf(item.querySelector('.time')),
       readCount: nums[0] || '0',
       likeCount: nums[1] || '0',
       commentCount: nums[2] || '0',
-      url: toAbsoluteUrl(articleId ? `/p/${articleId[1]}` : ''),
-      cover: toAbsoluteUrl(cover?.[1] || '')
+      url: toAbsoluteUrl(titleLink?.getAttribute('href') || ''),
+      cover: toAbsoluteUrl(item.querySelector('.item-right')?.getAttribute('src') || '')
     }
   }).filter((item) => item.title && item.url)
-}
 
-function parseAuthors(html) {
-  const authorSection = getSection(
-    html,
-    '<h5 class="common-title" data-v-377f20d6>作者榜</h5>',
-    '<h5 class="common-title" data-v-377f20d6>推荐课程</h5>'
-  )
-  const blocks = authorSection.split('<div class="author-item"').slice(1)
-
-  return blocks.map((block) => {
-    const profile = block.match(/href="\/([^"]+)" target="_blank" class="author-info"/)
-    const name = block.match(/<span class="name[^"]*"[^>]*>([^<]+)<\/span>/)
-    const job = block.match(/<span class="count[^"]*"[^>]*>([^<]*)<\/span>/)
-    const avatar = block.match(/<img src="([^"]+)"[^>]*class="avatar"/)
+  const authorList = root.querySelectorAll('.author-item').map((item) => {
+    const link = item.querySelector('.author-info')
 
     return {
-      name: decodeHtml(name?.[1]),
-      job: decodeHtml(job?.[1]),
-      url: toAbsoluteUrl(profile ? `/${profile[1]}` : ''),
-      avatar: toAbsoluteUrl(avatar?.[1] || '')
+      name: textOf(item.querySelector('.name')),
+      job: textOf(item.querySelector('.count')),
+      url: toAbsoluteUrl(link?.getAttribute('href') || ''),
+      avatar: toAbsoluteUrl(item.querySelector('.avatar')?.getAttribute('src') || '')
     }
   }).filter((item) => item.name && item.url)
-}
 
-function parseLessons(html) {
-  const lessonSection = getSection(
-    html,
-    '<h5 class="common-title" data-v-377f20d6>推荐课程</h5>',
-    '<h5 class="common-title" data-v-377f20d6>推荐标签</h5>'
-  )
-  const blocks = lessonSection.split('<a target="_blank" href="').slice(1)
-
-  return blocks.map((block) => {
-    const href = block.match(/^([^"]+)/)
-    const cover = block.match(/<img src="([^"]+)"/)
-    const title = block.match(/<h2[^>]*>([^<]+)<\/h2>/)
-    const price = block.match(/<div class="price"[^>]*>([^<]+)<\/div>/)
-    const count = block.match(/<span[^>]*>([^<]+人学习)<\/span>/)
-
+  const lessonList = root.querySelectorAll('a[href^="/lesson/detail/"]').map((item) => {
     return {
-      title: decodeHtml(title?.[1]),
-      price: decodeHtml(price?.[1]) || '未知价格',
-      learnCount: decodeHtml(count?.[1]),
-      url: toAbsoluteUrl(href?.[1] || ''),
-      cover: toAbsoluteUrl(cover?.[1] || '')
+      title: textOf(item.querySelector('h2')),
+      price: textOf(item.querySelector('.price')) || '未知价格',
+      learnCount: textOf(item.querySelector('.des span')),
+      url: toAbsoluteUrl(item.getAttribute('href') || ''),
+      cover: toAbsoluteUrl(item.querySelector('img')?.getAttribute('src') || '')
     }
   }).filter((item) => item.title && item.url)
-}
 
-function parseTags(html) {
-  return Array.from(
-    html.matchAll(/class="index-tag-item"[^>]*>([^<]+)<\/a>/g)
-  ).map((match) => decodeHtml(match[1]))
+  const tagList = root.querySelectorAll('.index-tag-item').map((item) => textOf(item)).filter(Boolean)
+
+  const menuGroups = root.querySelectorAll('.left-body-bar > div')
+  const directionGroup = menuGroups.find((group) => textOf(group.querySelector('.menu-title')) === '技术方向')
+  const languageGroup = menuGroups.find((group) => textOf(group.querySelector('.menu-title')) === '编程语言')
+
+  return {
+    articles: articleList,
+    authors: authorList,
+    lessons: lessonList,
+    tags: tagList,
+    directions: directionGroup
+      ? directionGroup.querySelectorAll('.name').map((item) => textOf(item)).filter(Boolean)
+      : [],
+    languages: languageGroup
+      ? languageGroup.querySelectorAll('.name').map((item) => textOf(item)).filter(Boolean)
+      : []
+  }
 }
 
 async function fetchHomeData() {
@@ -288,13 +251,14 @@ async function fetchHomeData() {
     }
 
     const html = await response.text()
+    const parsed = parseHomeHtml(html)
 
-    articles.value = parseArticles(html)
-    authors.value = parseAuthors(html)
-    lessons.value = parseLessons(html)
-    tags.value = parseTags(html)
-    directions.value = parseMenuSection(html, '技术方向')
-    languages.value = parseMenuSection(html, '编程语言')
+    articles.value = parsed.articles
+    authors.value = parsed.authors
+    lessons.value = parsed.lessons
+    tags.value = parsed.tags
+    directions.value = parsed.directions
+    languages.value = parsed.languages
 
     if (!articles.value.length && !authors.value.length && !lessons.value.length) {
       throw new Error('已请求成功，但未解析出列表数据')

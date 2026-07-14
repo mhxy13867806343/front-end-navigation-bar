@@ -6,37 +6,85 @@ import {
   Delete, View, Download, Plus, Star, CaretTop, CaretBottom 
 } from '@element-plus/icons-vue'
 
-// ------ Form 表单校验 ------
+// ------ Form 多步骤校验表单 (保留历史数据) ------
 const formRef = ref(null)
+const formStep = ref(0)
+const isSubmitting = ref(false)
+
 const form = reactive({
-  name: '',
-  region: '',
-  date: '',
-  type: [],
-  resource: '',
-  desc: ''
+  username: '',
+  email: '',
+  password: '',
+  nickname: '',
+  gender: 'male',
+  interests: [],
+  desc: '',
+  agree: false
 })
+
 const rules = {
-  name: [
-    { required: true, message: '请输入活动名称', trigger: 'blur' },
-    { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' }
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 15, message: '长度在 3 到 15 个字符', trigger: 'blur' }
   ],
-  region: [{ required: true, message: '请选择活动区域', trigger: 'change' }],
-  date: [{ required: true, message: '请选择日期', trigger: 'change' }],
-  type: [{ type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }],
-  resource: [{ required: true, message: '请选择活动资源', trigger: 'change' }]
+  email: [
+    { required: true, message: '请输入电子邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码长度不能少于 6 个字符', trigger: 'blur' }
+  ],
+  nickname: [
+    { required: true, message: '请输入昵称', trigger: 'blur' }
+  ]
 }
+
+const nextStep = () => {
+  if (formStep.value === 0) {
+    formRef.value.validateField(['username', 'email', 'password']).then(() => {
+      formStep.value = 1
+      ElMessage.success('第一步校验通过，数据已暂存')
+    }).catch(() => {
+      ElMessage.error('第一步校验未通过，请检查输入')
+    })
+  } else if (formStep.value === 1) {
+    formRef.value.validateField(['nickname']).then(() => {
+      formStep.value = 2
+      ElMessage.success('第二步校验通过')
+    }).catch(() => {
+      ElMessage.error('第二步校验未通过，请检查输入')
+    })
+  }
+}
+
+const prevStep = () => {
+  if (formStep.value > 0) {
+    formStep.value--
+    ElMessage.info('返回上一步，历史输入数据已保留')
+  }
+}
+
 const submitForm = () => {
-  formRef.value.validate((valid) => {
-    if (valid) {
-      ElMessage.success('校验通过，提交成功！')
-    } else {
-      ElMessage.error('校验未通过，请检查表单')
-    }
-  })
-}
-const resetForm = () => {
-  formRef.value.resetFields()
+  if (!form.agree) {
+    ElMessage.warning('请先勾选确认信息无误协议')
+    return
+  }
+  isSubmitting.value = true
+  setTimeout(() => {
+    isSubmitting.value = false
+    ElMessageBox.alert(
+      `提交的全部表单数据为：\n${JSON.stringify(form, null, 2)}`, 
+      '表单提交成功', 
+      { confirmButtonText: '确定' }
+    )
+    // 重置步骤和表单
+    formStep.value = 0
+    formRef.value.resetFields()
+    form.interests = []
+    form.desc = ''
+    form.agree = false
+  }, 1000)
 }
 
 // ------ Autocomplete / Mention ------
@@ -321,35 +369,83 @@ const loadMore = () => {
       <!-- 左半部 -->
       <el-col :xs="24" :sm="12">
         <div class="demo-section">
-          <h4 class="demo-title">Form 表单校验与提交</h4>
+          <h4 class="demo-title">Form 企业级分步校验表单 (数据保留与局部校验)</h4>
+          
+          <!-- 步骤指示条 -->
+          <el-steps :active="formStep" finish-status="success" simple style="margin-bottom: 20px; background: var(--el-fill-color-light, #f5f7fa); border-radius: 6px; padding: 10px 16px;">
+            <el-step title="账号设置" />
+            <el-step title="个人资料" />
+            <el-step title="确认提交" />
+          </el-steps>
+
+          <!-- 统一表单容器 -->
           <el-form ref="formRef" :model="form" :rules="rules" label-width="80px" size="small">
-            <el-form-item label="活动名称" prop="name">
-              <el-input v-model="form.name" />
-            </el-form-item>
-            <el-form-item label="活动区域" prop="region">
-              <el-select v-model="form.region" placeholder="请选择区域" style="width: 100%;">
-                <el-option label="上海" value="shanghai" />
-                <el-option label="北京" value="beijing" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="活动性质" prop="type">
-              <el-checkbox-group v-model="form.type">
-                <el-checkbox value="线上" name="type">线上活动</el-checkbox>
-                <el-checkbox value="线下" name="type">线下活动</el-checkbox>
-              </el-checkbox-group>
-            </el-form-item>
-            <el-form-item label="资源" prop="resource">
-              <el-radio-group v-model="form.resource">
-                <el-radio value="赞助">品牌赞助</el-radio>
-                <el-radio value="自筹">线下自筹</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="活动形式">
-              <el-input v-model="form.desc" type="textarea" :rows="2" />
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="submitForm">立即创建</el-button>
-              <el-button @click="resetForm">重置</el-button>
+            <!-- 步骤 1：账号设置 -->
+            <div v-if="formStep === 0">
+              <el-form-item label="用户名" prop="username">
+                <el-input v-model="form.username" placeholder="请输入用户名 (3-15位)" clearable />
+              </el-form-item>
+              <el-form-item label="邮箱地址" prop="email">
+                <el-input v-model="form.email" placeholder="请输入常用电子邮箱" clearable />
+              </el-form-item>
+              <el-form-item label="登录密码" prop="password">
+                <el-input v-model="form.password" type="password" show-password placeholder="请输入长度不小于6位的密码" />
+              </el-form-item>
+            </div>
+
+            <!-- 步骤 2：详细个人资料 -->
+            <div v-if="formStep === 1">
+              <el-form-item label="用户昵称" prop="nickname">
+                <el-input v-model="form.nickname" placeholder="请输入显示昵称" clearable />
+              </el-form-item>
+              <el-form-item label="性别选择">
+                <el-radio-group v-model="form.gender">
+                  <el-radio value="male">男生 🙋‍♂️</el-radio>
+                  <el-radio value="female">女生 🙋‍♀️</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="技术兴趣">
+                <el-checkbox-group v-model="form.interests">
+                  <el-checkbox value="vue">Vue</el-checkbox>
+                  <el-checkbox value="react">React</el-checkbox>
+                  <el-checkbox value="go">Golang</el-checkbox>
+                  <el-checkbox value="python">Python</el-checkbox>
+                </el-checkbox-group>
+              </el-form-item>
+              <el-form-item label="自我介绍">
+                <el-input v-model="form.desc" type="textarea" :rows="2" placeholder="简单写两句关于您的介绍吧..." />
+              </el-form-item>
+            </div>
+
+            <!-- 步骤 3：数据总览与确认提交 -->
+            <div v-if="formStep === 2">
+              <div style="background: var(--el-fill-color-light, #f5f7fa); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: var(--el-text-color-regular); line-height: 1.8;">
+                <p>📋 <strong>账号名：</strong> {{ form.username }}</p>
+                <p>📧 <strong>邮箱：</strong> {{ form.email }}</p>
+                <p>👤 <strong>昵称：</strong> {{ form.nickname }}</p>
+                <p>👫 <strong>性别：</strong> {{ form.gender === 'male' ? '男生' : '女生' }}</p>
+                <p>💡 <strong>兴趣：</strong> {{ form.interests.length > 0 ? form.interests.join('、') : '无' }}</p>
+                <p>📝 <strong>个人介绍：</strong> {{ form.desc || '未填写' }}</p>
+              </div>
+              
+              <el-form-item label-width="0">
+                <el-checkbox v-model="form.agree">
+                  我已核对上述所有登记数据，确认完全无误
+                </el-checkbox>
+              </el-form-item>
+            </div>
+
+            <!-- 操作导航按钮区 -->
+            <el-form-item label-width="0" style="margin-top: 20px;">
+              <el-button v-if="formStep > 0" @click="prevStep" :disabled="isSubmitting">
+                ← 上一步 (数据保留)
+              </el-button>
+              <el-button v-if="formStep < 2" type="primary" @click="nextStep">
+                下一步 (局部校验) →
+              </el-button>
+              <el-button v-if="formStep === 2" type="success" :loading="isSubmitting" @click="submitForm">
+                🚀 确认提交
+              </el-button>
             </el-form-item>
           </el-form>
         </div>

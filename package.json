@@ -20,6 +20,7 @@
     "crypto-js": "^4.2.0",
     "echarts": "^6.1.0",
     "element-plus": "2.9.0",
+    "node-html-parser": "^9.0.0",
     "pinyin-pro": "^3.28.1",
     "vue": "3.2.45",
     "vue-advanced-cropper": "^2.8.9",
