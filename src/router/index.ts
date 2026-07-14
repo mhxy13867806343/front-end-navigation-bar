@@ -39,6 +39,11 @@ const routes = [
     path: '/helloworld',
     name: 'HelloWorld',
     component: () => import('../views/helloworld/index.vue')
+  },
+  {
+    path: '/juejin-theme',
+    name: 'JuejinTheme',
+    component: () => import('../views/juejinTheme/index.vue')
   }
 ]
 

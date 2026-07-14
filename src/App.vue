@@ -73,11 +73,12 @@ import chinaCascaderOptions from './ajson/china-cascader-options.json'
 
 const route = useRoute()
 const router = useRouter()
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme']
 const isFlashRoute = computed<boolean>(() => routeViewPaths.includes(route.path))
 const goFlash = (): Promise<void | Error> => router.push('/flash')
 const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
 const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
+const goJuejinTheme = (): Promise<void | Error> => router.push('/juejin-theme')
 const backFromFlash = (): Promise<void | Error> => router.push('/')
 
 const activeMenuIndex = computed<string>(() => {
@@ -443,6 +444,10 @@ watch(isDarkMode, () => {
         <div class="sidebar-footer" @click="goHelloWorld" title="HelloWorld社区">
           <span class="nav-icon">🌍</span>
           <span v-show="isSidebarOpen">HelloWorld</span>
+        </div>
+        <div class="sidebar-footer" @click="goJuejinTheme" title="掘金热门主题">
+          <span class="nav-icon">🔥</span>
+          <span v-show="isSidebarOpen">热门主题</span>
         </div>
         <el-popover
           placement="top-start"
