@@ -10,6 +10,12 @@ const textareaValue = ref('')
 const inputPrefixValue = ref('')
 const inputPrependValue = ref('')
 
+// v2.14.0 Input OTP 一次性密码
+const otpValue = ref('')
+
+// v2.9.0 Input Tag 标签输入框
+const inputTagValue = ref(['Vite', 'Vue', 'Pinia'])
+
 const selectValue = ref('')
 const selectMultipleValue = ref([])
 const selectOptions = [
@@ -106,6 +112,8 @@ const progressValue = ref(75)
 const activeCollapse = ref(['1'])
 const innerTab = ref('first')
 
+const showSkeleton = ref(true)
+
 const showMessage = (type) => {
   ElMessage({ message: `这是一条 ${type} 消息提示`, type })
 }
@@ -136,7 +144,22 @@ const handleDropdownCommand = (command) => {
           <el-input v-model="textareaValue" type="textarea" :rows="2" show-word-limit maxlength="100" placeholder="带字数统计文本域" style="max-width: 320px; margin-top: 8px;" />
         </div>
 
-        <!-- 2. Select 选择器 -->
+        <!-- 2. Input OTP 一次性密码 (v2.14.0 新组件) -->
+        <div class="demo-section">
+          <h4 class="demo-title">Input OTP 一次性验证码输入框</h4>
+          <el-input-otp v-model="otpValue" :length="6" />
+          <div style="margin-top: 8px; font-size: 12px; color: var(--el-text-color-regular);">
+            当前输入验证码: <strong style="color: var(--el-color-primary);">{{ otpValue || '未输入' }}</strong>
+          </div>
+        </div>
+
+        <!-- 3. Input Tag 标签输入框 (v2.9.0 新组件) -->
+        <div class="demo-section">
+          <h4 class="demo-title">Input Tag 标签输入框 (回车生成标签)</h4>
+          <el-input-tag v-model="inputTagValue" placeholder="输入文字并回车" style="max-width: 320px;" />
+        </div>
+
+        <!-- 4. Select 选择器 -->
         <div class="demo-section">
           <h4 class="demo-title">Select 选择器 (分组/多选/折叠标签)</h4>
           <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -154,19 +177,19 @@ const handleDropdownCommand = (command) => {
           </div>
         </div>
 
-        <!-- 3. Cascader 级联选择器 -->
+        <!-- 5. Cascader 级联选择器 -->
         <div class="demo-section">
           <h4 class="demo-title">Cascader 级联选择器</h4>
           <el-cascader v-model="cascaderValue" :options="cascaderOptions" placeholder="请选择分类技术栈" clearable style="width: 320px;" />
         </div>
 
-        <!-- 4. InputNumber 数字输入框 -->
+        <!-- 6. InputNumber 数字输入框 -->
         <div class="demo-section">
           <h4 class="demo-title">InputNumber 数字步进器</h4>
           <el-input-number v-model="inputNumberValue" :min="1" :max="10" label="数字步进" />
         </div>
 
-        <!-- 5. Radio 单选框 -->
+        <!-- 7. Radio 单选框 -->
         <div class="demo-section">
           <h4 class="demo-title">Radio 单选框组 (按钮/带边框)</h4>
           <el-radio-group v-model="radioValue">
@@ -188,7 +211,7 @@ const handleDropdownCommand = (command) => {
           </div>
         </div>
 
-        <!-- 6. Checkbox 多选框 -->
+        <!-- 8. Checkbox 多选框 -->
         <div class="demo-section">
           <h4 class="demo-title">Checkbox 多选框 (带边框)</h4>
           <el-checkbox-group v-model="checkboxList">
@@ -205,7 +228,7 @@ const handleDropdownCommand = (command) => {
           </div>
         </div>
 
-        <!-- 7. Switch 开关 / Rate 评分 -->
+        <!-- 9. Switch 开关 / Rate 评分 -->
         <div class="demo-section">
           <h4 class="demo-title">Switch 开关与颜色 / Rate 评分</h4>
           <div class="demo-row" style="align-items: center; gap: 20px;">
@@ -220,14 +243,14 @@ const handleDropdownCommand = (command) => {
 
       <!-- 右半部分 -->
       <el-col :xs="24" :sm="12">
-        <!-- 8. Slider 滑块 -->
+        <!-- 10. Slider 滑块 -->
         <div class="demo-section">
           <h4 class="demo-title">Slider 滑块区间选值</h4>
           <el-slider v-model="sliderValue" style="max-width: 320px;" />
           <el-slider v-model="sliderRangeValue" range style="max-width: 320px;" />
         </div>
 
-        <!-- 9. DatePicker 日期选择器 -->
+        <!-- 11. DatePicker 日期选择器 -->
         <div class="demo-section">
           <h4 class="demo-title">DatePicker 日期选择 (快捷选项)</h4>
           <el-date-picker v-model="dateValue" type="date" placeholder="选择日期" :shortcuts="dateShortcuts" style="width: 320px;" />
@@ -243,20 +266,20 @@ const handleDropdownCommand = (command) => {
           </div>
         </div>
 
-        <!-- 10. TimePicker 时间选择器 -->
+        <!-- 12. TimePicker 时间选择器 -->
         <div class="demo-section">
           <h4 class="demo-title">TimePicker 时间选择</h4>
           <el-time-picker v-model="timeValue" placeholder="任意时间点" :prefix-icon="Clock" style="width: 320px;" />
         </div>
 
-        <!-- 11. ColorPicker 颜色选择器 -->
+        <!-- 13. ColorPicker 颜色选择器 -->
         <div class="demo-section">
           <h4 class="demo-title">ColorPicker 调色盘与透明度</h4>
           <el-color-picker v-model="colorValue" show-alpha />
           <el-text style="margin-left: 12px; font-weight: bold; color: var(--el-color-primary);">{{ colorValue }}</el-text>
         </div>
 
-        <!-- 12. Badge 徽章 / Avatar 头像 -->
+        <!-- 14. Badge 徽章 / Avatar 头像 -->
         <div class="demo-section">
           <h4 class="demo-title">Badge 状态徽章 (数字极限) / Avatar 头像</h4>
           <div class="demo-row" style="align-items: center; gap: 16px;">
@@ -275,7 +298,7 @@ const handleDropdownCommand = (command) => {
           </div>
         </div>
 
-        <!-- 13. Progress 进度条 (环形/仪表盘) -->
+        <!-- 15. Progress 进度条 (环形/仪表盘) -->
         <div class="demo-section">
           <h4 class="demo-title">Progress 进度条 (多形态环形图)</h4>
           <el-progress :percentage="progressValue" style="max-width: 320px; margin-bottom: 8px;" />
@@ -285,7 +308,32 @@ const handleDropdownCommand = (command) => {
           </div>
         </div>
 
-        <!-- 14. Alert 提示 -->
+        <!-- 16. Skeleton 骨架屏 (加载占位) -->
+        <div class="demo-section">
+          <h4 class="demo-title">Skeleton 骨架屏 (状态加载中占位)</h4>
+          <div style="margin-bottom: 8px;">
+            <el-switch v-model="showSkeleton" active-text="骨架占位" inactive-text="真实数据" />
+          </div>
+          <el-skeleton :rows="3" animated :loading="showSkeleton">
+            <template #default>
+              <div style="font-size: 13px; line-height: 1.6; color: var(--el-text-color-regular);">
+                💡 <b>数据已加载完毕：</b> 这里的真实表单数据在骨架遮罩关闭后才会渲染展现。
+              </div>
+            </template>
+          </el-skeleton>
+        </div>
+
+        <!-- 17. Result 结果 (成功/失败状态) -->
+        <div class="demo-section">
+          <h4 class="demo-title">Result 结果反馈看板</h4>
+          <el-result icon="success" title="任务提交成功" sub-title="您的修改已推送至仓库" style="padding: 10px 0;">
+            <template #extra>
+              <el-button type="primary" size="small">继续操作</el-button>
+            </template>
+          </el-result>
+        </div>
+
+        <!-- 18. Alert 提示 -->
         <div class="demo-section">
           <h4 class="demo-title">Alert 警告提示框</h4>
           <el-alert title="数据更新成功" type="success" description="系统核心缓存已同步更新成功。" show-icon :closable="false" style="margin-bottom: 8px;" />
@@ -295,7 +343,7 @@ const handleDropdownCommand = (command) => {
       </el-col>
     </el-row>
 
-    <!-- 15. Table 表格与批量选择 -->
+    <!-- 19. Table 表格与批量选择 -->
     <div class="demo-section">
       <h4 class="demo-title">Table 表格 (带首列勾选/排序/斑马线)</h4>
       <el-table :data="tableData" border stripe style="width: 100%;" @selection-change="handleSelectionChange">
@@ -315,7 +363,7 @@ const handleDropdownCommand = (command) => {
       </div>
     </div>
 
-    <!-- 16. Pagination 分页 -->
+    <!-- 20. Pagination 分页 -->
     <div class="demo-section">
       <h4 class="demo-title">Pagination 数据分页器</h4>
       <el-pagination v-model:current-page="currentPage" :total="100" layout="total, sizes, prev, pager, next, jumper" />
@@ -323,7 +371,7 @@ const handleDropdownCommand = (command) => {
 
     <el-row :gutter="24">
       <el-col :xs="24" :sm="12">
-        <!-- 17. Tooltip / Popconfirm -->
+        <!-- 21. Tooltip / Popconfirm -->
         <div class="demo-section">
           <h4 class="demo-title">Message 消息反馈 / Tooltip / Popconfirm</h4>
           <div class="demo-row" style="flex-wrap: wrap; gap: 8px;">
@@ -340,7 +388,7 @@ const handleDropdownCommand = (command) => {
           </div>
         </div>
 
-        <!-- 18. Dropdown 下拉菜单 -->
+        <!-- 22. Dropdown 下拉菜单 -->
         <div class="demo-section">
           <h4 class="demo-title">Dropdown 属性菜单</h4>
           <el-dropdown @command="handleDropdownCommand">
@@ -357,7 +405,7 @@ const handleDropdownCommand = (command) => {
           </el-dropdown>
         </div>
 
-        <!-- 19. Breadcrumb 面包屑 -->
+        <!-- 23. Breadcrumb 面包屑 -->
         <div class="demo-section">
           <h4 class="demo-title">Breadcrumb 路径导航</h4>
           <el-breadcrumb separator="/">
@@ -367,7 +415,7 @@ const handleDropdownCommand = (command) => {
           </el-breadcrumb>
         </div>
 
-        <!-- 20. Tabs 标签页 -->
+        <!-- 24. Tabs 标签页 -->
         <div class="demo-section">
           <h4 class="demo-title">Tabs 选项卡面板</h4>
           <el-tabs v-model="innerTab" type="card">
@@ -379,7 +427,7 @@ const handleDropdownCommand = (command) => {
       </el-col>
 
       <el-col :xs="24" :sm="12">
-        <!-- 21. Collapse 折叠面板 -->
+        <!-- 25. Collapse 折叠面板 -->
         <div class="demo-section">
           <h4 class="demo-title">Collapse 折叠面板（手风琴）</h4>
           <el-collapse v-model="activeCollapse" accordion>
@@ -389,7 +437,7 @@ const handleDropdownCommand = (command) => {
           </el-collapse>
         </div>
 
-        <!-- 22. Timeline 时间线 -->
+        <!-- 26. Timeline 时间线 -->
         <div class="demo-section">
           <h4 class="demo-title">Timeline 时间轴进程线</h4>
           <el-timeline style="max-width: 400px;">
@@ -399,7 +447,7 @@ const handleDropdownCommand = (command) => {
           </el-timeline>
         </div>
 
-        <!-- 23. Empty 空状态 -->
+        <!-- 27. Empty 空状态 -->
         <div class="demo-section">
           <h4 class="demo-title">Empty 缺省空状态</h4>
           <el-empty description="未检索到满足条件的数据项" :image-size="80" />

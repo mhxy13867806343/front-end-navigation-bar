@@ -114,8 +114,8 @@
 </template>
 
 <script setup>
+import $ from 'jquery'
 import { computed, onMounted, ref } from 'vue'
-import { parse } from 'node-html-parser'
 
 const API_BASE = '/api-helloworld'
 
@@ -150,14 +150,8 @@ const filteredArticles = computed(() => {
   })
 })
 
-function decodeHtml(text) {
+function normalizeText(text) {
   return String(text || '')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/\u002F/g, '/')
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -168,68 +162,81 @@ function toAbsoluteUrl(url) {
   return `https://www.helloworld.net${url}`
 }
 
-function textOf(node) {
-  return decodeHtml(node?.textContent || '')
+function textOf($node) {
+  return normalizeText($node?.text() || '')
 }
 
 function parseHomeHtml(html) {
-  const root = parse(html)
+  const nodes = $.parseHTML(html, document, false) || []
+  const $root = $('<div>').append(nodes)
 
-  const articleList = root.querySelectorAll('.blog-item').map((item) => {
-    const titleLink = item.querySelector('.title')
-    const nums = item.querySelectorAll('.num').map((node) => textOf(node))
+  const articleList = $root.find('.blog-item').map((_, element) => {
+    const $item = $(element)
+    const $titleLink = $item.find('.title').first()
+    const nums = $item.find('.num').map((__, node) => textOf($(node))).get()
 
     return {
-      title: textOf(titleLink),
-      brief: textOf(item.querySelector('.intro')),
-      author: textOf(item.querySelector('.name')),
-      time: textOf(item.querySelector('.time')),
+      title: textOf($titleLink),
+      brief: textOf($item.find('.intro').first()),
+      author: textOf($item.find('.name').first()),
+      time: textOf($item.find('.time').first()),
       readCount: nums[0] || '0',
       likeCount: nums[1] || '0',
       commentCount: nums[2] || '0',
-      url: toAbsoluteUrl(titleLink?.getAttribute('href') || ''),
-      cover: toAbsoluteUrl(item.querySelector('.item-right')?.getAttribute('src') || '')
+      url: toAbsoluteUrl($titleLink.attr('href') || ''),
+      cover: toAbsoluteUrl($item.find('.item-right').first().attr('src') || '')
     }
-  }).filter((item) => item.title && item.url)
+  }).get().filter((item) => item.title && item.url)
 
-  const authorList = root.querySelectorAll('.author-item').map((item) => {
-    const link = item.querySelector('.author-info')
+  const authorList = $root.find('.author-item').map((_, element) => {
+    const $item = $(element)
+    const $link = $item.find('.author-info').first()
 
     return {
-      name: textOf(item.querySelector('.name')),
-      job: textOf(item.querySelector('.count')),
-      url: toAbsoluteUrl(link?.getAttribute('href') || ''),
-      avatar: toAbsoluteUrl(item.querySelector('.avatar')?.getAttribute('src') || '')
+      name: textOf($item.find('.name').first()),
+      job: textOf($item.find('.count').first()),
+      url: toAbsoluteUrl($link.attr('href') || ''),
+      avatar: toAbsoluteUrl($item.find('.avatar').first().attr('src') || '')
     }
-  }).filter((item) => item.name && item.url)
+  }).get().filter((item) => item.name && item.url)
 
-  const lessonList = root.querySelectorAll('a[href^="/lesson/detail/"]').map((item) => {
+  const lessonList = $root.find('a[href^="/lesson/detail/"]').map((_, element) => {
+    const $item = $(element)
     return {
-      title: textOf(item.querySelector('h2')),
-      price: textOf(item.querySelector('.price')) || '未知价格',
-      learnCount: textOf(item.querySelector('.des span')),
-      url: toAbsoluteUrl(item.getAttribute('href') || ''),
-      cover: toAbsoluteUrl(item.querySelector('img')?.getAttribute('src') || '')
+      title: textOf($item.find('h2').first()),
+      price: textOf($item.find('.price').first()) || '未知价格',
+      learnCount: textOf($item.find('.des span').first()),
+      url: toAbsoluteUrl($item.attr('href') || ''),
+      cover: toAbsoluteUrl($item.find('img').first().attr('src') || '')
     }
-  }).filter((item) => item.title && item.url)
+  }).get().filter((item) => item.title && item.url)
 
-  const tagList = root.querySelectorAll('.index-tag-item').map((item) => textOf(item)).filter(Boolean)
+  const tagList = $root.find('.index-tag-item').map((_, element) => textOf($(element))).get().filter(Boolean)
 
-  const menuGroups = root.querySelectorAll('.left-body-bar > div')
-  const directionGroup = menuGroups.find((group) => textOf(group.querySelector('.menu-title')) === '技术方向')
-  const languageGroup = menuGroups.find((group) => textOf(group.querySelector('.menu-title')) === '编程语言')
+  let directionList = []
+  let languageList = []
+
+  $root.find('.left-body-bar > div').each((_, element) => {
+    const $group = $(element)
+    const title = textOf($group.find('.menu-title').first())
+    const values = $group.find('.name').map((__, node) => textOf($(node))).get().filter(Boolean)
+
+    if (title === '技术方向') {
+      directionList = values
+    }
+
+    if (title === '编程语言') {
+      languageList = values
+    }
+  })
 
   return {
     articles: articleList,
     authors: authorList,
     lessons: lessonList,
     tags: tagList,
-    directions: directionGroup
-      ? directionGroup.querySelectorAll('.name').map((item) => textOf(item)).filter(Boolean)
-      : [],
-    languages: languageGroup
-      ? languageGroup.querySelectorAll('.name').map((item) => textOf(item)).filter(Boolean)
-      : []
+    directions: directionList,
+    languages: languageList
   }
 }
 

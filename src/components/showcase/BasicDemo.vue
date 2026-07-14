@@ -112,7 +112,24 @@ const handleInputConfirm = () => {
       </el-row>
     </div>
 
-    <!-- 4. Container 布局容器 -->
+    <!-- 4. Splitter 分隔面板 (v2.10.0 新组件) -->
+    <div class="demo-section">
+      <h4 class="demo-title">Splitter 分隔面板 (拖拽调整比例)</h4>
+      <el-splitter style="height: 140px; border: 1px solid var(--el-border-color, #dcdfe6); border-radius: 8px;">
+        <el-splitter-item :size="30">
+          <div style="padding: 16px; background: var(--el-fill-color-light, #f5f7fa); height: 100%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; color: var(--el-color-primary);">
+            ⬅️ 左侧可调栏 (30%)
+          </div>
+        </el-splitter-item>
+        <el-splitter-item>
+          <div style="padding: 16px; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--el-text-color-regular);">
+            右侧自适应宽度面板 (拖拽中间分割条试试) ➡️
+          </div>
+        </el-splitter-item>
+      </el-splitter>
+    </div>
+
+    <!-- 5. Container 布局容器 -->
     <div class="demo-section">
       <h4 class="demo-title">Container 圣杯布局容器</h4>
       <el-container class="container-demo">
@@ -125,7 +142,7 @@ const handleInputConfirm = () => {
       </el-container>
     </div>
 
-    <!-- 5. Link 链接 -->
+    <!-- 6. Link 链接 -->
     <div class="demo-section">
       <h4 class="demo-title">Link 状态链接</h4>
       <div class="demo-row">
@@ -140,7 +157,7 @@ const handleInputConfirm = () => {
       </div>
     </div>
 
-    <!-- 6. Text 文本 -->
+    <!-- 7. Text 文本 -->
     <div class="demo-section">
       <h4 class="demo-title">Text 排版文本</h4>
       <div class="demo-row">
@@ -155,7 +172,20 @@ const handleInputConfirm = () => {
       </div>
     </div>
 
-    <!-- 7. Dynamic Tag 动态标签 -->
+    <!-- 8. Typography 排版 (规范排版格式) -->
+    <div class="demo-section">
+      <h4 class="demo-title">Typography 排版样式演示</h4>
+      <div style="border: 1px solid var(--el-border-color, #dcdfe6); border-radius: 8px; padding: 16px; background: var(--el-fill-color-blank, #ffffff);">
+        <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 8px; color: var(--el-text-color-primary);">H1. 标题一 (Heading 1)</h1>
+        <h2 style="font-size: 20px; font-weight: 500; margin-bottom: 12px; color: var(--el-text-color-regular);">H2. 标题二 (Heading 2)</h2>
+        <p style="font-size: 14px; line-height: 1.6; color: var(--el-text-color-regular); margin-bottom: 8px;">
+          段落展示：Element Plus 提供了规范化的页面排版设计体系，让文字呈现更加清晰、优雅且契合暗色/亮色多款主题。
+        </p>
+        <code style="font-family: monospace; background: var(--el-fill-color-light, #f5f7fa); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--el-color-primary);">npm run dev</code>
+      </div>
+    </div>
+
+    <!-- 9. Dynamic Tag 动态标签 -->
     <div class="demo-section">
       <h4 class="demo-title">Tag 动态操作标签（点击删除与输入追加）</h4>
       <div class="demo-row" style="align-items: center; gap: 8px;">
@@ -183,7 +213,7 @@ const handleInputConfirm = () => {
       </div>
     </div>
 
-    <!-- 8. Space 间距 -->
+    <!-- 10. Space 间距 -->
     <div class="demo-section">
       <h4 class="demo-title">Space 自适应弹性间距</h4>
       <el-space wrap :size="16">
@@ -196,7 +226,7 @@ const handleInputConfirm = () => {
       </el-space>
     </div>
 
-    <!-- 9. Scrollbar 滚动条 -->
+    <!-- 11. Scrollbar 滚动条 -->
     <div class="demo-section">
       <h4 class="demo-title">Scrollbar 滚动条（垂直与水平双滚动）</h4>
       <el-scrollbar height="120px" class="scrollbar-demo">
@@ -212,7 +242,7 @@ const handleInputConfirm = () => {
       </el-scrollbar>
     </div>
 
-    <!-- 10. Divider 分割线 -->
+    <!-- 12. Divider 分割线 -->
     <div class="demo-section">
       <h4 class="demo-title">Divider 排版分割线</h4>
       <el-text>上面的内容</el-text>

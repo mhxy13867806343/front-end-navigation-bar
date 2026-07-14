@@ -6,6 +6,17 @@ import {
   Delete, View, Download, Plus, Star, CaretTop, CaretBottom 
 } from '@element-plus/icons-vue'
 
+// Import locales for Config Provider
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import en from 'element-plus/dist/locale/en.mjs'
+
+// ------ Config Provider 全局配置 ------
+const currentLocale = ref(zhCn)
+const toggleLocale = () => {
+  currentLocale.value = currentLocale.value.name === 'zh-cn' ? en : zhCn
+  ElMessage.success(`语言已切换至: ${currentLocale.value.name === 'zh-cn' ? '中文 (zh-cn)' : 'English (en)'}`)
+}
+
 // ------ Form 多步骤校验表单 (保留历史数据) ------
 const formRef = ref(null)
 const formStep = ref(0)
@@ -202,6 +213,27 @@ const removeNode = (node, data) => {
   ElMessage.warning('节点已移除')
 }
 
+// ------ Virtualized Tree 虚拟化树形控件 ------
+const createVirtualTreeData = (maxDeep, maxChildren, minNodesNumber, deep = 1, key = 'node') => {
+  let id = 0
+  const getRandom = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
+  const nodes = []
+  const count = getRandom(minNodesNumber, maxChildren)
+  for (let i = 0; i < count; i++) {
+    const nodeKey = `${key}-${deep}-${i}`
+    const node = {
+      id: nodeKey,
+      label: `虚拟节点 L${deep} - ${i}`
+    }
+    if (deep < maxDeep) {
+      node.children = createVirtualTreeData(maxDeep, maxChildren, minNodesNumber, deep + 1, nodeKey)
+    }
+    nodes.push(node)
+  }
+  return nodes
+}
+const virtualTreeData = ref(createVirtualTreeData(3, 8, 3))
+
 // ------ 动态路由 & 权限菜单 ------
 const currentRole = ref('admin')
 const hasMountedRoute = ref(false)
@@ -238,7 +270,7 @@ const handleUnmountRoute = () => {
   hasMountedRoute.value = false
   ElNotification({
     title: '🔌 动态路由已卸载',
-    message: '已经成功从 Vue Router 路由表和菜单树中安全移除该组件。',
+    message: '已经成功从 Vue Router 路由表 and 菜单树中安全移除该组件。',
     type: 'warning',
     position: 'top-right'
   })
@@ -365,6 +397,33 @@ const loadMore = () => {
 
 <template>
   <div>
+    <!-- Config Provider 全局配置国际化演示 -->
+    <div class="demo-section" style="margin-bottom: 24px;">
+      <h4 class="demo-title">Config Provider 全局配置 (语言国际化控制中心)</h4>
+      <div style="background: var(--el-fill-color-blank, #ffffff); padding: 20px; border-radius: 8px; border: 1px solid var(--el-border-color, #dcdfe6);">
+        <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 14px; font-weight: bold; color: var(--el-text-color-primary);">切换界面语言:</span>
+          <el-button type="primary" size="small" @click="toggleLocale">
+            🌐 切换至 {{ currentLocale.name === 'zh-cn' ? 'English (en)' : '中文 (zh-cn)' }}
+          </el-button>
+        </div>
+        
+        <!-- 容器包装 -->
+        <el-config-provider :locale="currentLocale">
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; border: 1px dashed var(--el-border-color, #dcdfe6); padding: 16px; border-radius: 6px;">
+            <div>
+              <div style="font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 4px;">分页器翻译：</div>
+              <el-pagination :total="100" layout="prev, pager, next, jumper" />
+            </div>
+            <div>
+              <div style="font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 4px;">空占位翻译：</div>
+              <el-empty description="数据加载失败" :image-size="40" style="padding: 0;" />
+            </div>
+          </div>
+        </el-config-provider>
+      </div>
+    </div>
+
     <el-row :gutter="24">
       <!-- 左半部 -->
       <el-col :xs="24" :sm="12">
@@ -567,6 +626,16 @@ const loadMore = () => {
         </div>
 
         <div class="demo-section">
+          <h4 class="demo-title">Virtualized Tree 虚拟化树 (大数据高性能渲染)</h4>
+          <el-tree-v2
+            :data="virtualTreeData"
+            :height="200"
+            show-checkbox
+            style="max-width: 400px; padding: 8px; border: 1px solid var(--el-border-color, #dcdfe6); border-radius: 6px;"
+          />
+        </div>
+
+        <div class="demo-section">
           <h4 class="demo-title">Affix 固钉</h4>
           <el-affix :offset="80">
             <el-button type="primary">📌 固钉按钮 (滚动至此贴顶)</el-button>
@@ -720,7 +789,7 @@ const loadMore = () => {
 
     <!-- Calendar 日历自定义插槽 -->
     <div class="demo-section">
-      <h4 class="demo-title">Calendar 日日历（自定义日程卡槽插槽）</h4>
+      <h4 class="demo-title">Calendar 日历（自定义日程卡槽插槽）</h4>
       <el-calendar v-model="calendarValue">
         <template #date-cell="{ data }">
           <div class="calendar-day" style="font-size: 11px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 4px;">
