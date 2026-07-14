@@ -9,17 +9,39 @@ export { API_BASE } from './aicoding'
 
 // ─── Raw API response shape ──────────────────────────────────────────
 
-export interface ThemeRaw {
+/** 每条 data 项内嵌的 theme 对象 */
+export interface ThemeDetail {
   theme_id: string
-  theme_name: string
-  icon?: string
-  description?: string
+  name: string
+  cover?: string
   brief?: string
-  post_count?: number
-  follower_count?: number
-  view_count?: number
+  is_lottery?: boolean
+  is_rec?: boolean
+  rec_rank?: number
+  hot?: number
+  view_cnt?: number
+  user_cnt?: number
   status?: number
-  hot_score?: number
+  has_expiration?: boolean
+  valid_begin_time?: number
+  valid_end_time?: number
+  expired?: number
+}
+
+/** 参与用户摘要 */
+export interface ThemeRecentUser {
+  user_id: string
+  user_name: string
+  avatar_large: string
+  level?: number
+  job_title?: string
+  company?: string
+}
+
+/** data 数组中每一项的完整结构 */
+export interface ThemeRaw {
+  theme: ThemeDetail
+  recent_users?: ThemeRecentUser[]
 }
 
 // ─── Normalised UI model ─────────────────────────────────────────────
@@ -27,12 +49,14 @@ export interface ThemeRaw {
 export interface ThemeItem {
   id: string
   name: string
-  icon: string
-  description: string
-  postCount: number
-  followerCount: number
+  cover: string
+  brief: string
+  hot: number
   viewCount: number
-  hotScore: number
+  userCount: number
+  isLottery: boolean
+  isRec: boolean
+  recentUsers: ThemeRecentUser[]
 }
 
 // ─── Query body sent to POST /tag_api/v1/theme/list_by_hot ──────────
@@ -46,22 +70,24 @@ export interface ThemeQueryBody {
 // ─── Mapper ──────────────────────────────────────────────────────────
 
 export function mapTheme(raw: ThemeRaw): ThemeItem {
+  const t = raw.theme
   return {
-    id: raw.theme_id,
-    name: raw.theme_name || '未知主题',
-    icon: raw.icon || '',
-    description: raw.description || raw.brief || '',
-    postCount: raw.post_count || 0,
-    followerCount: raw.follower_count || 0,
-    viewCount: raw.view_count || 0,
-    hotScore: raw.hot_score || 0
+    id: t.theme_id,
+    name: t.name || '未知主题',
+    cover: t.cover || '',
+    brief: t.brief || '',
+    hot: t.hot || 0,
+    viewCount: t.view_cnt || 0,
+    userCount: t.user_cnt || 0,
+    isLottery: !!t.is_lottery,
+    isRec: !!t.is_rec,
+    recentUsers: (raw.recent_users || []).slice(0, 5)
   }
 }
 
 // ─── Number formatter ────────────────────────────────────────────────
 
 export function formatNumber(n: number): string {
-  if (n >= 100000) return `${(n / 10000).toFixed(1)}w`
   if (n >= 10000) return `${(n / 10000).toFixed(1)}w`
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
   return String(n)

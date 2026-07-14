@@ -28,12 +28,12 @@
           <span class="stat-label">已加载主题</span>
         </div>
         <div class="stat-card">
-          <span class="stat-value">{{ totalPosts }}</span>
-          <span class="stat-label">总文章数</span>
+          <span class="stat-value">{{ totalHot }}</span>
+          <span class="stat-label">总热度</span>
         </div>
         <div class="stat-card">
-          <span class="stat-value">{{ totalFollowers }}</span>
-          <span class="stat-label">总关注人数</span>
+          <span class="stat-value">{{ totalUsers }}</span>
+          <span class="stat-label">总参与人数</span>
         </div>
       </div>
 
@@ -57,21 +57,44 @@
           class="theme-card"
           :style="{ animationDelay: `${index * 40}ms` }"
         >
+          <!-- 排名 -->
           <div class="card-rank" :class="rankClass(index)">
             {{ index + 1 }}
           </div>
-          <div class="card-icon">
-            <img v-if="item.icon" :src="item.icon" alt="" class="theme-icon" />
-            <span v-else class="icon-placeholder">{{ item.name.charAt(0) }}</span>
+
+          <!-- 封面 -->
+          <div class="card-cover">
+            <img v-if="item.cover" :src="item.cover" alt="" class="theme-cover-img" />
+            <span v-else class="cover-placeholder">{{ item.name.charAt(0) }}</span>
           </div>
+
+          <!-- 内容 -->
           <div class="card-body">
-            <h3 class="theme-name">{{ item.name }}</h3>
-            <p class="theme-desc" :title="item.description">{{ item.description || '暂无描述' }}</p>
-            <div class="theme-stats">
-              <span class="stat" title="文章数">📝 {{ formatNumber(item.postCount) }}</span>
-              <span class="stat" title="关注人数">👥 {{ formatNumber(item.followerCount) }}</span>
-              <span class="stat" title="浏览量">👁 {{ formatNumber(item.viewCount) }}</span>
-              <span v-if="item.hotScore" class="stat hot" title="热度值">🔥 {{ formatNumber(item.hotScore) }}</span>
+            <div class="card-title-row">
+              <h3 class="theme-name">{{ item.name }}</h3>
+              <div class="card-badges">
+                <span v-if="item.isRec" class="badge rec">推荐</span>
+                <span v-if="item.isLottery" class="badge lottery">🎁 抽奖</span>
+              </div>
+            </div>
+            <p class="theme-brief" :title="item.brief">{{ item.brief || '暂无描述' }}</p>
+            <div class="card-footer">
+              <div class="theme-stats">
+                <span class="stat" title="热度">🔥 {{ formatNumber(item.hot) }}</span>
+                <span class="stat" title="浏览量">👁 {{ formatNumber(item.viewCount) }}</span>
+                <span class="stat" title="参与人数">👥 {{ formatNumber(item.userCount) }}</span>
+              </div>
+              <!-- 参与用户头像 -->
+              <div v-if="item.recentUsers.length" class="recent-users">
+                <img
+                  v-for="u in item.recentUsers"
+                  :key="u.user_id"
+                  :src="u.avatar_large"
+                  :title="u.user_name"
+                  class="user-avatar"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -121,11 +144,11 @@ const error = ref<string>('')
 
 let requestSeq: number = 0
 
-const totalPosts = computed<string>(() =>
-  formatNumber(themes.value.reduce((sum: number, t: ThemeItem) => sum + t.postCount, 0))
+const totalHot = computed<string>(() =>
+  formatNumber(themes.value.reduce((sum: number, t: ThemeItem) => sum + t.hot, 0))
 )
-const totalFollowers = computed<string>(() =>
-  formatNumber(themes.value.reduce((sum: number, t: ThemeItem) => sum + t.followerCount, 0))
+const totalUsers = computed<string>(() =>
+  formatNumber(themes.value.reduce((sum: number, t: ThemeItem) => sum + t.userCount, 0))
 )
 
 onMounted((): void => {
@@ -217,6 +240,12 @@ function rankClass(index: number): string {
   flex-wrap: wrap;
   gap: 16px;
 }
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 .page-title {
   font-size: 26px;
   font-weight: 800;
@@ -229,7 +258,6 @@ function rankClass(index: number): string {
 .subtitle {
   font-size: 13px;
   color: rgba(255,255,255,0.45);
-  margin-left: 12px;
 }
 .header-right {
   display: flex;
@@ -303,7 +331,7 @@ function rankClass(index: number): string {
 }
 .theme-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.07);
@@ -321,14 +349,8 @@ function rankClass(index: number): string {
   box-shadow: 0 8px 32px rgba(78,205,196,0.1);
 }
 @keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ─── Rank Badge ────────────────────────── */
@@ -344,6 +366,7 @@ function rankClass(index: number): string {
   font-weight: 800;
   background: rgba(255,255,255,0.06);
   color: rgba(255,255,255,0.4);
+  margin-top: 4px;
 }
 .card-rank.gold {
   background: linear-gradient(135deg, #ffd700, #ffb300);
@@ -361,11 +384,11 @@ function rankClass(index: number): string {
   box-shadow: 0 4px 12px rgba(205,127,50,0.3);
 }
 
-/* ─── Card Icon ─────────────────────────── */
-.card-icon {
+/* ─── Card Cover ────────────────────────── */
+.card-cover {
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
+  width: 80px;
+  height: 80px;
   border-radius: 14px;
   overflow: hidden;
   background: rgba(255,255,255,0.06);
@@ -373,13 +396,13 @@ function rankClass(index: number): string {
   align-items: center;
   justify-content: center;
 }
-.theme-icon {
+.theme-cover-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.icon-placeholder {
-  font-size: 22px;
+.cover-placeholder {
+  font-size: 28px;
   font-weight: 800;
   background: linear-gradient(135deg, #4ecdc4, #45b7d1);
   -webkit-background-clip: text;
@@ -392,21 +415,58 @@ function rankClass(index: number): string {
   flex: 1;
   min-width: 0;
 }
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
 .theme-name {
   font-size: 17px;
   font-weight: 700;
   color: #f0f0f4;
-  margin: 0 0 6px;
+  margin: 0;
   line-height: 1.3;
 }
-.theme-desc {
+.card-badges {
+  display: flex;
+  gap: 6px;
+}
+.badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.badge.rec {
+  background: rgba(78,205,196,0.15);
+  color: #4ecdc4;
+  border: 1px solid rgba(78,205,196,0.3);
+}
+.badge.lottery {
+  background: rgba(247,201,72,0.15);
+  color: #f7c948;
+  border: 1px solid rgba(247,201,72,0.3);
+}
+.theme-brief {
   font-size: 13px;
-  color: rgba(255,255,255,0.4);
-  margin: 0 0 10px;
+  color: rgba(255,255,255,0.45);
+  margin: 0 0 12px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.5;
+}
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 .theme-stats {
   display: flex;
@@ -424,8 +484,27 @@ function rankClass(index: number): string {
 .stat:hover {
   color: rgba(255,255,255,0.85);
 }
-.stat.hot {
-  color: #f7c948;
+
+/* ─── Recent Users ──────────────────────── */
+.recent-users {
+  display: flex;
+  gap: 0;
+}
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(15,12,41,0.8);
+  margin-left: -8px;
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+.user-avatar:first-child {
+  margin-left: 0;
+}
+.user-avatar:hover {
+  transform: scale(1.2);
+  z-index: 1;
 }
 
 /* ─── Load More ─────────────────────────── */
@@ -452,9 +531,9 @@ function rankClass(index: number): string {
     flex-wrap: wrap;
     padding: 16px;
   }
-  .subtitle {
-    margin-left: 0;
-    margin-top: 4px;
+  .card-cover {
+    width: 60px;
+    height: 60px;
   }
 }
 </style>
