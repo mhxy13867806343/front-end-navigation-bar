@@ -1,0 +1,1 @@
+var e=[{label:`热门`,value:1},{label:`最新`,value:2}],t=`/api-juejin`;export{e as n,t};
