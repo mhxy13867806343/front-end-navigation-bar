@@ -77,7 +77,10 @@ import chinaCascaderOptions from './ajson/china-cascader-options.json'
 const route = useRoute()
 const router = useRouter()
 const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme']
-const isFlashRoute = computed<boolean>(() => routeViewPaths.includes(route.path))
+const isFlashRoute = computed<boolean>(() => {
+  const path = route.path
+  return routeViewPaths.some(p => path === p || path.endsWith(p))
+})
 const goFlash = (): Promise<void | Error> => router.push('/flash')
 const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
 const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
