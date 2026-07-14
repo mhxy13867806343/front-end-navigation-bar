@@ -60,10 +60,11 @@ import chinaCascaderOptions from './utils/china-cascader-options.json'
 
 const route = useRoute()
 const router = useRouter()
-const routeViewPaths = ['/flash', '/aicoding']
+const routeViewPaths = ['/flash', '/aicoding', '/helloworld']
 const isFlashRoute = computed(() => routeViewPaths.includes(route.path))
 const goFlash = () => router.push('/flash')
 const goAiCoding = () => router.push('/aicoding')
+const goHelloWorld = () => router.push('/helloworld')
 const backFromFlash = () => router.push('/')
 
 const refreshWeather = async () => {
@@ -389,6 +390,10 @@ watch(isDarkMode, () => {
         <div class="sidebar-footer" @click="goAiCoding" title="AI编程资讯">
           <span class="nav-icon">🤖</span>
           <span v-show="isSidebarOpen">AI编程资讯</span>
+        </div>
+        <div class="sidebar-footer" @click="goHelloWorld" title="HelloWorld社区">
+          <span class="nav-icon">🌍</span>
+          <span v-show="isSidebarOpen">HelloWorld</span>
         </div>
         <el-popover
           placement="top-start"
@@ -1764,6 +1769,9 @@ watch(isDarkMode, () => {
       </div>
       <router-view />
     </div>
+
+    <!-- 全局返回顶部 -->
+    <el-backtop :right="40" :bottom="40" />
   </div>
 </template>
 

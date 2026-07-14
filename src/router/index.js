@@ -34,6 +34,11 @@ const routes = [
     path: '/aicoding',
     name: 'AiCoding',
     component: () => import('../views/aicoding/index.vue')
+  },
+  {
+    path: '/helloworld',
+    name: 'HelloWorld',
+    component: () => import('../views/helloworld/index.vue')
   }
 ]
 

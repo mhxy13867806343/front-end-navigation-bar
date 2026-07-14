@@ -484,6 +484,8 @@
         <el-button @click="previewVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+    <!-- 返回顶部（绑定设计区域 el-main） -->
+    <el-backtop target=".el-main" :right="40" :bottom="40" />
   </div>
 </template>
 

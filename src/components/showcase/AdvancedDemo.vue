@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox, ElNotification, ElLoading } from 'element-plus'
 import { Document, Menu as MenuIcon, Setting, Location } from '@element-plus/icons-vue'
 
@@ -81,19 +81,116 @@ const treeSelectData = [
     children: [{ value: 'node', label: 'Node.js' }, { value: 'go', label: 'Go' }]
   }
 ]
-const treeData = [
+// ------ Tree 过滤与动态增删 ------
+const filterText = ref('')
+const treeRef = ref(null)
+const defaultProps = {
+  children: 'children',
+  label: 'label'
+}
+const editableTreeData = ref([
   {
-    label: '前端技术',
+    id: 1,
+    label: '研发中心',
     children: [
-      { label: 'Vue 生态', children: [{ label: 'Vue 3' }, { label: 'Vite' }, { label: 'Pinia' }] },
-      { label: 'React 生态', children: [{ label: 'Next.js' }, { label: 'Redux' }] }
+      {
+        id: 2,
+        label: '前端开发部',
+        children: [
+          { id: 3, label: 'Vue 架构组' },
+          { id: 4, label: 'React 架构组' }
+        ]
+      },
+      {
+        id: 5,
+        label: '后端开发部',
+        children: [
+          { id: 6, label: 'Node 业务组' },
+          { id: 7, label: 'Go 底层组' }
+        ]
+      }
     ]
   },
   {
-    label: 'AI 工具',
-    children: [{ label: 'AI 聊天助手' }, { label: 'AI 绘画' }, { label: 'AI 编程' }]
+    id: 8,
+    label: '设计中心',
+    children: [
+      { id: 9, label: 'UI 视觉设计' },
+      { id: 10, label: 'UX 交互体验' }
+    ]
   }
+])
+
+const filterNode = (value, data) => {
+  if (!value) return true
+  return data.label.includes(value)
+}
+
+watch(filterText, (val) => {
+  treeRef.value?.filter(val)
+})
+
+let nodeId = 100
+const appendNode = (data) => {
+  const newChild = { id: nodeId++, label: '新部门/岗位', children: [] }
+  if (!data.children) {
+    data.children = []
+  }
+  data.children.push(newChild)
+  editableTreeData.value = [...editableTreeData.value]
+  ElMessage.success('成功添加子节点')
+}
+
+const removeNode = (node, data) => {
+  const parent = node.parent
+  const children = parent.data.children || parent.data
+  const index = children.findIndex((d) => d.id === data.id)
+  children.splice(index, 1)
+  editableTreeData.value = [...editableTreeData.value]
+  ElMessage.warning('节点已移除')
+}
+
+// ------ 动态路由 & 权限菜单 ------
+const currentRole = ref('admin')
+const hasMountedRoute = ref(false)
+const defaultMenus = [
+  { path: '/dashboard', name: '系统数据大屏', icon: '📊', role: null },
+  { path: '/showcase', name: 'Element Plus 组件库', icon: '🧩', role: null },
+  { path: '/settings', name: '系统全局配置 (Admin)', icon: '⚙️', role: 'admin' },
+  { path: '/articles', name: '文章管理中心 (Editor/Admin)', icon: '📝', role: 'editor' }
 ]
+
+const filteredMenus = computed(() => {
+  const menus = [...defaultMenus]
+  if (hasMountedRoute.value) {
+    menus.push({ path: '/temp-page', name: '动态载入临时页面', icon: '🔌', role: null, isTemp: true })
+  }
+  if (currentRole.value === 'admin') return menus
+  if (currentRole.value === 'editor') {
+    return menus.filter(m => m.role !== 'admin')
+  }
+  return menus.filter(m => !m.role)
+})
+
+const handleMountRoute = () => {
+  hasMountedRoute.value = true
+  ElNotification({
+    title: '🔌 动态路由注入成功',
+    message: '新路由 /temp-page 及其对应的单页面组件已被成功追加到 Vue Router 中！',
+    type: 'success',
+    position: 'top-right'
+  })
+}
+
+const handleUnmountRoute = () => {
+  hasMountedRoute.value = false
+  ElNotification({
+    title: '🔌 动态路由已卸载',
+    message: '已经成功从 Vue Router 路由表和菜单树中安全移除该组件。',
+    type: 'warning',
+    position: 'top-right'
+  })
+}
 
 // ------ Transfer / Upload ------
 const transferValue = ref([1, 4])
@@ -326,8 +423,33 @@ const loadMore = () => {
         </div>
 
         <div class="demo-section">
-          <h4 class="demo-title">Tree 树形控件（可勾选）</h4>
-          <el-tree :data="treeData" show-checkbox default-expand-all node-key="label" />
+          <h4 class="demo-title">Tree 树形控件（搜索过滤与动态增删）</h4>
+          <el-input
+            v-model="filterText"
+            placeholder="输入关键字进行过滤"
+            style="margin-bottom: 12px; max-width: 300px;"
+            clearable
+          />
+          <el-tree
+            ref="treeRef"
+            class="filter-tree"
+            :data="editableTreeData"
+            :props="defaultProps"
+            default-expand-all
+            :filter-node-method="filterNode"
+            node-key="id"
+            style="max-width: 400px; padding: 8px; border: 1px solid var(--el-border-color, #dcdfe6); border-radius: 6px;"
+          >
+            <template #default="{ node, data }">
+              <span class="custom-tree-node" style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 13px;">
+                <span>{{ node.label }}</span>
+                <span class="tree-node-actions" style="margin-left: 12px; display: flex; gap: 4px;">
+                  <el-button type="primary" link size="small" style="font-size: 11px; padding: 0;" @click.stop="appendNode(data)">➕</el-button>
+                  <el-button type="danger" link size="small" style="font-size: 11px; padding: 0;" @click.stop="removeNode(node, data)">❌</el-button>
+                </span>
+              </span>
+            </template>
+          </el-tree>
         </div>
 
         <div class="demo-section">
@@ -615,6 +737,56 @@ const loadMore = () => {
     <el-drawer v-model="drawerVisible" title="Drawer 抽屉" size="30%">
       <span>这是一个 Element Plus 抽屉示例。</span>
     </el-drawer>
+
+    <!-- 🔌 动态路由 & 权限控制演示 -->
+    <div class="demo-section" style="margin-top: 24px;">
+      <h4 class="demo-title">🔌 Dynamic Routing 动态路由与权限菜单演示</h4>
+      <div style="background: var(--el-fill-color-blank, #ffffff); padding: 20px; border-radius: 8px; border: 1px solid var(--el-border-color, #dcdfe6);">
+        <el-row :gutter="24" align="middle">
+          <el-col :xs="24" :sm="10">
+            <div style="margin-bottom: 16px;">
+              <span style="font-size: 14px; font-weight: bold; margin-right: 12px; color: var(--el-text-color-primary);">当前角色权限：</span>
+              <el-radio-group v-model="currentRole" size="small">
+                <el-radio-button value="admin">Admin 管理员</el-radio-button>
+                <el-radio-button value="editor">Editor 编辑</el-radio-button>
+                <el-radio-button value="visitor">Visitor 游客</el-radio-button>
+              </el-radio-group>
+            </div>
+            
+            <div style="margin-bottom: 16px; font-size: 13px; color: var(--el-text-color-secondary); line-height: 1.5;">
+              <p>💡 <b>路由控制原理：</b> 系统会根据选中的 Role 角色，在计算属性中过滤路由表，动态渲染左侧导航菜单，从而控制页面访问权限。</p>
+            </div>
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <el-button type="success" size="small" @click="handleMountRoute" :disabled="hasMountedRoute">
+                🔌 动态注入路由 (/temp-page)
+              </el-button>
+              <el-button type="danger" size="small" plain @click="handleUnmountRoute" :disabled="!hasMountedRoute">
+                🔌 卸载该路由
+              </el-button>
+            </div>
+          </el-col>
+          
+          <el-col :xs="24" :sm="14">
+            <!-- 模拟的左侧导航栏 -->
+            <div class="mock-nav-sidebar" style="background: var(--el-fill-color-light, #f5f7fa); border: 1px solid var(--el-border-color, #dcdfe6); border-radius: 8px; overflow: hidden; max-width: 450px;">
+              <div class="mock-sidebar-header" style="background: var(--el-color-primary-light-9, #ecf5ff); padding: 10px 16px; font-size: 13px; font-weight: bold; color: var(--el-color-primary); border-bottom: 1px solid var(--el-border-color, #dcdfe6);">
+                📂 动态生成的系统菜单 (Role: {{ currentRole }})
+              </div>
+              <ul class="mock-sidebar-menu" style="list-style: none; padding: 10px; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                <li v-for="menu in filteredMenus" :key="menu.path" class="mock-menu-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; background: var(--el-fill-color-blank, #ffffff); border: 1px solid var(--el-border-color-light, #f0f2f5); font-size: 13px; transition: all 0.2s;">
+                  <span class="menu-icon">{{ menu.icon }}</span>
+                  <span class="menu-label" style="font-weight: 500; color: var(--el-text-color-primary);">{{ menu.name }}</span>
+                  <span style="font-size: 11px; color: var(--el-text-color-secondary); margin-left: 8px;">{{ menu.path }}</span>
+                  <el-tag v-if="menu.role" size="small" type="warning" style="margin-left: auto;">{{ menu.role }}</el-tag>
+                  <el-tag v-if="menu.isTemp" size="small" type="success" style="margin-left: auto;">动态新增</el-tag>
+                </li>
+              </ul>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
+    </div>
   </div>
 </template>
 
