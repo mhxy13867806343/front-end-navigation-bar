@@ -49,14 +49,16 @@ const {
   showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
   
   // Dujitang exports
-  dujitangText, isDujitangLoading, queryDujitang
+  dujitangText, isDujitangLoading, queryDujitang,
+  
+  // Shared configs & state
+  ZH_TEXTS, GLOBAL_CONFIG, activeLibrary
 } = useAppLogic()
 
-import { watch, nextTick, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
-import chinaCitiesAz from './utils/china-cities-az.json'
-import chinaCascaderOptions from './utils/china-cascader-options.json'
+import chinaCitiesAz from './ajson/china-cities-az.json'
+import chinaCascaderOptions from './ajson/china-cascader-options.json'
 
 const route = useRoute()
 const router = useRouter()
@@ -66,6 +68,13 @@ const goFlash = () => router.push('/flash')
 const goAiCoding = () => router.push('/aicoding')
 const goHelloWorld = () => router.push('/helloworld')
 const backFromFlash = () => router.push('/')
+
+const activeMenuIndex = computed(() => {
+  if (activeItem.value === 25) {
+    return activeLibrary.value === 'element' ? 'showcase-element' : 'showcase-naive'
+  }
+  return activeSubItem.value ? activeSubItem.value.toString() : activeItem.value.toString()
+})
 
 const refreshWeather = async () => {
   if (selectedAdcode.value) {
@@ -358,30 +367,53 @@ watch(isDarkMode, () => {
         <span class="dot" :class="isHomeLive ? 'live' : 'cached'">●</span>
         <span>{{ isHomeLive ? '实时同步中 (60s)' : '静态本地数据' }}</span>
       </div>
-      <ul class="nav-list">
+      <el-menu
+        :default-active="activeMenuIndex"
+        class="nav-list-menu"
+        :collapse="!isSidebarOpen"
+        background-color="transparent"
+        text-color="var(--text-color)"
+        active-text-color="var(--primary-color)"
+        style="border-right: none;"
+      >
         <template v-for="item in menuItems" :key="item.id">
-          <li :class="{ 'active': activeItem === item.id && !activeSubItem }"
-              @click="selectItem(item.id)">
-            <span class="nav-icon">{{ item.icon }}</span>
-            <span>{{ item.name }}</span>
-            <span v-if="item.subcategories && item.subcategories.length > 0" class="sub-arrow">
-              {{ activeItem === item.id ? '▼' : '▶' }}
-            </span>
-          </li>
+          <!-- 如果是组件示例 (ID 25)，特殊处理渲染为含有两层下级的 el-sub-menu -->
+          <el-sub-menu v-if="item.id === 25" index="25">
+            <template #title>
+              <span class="nav-icon" style="margin-right: 8px;">{{ item.icon }}</span>
+              <span>{{ item.name }}</span>
+            </template>
+            <el-menu-item index="showcase-element" @click="selectItem(25); activeLibrary = 'element'">
+              <span>🧩 Element Plus 示例</span>
+            </el-menu-item>
+            <el-menu-item index="showcase-naive" @click="selectItem(25); activeLibrary = 'naive'">
+              <span>🍀 Naive UI 示例</span>
+            </el-menu-item>
+          </el-sub-menu>
+
+          <!-- 如果是其他有二级分类的项目，渲染为标准 el-sub-menu -->
+          <el-sub-menu v-else-if="item.subcategories && item.subcategories.length > 0" :index="item.id.toString()">
+            <template #title>
+              <span class="nav-icon" style="margin-right: 8px;">{{ item.icon }}</span>
+              <span>{{ item.name }}</span>
+            </template>
+            <el-menu-item 
+              v-for="sub in item.subcategories" 
+              :key="sub.id" 
+              :index="sub.id.toString()"
+              @click="selectItem(item.id); selectSubItem(sub.id)"
+            >
+              <span>{{ sub.name }}</span>
+            </el-menu-item>
+          </el-sub-menu>
           
-          <!-- Collapsible Subcategory Dropdown list -->
-          <transition name="collapse">
-            <ul v-if="item.subcategories && item.subcategories.length > 0 && activeItem === item.id && isSidebarOpen" class="sub-nav-list">
-              <li v-for="sub in item.subcategories" :key="sub.id"
-                  :class="{ 'active': activeSubItem === sub.id }"
-                  @click.stop="selectSubItem(sub.id)">
-                <span class="sub-dot">○</span>
-                <span>{{ sub.name }}</span>
-              </li>
-            </ul>
-          </transition>
+          <!-- 如果没有二级分类项目，普通一级 el-menu-item -->
+          <el-menu-item v-else :index="item.id.toString()" @click="selectItem(item.id)">
+            <span class="nav-icon" style="margin-right: 8px;">{{ item.icon }}</span>
+            <template #title>{{ item.name }}</template>
+          </el-menu-item>
         </template>
-      </ul>
+      </el-menu>
       <div class="sidebar-footers">
         <div class="sidebar-footer" @click="goFlash" title="闪存">
           <span class="nav-icon">⚡</span>
@@ -548,7 +580,7 @@ watch(isDarkMode, () => {
         <ApiToolbox />
       </div>
       <div v-else-if="activeItem === 25" class="api-toolbox-view-wrapper">
-        <ComponentShowcase />
+        <ComponentShowcase v-model:active-library="activeLibrary" />
       </div>
       <template v-else>
         <div class="aggregator-search-container">

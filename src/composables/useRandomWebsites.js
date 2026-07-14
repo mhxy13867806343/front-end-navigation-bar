@@ -1,4 +1,3 @@
-import { ref } from 'vue'
 
 export function useRandomWebsites(menuItems) {
   const randomTools = ref([])

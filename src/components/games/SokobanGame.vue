@@ -39,7 +39,6 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
 
 // 游戏元素定义
 const WALL = '#'

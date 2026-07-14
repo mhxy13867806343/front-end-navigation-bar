@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
 
 const API_BASE = '/api-juejin'

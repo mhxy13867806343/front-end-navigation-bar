@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+
 import fallbackAppsData from '../utlis/daily_ai_apps.json'
 
 const appCategories = ref(fallbackAppsData)
@@ -16,8 +16,6 @@ const currentCategoryApps = computed(() => {
   const cat = appCategories.value.find(c => c.id === selectedCategory.value)
   return cat ? cat.apps : []
 })
-
-import { computed } from 'vue'
 
 const openLink = (link) => {
   if (link) {

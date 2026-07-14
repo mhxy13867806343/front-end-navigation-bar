@@ -1,45 +1,61 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed } from 'vue'
+import { NConfigProvider } from 'naive-ui'
 import BasicDemo from './showcase/BasicDemo.vue'
 import IntermediateDemo from './showcase/IntermediateDemo.vue'
 import AdvancedDemo from './showcase/AdvancedDemo.vue'
+import NaiveShowcase from './NaiveShowcase.vue'
 
-const activeTab = ref('basic')
+const props = defineProps({
+  activeLibrary: {
+    type: String,
+    default: 'element'
+  }
+})
+const emit = defineEmits(['update:activeLibrary'])
 
-const tabs = [
-  { name: 'basic', label: '🧱 基础组件', component: BasicDemo },
-  { name: 'intermediate', label: '⚙️ 中级组件', component: IntermediateDemo },
-  { name: 'advanced', label: '🚀 高级组件', component: AdvancedDemo }
-]
-
-// 记录已访问过的tab，实现懒加载并保留已加载组件状态
-const loadedTabs = ref(new Set([activeTab.value]))
-watch(activeTab, (name) => {
-  loadedTabs.value.add(name)
+const localActiveLibrary = computed({
+  get: () => props.activeLibrary,
+  set: (val) => emit('update:activeLibrary', val)
 })
 </script>
 
 <template>
   <div class="component-showcase">
     <div class="showcase-header">
-      <h2 class="showcase-title">🧩 组件示例</h2>
+      <h2 class="showcase-title">🧩 在线组件示例库</h2>
       <p class="showcase-subtitle">
-        基于
-        <el-link type="primary" href="https://element-plus.org/zh-CN/" target="_blank">Element Plus</el-link>
-        的组件在线演示，按 基础 / 中级 / 高级 三个难度分级，点击 Tab 切换查看
+        为您提供基于 Element Plus 与 Naive UI 双组件库的实时组件参数配置与交互展示演练场：
       </p>
+      <div style="margin-top: 12px; margin-bottom: 8px;">
+        <el-radio-group v-model="localActiveLibrary" size="default">
+          <el-radio-button value="element">🧩 Element Plus 示例</el-radio-button>
+          <el-radio-button value="naive">🍀 Naive UI 示例</el-radio-button>
+        </el-radio-group>
+      </div>
     </div>
 
-    <el-tabs v-model="activeTab" class="showcase-tabs" type="border-card">
-      <el-tab-pane
-        v-for="tab in tabs"
-        :key="tab.name"
-        :name="tab.name"
-        :label="tab.label"
-      >
-        <component :is="tab.component" v-if="loadedTabs.has(tab.name)" />
-      </el-tab-pane>
-    </el-tabs>
+    <!-- Element Plus Showcase -->
+    <div v-if="localActiveLibrary === 'element'">
+      <el-tabs class="showcase-tabs" type="border-card">
+        <el-tab-pane label="🧱 基础组件">
+          <BasicDemo />
+        </el-tab-pane>
+        <el-tab-pane label="⚙️ 中级组件">
+          <IntermediateDemo />
+        </el-tab-pane>
+        <el-tab-pane label="🚀 高级组件">
+          <AdvancedDemo />
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+
+    <!-- Naive UI Showcase -->
+    <div v-else-if="localActiveLibrary === 'naive'">
+      <n-config-provider>
+        <NaiveShowcase />
+      </n-config-provider>
+    </div>
   </div>
 </template>
 
@@ -49,7 +65,7 @@ watch(activeTab, (name) => {
 }
 
 .showcase-header {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .showcase-title {
@@ -62,10 +78,7 @@ watch(activeTab, (name) => {
 .showcase-subtitle {
   font-size: 13px;
   color: var(--text-color-secondary, #909399);
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
+  line-height: 1.5;
 }
 
 .showcase-tabs {
@@ -93,5 +106,6 @@ watch(activeTab, (name) => {
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 8px;
+  align-items: center;
 }
 </style>

@@ -1,84 +1,25 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import { serverProxy } from './config/viteProxy.js'
 
 // https://vite.dev/config/
 export default defineConfig({
        base: './',
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    AutoImport({
+      imports: ['vue'],
+      dts: false,
+      vueTemplate: true
+    })
+  ],
   resolve: {
     alias:{
       '@':'/src'
     },
   },
   server: {
-    proxy: {
-      '/api-news': {
-        target: 'https://ai-bot.cn/daily-ai-news/',
-        changeOrigin: true,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-news/, '')
-      },
-      '/api-app-store': {
-        target: 'https://ai-bot.cn/ai-app-store/',
-        changeOrigin: true,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-app-store/, '')
-      },
-      '/api-tutorials': {
-        target: 'https://ai-bot.cn/ai-tutorials/',
-        changeOrigin: true,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-tutorials/, '')
-      },
-      '/api-qa': {
-        target: 'https://ai-bot.cn/ai-question-and-answer/',
-        changeOrigin: true,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-qa/, '')
-      },
-      '/api-encyclopedia': {
-        target: 'https://ai-bot.cn/ai-encyclopedia/',
-        changeOrigin: true,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-encyclopedia/, '')
-      },
-      '/api-hall-of-fame': {
-        target: 'https://ai-bot.cn/ai-hall-of-fame/',
-        changeOrigin: true,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-hall-of-fame/, '')
-      },
-      '/api-juejin': {
-        target: 'https://api.juejin.cn',
-        changeOrigin: true,
-        headers: {
-          'Origin': 'https://juejin.cn',
-          'Referer': 'https://juejin.cn/',
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-juejin/, '')
-      },
-      '/api-helloworld': {
-        target: 'https://www.helloworld.net',
-        changeOrigin: true,
-        headers: {
-          'Referer': 'https://www.helloworld.net/',
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        },
-        rewrite: (path) => path.replace(/^\/api-helloworld/, '')
-      }
-    }
+    proxy: serverProxy
   }
 })

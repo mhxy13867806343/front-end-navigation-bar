@@ -1,5 +1,4 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 // Import fallback datasets
 import fallbackTutorials from '../utlis/daily_ai_tutorials.json'

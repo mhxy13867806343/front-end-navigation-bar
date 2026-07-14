@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+
 import { Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
 import { UploadFilled } from '@element-plus/icons-vue'

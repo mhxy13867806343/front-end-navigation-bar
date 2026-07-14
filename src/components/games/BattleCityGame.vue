@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+
 import { readHighScore, rectsOverlap } from './gameUtils.js'
 
 const CANVAS_SIZE = 400

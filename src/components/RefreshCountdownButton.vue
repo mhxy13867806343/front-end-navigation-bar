@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   // 刷新回调，支持返回 Promise，期间按钮呈 loading 状态

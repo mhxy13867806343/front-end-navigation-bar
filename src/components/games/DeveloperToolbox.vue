@@ -289,7 +289,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+
 import { ElMessage } from 'element-plus'
 import CryptoJS from 'crypto-js'
 import copy from 'clipboard-copy'

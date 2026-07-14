@@ -1,27 +1,14 @@
-import { watch,ref, onMounted, computed, shallowRef, onUnmounted } from 'vue'
+
 import axios from 'axios'
 import { menuItemsList, authorWorksList, onlineWorksList } from '@/utlis/menuItems'
-import chinaCitiesAz from '@/utils/china-cities-az.json'
+import chinaCitiesAz from '@/ajson/china-cities-az.json'
 import { ElDialog, ElMessageBox, ElMessage } from 'element-plus'
 import { Message, Timer } from '@element-plus/icons-vue'
 
 // Custom Components
-import SokobanGame from './components/games/SokobanGame.vue'
-import ImageEditor from './components/image/ImageEditor.vue'
-import MusicPlayer from "./components/MusicPlayer.vue"
-import DyForm from './views/DyForm.vue'
-import FruitCatcher from './components/games/FruitCatcher.vue'
-import BattleCityGame from './components/games/BattleCityGame.vue'
-import BrickBreakerGame from './components/games/BrickBreakerGame.vue'
-import FlappyBirdGame from './components/games/FlappyBirdGame.vue'
-import SpaceShooterGame from './components/games/SpaceShooterGame.vue'
-import SnakeGame from './components/games/SnakeGame.vue'
-import TetrisGame from './components/games/TetrisGame.vue'
-import Game2048 from './components/games/Game2048.vue'
-import MinesweeperGame from './components/games/MinesweeperGame.vue'
-import TicTacToeGame from './components/games/TicTacToeGame.vue'
-import QiteTodo from './components/games/QiteTodo.vue'
-import DeveloperToolbox from './components/games/DeveloperToolbox.vue'
+import { getComponentByType } from './utils/componentMapper'
+import { BING_DOMAINS, GLOBAL_CONFIG } from './utils/aglobal-xx'
+import { ZH_TEXTS } from './utils/azh'
 
 // Composables
 import { useTheme } from './composables/useTheme'
@@ -67,6 +54,7 @@ export function useAppLogic() {
   const isAppStoreActive = ref(false)
   const isArticlesListActive = ref(false)
   const articlesListType = ref('tutorials')
+  const activeLibrary = ref('element')
 
   const gridCols = ref(parseInt(localStorage.getItem('gridCols')) || 3)
   const setGridCols = (cols) => {
@@ -295,59 +283,7 @@ export function useAppLogic() {
   const openGame = (work) => {
     showGameDialog.value = true
     gameTitle.value = work.name
-    
-    switch(work.type) {
-      case 'game':
-        currentGame.value = SokobanGame
-        break
-      case 'image':
-        currentGame.value = ImageEditor
-        break
-      case 'video':
-        currentGame.value = MusicPlayer
-        break
-      case 'dyform':
-        currentGame.value = DyForm
-        break
-      case 'fruitgame':
-        currentGame.value = FruitCatcher
-        break
-      case 'battlecity':
-        currentGame.value = BattleCityGame
-        break
-      case 'brickbreaker':
-        currentGame.value = BrickBreakerGame
-        break
-      case 'flappybird':
-        currentGame.value = FlappyBirdGame
-        break
-      case 'spaceshooter':
-        currentGame.value = SpaceShooterGame
-        break
-      case 'snake':
-        currentGame.value = SnakeGame
-        break
-      case 'tetris':
-        currentGame.value = TetrisGame
-        break
-      case 'game2048':
-        currentGame.value = Game2048
-        break
-      case 'minesweeper':
-        currentGame.value = MinesweeperGame
-        break
-      case 'tictactoe':
-        currentGame.value = TicTacToeGame
-        break
-      case 'qitetodo':
-        currentGame.value = QiteTodo
-        break
-      case 'devtools':
-        currentGame.value = DeveloperToolbox
-        break
-      default:
-        currentGame.value = null
-    }
+    currentGame.value = getComponentByType(work.type)
   }
 
   // 系统检测与时区逻辑
@@ -440,9 +376,9 @@ export function useAppLogic() {
     } else {
       const { random, resolution } = bingWallpaperForm.value
       if (random) {
-        url = resolution === '4k' ? 'https://bing.img.run/rand_uhd.php' : 'https://bing.img.run/rand.php'
+        url = resolution === '4k' ? BING_DOMAINS.rand_4k : BING_DOMAINS.rand_1080
       } else {
-        url = resolution === '4k' ? 'https://bing.img.run/uhd.php' : 'https://bing.img.run/1920x1080.php'
+        url = resolution === '4k' ? BING_DOMAINS.today_4k : BING_DOMAINS.today_1080
       }
     }
 
@@ -1305,6 +1241,12 @@ export function useAppLogic() {
     showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
     
     // Dujitang exports
-    dujitangText, isDujitangLoading, queryDujitang
+    dujitangText, isDujitangLoading, queryDujitang,
+    
+    // Shared globals
+    ZH_TEXTS, GLOBAL_CONFIG,
+    
+    // Components showcase helper state
+    activeLibrary
   }
 }

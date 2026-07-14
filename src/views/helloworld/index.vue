@@ -115,7 +115,6 @@
 
 <script setup>
 import $ from 'jquery'
-import { computed, onMounted, ref } from 'vue'
 
 const API_BASE = '/api-helloworld'
 

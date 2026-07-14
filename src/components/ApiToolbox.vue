@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+
 import { ElMessage, ElMessageBox } from 'element-plus'
 import apiCategoriesData from '../utlis/api_list.json'
 

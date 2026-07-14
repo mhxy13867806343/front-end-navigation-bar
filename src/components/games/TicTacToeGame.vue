@@ -1,5 +1,4 @@
 <script setup>
-import { ref, onMounted } from 'vue'
 
 const emit = defineEmits(['close'])
 

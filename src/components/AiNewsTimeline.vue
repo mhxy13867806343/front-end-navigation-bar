@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+
 import dailyNewsData from '../utlis/daily_ai_news.json'
 
 const newsTimeline = ref(dailyNewsData)

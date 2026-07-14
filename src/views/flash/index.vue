@@ -169,7 +169,6 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
 
 const topNavs = [
   { key: 'index', label: '首页' },

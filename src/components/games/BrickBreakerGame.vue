@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+
 import { circleRectCollision, readHighScore } from './gameUtils.js'
 
 const CANVAS_WIDTH = 400

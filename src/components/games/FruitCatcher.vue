@@ -161,7 +161,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 // 游戏基础设置
 const gameSettings = ref({
