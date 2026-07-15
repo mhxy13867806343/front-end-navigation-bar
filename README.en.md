@@ -13,7 +13,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 - **AI Tools Navigation**: Sidebar with categories + subcategories, covering dozens of categories such as AI chat, writing, painting, coding, and dev platforms
 - **Live Data Sync**: Fetches remote data in real time and merges it with local static data, automatically falling back to local data on failure
 - **Global Search**: Search across categories by name/description, with search history (up to 8 entries)
-- **Browser Compatibility Notice**: Checks browser capabilities at the top of the app and opens an Element Plus Dialog with 5 official browser download links, QR codes, current time, author GitHub, yearly greetings, and tech stack details
+- **Browser Compatibility Notice**: Checks browser capabilities at the top of the app and opens an Element Plus Dialog with 5 official browser download links, QR codes, current time, author GitHub, yearly greetings, and package-version links read from `package.json`
 - **Favorites**: Like/favorite tool cards, persisted locally, with a favorites history view
 - **AI News & Apps**: Daily AI news timeline, paged IT Home API-tag news, AI app store, AI tutorials/encyclopedia article lists
 - **Hotboards & Movie Data**: Supports Weibo, Bilibili hot search, Juejin, OSChina and more, plus box office and movie/TV ranking data

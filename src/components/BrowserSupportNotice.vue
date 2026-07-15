@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
+import packageJson from '../../package.json'
 
 interface BrowserDownloadLink {
   name: string
@@ -20,7 +21,15 @@ interface QrImage {
 
 interface TechStackItem {
   name: string
-  value: string
+  packageName: string
+  version: string
+  url: string
+  group: string
+}
+
+interface PackageMetadata {
+  dependencies: Record<string, string>
+  devDependencies: Record<string, string>
 }
 
 interface BrowserSupportNoticeProps {
@@ -45,12 +54,25 @@ const browserLinks: BrowserDownloadLink[] = [
   { name: 'QQ 浏览器', vendor: 'Tencent', url: 'https://browser.qq.com/' }
 ]
 
+const packageMetadata: PackageMetadata = packageJson as PackageMetadata
+const packageVersions: Record<string, string> = {
+  ...packageMetadata.dependencies,
+  ...packageMetadata.devDependencies
+}
+
 const techStack: TechStackItem[] = [
-  { name: '框架', value: 'Vue 3 + <script setup>' },
-  { name: '构建', value: 'Vite + TypeScript' },
-  { name: 'UI', value: 'Element Plus / Naive UI' },
-  { name: '路由', value: 'Vue Router 4' },
-  { name: '数据', value: '本地 JSON + 构建期缓存 + Vite Proxy' }
+  { name: 'Vue', packageName: 'vue', version: getPackageVersion('vue'), url: 'https://vuejs.org/', group: '框架' },
+  { name: 'Vue Router', packageName: 'vue-router', version: getPackageVersion('vue-router'), url: 'https://router.vuejs.org/', group: '路由' },
+  { name: 'Vite', packageName: 'vite', version: getPackageVersion('vite'), url: 'https://vite.dev/', group: '构建' },
+  { name: 'TypeScript', packageName: 'typescript', version: getPackageVersion('typescript'), url: 'https://www.typescriptlang.org/', group: '语言' },
+  { name: 'Element Plus', packageName: 'element-plus', version: getPackageVersion('element-plus'), url: 'https://element-plus.org/zh-CN/', group: 'UI' },
+  { name: 'Naive UI', packageName: 'naive-ui', version: getPackageVersion('naive-ui'), url: 'https://www.naiveui.com/', group: 'UI' },
+  { name: 'ECharts', packageName: 'echarts', version: getPackageVersion('echarts'), url: 'https://echarts.apache.org/', group: '图表' },
+  { name: 'Axios', packageName: 'axios', version: getPackageVersion('axios'), url: 'https://axios-http.com/', group: '请求' },
+  { name: 'CropperJS', packageName: 'cropperjs', version: getPackageVersion('cropperjs'), url: 'https://fengyuanchen.github.io/cropperjs/', group: '图片' },
+  { name: 'Vue TSC', packageName: 'vue-tsc', version: getPackageVersion('vue-tsc'), url: 'https://github.com/vuejs/language-tools', group: '校验' },
+  { name: 'Auto Import', packageName: 'unplugin-auto-import', version: getPackageVersion('unplugin-auto-import'), url: 'https://github.com/unplugin/unplugin-auto-import', group: '工程化' },
+  { name: 'Vuedraggable', packageName: 'vuedraggable', version: getPackageVersion('vuedraggable'), url: 'https://github.com/SortableJS/vue.draggable.next', group: '交互' }
 ]
 
 const qrImages: QrImage[] = Object.entries(qrImageModules)
@@ -127,6 +149,11 @@ function canUseLocalStorage(): boolean {
   } catch {
     return false
   }
+}
+
+function getPackageVersion(packageName: string): string {
+  const rawVersion: string = packageVersions[packageName] || '未安装'
+  return rawVersion.replace(/^[~^]/, '')
 }
 
 onMounted((): void => {
@@ -228,10 +255,18 @@ onUnmounted((): void => {
         </div>
 
         <div class="stack-list" aria-label="项目技术栈">
-          <span v-for="item in techStack" :key="item.name">
-            <strong>{{ item.name }}</strong>
-            {{ item.value }}
-          </span>
+          <a
+            v-for="item in techStack"
+            :key="item.packageName"
+            :href="item.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            :title="`${item.name} 官网`"
+          >
+            <em>{{ item.group }}</em>
+            <strong>{{ item.name }} {{ item.version }}</strong>
+            <span>{{ item.packageName }}</span>
+          </a>
         </div>
       </div>
 
@@ -495,26 +530,51 @@ onUnmounted((): void => {
 }
 
 .stack-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
 }
 
-.stack-list span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 30px;
-  padding: 5px 10px;
+.stack-list a {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  min-height: 70px;
+  padding: 10px 12px;
   color: var(--text-secondary);
+  text-decoration: none;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
+  transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.stack-list a:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.stack-list em {
+  color: var(--primary-color);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
 }
 
 .stack-list strong {
+  overflow: hidden;
   color: var(--text-color);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stack-list span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dialog-footer-actions {
