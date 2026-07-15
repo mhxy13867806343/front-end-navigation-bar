@@ -74,6 +74,7 @@ import type { ECharts, EChartsOption } from 'echarts'
 import type { CityInfo, CityLetterMap, CascaderNode, CurrentWeather, WeatherForecast } from './types/app'
 import chinaCitiesAz from './ajson/china-cities-az.json'
 import chinaCascaderOptions from './ajson/china-cascader-options.json'
+import versionHistoryData from './ajson/version-history.json'
 
 const route = useRoute()
 const router = useRouter()
@@ -96,6 +97,27 @@ interface DrawerAiDevTool {
   url: string
   desc: string
   recommended: boolean
+}
+
+interface VersionHistoryCommit {
+  hash: string
+  shortHash: string
+  date: string
+  time: string
+  type: string
+  title: string
+  scope: string
+  message: string
+}
+
+interface VersionHistoryGroup {
+  date: string
+  items: VersionHistoryCommit[]
+}
+
+interface VersionHistoryData {
+  generatedAt: string
+  groups: VersionHistoryGroup[]
 }
 
 const drawerCloudLinks: DrawerCloudLink[] = [
@@ -151,6 +173,31 @@ const drawerAiDevTools: DrawerAiDevTool[] = [
 
 const projectRepositoryUrl: string = 'https://github.com/mhxy13867806343/front-end-navigation-bar'
 const projectRepositoryName: string = 'mhxy13867806343/front-end-navigation-bar'
+const versionHistory: VersionHistoryData = versionHistoryData as VersionHistoryData
+const showVersionHistoryDialog = ref<boolean>(false)
+const versionHistoryActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
+const versionHistoryGroups = computed<VersionHistoryGroup[]>((): VersionHistoryGroup[] => versionHistory.groups)
+const latestVersionItem = computed<VersionHistoryCommit | null>((): VersionHistoryCommit | null => {
+  return versionHistory.groups[0]?.items[0] || null
+})
+
+const openVersionHistoryDialog = (): void => {
+  showDrawer.value = false
+  showVersionHistoryDialog.value = true
+}
+
+const openCommitOnGithub = (hash: string): void => {
+  window.open(`${projectRepositoryUrl}/commit/${hash}`, '_blank')
+}
+
+onMounted((): void => {
+  showVersionHistoryDialog.value = true
+})
+
+watch((): string => route.fullPath, (): void => {
+  showVersionHistoryDialog.value = true
+})
+
 const blessingYear = computed<number>((): number => new Date().getFullYear())
 
 const goHome = async (): Promise<void | Error> => {
@@ -2056,6 +2103,15 @@ watch(isDarkMode, () => {
           </div>
         </div>
 
+        <!-- Section 3.5: 历史版本更新 -->
+        <div class="drawer-section">
+          <h3 class="section-title">🧾 历史版本更新</h3>
+          <button class="drawer-list-item version-history-drawer-entry" type="button" @click="openVersionHistoryDialog">
+            <div class="work-name">查看 Git 提交历史</div>
+            <div class="work-desc">Dialog 对话框 · Card 卡片 · Collapse 折叠面板</div>
+          </button>
+        </div>
+
         <!-- Section 4: 关于与系统信息 -->
         <div class="drawer-section">
           <h3 class="section-title">ℹ️ 系统信息</h3>
@@ -2102,6 +2158,66 @@ watch(isDarkMode, () => {
       </div>
     </el-drawer>
 
+    <!-- 历史版本更新弹窗 -->
+    <el-dialog
+      v-model="showVersionHistoryDialog"
+      title="🧾 历史版本更新"
+      width="72%"
+      destroy-on-close
+      class="version-history-dialog"
+    >
+      <div class="version-history-content">
+        <el-card v-if="latestVersionItem" class="version-latest-card" shadow="never">
+          <div class="version-latest-meta">
+            <span class="version-badge">{{ latestVersionItem.type }}</span>
+            <span>{{ latestVersionItem.date }} {{ latestVersionItem.time }}</span>
+            <button type="button" @click="openCommitOnGithub(latestVersionItem.hash)">
+              {{ latestVersionItem.shortHash }}
+            </button>
+          </div>
+          <h3>{{ latestVersionItem.title }}</h3>
+          <p>下面根据 Git 提交历史自动整理版本更新记录，每次进入页面都会展示，关闭后可在右侧控制中心重新打开。</p>
+        </el-card>
+
+        <el-collapse v-model="versionHistoryActiveDates" class="version-collapse">
+          <el-collapse-item
+            v-for="group in versionHistoryGroups"
+            :key="group.date"
+            :name="group.date"
+          >
+            <template #title>
+              <div class="version-collapse-title">
+                <span>{{ group.date }}</span>
+                <em>{{ group.items.length }} 条更新</em>
+              </div>
+            </template>
+
+            <div class="version-card-grid">
+              <el-card
+                v-for="item in group.items"
+                :key="item.hash"
+                class="version-card"
+                shadow="hover"
+              >
+                <div class="version-card-header">
+                  <span class="version-badge">{{ item.type }}</span>
+                  <button type="button" @click="openCommitOnGithub(item.hash)">
+                    {{ item.shortHash }}
+                  </button>
+                </div>
+                <h4>{{ item.title }}</h4>
+                <p>{{ item.message }}</p>
+                <div class="version-card-footer">
+                  <span>{{ item.time }}</span>
+                  <span v-if="item.scope">scope: {{ item.scope }}</span>
+                </div>
+              </el-card>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
+    </el-dialog>
+
     <!-- 路由页面层（闪存等独立页面） -->
     <div v-if="isFlashRoute" class="route-view-layer">
       <div class="route-view-bar">
@@ -2141,6 +2257,151 @@ watch(isDarkMode, () => {
 .route-browser-notice {
   padding: 20px 24px 0;
   background: #121416;
+}
+
+.version-history-drawer-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  cursor: pointer;
+}
+
+.version-history-drawer-entry:hover {
+  border-color: var(--primary-color);
+}
+
+:deep(.version-history-dialog .el-dialog) {
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--card-bg);
+}
+
+:deep(.version-history-dialog .el-dialog__header) {
+  border-bottom: 1px solid var(--border-color);
+  margin-right: 0;
+  padding: 18px 22px;
+}
+
+:deep(.version-history-dialog .el-dialog__body) {
+  padding: 20px 22px 24px;
+}
+
+.version-history-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.version-latest-card,
+.version-card {
+  border-color: var(--border-color);
+  background: var(--hover-bg);
+}
+
+.version-latest-meta,
+.version-card-header,
+.version-card-footer,
+.version-collapse-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.version-latest-card h3,
+.version-card h4 {
+  margin: 12px 0 8px;
+  color: var(--text-color);
+}
+
+.version-latest-card p,
+.version-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.version-latest-meta,
+.version-card-footer {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.version-latest-meta button,
+.version-card-header button {
+  border: 1px solid rgba(var(--primary-color-rgb, 99, 102, 241), 0.34);
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: var(--primary-color);
+  background: rgba(var(--primary-color-rgb, 99, 102, 241), 0.08);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.version-badge {
+  border-radius: 999px;
+  padding: 3px 9px;
+  color: #1dd1a1;
+  background: rgba(29, 209, 161, 0.12);
+  border: 1px solid rgba(29, 209, 161, 0.25);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.version-collapse {
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+:deep(.version-collapse .el-collapse-item__header),
+:deep(.version-collapse .el-collapse-item__wrap) {
+  background: transparent;
+  border-bottom-color: var(--border-color);
+}
+
+.version-collapse-title {
+  width: 100%;
+  justify-content: space-between;
+  padding-right: 12px;
+  color: var(--text-color);
+  font-weight: 900;
+}
+
+.version-collapse-title em {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.version-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px 0 4px;
+}
+
+.version-card :deep(.el-card__body) {
+  display: flex;
+  min-height: 126px;
+  flex-direction: column;
+}
+
+.version-card-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  justify-content: space-between;
+}
+
+@media (max-width: 860px) {
+  :deep(.version-history-dialog .el-dialog) {
+    width: 92% !important;
+  }
+
+  .version-card-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* QQ Info Card Styles */

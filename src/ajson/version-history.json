@@ -1,0 +1,315 @@
+{
+  "generatedAt": "2026-07-15T16:39:58.838Z",
+  "groups": [
+    {
+      "date": "2026-07-15",
+      "items": [
+        {
+          "hash": "dd8660bcd00b3c982cccbb415f7bd6e96affb9d0",
+          "shortHash": "dd8660b",
+          "date": "2026-07-15",
+          "time": "22:43",
+          "type": "功能更新",
+          "title": "add repository link to drawer",
+          "scope": "",
+          "message": "feat: add repository link to drawer"
+        },
+        {
+          "hash": "5c24508adbb418c577495a4f7de043dce4e7f40c",
+          "shortHash": "5c24508",
+          "date": "2026-07-15",
+          "time": "22:34",
+          "type": "功能更新",
+          "title": "add wechat featured detail page",
+          "scope": "",
+          "message": "feat: add wechat featured detail page"
+        },
+        {
+          "hash": "6423f7c924d0453cc4367beea2ad3c0a4e570167",
+          "shortHash": "6423f7c",
+          "date": "2026-07-15",
+          "time": "22:25",
+          "type": "功能更新",
+          "title": "add wechat featured articles",
+          "scope": "",
+          "message": "feat: add wechat featured articles"
+        },
+        {
+          "hash": "27fbe09912fc97400ae7ce607890a63178bf2a85",
+          "shortHash": "27fbe09",
+          "date": "2026-07-15",
+          "time": "11:58",
+          "type": "问题修复",
+          "title": "align pages deploy node version",
+          "scope": "",
+          "message": "fix: align pages deploy node version"
+        },
+        {
+          "hash": "5a0fb8f7ad02475f51ef3624edc7509200f167d5",
+          "shortHash": "5a0fb8f",
+          "date": "2026-07-15",
+          "time": "11:49",
+          "type": "功能更新",
+          "title": "add drawer resources and dev tools",
+          "scope": "",
+          "message": "feat: add drawer resources and dev tools"
+        },
+        {
+          "hash": "df42214fb436525ef215fd3721a158754d6cd0b8",
+          "shortHash": "df42214",
+          "date": "2026-07-15",
+          "time": "11:37",
+          "type": "问题修复",
+          "title": "keep home search controls sticky",
+          "scope": "",
+          "message": "fix: keep home search controls sticky"
+        },
+        {
+          "hash": "e0c0c7a78c23718c18526cfdd746e739bca763df",
+          "shortHash": "e0c0c7a",
+          "date": "2026-07-15",
+          "time": "11:27",
+          "type": "功能更新",
+          "title": "show package versions in browser dialog",
+          "scope": "",
+          "message": "feat: show package versions in browser dialog"
+        },
+        {
+          "hash": "882550ccd3ab96bedef5bf35cc450feee53d5e0b",
+          "shortHash": "882550c",
+          "date": "2026-07-15",
+          "time": "11:24",
+          "type": "功能更新",
+          "title": "show browser check in element dialog",
+          "scope": "",
+          "message": "feat: show browser check in element dialog"
+        },
+        {
+          "hash": "9d11c8b4965c6eb21c760f8408d04c7ed0cba074",
+          "shortHash": "9d11c8b",
+          "date": "2026-07-15",
+          "time": "11:14",
+          "type": "功能更新",
+          "title": "add browser support notice and rank cache",
+          "scope": "",
+          "message": "feat: add browser support notice and rank cache"
+        },
+        {
+          "hash": "bdad67754cd15391af3470d11ead07a08d0272fa",
+          "shortHash": "bdad677",
+          "date": "2026-07-15",
+          "time": "09:05",
+          "type": "问题修复",
+          "title": "resolve API proxy paths to real URLs in production (GitHub Pages has no proxy server)",
+          "scope": "",
+          "message": "fix: resolve API proxy paths to real URLs in production (GitHub Pages has no proxy server)"
+        },
+        {
+          "hash": "4cb62cfb03b945fe47e7c34d8b8a079f204e8bc3",
+          "shortHash": "4cb62cf",
+          "date": "2026-07-15",
+          "time": "08:57",
+          "type": "问题修复",
+          "title": "configure Vite base + router base for GitHub Pages subdirectory deployment, add 404.html SPA fallback",
+          "scope": "",
+          "message": "fix: configure Vite base + router base for GitHub Pages subdirectory deployment, add 404.html SPA fallback"
+        },
+        {
+          "hash": "f9f3b965be3ce915b5f3bf97cb1df30b9b46f903",
+          "shortHash": "f9f3b96",
+          "date": "2026-07-15",
+          "time": "00:44",
+          "type": "工程配置",
+          "title": "upgrade Node.js to version 20 to satisfy Vite 8 requirements",
+          "scope": "",
+          "message": "ci: upgrade Node.js to version 20 to satisfy Vite 8 requirements"
+        },
+        {
+          "hash": "a5ffd32520b419438ac3a66777cd07a34630f9ac",
+          "shortHash": "a5ffd32",
+          "date": "2026-07-15",
+          "time": "00:39",
+          "type": "问题修复",
+          "title": "adjust isFlashRoute to check endsWith to support subdirectory routing on GitHub Pages",
+          "scope": "",
+          "message": "fix: adjust isFlashRoute to check endsWith to support subdirectory routing on GitHub Pages"
+        },
+        {
+          "hash": "a2aec06a1420a0fe06d3bf34d93342d97c4771e1",
+          "shortHash": "a2aec06",
+          "date": "2026-07-15",
+          "time": "00:35",
+          "type": "功能更新",
+          "title": "improve live data proxies and news feeds",
+          "scope": "",
+          "message": "feat: improve live data proxies and news feeds"
+        }
+      ]
+    },
+    {
+      "date": "2026-07-14",
+      "items": [
+        {
+          "hash": "6692703f6c6fc14fba61e95c558f02638d1dce94",
+          "shortHash": "6692703",
+          "date": "2026-07-14",
+          "time": "21:30",
+          "type": "功能更新",
+          "title": "add QQ User Info Query API utility to Smart Utility Toolbox",
+          "scope": "",
+          "message": "feat: add QQ User Info Query API utility to Smart Utility Toolbox"
+        },
+        {
+          "hash": "7e92a3d0442a8c343ecb11afcb8e6623a87fceab",
+          "shortHash": "7e92a3d",
+          "date": "2026-07-14",
+          "time": "21:27",
+          "type": "问题修复",
+          "title": "correct JuejinTheme data mapping to match actual API structure (nested theme object with name/brief/cover/hot/view_cnt/user_cnt + recent_users)",
+          "scope": "",
+          "message": "fix: correct JuejinTheme data mapping to match actual API structure (nested theme object with name/brief/cover/hot/view_cnt/user_cnt + recent_users)"
+        },
+        {
+          "hash": "3c0a7ff9b61a2278c7c7b13ca3e8005e6944dce7",
+          "shortHash": "3c0a7ff",
+          "date": "2026-07-14",
+          "time": "21:16",
+          "type": "功能更新",
+          "title": "add JuejinTheme page (掘金热门主题) with POST API, ranking badges, search, pagination, and sidebar nav entry",
+          "scope": "",
+          "message": "feat: add JuejinTheme page (掘金热门主题) with POST API, ranking badges, search, pagination, and sidebar nav entry"
+        },
+        {
+          "hash": "0782d79b238fcc21e482ce5e449051bf0b762c2a",
+          "shortHash": "0782d79",
+          "date": "2026-07-14",
+          "time": "21:09",
+          "type": "问题修复",
+          "title": "correct Loading icon component casing and add missing import",
+          "scope": "",
+          "message": "fix: correct Loading icon component casing and add missing import"
+        },
+        {
+          "hash": "7d999937674862afdcab7f2a46127855278147e0",
+          "shortHash": "7d99993",
+          "date": "2026-07-14",
+          "time": "21:05",
+          "type": "功能更新",
+          "title": "extract hardcoded select & radio options to formOptions.ts and refactor templates to loop dynamically using v-for",
+          "scope": "",
+          "message": "feat: extract hardcoded select & radio options to formOptions.ts and refactor templates to loop dynamically using v-for"
+        },
+        {
+          "hash": "453a84b9173da6dcfc3c5280742d78268fdf24f8",
+          "shortHash": "453a84b",
+          "date": "2026-07-14",
+          "time": "21:00",
+          "type": "功能更新",
+          "title": "complete Vite 8 + TS 7 upgrade, migrate all JS files to TS with full types, and extract page script constants & logic to vue-pages-text-fn-abc folder",
+          "scope": "",
+          "message": "feat: complete Vite 8 + TS 7 upgrade, migrate all JS files to TS with full types, and extract page script constants & logic to vue-pages-text-fn-abc folder"
+        },
+        {
+          "hash": "ff5a5c763213be53b90e340b111f692f939b6baa",
+          "shortHash": "ff5a5c7",
+          "date": "2026-07-14",
+          "time": "12:11",
+          "type": "功能更新",
+          "title": "add CombinedDemo.vue — commercial-grade admin dashboard combining Element Plus + Naive UI (stats, user table, kanban, activity feed, release countdown, system settings)",
+          "scope": "",
+          "message": "feat: add CombinedDemo.vue — commercial-grade admin dashboard combining Element Plus + Naive UI (stats, user table, kanban, activity feed, release countdown, system settings)"
+        },
+        {
+          "hash": "934c21efa2d58a241c1428ce880106ef1b4015a9",
+          "shortHash": "934c21e",
+          "date": "2026-07-14",
+          "time": "11:51",
+          "type": "功能更新",
+          "title": "refactor sidebar to use el-menu, integrate Naive UI showcase, and modularize code into aglobal-xx.js, componentMapper.js and azh.js",
+          "scope": "",
+          "message": "feat: refactor sidebar to use el-menu, integrate Naive UI showcase, and modularize code into aglobal-xx.js, componentMapper.js and azh.js"
+        },
+        {
+          "hash": "64e8bd890bfc377e9d0c82a80e8a9233cecf8085",
+          "shortHash": "64e8bd8",
+          "date": "2026-07-14",
+          "time": "11:11",
+          "type": "工程维护",
+          "title": "upgrade vue version to 3.5.39 to support latest element-plus features and switch locale imports to standard ES paths",
+          "scope": "",
+          "message": "chore: upgrade vue version to 3.5.39 to support latest element-plus features and switch locale imports to standard ES paths"
+        },
+        {
+          "hash": "3149b50d579a7459e4867199f8564850edd7f294",
+          "shortHash": "3149b50",
+          "date": "2026-07-14",
+          "time": "11:04",
+          "type": "功能更新",
+          "title": "upgrade Element Plus to 2.14.3 and add Splitter, Input OTP, Input Tag, Virtualized Tree, Config Provider, Result, Skeleton, Typography components",
+          "scope": "",
+          "message": "feat: upgrade Element Plus to 2.14.3 and add Splitter, Input OTP, Input Tag, Virtualized Tree, Config Provider, Result, Skeleton, Typography components"
+        },
+        {
+          "hash": "75349a7b4addf3bfe97d7ba22de359677dc994af",
+          "shortHash": "75349a7",
+          "date": "2026-07-14",
+          "time": "10:42",
+          "type": "功能更新",
+          "title": "upgrade form showcase to enterprise-grade multi-step form with partial field validation and data persistence",
+          "scope": "",
+          "message": "feat: upgrade form showcase to enterprise-grade multi-step form with partial field validation and data persistence"
+        },
+        {
+          "hash": "425834f55193a9763c01c328a55143bbc81129f8",
+          "shortHash": "425834f",
+          "date": "2026-07-14",
+          "time": "10:13",
+          "type": "功能更新",
+          "title": "expand Element Plus showcase with 100+ examples across basic, intermediate, and advanced views",
+          "scope": "",
+          "message": "feat: expand Element Plus showcase with 100+ examples across basic, intermediate, and advanced views"
+        },
+        {
+          "hash": "886eaa9477e353667e656dc13f0fd312ce575920",
+          "shortHash": "886eaa9",
+          "date": "2026-07-14",
+          "time": "09:42",
+          "type": "功能更新",
+          "title": "integrate global and container backtop, advanced filterable tree node editing, and dynamic routing role permissions demo",
+          "scope": "",
+          "message": "feat: integrate global and container backtop, advanced filterable tree node editing, and dynamic routing role permissions demo"
+        },
+        {
+          "hash": "47348c262ac7f32d685680c6f08e5204dc434e38",
+          "shortHash": "47348c2",
+          "date": "2026-07-14",
+          "time": "08:26",
+          "type": "功能更新",
+          "title": "integrate video explorer, photo gallery, dujitang quote board, and hotboard backup sources",
+          "scope": "",
+          "message": "feat: integrate video explorer, photo gallery, dujitang quote board, and hotboard backup sources"
+        },
+        {
+          "hash": "03d7d114e2dda8e5d91d2f7e19a820c9c8ac7150",
+          "shortHash": "03d7d11",
+          "date": "2026-07-14",
+          "time": "08:12",
+          "type": "功能更新",
+          "title": "add reusable 60s countdown refresh button and integrate into aicoding page, weather, bing wallpaper and utility dialogs",
+          "scope": "",
+          "message": "feat: add reusable 60s countdown refresh button and integrate into aicoding page, weather, bing wallpaper and utility dialogs"
+        },
+        {
+          "hash": "6b2e5462f8eac204e75beb6d85674ade794448e8",
+          "shortHash": "6b2e546",
+          "date": "2026-07-14",
+          "time": "00:37",
+          "type": "工程维护",
+          "title": "add DOM ID for load-more-btn in bilibili demo",
+          "scope": "",
+          "message": "chore: add DOM ID for load-more-btn in bilibili demo"
+        }
+      ]
+    }
+  ]
+}
