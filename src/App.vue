@@ -149,6 +149,8 @@ const drawerAiDevTools: DrawerAiDevTool[] = [
   }
 ]
 
+const projectRepositoryUrl: string = 'https://github.com/mhxy13867806343/front-end-navigation-bar'
+const projectRepositoryName: string = 'mhxy13867806343/front-end-navigation-bar'
 const blessingYear = computed<number>((): number => new Date().getFullYear())
 
 const goHome = async (): Promise<void | Error> => {
@@ -2062,6 +2064,17 @@ watch(isDarkMode, () => {
               <span>作者 GitHub</span>
               <a href="https://github.com/mhxy13867806343" target="_blank" class="github-link">
                 mhxy13867806343
+              </a>
+            </div>
+            <div class="info-item">
+              <span>项目仓库</span>
+              <a
+                :href="projectRepositoryUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="github-link"
+              >
+                {{ projectRepositoryName }}
               </a>
             </div>
             <div class="info-item">
