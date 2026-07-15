@@ -158,6 +158,7 @@ body {
 
 /* 主内容区域与渐变背景 */
 .main-content {
+  --sticky-command-height: 164px;
   margin-left: 240px;
   width: calc(100% - 240px);
   padding: 32px;
@@ -188,12 +189,31 @@ body {
 }
 
 /* 顶部操作区 */
+.sticky-command-center {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: -32px -32px 18px;
+  padding: 32px 32px 14px;
+  background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.sticky-command-center .browser-support-bar {
+  margin-bottom: 0;
+}
+
 .header-actions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 0;
   position: relative;
   z-index: 99;
 }
@@ -328,12 +348,13 @@ body {
 /* 聚合搜索区域 */
 .aggregator-search-container {
   width: 100%;
-  margin-bottom: 28px;
+  margin: 0;
+  padding: 8px 0 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  z-index: 5;
+  z-index: 1;
 }
 
 .search-category-tabs {
@@ -969,10 +990,16 @@ body {
   }
 
   .main-content {
+    --sticky-command-height: 220px;
     margin-left: 80px;
     width: calc(100% - 80px);
     padding: 20px;
     box-sizing: border-box;
+  }
+
+  .sticky-command-center {
+    margin: -20px -20px 14px;
+    padding: 20px 20px 12px;
   }
 
   .tools-grid {

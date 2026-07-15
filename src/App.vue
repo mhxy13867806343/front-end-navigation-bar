@@ -495,125 +495,114 @@ watch(isDarkMode, () => {
     <!-- 主内容区域 -->
     <main class="main-content" :class="{ 'expanded': !isSidebarOpen }">
       <div class="glow-bg"></div>
-      <BrowserSupportNotice />
-      <div class="header-actions">
-        <div class="nav-horizontal">
-          <!-- 菜单折叠按钮 -->
-          <div class="sidebar-toggle-btn" @click="toggleSidebar" title="收起/展开侧边栏">
-            ☰
-          </div>
-
-          <!-- AI工具集 -->
-          <div class="nav-h-item"
-               @mouseenter="showAiToolsDropdown = true"
-               @mouseleave="showAiToolsDropdown = false">
-            <div class="nav-h-link">
-              <span class="icon">🤖</span>
-              AI工具集
-              <span class="arrow">▼</span>
+      <div class="sticky-command-center">
+        <BrowserSupportNotice />
+        <div class="header-actions">
+          <div class="nav-horizontal">
+            <!-- 菜单折叠按钮 -->
+            <div class="sidebar-toggle-btn" @click="toggleSidebar" title="收起/展开侧边栏">
+              ☰
             </div>
-            <transition name="fade-slide">
-              <div class="nav-h-dropdown grid-dropdown" v-show="showAiToolsDropdown">
-                <div v-for="item in aiCategories" :key="item.id" 
-                     class="nav-h-dropdown-item" 
-                     @click="selectItem(item.id)">
-                  <span>{{ item.icon }}</span>
-                  <span>{{ item.name }}</span>
-                </div>
+
+            <!-- AI工具集 -->
+            <div class="nav-h-item"
+                 @mouseenter="showAiToolsDropdown = true"
+                 @mouseleave="showAiToolsDropdown = false">
+              <div class="nav-h-link">
+                <span class="icon">🤖</span>
+                AI工具集
+                <span class="arrow">▼</span>
               </div>
-            </transition>
-          </div>
-
-          <!-- AI应用集 -->
-          <div class="nav-h-link" :class="{ active: isAppStoreActive }" @click="showAppStore" style="cursor: pointer;">
-            <span class="icon">🍎</span>
-            AI应用集
-          </div>
-
-          <!-- 每日AI资讯 -->
-          <div class="nav-h-link" :class="{ active: isNewsActive }" @click="showNewsTimeline" style="cursor: pointer;">
-            <span class="icon">📈</span>
-            每日AI资讯
-          </div>
-
-          <!-- 最新AI项目 -->
-          <div class="nav-h-item"
-               @mouseenter="showLatestProjectsDropdown = true"
-               @mouseleave="showLatestProjectsDropdown = false">
-            <div class="nav-h-link">
-              <span class="icon">🚀</span>
-              最新AI项目
-              <span class="arrow">▼</span>
+              <transition name="fade-slide">
+                <div class="nav-h-dropdown grid-dropdown" v-show="showAiToolsDropdown">
+                  <div v-for="item in aiCategories" :key="item.id"
+                       class="nav-h-dropdown-item"
+                       @click="selectItem(item.id)">
+                    <span>{{ item.icon }}</span>
+                    <span>{{ item.name }}</span>
+                  </div>
+                </div>
+              </transition>
             </div>
-            <transition name="fade-slide">
-              <div class="nav-h-dropdown" v-show="showLatestProjectsDropdown">
-                <div class="nav-h-dropdown-item" @click="selectItem(6)">
-                  💻 AI编程工具
-                </div>
-                <div class="nav-h-dropdown-item" @click="selectItem(10)">
-                  🛠️ AI开发平台
-                </div>
-              </div>
-            </transition>
-          </div>
 
-          <!-- AI教程资源 -->
-          <div class="nav-h-item"
-               @mouseenter="showAiTutorialsDropdown = true"
-               @mouseleave="showAiTutorialsDropdown = false">
-            <div class="nav-h-link" :class="{ active: isArticlesListActive }">
-              <span class="icon">📚</span>
-              AI教程资源
-              <span class="arrow">▼</span>
+            <!-- AI应用集 -->
+            <div class="nav-h-link" :class="{ active: isAppStoreActive }" @click="showAppStore" style="cursor: pointer;">
+              <span class="icon">🍎</span>
+              AI应用集
             </div>
-            <transition name="fade-slide">
-              <div class="nav-h-dropdown" v-show="showAiTutorialsDropdown">
-                <a href="https://ai-bot.cn/ai-tutorials/" target="_blank" class="nav-h-dropdown-item">📖 AI教程专栏</a>
-                <a href="https://ai-bot.cn/ai-encyclopedia/" target="_blank" class="nav-h-dropdown-item">📖 AI百科大全</a>
+
+            <!-- 每日AI资讯 -->
+            <div class="nav-h-link" :class="{ active: isNewsActive }" @click="showNewsTimeline" style="cursor: pointer;">
+              <span class="icon">📈</span>
+              每日AI资讯
+            </div>
+
+            <!-- 最新AI项目 -->
+            <div class="nav-h-item"
+                 @mouseenter="showLatestProjectsDropdown = true"
+                 @mouseleave="showLatestProjectsDropdown = false">
+              <div class="nav-h-link">
+                <span class="icon">🚀</span>
+                最新AI项目
+                <span class="arrow">▼</span>
               </div>
-            </transition>
+              <transition name="fade-slide">
+                <div class="nav-h-dropdown" v-show="showLatestProjectsDropdown">
+                  <div class="nav-h-dropdown-item" @click="selectItem(6)">
+                    💻 AI编程工具
+                  </div>
+                  <div class="nav-h-dropdown-item" @click="selectItem(10)">
+                    🛠️ AI开发平台
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <!-- AI教程资源 -->
+            <div class="nav-h-item"
+                 @mouseenter="showAiTutorialsDropdown = true"
+                 @mouseleave="showAiTutorialsDropdown = false">
+              <div class="nav-h-link" :class="{ active: isArticlesListActive }">
+                <span class="icon">📚</span>
+                AI教程资源
+                <span class="arrow">▼</span>
+              </div>
+              <transition name="fade-slide">
+                <div class="nav-h-dropdown" v-show="showAiTutorialsDropdown">
+                  <a href="https://ai-bot.cn/ai-tutorials/" target="_blank" class="nav-h-dropdown-item">📖 AI教程专栏</a>
+                  <a href="https://ai-bot.cn/ai-encyclopedia/" target="_blank" class="nav-h-dropdown-item">📖 AI百科大全</a>
+                </div>
+              </transition>
+            </div>
+
+            <!-- 关于我们 -->
+            <div class="nav-h-link" @click="showAboutDialog = true">
+              <span class="icon">👥</span>
+              关于我们
+            </div>
           </div>
 
-          <!-- 关于我们 -->
-          <div class="nav-h-link" @click="showAboutDialog = true">
-            <span class="icon">👥</span>
-            关于我们
+          <div class="header-right-actions">
+            <AnalogClock class="clock-component" />
+            <a href="mailto:869710179@qq.com" class="email-icon" title="联系我" style="font-size: 20px; display: inline-flex; align-items: center;">
+              📧
+            </a>
+
+            <button class="dropdown-trigger like-history-btn" @click="openLikeHistory">
+              ❤️ 历史爱心
+            </button>
+
+            <!-- 打开右侧抽屉按钮 -->
+            <button class="dropdown-trigger drawer-trigger-btn" @click="showDrawer = true" style="background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold;">
+              💼 控制中心
+            </button>
           </div>
         </div>
 
-        <div class="header-right-actions">
-          <AnalogClock class="clock-component" />
-          <a href="mailto:869710179@qq.com" class="email-icon" title="联系我" style="font-size: 20px; display: inline-flex; align-items: center;">
-            📧
-          </a>
-
-          <button class="dropdown-trigger like-history-btn" @click="openLikeHistory">
-            ❤️ 历史爱心
-          </button>
-
-          <!-- 打开右侧抽屉按钮 -->
-          <button class="dropdown-trigger drawer-trigger-btn" @click="showDrawer = true" style="background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold;">
-            💼 控制中心
-          </button>
-        </div>
-      </div>
-      <div v-if="isArticlesListActive" class="api-toolbox-view-wrapper">
-        <AiArticlesList :type="articlesListType" />
-      </div>
-      <div v-else-if="isAppStoreActive" class="api-toolbox-view-wrapper">
-        <AiAppStore />
-      </div>
-      <div v-else-if="isNewsActive" class="api-toolbox-view-wrapper">
-        <AiNewsTimeline />
-      </div>
-      <div v-else-if="activeItem === 24" class="api-toolbox-view-wrapper">
-        <ApiToolbox />
-      </div>
-      <div v-else-if="activeItem === 25" class="api-toolbox-view-wrapper">
-        <ComponentShowcase v-model:active-library="activeLibrary" />
-      </div>
-      <template v-else>
-        <div class="aggregator-search-container">
+        <div
+          v-if="!isArticlesListActive && !isAppStoreActive && !isNewsActive && activeItem !== 24 && activeItem !== 25"
+          class="aggregator-search-container"
+        >
           <!-- 分类 Tab 栏 -->
           <div class="search-category-tabs">
             <span
@@ -636,7 +625,7 @@ watch(isDarkMode, () => {
               :placeholder="activeEngine.placeholder"
               class="search-input"
             >
-            
+
             <!-- 清除按钮 -->
             <button
               v-show="searchQuery"
@@ -648,10 +637,10 @@ watch(isDarkMode, () => {
             </button>
 
             <!-- 语音搜索按钮 -->
-            <button 
-              class="voice-search-btn" 
+            <button
+              class="voice-search-btn"
               :class="{ 'listening': isListening }"
-              @click="startVoiceSearch" 
+              @click="startVoiceSearch"
               title="语音搜索"
             >
               🎤
@@ -687,6 +676,23 @@ watch(isDarkMode, () => {
             </div>
           </div>
         </div>
+      </div>
+      <div v-if="isArticlesListActive" class="api-toolbox-view-wrapper">
+        <AiArticlesList :type="articlesListType" />
+      </div>
+      <div v-else-if="isAppStoreActive" class="api-toolbox-view-wrapper">
+        <AiAppStore />
+      </div>
+      <div v-else-if="isNewsActive" class="api-toolbox-view-wrapper">
+        <AiNewsTimeline />
+      </div>
+      <div v-else-if="activeItem === 24" class="api-toolbox-view-wrapper">
+        <ApiToolbox />
+      </div>
+      <div v-else-if="activeItem === 25" class="api-toolbox-view-wrapper">
+        <ComponentShowcase v-model:active-library="activeLibrary" />
+      </div>
+      <template v-else>
         <!-- 布局网络列选择器与当前分类指示 -->
         <div class="grid-controls-row">
           <span class="active-category-indicator">
