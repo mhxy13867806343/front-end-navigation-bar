@@ -1,3 +1,5 @@
+import { resolveApiUrl } from './resolveApiUrl'
+
 export type RequestInput = string | URL | Request
 
 export function createHeaders(headers?: HeadersInit): Record<string, string> {
@@ -28,7 +30,8 @@ export function jsonHeaders(headers?: HeadersInit, hasBody: boolean = false): Re
 }
 
 export async function request(input: RequestInput, init?: RequestInit): Promise<Response> {
-  return fetch(input, init)
+  const resolved: RequestInput = typeof input === 'string' ? resolveApiUrl(input) : input
+  return fetch(resolved, init)
 }
 
 export async function requestJson<T>(input: RequestInput, init?: RequestInit): Promise<T> {

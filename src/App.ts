@@ -35,16 +35,17 @@ import { useLikes } from './composables/useLikes'
 import { useDatabase } from './composables/useDatabase'
 import { useSearch } from './composables/useSearch'
 import { useRandomWebsites } from './composables/useRandomWebsites'
+import { resolveApiUrl } from './utils/resolveApiUrl'
 
 const UAPIS_API_BASE: string = '/api-uapis'
 const AA1_API_BASE: string = '/api-aa1'
 
 function buildUapisUrl(path: string): string {
-  return `${UAPIS_API_BASE}${path}`
+  return resolveApiUrl(`${UAPIS_API_BASE}${path}`)
 }
 
 function buildAa1Url(path: string): string {
-  return `${AA1_API_BASE}${path}`
+  return resolveApiUrl(`${AA1_API_BASE}${path}`)
 }
 
 interface Aa1BilibiliHotItem {
