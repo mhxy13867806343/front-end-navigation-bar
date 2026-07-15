@@ -1,0 +1,21 @@
+[
+  {
+    "date": "微信公众号精选 · 2026-06",
+    "items": [
+      {
+        "title": "写了几年前端，这 10 个小函数从没被我抛弃过",
+        "link": "https://mp.weixin.qq.com/s/JeEoswLAN6HPumMfpVJITw",
+        "desc": "文章整理了前端项目中长期复用的 utils 基础能力，覆盖防抖、日期格式化、条件类名、安全 JSON 解析、空对象判断、复制到剪贴板、字符串处理、延时与重试、数组去重和文件下载，并建议在新项目启动时先搭好 utils 目录与统一导出。",
+        "source": "前端达人 · 2026-06-16 23:18",
+        "tags": ["前端工具函数", "TypeScript", "utils", "工程化"]
+      },
+      {
+        "title": "Anime.js：70K Star 的 JavaScript 动画引擎，V4 重构后强到离谱！",
+        "link": "https://mp.weixin.qq.com/s/DPdzospOP8XIOix33Ugyvg",
+        "desc": "文章介绍 Anime.js V4 的重构亮点：极简 animate/stagger API、Spring 弹性动画、模块化导入、文本拆分、滚动驱动、FLIP 布局动画和 Three.js 适配，同时给出安装方式、官方示例、同类项目对比与适用场景。",
+        "source": "AI开源提效指南 · 2026-06-24 19:51",
+        "tags": ["Anime.js", "动画引擎", "JavaScript", "前端开源"]
+      }
+    ]
+  }
+]

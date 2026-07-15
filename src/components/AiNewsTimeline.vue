@@ -1,9 +1,10 @@
 <script setup lang="ts">
 
 import dailyNewsData from '../utlis/daily_ai_news.json'
+import wechatFeaturedArticles from '../ajson/wechat-featured-articles.json'
 import { requestJson, requestText } from '@/utils/request'
 
-type NewsSource = 'aiBot' | 'ithome'
+type NewsSource = 'aiBot' | 'ithome' | 'wechat'
 
 interface NewsItem {
   title: string
@@ -12,6 +13,7 @@ interface NewsItem {
   source: string
   image?: string
   commentCount?: number
+  tags?: string[]
 }
 
 interface NewsDay {
@@ -46,22 +48,30 @@ const hasNextPage = ref<boolean>(true)
 const ITHOME_NEWS_TAG: string = 'API'
 
 const pageTitle = computed<string>((): string => {
+  if (activeSource.value === 'wechat') return '📰 公众号精选文章'
   return activeSource.value === 'aiBot' ? '📈 每日 AI 行业快讯热闻' : '📈 IT之家 API 标签资讯'
 })
 
 const pageSubtitle = computed<string>((): string => {
+  if (activeSource.value === 'wechat') {
+    return '收录指定公众号文章的结构化摘要，点击卡片可打开微信原文继续阅读。'
+  }
+
   return activeSource.value === 'aiBot'
     ? '跟踪全球人工智能最新技术突破、重大动态、企业融资及产品发布（自动刷新最新快讯）。'
     : '调用 IT之家标签新闻接口，当前标签：API；可通过上一页/下一页按钮按 PageNo 分页获取。'
 })
 
 const loadingText = computed<string>((): string => {
+  if (activeSource.value === 'wechat') return '正在读取本地公众号精选文章...'
+
   return activeSource.value === 'aiBot'
     ? '正在从 AI 社区抓取最新快讯，请稍候...'
     : '正在从 IT之家 API 标签接口获取资讯，请稍候...'
 })
 
 const statusText = computed<string>((): string => {
+  if (activeSource.value === 'wechat') return '本地精选模式'
   if (!isLiveMode.value) return '本地历史模式'
   return activeSource.value === 'ithome' ? `实时在线模式 · 第 ${currentPage.value} 页` : '实时在线模式'
 })
@@ -236,11 +246,20 @@ const fetchIthomeNews = async (pageNo: number = currentPage.value): Promise<bool
   return true
 }
 
+const fetchWechatFeaturedArticles = (): boolean => {
+  newsTimeline.value = wechatFeaturedArticles as NewsDay[]
+  isLiveMode.value = false
+  hasNextPage.value = false
+  errorMessage.value = ''
+  return true
+}
+
 const fetchLatestNews = async (pageNo: number = currentPage.value): Promise<boolean> => {
   isLoading.value = true
   errorMessage.value = ''
 
   try {
+    if (activeSource.value === 'wechat') return fetchWechatFeaturedArticles()
     return activeSource.value === 'aiBot' ? await fetchAiBotNews() : await fetchIthomeNews(pageNo)
   } catch (err: unknown) {
     const message: string = err instanceof Error ? err.message : String(err)
@@ -285,7 +304,11 @@ const switchNewsSource = (source: NewsSource): void => {
   activeSource.value = source
   currentPage.value = 1
   hasNextPage.value = source === 'ithome'
-  newsTimeline.value = source === 'aiBot' ? dailyNewsData as NewsDay[] : []
+  newsTimeline.value = source === 'aiBot'
+    ? dailyNewsData as NewsDay[]
+    : source === 'wechat'
+      ? wechatFeaturedArticles as NewsDay[]
+      : []
   fetchLatestNews(1)
   countdown.value = 60
 }
@@ -334,6 +357,13 @@ onUnmounted(() => {
             @click="switchNewsSource('ithome')"
           >
             IT之家 API
+          </el-button>
+          <el-button
+            size="small"
+            :type="activeSource === 'wechat' ? 'primary' : 'default'"
+            @click="switchNewsSource('wechat')"
+          >
+            公众号精选
           </el-button>
         </el-button-group>
 
@@ -405,12 +435,21 @@ onUnmounted(() => {
               <img v-if="item.image" class="news-thumb" :src="item.image" :alt="item.title" loading="lazy" />
               
               <div class="news-card-footer">
-                <span class="source-tag" v-if="item.source">
-                  🏷️ 来源：{{ item.source }}
-                </span>
-                <span class="source-tag" v-if="item.commentCount">
-                  💬 {{ item.commentCount }} 评论
-                </span>
+                <div class="news-meta-tags">
+                  <span class="source-tag" v-if="item.source">
+                    🏷️ 来源：{{ item.source }}
+                  </span>
+                  <span class="source-tag" v-if="item.commentCount">
+                    💬 {{ item.commentCount }} 评论
+                  </span>
+                  <span
+                    v-for="tag in item.tags"
+                    :key="tag"
+                    class="source-tag topic-tag"
+                  >
+                    # {{ tag }}
+                  </span>
+                </div>
                 <span class="action-hint">查看详情</span>
               </div>
             </div>
@@ -642,11 +681,24 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
+.news-meta-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .source-tag {
   color: var(--text-secondary);
   background: var(--hover-bg);
   padding: 2px 8px;
   border-radius: 4px;
+}
+
+.topic-tag {
+  color: var(--primary-color);
+  border: 1px solid rgba(var(--primary-color-rgb, 99, 102, 241), 0.18);
 }
 
 .action-hint {
