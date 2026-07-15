@@ -5,7 +5,7 @@ import { serverProxy } from './config/viteProxy.ts'
 
 // https://vite.dev/config/
 export default defineConfig({
-       base: './',
+       base: '/front-end-navigation-bar/',
   plugins: [
     vue(),
     AutoImport({
