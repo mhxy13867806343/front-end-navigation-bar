@@ -1965,7 +1965,7 @@ watch(isDarkMode, () => {
         <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
       </div>
       <div class="route-browser-notice">
-        <BrowserSupportNotice />
+        <BrowserSupportNotice :auto-open="false" />
       </div>
       <router-view />
     </div>

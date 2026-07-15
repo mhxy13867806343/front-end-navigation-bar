@@ -23,6 +23,14 @@ interface TechStackItem {
   value: string
 }
 
+interface BrowserSupportNoticeProps {
+  autoOpen?: boolean
+}
+
+const props: BrowserSupportNoticeProps = withDefaults(defineProps<BrowserSupportNoticeProps>(), {
+  autoOpen: true
+})
+
 const qrImageModules: Record<string, string> = import.meta.glob('../assets/qc/*.{png,jpg,jpeg,webp,svg}', {
   eager: true,
   import: 'default',
@@ -57,6 +65,7 @@ const qrImages: QrImage[] = Object.entries(qrImageModules)
 
 const authorGithubUrl: string = 'https://github.com/mhxy13867806343'
 const currentDateTime: Ref<Date> = ref<Date>(new Date())
+const dialogVisible: Ref<boolean> = ref<boolean>(false)
 let clockTimer: number | null = null
 
 const browserName: ComputedRef<string> = computed<string>((): string => {
@@ -92,6 +101,10 @@ const browserStatusText: ComputedRef<string> = computed<string>((): string => {
   return `当前 ${browserName.value} 已通过现代浏览器能力检测。`
 })
 
+const browserTagType: ComputedRef<'success' | 'danger'> = computed<'success' | 'danger'>((): 'success' | 'danger' => {
+  return isBrowserUnsupported.value ? 'danger' : 'success'
+})
+
 const formattedTime: ComputedRef<string> = computed<string>((): string => {
   return new Intl.DateTimeFormat('zh-CN', {
     dateStyle: 'full',
@@ -117,6 +130,10 @@ function canUseLocalStorage(): boolean {
 }
 
 onMounted((): void => {
+  if (props.autoOpen && isBrowserUnsupported.value) {
+    dialogVisible.value = true
+  }
+
   clockTimer = window.setInterval((): void => {
     currentDateTime.value = new Date()
   }, 1000)
@@ -131,77 +148,115 @@ onUnmounted((): void => {
 </script>
 
 <template>
-  <section class="browser-support-notice" :class="{ warning: isBrowserUnsupported }" aria-label="浏览器兼容性提示">
-    <div class="notice-status">
+  <section class="browser-support-bar" :class="{ warning: isBrowserUnsupported }" aria-label="浏览器兼容性提示">
+    <div class="bar-copy">
+      <span class="bar-dot" aria-hidden="true"></span>
       <div>
-        <p class="eyebrow">Browser Check</p>
-        <h2>{{ isBrowserUnsupported ? '浏览器版本过旧' : '浏览器环境正常' }}</h2>
-        <p>{{ browserStatusText }}</p>
-      </div>
-      <div class="feature-list" aria-label="浏览器能力检测结果">
-        <span
-          v-for="feature in browserFeatures"
-          :key="feature.label"
-          :class="{ pass: feature.supported, fail: !feature.supported }"
-        >
-          {{ feature.supported ? '✓' : '!' }} {{ feature.label }}
-        </span>
+        <strong>{{ isBrowserUnsupported ? '浏览器版本过旧' : '浏览器环境正常' }}</strong>
+        <span>{{ browserStatusText }}</span>
       </div>
     </div>
 
-    <div class="download-row" aria-label="浏览器下载链接">
-      <a
-        v-for="browser in browserLinks"
-        :key="browser.name"
-        :href="browser.url"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <strong>{{ browser.name }}</strong>
-        <span>{{ browser.vendor }}</span>
-      </a>
-    </div>
+    <el-button type="primary" plain size="small" @click="dialogVisible = true">
+      查看详情
+    </el-button>
 
-    <div class="maintenance-note">
-      <strong>兼容性说明</strong>
-      <span>本站不再维护 IE、旧版 EdgeHTML 和过旧 WebView 的适配；后续功能会优先面向支持 ES Module、Fetch、CSS Grid 的现代浏览器。</span>
-    </div>
+    <el-dialog
+      v-model="dialogVisible"
+      title="浏览器兼容性检测"
+      width="min(920px, 92vw)"
+      class="browser-support-dialog"
+      append-to-body
+      destroy-on-close
+      align-center
+    >
+      <div class="dialog-content">
+        <div class="notice-status">
+          <div>
+            <p class="eyebrow">Browser Check</p>
+            <h2>{{ isBrowserUnsupported ? '浏览器版本过旧' : '浏览器环境正常' }}</h2>
+            <p>{{ browserStatusText }}</p>
+          </div>
+          <el-tag :type="browserTagType" effect="dark" round>
+            {{ browserName }}
+          </el-tag>
+        </div>
 
-    <div v-if="qrImages.length" class="qr-gallery" aria-label="二维码展示">
-      <figure v-for="image in qrImages" :key="image.src">
-        <img :src="image.src" :alt="image.alt" loading="lazy" />
-      </figure>
-    </div>
+        <div class="feature-list" aria-label="浏览器能力检测结果">
+          <span
+            v-for="feature in browserFeatures"
+            :key="feature.label"
+            :class="{ pass: feature.supported, fail: !feature.supported }"
+          >
+            {{ feature.supported ? '✓' : '!' }} {{ feature.label }}
+          </span>
+        </div>
 
-    <div class="notice-footer">
-      <div class="time-block">
-        <span>当前时间</span>
-        <strong>{{ formattedTime }}</strong>
-        <em v-if="yearlyGreeting">{{ yearlyGreeting }}</em>
+        <div class="download-row" aria-label="浏览器下载链接">
+          <a
+            v-for="browser in browserLinks"
+            :key="browser.name"
+            :href="browser.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <strong>{{ browser.name }}</strong>
+            <span>{{ browser.vendor }}</span>
+          </a>
+        </div>
+
+        <div class="maintenance-note">
+          <strong>兼容性说明</strong>
+          <span>本站不再维护 IE、旧版 EdgeHTML 和过旧 WebView 的适配；后续功能会优先面向支持 ES Module、Fetch、CSS Grid 的现代浏览器。</span>
+        </div>
+
+        <div v-if="qrImages.length" class="qr-gallery" aria-label="二维码展示">
+          <figure v-for="image in qrImages" :key="image.src">
+            <img :src="image.src" :alt="image.alt" loading="lazy" />
+          </figure>
+        </div>
+
+        <div class="notice-footer">
+          <div class="time-block">
+            <span>当前时间</span>
+            <strong>{{ formattedTime }}</strong>
+            <em v-if="yearlyGreeting">{{ yearlyGreeting }}</em>
+          </div>
+          <a class="author-link" :href="authorGithubUrl" target="_blank" rel="noopener noreferrer">
+            作者 GitHub：{{ authorGithubUrl }}
+          </a>
+        </div>
+
+        <div class="stack-list" aria-label="项目技术栈">
+          <span v-for="item in techStack" :key="item.name">
+            <strong>{{ item.name }}</strong>
+            {{ item.value }}
+          </span>
+        </div>
       </div>
-      <a class="author-link" :href="authorGithubUrl" target="_blank" rel="noopener noreferrer">
-        作者 GitHub：{{ authorGithubUrl }}
-      </a>
-    </div>
 
-    <div class="stack-list" aria-label="项目技术栈">
-      <span v-for="item in techStack" :key="item.name">
-        <strong>{{ item.name }}</strong>
-        {{ item.value }}
-      </span>
-    </div>
+      <template #footer>
+        <div class="dialog-footer-actions">
+          <el-button @click="dialogVisible = false">关闭</el-button>
+          <el-button type="primary" @click="dialogVisible = false">知道了</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </section>
 </template>
 
 <style scoped>
-.browser-support-notice {
+.browser-support-bar {
   position: relative;
   z-index: 30;
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 14px;
   width: 100%;
-  margin-bottom: 20px;
-  padding: 18px;
+  min-height: 48px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
   color: var(--text-color);
   background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
   border: 1px solid var(--border-color);
@@ -211,9 +266,55 @@ onUnmounted((): void => {
   -webkit-backdrop-filter: blur(18px);
 }
 
-.browser-support-notice.warning {
+.browser-support-bar.warning {
   border-color: rgba(255, 88, 88, 0.55);
   background: color-mix(in srgb, var(--bg-secondary) 82%, rgba(255, 88, 88, 0.18));
+}
+
+.bar-copy {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #14a66b;
+  box-shadow: 0 0 12px rgba(20, 166, 107, 0.5);
+}
+
+.warning .bar-dot {
+  background: #ff5a5f;
+  box-shadow: 0 0 12px rgba(255, 90, 95, 0.48);
+}
+
+.bar-copy div {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.bar-copy strong {
+  font-size: 14px;
+}
+
+.bar-copy span:not(.bar-dot) {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dialog-content {
+  display: grid;
+  gap: 14px;
 }
 
 .notice-status {
@@ -247,9 +348,7 @@ onUnmounted((): void => {
 .feature-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
   gap: 8px;
-  max-width: 520px;
 }
 
 .feature-list span {
@@ -418,15 +517,16 @@ onUnmounted((): void => {
   color: var(--text-color);
 }
 
+.dialog-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 @media (max-width: 980px) {
   .notice-status,
   .notice-footer {
     grid-template-columns: 1fr;
-  }
-
-  .feature-list {
-    justify-content: flex-start;
-    max-width: none;
   }
 
   .download-row {
@@ -435,8 +535,13 @@ onUnmounted((): void => {
 }
 
 @media (max-width: 560px) {
-  .browser-support-notice {
-    padding: 14px;
+  .browser-support-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bar-copy span:not(.bar-dot) {
+    white-space: normal;
   }
 
   .download-row,
