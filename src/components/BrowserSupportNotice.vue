@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import packageJson from '../../package.json'
 
 interface BrowserDownloadLink {
@@ -86,6 +87,7 @@ const qrImages: QrImage[] = Object.entries(qrImageModules)
   })
 
 const authorGithubUrl: string = 'https://github.com/mhxy13867806343'
+const closeTipStorageKey: string = 'hooksvue-browser-dialog-close-tip-shown'
 const currentDateTime: Ref<Date> = ref<Date>(new Date())
 const dialogVisible: Ref<boolean> = ref<boolean>(false)
 let clockTimer: number | null = null
@@ -156,6 +158,27 @@ function getPackageVersion(packageName: string): string {
   return rawVersion.replace(/^[~^]/, '')
 }
 
+function showCloseTipOnce(): void {
+  try {
+    if (window.localStorage.getItem(closeTipStorageKey)) return
+
+    ElMessage.info('已关闭二维码与兼容性说明，下次关闭时不会再提示。')
+    window.localStorage.setItem(closeTipStorageKey, '1')
+  } catch {
+    ElMessage.info('已关闭二维码与兼容性说明。')
+  }
+}
+
+function closeDialog(): void {
+  showCloseTipOnce()
+  dialogVisible.value = false
+}
+
+function handleDialogBeforeClose(done: () => void): void {
+  showCloseTipOnce()
+  done()
+}
+
 onMounted((): void => {
   if (props.autoOpen && isBrowserUnsupported.value) {
     dialogVisible.value = true
@@ -196,6 +219,7 @@ onUnmounted((): void => {
       append-to-body
       destroy-on-close
       align-center
+      :before-close="handleDialogBeforeClose"
     >
       <div class="dialog-content">
         <div class="notice-status">
@@ -272,8 +296,8 @@ onUnmounted((): void => {
 
       <template #footer>
         <div class="dialog-footer-actions">
-          <el-button @click="dialogVisible = false">关闭</el-button>
-          <el-button type="primary" @click="dialogVisible = false">知道了</el-button>
+          <el-button @click="closeDialog">关闭</el-button>
+          <el-button type="primary" @click="closeDialog">知道了</el-button>
         </div>
       </template>
     </el-dialog>

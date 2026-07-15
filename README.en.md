@@ -15,6 +15,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 - **Global Search**: Search across categories by name/description, with search history (up to 8 entries)
 - **Browser Compatibility Notice**: Checks browser capabilities at the top of the app and opens an Element Plus Dialog with 5 official browser download links, QR codes, current time, author GitHub, yearly greetings, and package-version links read from `package.json`
 - **Favorites**: Like/favorite tool cards, persisted locally, with a favorites history view
+- **Control Center Resources**: The right-side menu lists cloud-drive resources, AI development tool websites, and tool descriptions, opening links in new tabs
 - **AI News & Apps**: Daily AI news timeline, paged IT Home API-tag news, AI app store, AI tutorials/encyclopedia article lists
 - **Hotboards & Movie Data**: Supports Weibo, Bilibili hot search, Juejin, OSChina and more, plus box office and movie/TV ranking data
 - **API Toolbox**: Built-in collection of commonly used APIs
@@ -26,6 +27,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 
 - Juejin hot rankings now use a build-time same-origin cache in production, avoiding direct cross-origin requests on GitHub Pages.
 - Added a browser compatibility bar to the home page and standalone route views, with details shown in an Element Plus Dialog and QR assets stored under `src/assets/qc/`.
+- Added cloud-drive document links, Codex / TRAE / Devin / Antigravity entries, and a dynamic-year blessing to the control center.
 - Added `/api-uapis`, `/api-aa1`, and `/api-ithome` local proxies to avoid browser CORS issues.
 - Bilibili hot search now prefers the aa1 Bilibili endpoint and falls back to the existing hotboard source if needed.
 - The daily AI news source from `ai-bot.cn/daily-ai-news` is preserved, with an additional paged IT Home `NewsTag=API` source.

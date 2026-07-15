@@ -82,6 +82,82 @@ const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some(p => path === p || path.endsWith(p))
 })
+
+interface DrawerCloudLink {
+  name: string
+  platform: string
+  url: string
+  code: string
+  desc: string
+}
+
+interface DrawerAiDevTool {
+  name: string
+  url: string
+  desc: string
+  recommended: boolean
+}
+
+const drawerCloudLinks: DrawerCloudLink[] = [
+  {
+    name: '百度网盘资料',
+    platform: 'Baidu Netdisk',
+    url: 'https://pan.baidu.com/s/132vArPzD5szjUrOJmbY0_g?pwd=8cth',
+    code: '8cth',
+    desc: '通过百度网盘分享的文档数据与资料合集'
+  },
+  {
+    name: '阿里云盘文档数据',
+    platform: 'AliPan',
+    url: 'https://www.alipan.com/s/WMaKJ2C4Qah',
+    code: '95ra',
+    desc: '文档数据，可保存到阿里云盘后在线查看'
+  },
+  {
+    name: '123 云盘资料',
+    platform: '123Pan',
+    url: 'https://1813374361.share.123pan.cn/123pan/N2SUVv-n65jv?pwd=kYHh#',
+    code: 'kYHh',
+    desc: '123 云盘备用资料入口'
+  }
+]
+
+const drawerAiDevTools: DrawerAiDevTool[] = [
+  {
+    name: 'Codex',
+    url: 'https://chatgpt.com/codex/',
+    recommended: true,
+    desc: 'OpenAI 的 AI 编程代理入口，适合代码修改、重构、调试、评审和多步骤工程任务。'
+  },
+  {
+    name: 'TRAE 国际版',
+    url: 'https://www.trae.ai/',
+    recommended: false,
+    desc: '面向 AI 协作开发的工具平台，支持从想法到任务拆解、执行和交付的开发流程。'
+  },
+  {
+    name: 'Devin',
+    url: 'https://devin.ai/',
+    recommended: false,
+    desc: 'Cognition 推出的 AI 软件工程师，偏向团队级任务、代码库理解和自动化开发协作。'
+  },
+  {
+    name: 'Antigravity',
+    url: 'https://antigravity.google/',
+    recommended: true,
+    desc: 'Google 的 agent-first 开发平台，适合用 AI agents 管理、执行和验证复杂开发任务。'
+  }
+]
+
+const blessingYear = computed<number>((): number => new Date().getFullYear())
+
+const goHome = async (): Promise<void | Error> => {
+  isNewsActive.value = false
+  isAppStoreActive.value = false
+  isArticlesListActive.value = false
+  return router.push('/')
+}
+
 const goFlash = (): Promise<void | Error> => router.push('/flash')
 const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
 const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
@@ -384,7 +460,7 @@ watch(isDarkMode, () => {
   >
     <!-- 左侧导航栏 -->
     <nav class="sidebar" :class="{ 'collapsed': !isSidebarOpen }">
-      <div class="logo">HooksVue</div>
+      <button class="logo logo-button" type="button" title="返回首页" @click="goHome">HooksVue</button>
       <div class="db-status-bar" v-show="isSidebarOpen">
         <span class="dot" :class="isHomeLive ? 'live' : 'cached'">●</span>
         <span>{{ isHomeLive ? '实时同步中 (60s)' : '静态本地数据' }}</span>
@@ -814,6 +890,9 @@ watch(isDarkMode, () => {
             </div>
           </template>
         </div>
+        <footer class="home-blessing-footer">
+          祝您身体健康万事如意，心想事成，{{ blessingYear }} 年加油
+        </footer>
       </template>
     </main>
     <!-- 自定义右键菜单 -->
@@ -1886,6 +1965,51 @@ watch(isDarkMode, () => {
               </div>
             </div>
           </transition>
+        </div>
+
+        <!-- Section 2.2: 文档数据 -->
+        <div class="drawer-section">
+          <h3 class="section-title">📁 文档数据</h3>
+          <div class="drawer-list">
+            <a
+              v-for="cloud in drawerCloudLinks"
+              :key="cloud.name"
+              :href="cloud.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="drawer-list-item cloud-link-item"
+            >
+              <div class="work-name">
+                <span>{{ cloud.name }}</span>
+                <span class="share-code">提取码：{{ cloud.code }}</span>
+              </div>
+              <div class="work-desc">{{ cloud.platform }} · {{ cloud.desc }}</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Section 2.3: AI 开发工具 -->
+        <div class="drawer-section">
+          <h3 class="section-title">🤖 AI 开发工具</h3>
+          <div class="drawer-list ai-dev-tool-list">
+            <div
+              v-for="tool in drawerAiDevTools"
+              :key="tool.name"
+              class="drawer-list-item ai-dev-tool-item"
+            >
+              <a :href="tool.url" target="_blank" rel="noopener noreferrer" class="ai-dev-tool-link">
+                <span class="work-name">
+                  {{ tool.name }}
+                  <em v-if="tool.recommended">推荐</em>
+                </span>
+                <span class="work-desc">点击打开官网</span>
+              </a>
+              <details class="ai-dev-tool-desc" :open="tool.recommended">
+                <summary>查看简介</summary>
+                <p>{{ tool.desc }}</p>
+              </details>
+            </div>
+          </div>
         </div>
 
         <!-- Section 2.5: 随机网址 -->
