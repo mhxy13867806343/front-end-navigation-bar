@@ -44,6 +44,11 @@ const routes = [
     path: '/juejin-theme',
     name: 'JuejinTheme',
     component: () => import('../views/juejinTheme/index.vue')
+  },
+  {
+    path: '/wechat-featured',
+    name: 'WechatFeatured',
+    component: () => import('../views/wechatFeatured/index.vue')
   }
 ]
 

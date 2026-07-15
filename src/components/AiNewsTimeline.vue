@@ -7,6 +7,7 @@ import { requestJson, requestText } from '@/utils/request'
 type NewsSource = 'aiBot' | 'ithome' | 'wechat'
 
 interface NewsItem {
+  slug?: string
   title: string
   link: string
   desc: string
@@ -80,6 +81,15 @@ const openLink = (link: string): void => {
   if (link) {
     window.open(link, '_blank')
   }
+}
+
+const openNewsItem = (item: NewsItem): void => {
+  if (activeSource.value === 'wechat' && item.slug) {
+    window.open(`${import.meta.env.BASE_URL}wechat-featured?article=${encodeURIComponent(item.slug)}`, '_blank')
+    return
+  }
+
+  openLink(item.link)
 }
 
 const parseAiBotNewsHtml = (htmlText: string): NewsDay[] => {
@@ -421,7 +431,7 @@ onUnmounted(() => {
               v-for="(item, idx) in day.items" 
               :key="idx" 
               class="news-item-card"
-              @click="openLink(item.link)"
+              @click="openNewsItem(item)"
               :title="'点击阅读来源文章: ' + item.link"
             >
               <div class="card-inner-header">
@@ -450,6 +460,14 @@ onUnmounted(() => {
                     # {{ tag }}
                   </span>
                 </div>
+                <button
+                  v-if="activeSource === 'wechat'"
+                  class="origin-link-btn"
+                  type="button"
+                  @click.stop="openLink(item.link)"
+                >
+                  原文
+                </button>
                 <span class="action-hint">查看详情</span>
               </div>
             </div>
@@ -699,6 +717,21 @@ onUnmounted(() => {
 .topic-tag {
   color: var(--primary-color);
   border: 1px solid rgba(var(--primary-color-rgb, 99, 102, 241), 0.18);
+}
+
+.origin-link-btn {
+  border: 1px solid rgba(var(--primary-color-rgb, 99, 102, 241), 0.32);
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: var(--primary-color);
+  background: rgba(var(--primary-color-rgb, 99, 102, 241), 0.08);
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.origin-link-btn:hover {
+  background: rgba(var(--primary-color-rgb, 99, 102, 241), 0.18);
 }
 
 .action-hint {
