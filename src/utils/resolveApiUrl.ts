@@ -10,6 +10,7 @@ const isProd: boolean = import.meta.env.PROD
 const PROXY_MAP: Record<string, string> = {
   '/api-juejin': 'https://api.juejin.cn',
   '/api-uapis': 'https://uapis.cn',
+  '/api-alapi': 'https://v3.alapi.cn',
   '/api-aa1': 'https://v.api.aa1.cn',
   '/api-helloworld': 'https://www.helloworld.net',
   '/api-ithome': 'https://m.ithome.com',

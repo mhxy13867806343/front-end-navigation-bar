@@ -1,6 +1,21 @@
 {
-  "generatedAt": "2026-07-15T16:39:58.838Z",
+  "generatedAt": "2026-07-15T17:06:31.286Z",
   "groups": [
+    {
+      "date": "2026-07-16",
+      "items": [
+        {
+          "hash": "2cbccb4a856429205de1fb482fe6cc1fcbde05b1",
+          "shortHash": "2cbccb4",
+          "date": "2026-07-16",
+          "time": "00:40",
+          "type": "功能更新",
+          "title": "add version history dialog",
+          "scope": "",
+          "message": "feat: add version history dialog"
+        }
+      ]
+    },
     {
       "date": "2026-07-15",
       "items": [
@@ -298,16 +313,6 @@
           "title": "add reusable 60s countdown refresh button and integrate into aicoding page, weather, bing wallpaper and utility dialogs",
           "scope": "",
           "message": "feat: add reusable 60s countdown refresh button and integrate into aicoding page, weather, bing wallpaper and utility dialogs"
-        },
-        {
-          "hash": "6b2e5462f8eac204e75beb6d85674ade794448e8",
-          "shortHash": "6b2e546",
-          "date": "2026-07-14",
-          "time": "00:37",
-          "type": "工程维护",
-          "title": "add DOM ID for load-more-btn in bilibili demo",
-          "scope": "",
-          "message": "chore: add DOM ID for load-more-btn in bilibili demo"
         }
       ]
     }

@@ -6,6 +6,7 @@ import AnalogClock from './components/AnalogClock.vue'
 import AiArticlesList from './components/AiArticlesList.vue'
 import AiAppStore from './components/AiAppStore.vue'
 import AiNewsTimeline from './components/AiNewsTimeline.vue'
+import AlapiBottomMusicPlayer from './components/AlapiBottomMusicPlayer.vue'
 import ApiToolbox from './components/ApiToolbox.vue'
 import BrowserSupportNotice from './components/BrowserSupportNotice.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
@@ -2229,8 +2230,10 @@ watch(isDarkMode, () => {
       <router-view />
     </div>
 
+    <AlapiBottomMusicPlayer />
+
     <!-- 全局返回顶部 -->
-    <el-backtop :right="40" :bottom="40" />
+    <el-backtop :right="40" :bottom="120" />
   </div>
 </template>
 
