@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/generate-juejin-rank-cache.mts && vite build",
     "preview": "vite preview",
     "validate:mcp": "node scripts/validate-mcp-navigation.mts",
     "test:mcp": "node --test scripts/validate-mcp-navigation.test.mts",

@@ -13,6 +13,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 - **AI Tools Navigation**: Sidebar with categories + subcategories, covering dozens of categories such as AI chat, writing, painting, coding, and dev platforms
 - **Live Data Sync**: Fetches remote data in real time and merges it with local static data, automatically falling back to local data on failure
 - **Global Search**: Search across categories by name/description, with search history (up to 8 entries)
+- **Browser Compatibility Notice**: Checks browser capabilities at the top of the app, with 5 official browser download links, QR codes, current time, author GitHub, yearly greetings, and tech stack details
 - **Favorites**: Like/favorite tool cards, persisted locally, with a favorites history view
 - **AI News & Apps**: Daily AI news timeline, paged IT Home API-tag news, AI app store, AI tutorials/encyclopedia article lists
 - **Hotboards & Movie Data**: Supports Weibo, Bilibili hot search, Juejin, OSChina and more, plus box office and movie/TV ranking data
@@ -23,6 +24,8 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 
 ## 🆕 Recent Updates
 
+- Juejin hot rankings now use a build-time same-origin cache in production, avoiding direct cross-origin requests on GitHub Pages.
+- Added a browser compatibility notice to the home page and standalone route views, with QR assets stored under `src/assets/qc/`.
 - Added `/api-uapis`, `/api-aa1`, and `/api-ithome` local proxies to avoid browser CORS issues.
 - Bilibili hot search now prefers the aa1 Bilibili endpoint and falls back to the existing hotboard source if needed.
 - The daily AI news source from `ai-bot.cn/daily-ai-news` is preserved, with an additional paged IT Home `NewsTag=API` source.
@@ -44,7 +47,7 @@ Sokoban, Snake, Tetris, 2048, Minesweeper, Tic-Tac-Toe, Brick Breaker, Battle Ci
 | Category | Technology |
 | --- | --- |
 | Framework | Vue 3 (`<script setup>` SFC) |
-| Build | Vite 4 |
+| Build | Vite 8 |
 | UI | Element Plus |
 | Router | Vue Router 4 |
 | Others | axios, vuedraggable, cropperjs |

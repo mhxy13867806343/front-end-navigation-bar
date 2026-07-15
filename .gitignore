@@ -5,6 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 **/*.log
 dist/
+public/live-data/
 tests/**/coverage/
 tests/e2e/reports
 selenium-debug.log
@@ -18,4 +19,3 @@ selenium-debug.log
 *.sln
 *.local
 scratch/
-

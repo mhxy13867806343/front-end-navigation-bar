@@ -118,6 +118,7 @@ import {
   buildJuejinColumnRankUrl
 } from '@/vue-pages-text-fn-abc/juejinHot'
 import type {
+  JuejinArticleRankType,
   JuejinAuthorRankOption,
   JuejinAuthorRankType,
   JuejinHotCategory,
@@ -236,6 +237,21 @@ interface JuejinAuthorRankResponse {
   }
 }
 
+interface JuejinRankCacheEntry<TData> {
+  updatedAt: string
+  ok: boolean
+  data: TData | null
+  error?: string
+}
+
+interface JuejinRankCache {
+  generatedAt: string
+  articleRanks: Record<string, JuejinRankCacheEntry<JuejinArticleRankResponse>>
+  columnRank: JuejinRankCacheEntry<JuejinColumnRankResponse>
+  collectionRank: JuejinRankCacheEntry<JuejinCollectionRankResponse>
+  authorRanks: Record<string, JuejinRankCacheEntry<JuejinAuthorRankResponse>>
+}
+
 interface RankStat {
   label: string
   value: string
@@ -264,8 +280,12 @@ const rankItems: Ref<RankItem[]> = ref<RankItem[]>([])
 const loading: Ref<boolean> = ref<boolean>(false)
 const error: Ref<string> = ref<string>('')
 const rankPeriodText: Ref<string> = ref<string>('')
+const shouldUseJuejinRankCache: boolean = import.meta.env.PROD
+const juejinRankCacheUrl: string = `${import.meta.env.BASE_URL}live-data/juejin-rank-cache.json`
 
 let requestSeq: number = 0
+let juejinRankCachePromise: Promise<JuejinRankCache> | null = null
+let seedJuejinRankCachePromise: Promise<JuejinRankCache> | null = null
 
 const activeNav: ComputedRef<JuejinHotNavItem> = computed<JuejinHotNavItem>(() => {
   return sideNavItems.find((item: JuejinHotNavItem): boolean => item.key === activeNavKey.value) || sideNavItems[0]
@@ -331,10 +351,99 @@ async function fetchActiveRankItems(): Promise<RankItem[]> {
   return fetchArticleRankItems()
 }
 
+function articleRankCacheKey(categoryId: string, rankType: JuejinArticleRankType): string {
+  return `${rankType}:${categoryId}`
+}
+
+function authorRankCacheKey(categoryId: string, rankType: JuejinAuthorRankType): string {
+  return `${rankType}:${categoryId}`
+}
+
+async function loadJuejinRankCache(): Promise<JuejinRankCache> {
+  if (!shouldUseJuejinRankCache) return loadSeedJuejinRankCache()
+
+  if (!juejinRankCachePromise) {
+    juejinRankCachePromise = requestJson<JuejinRankCache>(juejinRankCacheUrl, {
+      cache: 'no-cache'
+    }).catch((cacheError: unknown): Promise<JuejinRankCache> => {
+      const message: string = cacheError instanceof Error ? cacheError.message : String(cacheError)
+      console.warn(`加载掘金静态缓存失败，使用内置缓存：${message}`)
+      return loadSeedJuejinRankCache()
+    })
+  }
+
+  return juejinRankCachePromise
+}
+
+async function loadSeedJuejinRankCache(): Promise<JuejinRankCache> {
+  if (!seedJuejinRankCachePromise) {
+    seedJuejinRankCachePromise = import('@/ajson/juejin-rank-cache.json').then(
+      (cacheModule: { default: JuejinRankCache }): JuejinRankCache => cacheModule.default
+    )
+  }
+
+  return seedJuejinRankCachePromise
+}
+
+function readJuejinCacheEntry<TData>(entry: JuejinRankCacheEntry<TData> | undefined, fallbackMessage: string): TData {
+  if (entry?.ok && entry.data) return entry.data
+  throw new Error(entry?.error || fallbackMessage)
+}
+
+async function fetchArticleRankResponse(
+  categoryId: string,
+  rankType: JuejinArticleRankType
+): Promise<JuejinArticleRankResponse> {
+  if (shouldUseJuejinRankCache) {
+    const cache: JuejinRankCache = await loadJuejinRankCache()
+    return readJuejinCacheEntry(cache.articleRanks[articleRankCacheKey(categoryId, rankType)], '缓存暂无文章榜数据')
+  }
+
+  return requestJson<JuejinArticleRankResponse>(buildJuejinArticleRankUrl(categoryId, rankType))
+}
+
+async function fetchColumnRankResponse(): Promise<JuejinColumnRankResponse> {
+  if (shouldUseJuejinRankCache) {
+    const cache: JuejinRankCache = await loadJuejinRankCache()
+    return readJuejinCacheEntry(cache.columnRank, '缓存暂无专栏榜数据')
+  }
+
+  return requestJson<JuejinColumnRankResponse>(buildJuejinColumnRankUrl(), {
+    method: 'POST',
+    body: JSON.stringify(buildJuejinColumnRankBody())
+  })
+}
+
+async function fetchCollectionRankResponse(): Promise<JuejinCollectionRankResponse> {
+  if (shouldUseJuejinRankCache) {
+    const cache: JuejinRankCache = await loadJuejinRankCache()
+    return readJuejinCacheEntry(cache.collectionRank, '缓存暂无收藏集榜数据')
+  }
+
+  return requestJson<JuejinCollectionRankResponse>(buildJuejinCollectionRankUrl(), {
+    method: 'POST',
+    body: JSON.stringify(buildJuejinCollectionRankBody())
+  })
+}
+
+async function fetchAuthorRankResponse(
+  categoryId: string,
+  rankType: JuejinAuthorRankType
+): Promise<JuejinAuthorRankResponse> {
+  if (shouldUseJuejinRankCache) {
+    const cache: JuejinRankCache = await loadJuejinRankCache()
+    return readJuejinCacheEntry(cache.authorRanks[authorRankCacheKey(categoryId, rankType)], '缓存暂无作者榜数据')
+  }
+
+  return requestJson<JuejinAuthorRankResponse>(buildJuejinAuthorRankUrl(), {
+    method: 'POST',
+    body: JSON.stringify(buildJuejinAuthorRankBody(categoryId, rankType))
+  })
+}
+
 async function fetchArticleRankItems(): Promise<RankItem[]> {
-  const rankType = activeNav.value.rankType || 'hot'
-  const url: string = buildJuejinArticleRankUrl(activeCategoryId.value, rankType)
-  const json: JuejinArticleRankResponse = await requestJson<JuejinArticleRankResponse>(url)
+  const rankType: JuejinArticleRankType = activeNav.value.rankType || 'hot'
+  const json: JuejinArticleRankResponse = await fetchArticleRankResponse(activeCategoryId.value, rankType)
 
   if (json.err_no !== 0) throw new Error(json.err_msg || '获取文章榜失败')
 
@@ -344,10 +453,7 @@ async function fetchArticleRankItems(): Promise<RankItem[]> {
 }
 
 async function fetchColumnRankItems(): Promise<RankItem[]> {
-  const json: JuejinColumnRankResponse = await requestJson<JuejinColumnRankResponse>(buildJuejinColumnRankUrl(), {
-    method: 'POST',
-    body: JSON.stringify(buildJuejinColumnRankBody())
-  })
+  const json: JuejinColumnRankResponse = await fetchColumnRankResponse()
 
   if (json.err_no !== 0) throw new Error(json.err_msg || '获取专栏榜失败')
 
@@ -357,10 +463,7 @@ async function fetchColumnRankItems(): Promise<RankItem[]> {
 }
 
 async function fetchCollectionRankItems(): Promise<RankItem[]> {
-  const json: JuejinCollectionRankResponse = await requestJson<JuejinCollectionRankResponse>(buildJuejinCollectionRankUrl(), {
-    method: 'POST',
-    body: JSON.stringify(buildJuejinCollectionRankBody())
-  })
+  const json: JuejinCollectionRankResponse = await fetchCollectionRankResponse()
 
   if (json.err_no !== 0) throw new Error(json.err_msg || '获取收藏集榜失败')
 
@@ -371,10 +474,7 @@ async function fetchCollectionRankItems(): Promise<RankItem[]> {
 
 async function fetchAuthorRankItems(): Promise<RankItem[]> {
   const categoryId: string = activeCategoryId.value || JUEJIN_HOT_AUTHOR_CATEGORY_OPTIONS[0].value
-  const json: JuejinAuthorRankResponse = await requestJson<JuejinAuthorRankResponse>(buildJuejinAuthorRankUrl(), {
-    method: 'POST',
-    body: JSON.stringify(buildJuejinAuthorRankBody(categoryId, activeAuthorRankType.value))
-  })
+  const json: JuejinAuthorRankResponse = await fetchAuthorRankResponse(categoryId, activeAuthorRankType.value)
 
   if (json.err_no !== 0) throw new Error(json.err_msg || '获取作者榜失败')
 

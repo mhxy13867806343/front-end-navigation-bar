@@ -7,6 +7,7 @@ import AiArticlesList from './components/AiArticlesList.vue'
 import AiAppStore from './components/AiAppStore.vue'
 import AiNewsTimeline from './components/AiNewsTimeline.vue'
 import ApiToolbox from './components/ApiToolbox.vue'
+import BrowserSupportNotice from './components/BrowserSupportNotice.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
 import RefreshCountdownButton from './components/RefreshCountdownButton.vue'
 
@@ -494,6 +495,7 @@ watch(isDarkMode, () => {
     <!-- 主内容区域 -->
     <main class="main-content" :class="{ 'expanded': !isSidebarOpen }">
       <div class="glow-bg"></div>
+      <BrowserSupportNotice />
       <div class="header-actions">
         <div class="nav-horizontal">
           <!-- 菜单折叠按钮 -->
@@ -1962,6 +1964,9 @@ watch(isDarkMode, () => {
       <div class="route-view-bar">
         <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
       </div>
+      <div class="route-browser-notice">
+        <BrowserSupportNotice />
+      </div>
       <router-view />
     </div>
 
@@ -1988,6 +1993,11 @@ watch(isDarkMode, () => {
   align-items: center;
   padding: 8px 16px;
   background: #2f5b88;
+}
+
+.route-browser-notice {
+  padding: 20px 24px 0;
+  background: #121416;
 }
 
 /* QQ Info Card Styles */
