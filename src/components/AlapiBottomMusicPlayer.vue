@@ -32,6 +32,23 @@
           </button>
         </div>
 
+        <div v-if="searchHistory.length" class="alapi-player-history">
+          <div class="alapi-player-section-title">
+            <span>搜索历史</span>
+            <button type="button" @click="confirmClearHistory">清空</button>
+          </div>
+          <div class="alapi-player-history-tags">
+            <button
+              v-for="history in searchHistory"
+              :key="history"
+              type="button"
+              @click="searchFromHistory(history)"
+            >
+              {{ history }}
+            </button>
+          </div>
+        </div>
+
         <div v-if="searchResults.length" class="alapi-player-results">
           <button
             v-for="song in searchResults"
@@ -43,6 +60,36 @@
             <span>{{ song.name }}</span>
             <em>{{ song.artists }}</em>
           </button>
+        </div>
+
+        <div class="alapi-player-api-panel">
+          <details>
+            <summary>ALAPI 接口信息</summary>
+            <div class="alapi-player-api-grid">
+              <a
+                v-for="api in apiDocs"
+                :key="api.name"
+                :href="api.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <strong>{{ api.name }}</strong>
+                <span>{{ api.method }} {{ api.path }}</span>
+                <em>{{ api.params }}</em>
+              </a>
+            </div>
+          </details>
+        </div>
+
+        <div v-if="currentSong && (lyricPreview || hotComments.length)" class="alapi-player-extra">
+          <div v-if="lyricPreview" class="alapi-player-extra-card">
+            <strong>歌词预览</strong>
+            <p>{{ lyricPreview }}</p>
+          </div>
+          <div v-if="hotComments.length" class="alapi-player-extra-card">
+            <strong>热评</strong>
+            <p>{{ hotComments[0] }}</p>
+          </div>
         </div>
 
         <div class="alapi-player-controls">
@@ -84,6 +131,7 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessageBox } from 'element-plus'
 import { requestJson } from '@/utils/request'
 
 interface AlapiResponse<T> {
@@ -137,6 +185,36 @@ interface AlapiMusicUrlData {
   data?: AlapiMusicUrlItem[]
 }
 
+interface AlapiLyricData {
+  lyric?: string
+  lrc?: {
+    lyric?: string
+  }
+}
+
+interface AlapiHotCommentUser {
+  nickname?: string
+}
+
+interface AlapiHotComment {
+  user?: AlapiHotCommentUser
+  content?: string
+  likedCount?: number
+}
+
+interface AlapiHotCommentData {
+  comments?: AlapiHotComment[]
+  hotComments?: AlapiHotComment[]
+}
+
+interface ApiDocItem {
+  name: string
+  method: string
+  path: string
+  url: string
+  params: string
+}
+
 interface PlayerSong {
   id: number
   name: string
@@ -147,10 +225,15 @@ interface PlayerSong {
 }
 
 const ALAPI_TOKEN: string = 'qgqofofvmxtoskffd37omkscobipmn'
+const ALAPI_BASE_URL: string = 'https://v3.alapi.cn'
 const MUSIC_SEARCH_PATH: string = '/api-alapi/api/music/search'
 const MUSIC_URL_PATH: string = '/api-alapi/api/music/url'
+const MUSIC_LYRIC_PATH: string = '/api-alapi/api/music/lyric'
+const MUSIC_HOT_COMMENT_PATH: string = '/api-alapi/api/music/comment/hot'
 const PLAYER_STORAGE_KEY: string = 'alapi_bottom_music_player_state'
 const DEFAULT_KEYWORD: string = '慢慢懂'
+const SEARCH_LIMIT: number = 10
+const SEARCH_TYPE: string = '1'
 const FALLBACK_SONGS: PlayerSong[] = [
   {
     id: 1345417796,
@@ -169,9 +252,40 @@ const FALLBACK_SONGS: PlayerSong[] = [
     url: ''
   }
 ]
+const apiDocs: ApiDocItem[] = [
+  {
+    name: '歌曲搜索',
+    method: 'GET',
+    path: '/api/music/search',
+    url: `${ALAPI_BASE_URL}/api/music/search`,
+    params: `token=${ALAPI_TOKEN}，keyword，limit=${SEARCH_LIMIT}，page，type=${SEARCH_TYPE}`
+  },
+  {
+    name: '歌曲直链',
+    method: 'GET',
+    path: '/api/music/url',
+    url: `${ALAPI_BASE_URL}/api/music/url`,
+    params: `token=${ALAPI_TOKEN}，id=网易云歌曲 ID`
+  },
+  {
+    name: '歌词获取',
+    method: 'GET',
+    path: '/api/music/lyric',
+    url: `${ALAPI_BASE_URL}/api/music/lyric`,
+    params: `token=${ALAPI_TOKEN}，id=网易云歌曲 ID`
+  },
+  {
+    name: '获取歌曲热评',
+    method: 'GET',
+    path: '/api/music/comment/hot',
+    url: `${ALAPI_BASE_URL}/api/music/comment/hot`,
+    params: `token=${ALAPI_TOKEN}，id=网易云歌曲 ID，limit=3`
+  }
+]
 
 const keyword: Ref<string> = ref<string>(DEFAULT_KEYWORD)
 const searchResults: Ref<PlayerSong[]> = ref<PlayerSong[]>([])
+const searchHistory: Ref<string[]> = ref<string[]>([])
 const playlist: Ref<PlayerSong[]> = ref<PlayerSong[]>([])
 const currentIndex: Ref<number> = ref<number>(0)
 const isPlaying: Ref<boolean> = ref<boolean>(false)
@@ -182,6 +296,8 @@ const progress: Ref<number> = ref<number>(0)
 const volume: Ref<number> = ref<number>(70)
 const currentSeconds: Ref<number> = ref<number>(0)
 const durationSeconds: Ref<number> = ref<number>(0)
+const lyricPreview: Ref<string> = ref<string>('')
+const hotComments: Ref<string[]> = ref<string[]>([])
 const audio: HTMLAudioElement = new Audio()
 
 const currentSong: ComputedRef<PlayerSong | null> = computed<PlayerSong | null>(() => {
@@ -195,8 +311,9 @@ function buildMusicSearchUrl(searchKeyword: string, page: number): string {
   const params: URLSearchParams = new URLSearchParams({
     token: ALAPI_TOKEN,
     keyword: searchKeyword,
-    limit: '12',
-    page: String(page)
+    limit: String(SEARCH_LIMIT),
+    page: String(page),
+    type: SEARCH_TYPE
   })
   return `${MUSIC_SEARCH_PATH}?${params.toString()}`
 }
@@ -207,6 +324,23 @@ function buildMusicUrlApi(songId: number): string {
     id: String(songId)
   })
   return `${MUSIC_URL_PATH}?${params.toString()}`
+}
+
+function buildMusicLyricApi(songId: number): string {
+  const params: URLSearchParams = new URLSearchParams({
+    token: ALAPI_TOKEN,
+    id: String(songId)
+  })
+  return `${MUSIC_LYRIC_PATH}?${params.toString()}`
+}
+
+function buildMusicHotCommentApi(songId: number): string {
+  const params: URLSearchParams = new URLSearchParams({
+    token: ALAPI_TOKEN,
+    id: String(songId),
+    limit: '3'
+  })
+  return `${MUSIC_HOT_COMMENT_PATH}?${params.toString()}`
 }
 
 function buildFallbackSongUrl(songId: number): string {
@@ -279,6 +413,7 @@ async function searchSongs(page: number = 1): Promise<void> {
 
   isSearching.value = true
   statusText.value = '正在从 ALAPI 搜索音乐...'
+  addSearchHistory(searchKeyword)
 
   try {
     const response: AlapiResponse<AlapiSearchData> = await requestJson<AlapiResponse<AlapiSearchData>>(buildMusicSearchUrl(searchKeyword, page))
@@ -302,6 +437,37 @@ async function searchSongs(page: number = 1): Promise<void> {
   }
 }
 
+function addSearchHistory(searchKeyword: string): void {
+  const normalizedKeyword: string = searchKeyword.trim()
+  if (!normalizedKeyword) return
+  searchHistory.value = [
+    normalizedKeyword,
+    ...searchHistory.value.filter((item: string): boolean => item !== normalizedKeyword)
+  ].slice(0, 8)
+  saveState()
+}
+
+function searchFromHistory(searchKeyword: string): void {
+  keyword.value = searchKeyword
+  void searchSongs(1)
+}
+
+function confirmClearHistory(): void {
+  void ElMessageBox.confirm(
+    '确定要清空音乐搜索历史吗？清空后无法恢复。',
+    '清空搜索历史',
+    {
+      confirmButtonText: '确定清空',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then((): void => {
+    searchHistory.value = []
+    saveState()
+    statusText.value = '搜索历史已清空'
+  }).catch((): void => {})
+}
+
 async function playSong(song: PlayerSong): Promise<void> {
   const targetIndex: number = playlist.value.findIndex((item: PlayerSong): boolean => item.id === song.id)
   if (targetIndex >= 0) {
@@ -312,6 +478,7 @@ async function playSong(song: PlayerSong): Promise<void> {
   }
 
   await loadAndPlayCurrentSong()
+  await fetchSongExtra(song.id)
   saveState()
 }
 
@@ -328,11 +495,57 @@ async function loadAndPlayCurrentSong(): Promise<void> {
     await audio.play()
     isPlaying.value = true
     statusText.value = `正在播放：${song.name}`
+    void fetchSongExtra(song.id)
   } catch (error: unknown) {
     isPlaying.value = false
     statusText.value = '当前歌曲无法播放，请换一首'
     console.warn('音乐播放失败:', error)
   }
+}
+
+async function fetchSongExtra(songId: number): Promise<void> {
+  await Promise.all([
+    fetchLyricPreview(songId),
+    fetchHotComments(songId)
+  ])
+}
+
+async function fetchLyricPreview(songId: number): Promise<void> {
+  try {
+    const response: AlapiResponse<AlapiLyricData> = await requestJson<AlapiResponse<AlapiLyricData>>(buildMusicLyricApi(songId))
+    const rawLyric: string = response.data?.lyric ?? response.data?.lrc?.lyric ?? ''
+    lyricPreview.value = normalizeLyricPreview(rawLyric)
+  } catch (error: unknown) {
+    lyricPreview.value = ''
+    console.warn('ALAPI 歌词获取失败:', error)
+  }
+}
+
+async function fetchHotComments(songId: number): Promise<void> {
+  try {
+    const response: AlapiResponse<AlapiHotCommentData> = await requestJson<AlapiResponse<AlapiHotCommentData>>(buildMusicHotCommentApi(songId))
+    const comments: AlapiHotComment[] = response.data?.comments ?? response.data?.hotComments ?? []
+    hotComments.value = comments
+      .map((comment: AlapiHotComment): string => {
+        const nickname: string = comment.user?.nickname ?? '匿名用户'
+        const content: string = comment.content?.trim() ?? ''
+        return content ? `${nickname}: ${content}` : ''
+      })
+      .filter((comment: string): boolean => Boolean(comment))
+      .slice(0, 3)
+  } catch (error: unknown) {
+    hotComments.value = []
+    console.warn('ALAPI 歌曲热评获取失败:', error)
+  }
+}
+
+function normalizeLyricPreview(rawLyric: string): string {
+  return rawLyric
+    .split('\n')
+    .map((line: string): string => line.replace(/\[[^\]]+\]/g, '').trim())
+    .filter((line: string): boolean => Boolean(line))
+    .slice(0, 2)
+    .join(' / ')
 }
 
 function togglePlay(): void {
@@ -420,6 +633,7 @@ function formatSeconds(totalSeconds: number): string {
 function saveState(): void {
   const state: string = JSON.stringify({
     keyword: keyword.value,
+    searchHistory: searchHistory.value,
     playlist: playlist.value,
     currentIndex: currentIndex.value,
     volume: volume.value,
@@ -435,12 +649,14 @@ function loadState(): void {
   try {
     const parsedState: Partial<{
       keyword: string
+      searchHistory: string[]
       playlist: PlayerSong[]
       currentIndex: number
       volume: number
       isCollapsed: boolean
     }> = JSON.parse(rawState) as Partial<{
       keyword: string
+      searchHistory: string[]
       playlist: PlayerSong[]
       currentIndex: number
       volume: number
@@ -448,6 +664,7 @@ function loadState(): void {
     }>
 
     keyword.value = parsedState.keyword ?? DEFAULT_KEYWORD
+    searchHistory.value = parsedState.searchHistory ?? []
     playlist.value = parsedState.playlist ?? []
     currentIndex.value = parsedState.currentIndex ?? 0
     volume.value = parsedState.volume ?? 70
@@ -487,7 +704,7 @@ onUnmounted((): void => {
   left: 24px;
   bottom: 20px;
   z-index: 2600;
-  width: min(520px, calc(100vw - 48px));
+  width: min(640px, calc(100vw - 48px));
   color: #f5f7ff;
   pointer-events: auto;
 }
@@ -629,6 +846,45 @@ onUnmounted((): void => {
   cursor: not-allowed;
 }
 
+.alapi-player-history {
+  margin-top: 8px;
+}
+
+.alapi-player-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  color: #a9afc4;
+  font-size: 12px;
+}
+
+.alapi-player-section-title button {
+  padding: 0;
+  color: #ff7b7b;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.alapi-player-history-tags {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.alapi-player-history-tags button {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  color: #dfe4ff;
+  background: rgba(108, 114, 247, 0.18);
+  border: 1px solid rgba(108, 114, 247, 0.28);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
 .alapi-player-results {
   max-height: 112px;
   margin-top: 8px;
@@ -669,6 +925,85 @@ onUnmounted((): void => {
   flex: 0 1 150px;
   color: #9aa1b7;
   font-style: normal;
+}
+
+.alapi-player-api-panel {
+  margin-top: 8px;
+}
+
+.alapi-player-api-panel summary {
+  color: #7c83ff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.alapi-player-api-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.alapi-player-api-grid a {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  color: #e8ebff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.alapi-player-api-grid span,
+.alapi-player-api-grid em {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.alapi-player-api-grid span {
+  color: #9aa1b7;
+  font-size: 11px;
+}
+
+.alapi-player-api-grid em {
+  color: #7fd7c8;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.alapi-player-extra {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.alapi-player-extra-card {
+  min-width: 0;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.alapi-player-extra-card strong {
+  color: #f5f7ff;
+  font-size: 12px;
+}
+
+.alapi-player-extra-card p {
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: #a9afc4;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .alapi-player-controls {
@@ -787,6 +1122,11 @@ onUnmounted((): void => {
   .alapi-player-footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .alapi-player-api-grid,
+  .alapi-player-extra {
+    grid-template-columns: 1fr;
   }
 }
 </style>

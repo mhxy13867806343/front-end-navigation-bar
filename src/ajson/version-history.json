@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-15T17:06:31.286Z",
+  "generatedAt": "2026-07-15T17:18:43.933Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "e05fd74643209cd7e93772f9da9ca4512f41d623",
+          "shortHash": "e05fd74",
+          "date": "2026-07-16",
+          "time": "01:07",
+          "type": "功能更新",
+          "title": "add alapi bottom music player",
+          "scope": "",
+          "message": "feat: add alapi bottom music player"
+        },
         {
           "hash": "2cbccb4a856429205de1fb482fe6cc1fcbde05b1",
           "shortHash": "2cbccb4",
@@ -303,16 +313,6 @@
           "title": "integrate video explorer, photo gallery, dujitang quote board, and hotboard backup sources",
           "scope": "",
           "message": "feat: integrate video explorer, photo gallery, dujitang quote board, and hotboard backup sources"
-        },
-        {
-          "hash": "03d7d114e2dda8e5d91d2f7e19a820c9c8ac7150",
-          "shortHash": "03d7d11",
-          "date": "2026-07-14",
-          "time": "08:12",
-          "type": "功能更新",
-          "title": "add reusable 60s countdown refresh button and integrate into aicoding page, weather, bing wallpaper and utility dialogs",
-          "scope": "",
-          "message": "feat: add reusable 60s countdown refresh button and integrate into aicoding page, weather, bing wallpaper and utility dialogs"
         }
       ]
     }

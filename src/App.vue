@@ -176,8 +176,29 @@ const projectRepositoryUrl: string = 'https://github.com/mhxy13867806343/front-e
 const projectRepositoryName: string = 'mhxy13867806343/front-end-navigation-bar'
 const versionHistory: VersionHistoryData = versionHistoryData as VersionHistoryData
 const showVersionHistoryDialog = ref<boolean>(false)
-const versionHistoryActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
+const versionHistoryActiveTab = ref<string>('feature')
+const versionFeatureActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
+const versionCodeActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
 const versionHistoryGroups = computed<VersionHistoryGroup[]>((): VersionHistoryGroup[] => versionHistory.groups)
+const filterVersionGroups = (predicate: (item: VersionHistoryCommit) => boolean): VersionHistoryGroup[] => {
+  return versionHistory.groups
+    .map((group: VersionHistoryGroup): VersionHistoryGroup => ({
+      date: group.date,
+      items: group.items.filter(predicate)
+    }))
+    .filter((group: VersionHistoryGroup): boolean => group.items.length > 0)
+}
+const versionFeatureGroups = computed<VersionHistoryGroup[]>((): VersionHistoryGroup[] => {
+  return filterVersionGroups((item: VersionHistoryCommit): boolean => item.type === '功能更新')
+})
+const versionCodeGroups = computed<VersionHistoryGroup[]>((): VersionHistoryGroup[] => {
+  return filterVersionGroups((item: VersionHistoryCommit): boolean => item.type !== '功能更新')
+})
+const countVersionItems = (groups: VersionHistoryGroup[]): number => {
+  return groups.reduce((total: number, group: VersionHistoryGroup): number => total + group.items.length, 0)
+}
+const versionFeatureCount = computed<number>((): number => countVersionItems(versionFeatureGroups.value))
+const versionCodeCount = computed<number>((): number => countVersionItems(versionCodeGroups.value))
 const latestVersionItem = computed<VersionHistoryCommit | null>((): VersionHistoryCommit | null => {
   return versionHistory.groups[0]?.items[0] || null
 })
@@ -2180,42 +2201,85 @@ watch(isDarkMode, () => {
           <p>下面根据 Git 提交历史自动整理版本更新记录，每次进入页面都会展示，关闭后可在右侧控制中心重新打开。</p>
         </el-card>
 
-        <el-collapse v-model="versionHistoryActiveDates" class="version-collapse">
-          <el-collapse-item
-            v-for="group in versionHistoryGroups"
-            :key="group.date"
-            :name="group.date"
-          >
-            <template #title>
-              <div class="version-collapse-title">
-                <span>{{ group.date }}</span>
-                <em>{{ group.items.length }} 条更新</em>
-              </div>
-            </template>
-
-            <div class="version-card-grid">
-              <el-card
-                v-for="item in group.items"
-                :key="item.hash"
-                class="version-card"
-                shadow="hover"
+        <el-tabs v-model="versionHistoryActiveTab" class="version-history-tabs">
+          <el-tab-pane :label="`功能更新 (${versionFeatureCount})`" name="feature">
+            <el-collapse v-model="versionFeatureActiveDates" class="version-collapse">
+              <el-collapse-item
+                v-for="group in versionFeatureGroups"
+                :key="group.date"
+                :name="group.date"
               >
-                <div class="version-card-header">
-                  <span class="version-badge">{{ item.type }}</span>
-                  <button type="button" @click="openCommitOnGithub(item.hash)">
-                    {{ item.shortHash }}
-                  </button>
+                <template #title>
+                  <div class="version-collapse-title">
+                    <span>{{ group.date }}</span>
+                    <em>{{ group.items.length }} 条功能更新</em>
+                  </div>
+                </template>
+
+                <div class="version-card-grid">
+                  <el-card
+                    v-for="item in group.items"
+                    :key="item.hash"
+                    class="version-card"
+                    shadow="hover"
+                  >
+                    <div class="version-card-header">
+                      <span class="version-badge">{{ item.type }}</span>
+                      <button type="button" @click="openCommitOnGithub(item.hash)">
+                        {{ item.shortHash }}
+                      </button>
+                    </div>
+                    <h4>{{ item.title }}</h4>
+                    <p>{{ item.message }}</p>
+                    <div class="version-card-footer">
+                      <span>{{ item.time }}</span>
+                      <span v-if="item.scope">scope: {{ item.scope }}</span>
+                    </div>
+                  </el-card>
                 </div>
-                <h4>{{ item.title }}</h4>
-                <p>{{ item.message }}</p>
-                <div class="version-card-footer">
-                  <span>{{ item.time }}</span>
-                  <span v-if="item.scope">scope: {{ item.scope }}</span>
+              </el-collapse-item>
+            </el-collapse>
+          </el-tab-pane>
+
+          <el-tab-pane :label="`代码更新 (${versionCodeCount})`" name="code">
+            <el-collapse v-model="versionCodeActiveDates" class="version-collapse">
+              <el-collapse-item
+                v-for="group in versionCodeGroups"
+                :key="group.date"
+                :name="group.date"
+              >
+                <template #title>
+                  <div class="version-collapse-title">
+                    <span>{{ group.date }}</span>
+                    <em>{{ group.items.length }} 条代码更新</em>
+                  </div>
+                </template>
+
+                <div class="version-card-grid">
+                  <el-card
+                    v-for="item in group.items"
+                    :key="item.hash"
+                    class="version-card version-code-card"
+                    shadow="hover"
+                  >
+                    <div class="version-card-header">
+                      <span class="version-badge version-code-badge">{{ item.type }}</span>
+                      <button type="button" @click="openCommitOnGithub(item.hash)">
+                        {{ item.shortHash }}
+                      </button>
+                    </div>
+                    <h4>{{ item.title }}</h4>
+                    <p>{{ item.message }}</p>
+                    <div class="version-card-footer">
+                      <span>{{ item.time }}</span>
+                      <span v-if="item.scope">scope: {{ item.scope }}</span>
+                    </div>
+                  </el-card>
                 </div>
-              </el-card>
-            </div>
-          </el-collapse-item>
-        </el-collapse>
+              </el-collapse-item>
+            </el-collapse>
+          </el-tab-pane>
+        </el-tabs>
       </div>
     </el-dialog>
 
@@ -2351,6 +2415,29 @@ watch(isDarkMode, () => {
   border: 1px solid rgba(29, 209, 161, 0.25);
   font-size: 12px;
   font-weight: 800;
+}
+
+.version-code-badge {
+  color: #79b8ff;
+  background: rgba(121, 184, 255, 0.12);
+  border-color: rgba(121, 184, 255, 0.25);
+}
+
+.version-code-card {
+  background: color-mix(in srgb, var(--hover-bg) 86%, #1f2937);
+}
+
+.version-history-tabs :deep(.el-tabs__item) {
+  color: var(--text-secondary);
+  font-weight: 900;
+}
+
+.version-history-tabs :deep(.el-tabs__item.is-active) {
+  color: var(--primary-color);
+}
+
+.version-history-tabs :deep(.el-tabs__nav-wrap::after) {
+  background: var(--border-color);
 }
 
 .version-collapse {
