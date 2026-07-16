@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T14:26:16.125Z",
+  "generatedAt": "2026-07-16T14:39:06.323Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "4cda46fb314c5c7afb8b55eaf5fb9fcded84fbf9",
+          "shortHash": "4cda46f",
+          "date": "2026-07-16",
+          "time": "22:27",
+          "type": "问题修复",
+          "title": "improve alapi player playback navigation",
+          "scope": "",
+          "message": "fix: improve alapi player playback navigation"
+        },
         {
           "hash": "a92e01fc00fcf1499f1fc0e6e185c99696a1ebd8",
           "shortHash": "a92e01f",
@@ -303,16 +313,6 @@
           "title": "extract hardcoded select & radio options to formOptions.ts and refactor templates to loop dynamically using v-for",
           "scope": "",
           "message": "feat: extract hardcoded select & radio options to formOptions.ts and refactor templates to loop dynamically using v-for"
-        },
-        {
-          "hash": "453a84b9173da6dcfc3c5280742d78268fdf24f8",
-          "shortHash": "453a84b",
-          "date": "2026-07-14",
-          "time": "21:00",
-          "type": "功能更新",
-          "title": "complete Vite 8 + TS 7 upgrade, migrate all JS files to TS with full types, and extract page script constants & logic to vue-pages-text-fn-abc folder",
-          "scope": "",
-          "message": "feat: complete Vite 8 + TS 7 upgrade, migrate all JS files to TS with full types, and extract page script constants & logic to vue-pages-text-fn-abc folder"
         }
       ]
     }

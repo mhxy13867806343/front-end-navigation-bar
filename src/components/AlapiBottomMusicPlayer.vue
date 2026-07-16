@@ -31,7 +31,17 @@
         </div>
 
         <div class="alapi-player-search-filters">
-          <el-select v-model="searchType" size="large" placeholder="搜索类型" popper-class="alapi-player-select-popper">
+          <el-select
+            v-model="searchType"
+            size="large"
+            placeholder="搜索类型"
+            popper-class="alapi-player-select-popper"
+            :teleported="false"
+            :popper-options="searchTypePopperOptions"
+            placement="bottom-start"
+            :fallback-placements="['bottom-start']"
+            fit-input-width
+          >
             <el-option
               v-for="typeOption in searchTypeOptions"
               :key="typeOption.value"
@@ -350,6 +360,7 @@ import {
   VideoPlay
 } from '@element-plus/icons-vue'
 import type { Component } from 'vue'
+import type { Options as PopperOptions } from '@popperjs/core'
 import { requestJson } from '@/utils/request'
 
 interface AlapiResponse<T> {
@@ -539,6 +550,23 @@ const playbackModes: PlaybackModeOption[] = [
   { value: 'shuffle', label: '随机播放', icon: Switch },
   { value: 'single', label: '单曲循环', icon: Refresh }
 ]
+const searchTypePopperOptions: PopperOptions = {
+  placement: 'bottom-start',
+  strategy: 'fixed',
+  modifiers: [
+    {
+      name: 'flip',
+      enabled: false
+    },
+    {
+      name: 'preventOverflow',
+      options: {
+        boundary: 'viewport',
+        padding: 8
+      }
+    }
+  ]
+}
 const FALLBACK_SONGS: PlayerSong[] = [
   {
     id: 1345417796,
@@ -1661,6 +1689,7 @@ onUnmounted((): void => {
 .alapi-player-workspace {
   min-height: 0;
   overflow-y: auto;
+  overflow-x: visible;
   padding-right: 6px;
 }
 
@@ -1730,10 +1759,13 @@ onUnmounted((): void => {
 }
 
 .alapi-player-search-filters {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: minmax(120px, 1.2fr) minmax(96px, 0.9fr) minmax(96px, 0.9fr);
   gap: 8px;
   margin-top: 8px;
+  overflow: visible;
 }
 
 .alapi-player-theme-grid label {
@@ -1763,6 +1795,41 @@ onUnmounted((): void => {
 .alapi-player-search-filters :deep(.el-select__selected-item),
 .alapi-player-search-filters :deep(.el-input__inner) {
   color: var(--alapi-text-color, #f5f7ff);
+}
+
+:global(.alapi-player-select-popper) {
+  z-index: 3700;
+  min-width: 140px;
+  color: #f5f7ff;
+  background: rgba(22, 23, 34, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.42);
+}
+
+:global(.alapi-player-select-popper .el-popper__arrow) {
+  display: none;
+}
+
+:global(.alapi-player-select-popper .el-select-dropdown) {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+:global(.alapi-player-select-popper .el-select-dropdown__item) {
+  color: #dfe4ff;
+  font-weight: 800;
+}
+
+:global(.alapi-player-select-popper .el-select-dropdown__item.is-hovering),
+:global(.alapi-player-select-popper .el-select-dropdown__item:hover) {
+  color: #ffffff;
+  background: rgba(108, 114, 247, 0.28);
+}
+
+:global(.alapi-player-select-popper .el-select-dropdown__item.is-selected) {
+  color: var(--alapi-accent-color, #7fd7c8);
 }
 
 .alapi-player-search button,

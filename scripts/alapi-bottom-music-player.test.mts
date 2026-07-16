@@ -41,6 +41,9 @@ test('ALAPI music player supports playlist searching and playback modes', () => 
 test('ALAPI music player exposes search filters, empty state, details, and theme settings', () => {
   assert.match(playerSource, /v-model=["']searchType["']/)
   assert.match(playerSource, /<el-select\s+v-model=["']searchType["']/)
+  assert.match(playerSource, /:teleported=["']false["']/)
+  assert.match(playerSource, /:popper-options=["']searchTypePopperOptions["']/)
+  assert.match(playerSource, /const\s+searchTypePopperOptions:\s*PopperOptions/)
   assert.match(playerSource, /<el-input-number\s+v-model=["']searchLimit["']/)
   assert.match(playerSource, /<el-input-number\s+v-model=["']searchPage["']/)
   assert.match(playerSource, /没有找到歌曲/)
@@ -67,6 +70,13 @@ test('ALAPI music player limits history to 12 and lays history tags in rows', ()
   assert.match(playerSource, /\.alapi-player-history-tags\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/)
   assert.match(playerSource, /\.alapi-player-playback-tools\s*\{[\s\S]*?justify-content:\s*space-between/)
   assert.match(playerSource, /\.alapi-player-volume-control/)
+})
+
+test('ALAPI music player keeps search type dropdown aligned inside the fixed player', () => {
+  assert.match(playerSource, /\.alapi-player-search-filters\s*\{[\s\S]*?position:\s*relative/)
+  assert.match(playerSource, /\.alapi-player-search-filters\s*\{[\s\S]*?overflow:\s*visible/)
+  assert.match(playerSource, /:global\(\.alapi-player-select-popper\)/)
+  assert.match(playerSource, /z-index:\s*3700/)
 })
 
 test('ALAPI music player keeps dialogs above the fixed player', () => {
