@@ -147,10 +147,15 @@
 
     <div v-else class="alapi-player-mini">
       <button type="button" @click="togglePlay">{{ isPlaying ? '⏸' : '▶' }}</button>
-      <div>
+      <button
+        type="button"
+        class="alapi-player-mini-info"
+        title="打开完整音乐播放器"
+        @click="openFullPlayer"
+      >
         <strong>{{ currentSong?.name || '音乐' }}</strong>
         <span>{{ currentSong?.artists || 'ALAPI' }}</span>
-      </div>
+      </button>
     </div>
   </section>
 </template>
@@ -254,6 +259,23 @@ interface LyricLine {
   text: string
 }
 
+interface PlayerStorageState {
+  keyword?: string
+  searchHistory?: string[]
+  playlist?: PlayerSong[]
+  currentIndex?: number
+  volume?: number
+  isCollapsed?: boolean
+  currentSeconds?: number
+  durationSeconds?: number
+  progress?: number
+  lyricLines?: LyricLine[]
+  currentLyricIndex?: number
+  hotComments?: string[]
+  statusText?: string
+  wasPlaying?: boolean
+}
+
 const ALAPI_TOKEN: string = 'qgqofofvmxtoskffd37omkscobipmn'
 const ALAPI_BASE_URL: string = 'https://v3.alapi.cn'
 const MUSIC_SEARCH_PATH: string = '/api-alapi/api/music/search'
@@ -330,6 +352,8 @@ const lyricLines: Ref<LyricLine[]> = ref<LyricLine[]>([])
 const currentLyricIndex: Ref<number> = ref<number>(-1)
 const lyricPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const hotComments: Ref<string[]> = ref<string[]>([])
+const pendingRestoreSeconds: Ref<number> = ref<number>(0)
+let lastPlaybackSaveAt: number = 0
 const audio: HTMLAudioElement = new Audio()
 
 const currentSong: ComputedRef<PlayerSong | null> = computed<PlayerSong | null>(() => {
@@ -538,6 +562,30 @@ async function loadAndPlayCurrentSong(): Promise<void> {
   }
 }
 
+async function restoreCurrentSong(): Promise<void> {
+  const song: PlayerSong | null = currentSong.value
+  if (!song) return
+
+  try {
+    const resolvedUrl: string = song.url || await resolveSongUrl(song.id)
+    song.url = resolvedUrl
+    audio.src = resolvedUrl
+    audio.preload = 'metadata'
+    applyPendingRestoreTime()
+
+    if (!lyricLines.value.length || !hotComments.value.length) {
+      void fetchSongExtra(song.id)
+    }
+
+    statusText.value = `已恢复播放记录：${song.name}，点击播放继续`
+    isPlaying.value = false
+    saveState()
+  } catch (error: unknown) {
+    statusText.value = '播放记录恢复失败，请重新选择歌曲'
+    console.warn('恢复播放记录失败:', error)
+  }
+}
+
 async function fetchSongExtra(songId: number): Promise<void> {
   await Promise.all([
     fetchLyricPreview(songId),
@@ -660,6 +708,34 @@ function updateProgress(): void {
   durationSeconds.value = audio.duration || fallbackDuration
   progress.value = durationSeconds.value ? (currentSeconds.value / durationSeconds.value) * 100 : 0
   updateCurrentLyric()
+  savePlaybackStateThrottled()
+}
+
+function applyPendingRestoreTime(): void {
+  if (pendingRestoreSeconds.value <= 0 || !Number.isFinite(pendingRestoreSeconds.value)) return
+  if (!audio.duration && audio.readyState < 1) return
+
+  const targetSeconds: number = audio.duration
+    ? Math.min(pendingRestoreSeconds.value, Math.max(audio.duration - 1, 0))
+    : pendingRestoreSeconds.value
+
+  audio.currentTime = Math.max(0, targetSeconds)
+  currentSeconds.value = audio.currentTime
+  pendingRestoreSeconds.value = 0
+  updateCurrentLyric()
+}
+
+function handleAudioLoadedMetadata(): void {
+  applyPendingRestoreTime()
+  updateProgress()
+  saveState()
+}
+
+function savePlaybackStateThrottled(): void {
+  const now: number = Date.now()
+  if (now - lastPlaybackSaveAt < 2500) return
+  lastPlaybackSaveAt = now
+  saveState()
 }
 
 function updateCurrentLyric(): void {
@@ -698,8 +774,17 @@ function handleAudioError(): void {
   statusText.value = '音频地址暂不可用，试试列表里的其他歌曲'
 }
 
+function handleBeforeUnload(): void {
+  saveState()
+}
+
 function toggleCollapsed(): void {
   isCollapsed.value = !isCollapsed.value
+  saveState()
+}
+
+function openFullPlayer(): void {
+  isCollapsed.value = false
   saveState()
 }
 
@@ -711,13 +796,24 @@ function formatSeconds(totalSeconds: number): string {
 }
 
 function saveState(): void {
+  const savedCurrentSeconds: number = Number.isFinite(audio.currentTime) && audio.currentTime > 0
+    ? audio.currentTime
+    : currentSeconds.value
   const state: string = JSON.stringify({
     keyword: keyword.value,
     searchHistory: searchHistory.value,
     playlist: playlist.value,
     currentIndex: currentIndex.value,
     volume: volume.value,
-    isCollapsed: isCollapsed.value
+    isCollapsed: isCollapsed.value,
+    currentSeconds: savedCurrentSeconds,
+    durationSeconds: durationSeconds.value,
+    progress: progress.value,
+    lyricLines: lyricLines.value,
+    currentLyricIndex: currentLyricIndex.value,
+    hotComments: hotComments.value,
+    statusText: statusText.value,
+    wasPlaying: isPlaying.value
   })
   localStorage.setItem(PLAYER_STORAGE_KEY, state)
 }
@@ -727,28 +823,27 @@ function loadState(): void {
   if (!rawState) return
 
   try {
-    const parsedState: Partial<{
-      keyword: string
-      searchHistory: string[]
-      playlist: PlayerSong[]
-      currentIndex: number
-      volume: number
-      isCollapsed: boolean
-    }> = JSON.parse(rawState) as Partial<{
-      keyword: string
-      searchHistory: string[]
-      playlist: PlayerSong[]
-      currentIndex: number
-      volume: number
-      isCollapsed: boolean
-    }>
+    const parsedState: PlayerStorageState = JSON.parse(rawState) as PlayerStorageState
 
     keyword.value = parsedState.keyword ?? DEFAULT_KEYWORD
     searchHistory.value = parsedState.searchHistory ?? []
     playlist.value = parsedState.playlist ?? []
-    currentIndex.value = parsedState.currentIndex ?? 0
+    currentIndex.value = Math.min(Math.max(parsedState.currentIndex ?? 0, 0), Math.max(playlist.value.length - 1, 0))
     volume.value = parsedState.volume ?? 70
     isCollapsed.value = parsedState.isCollapsed ?? false
+    currentSeconds.value = parsedState.currentSeconds ?? 0
+    durationSeconds.value = parsedState.durationSeconds ?? 0
+    progress.value = parsedState.progress ?? 0
+    lyricLines.value = parsedState.lyricLines ?? []
+    currentLyricIndex.value = parsedState.currentLyricIndex ?? -1
+    hotComments.value = parsedState.hotComments ?? []
+    pendingRestoreSeconds.value = parsedState.currentSeconds ?? 0
+
+    if (playlist.value.length) {
+      statusText.value = parsedState.wasPlaying
+        ? '已恢复上次播放记录，点击播放继续'
+        : parsedState.statusText ?? '已恢复上次播放记录'
+    }
   } catch (error: unknown) {
     console.warn('底部音乐播放器缓存读取失败:', error)
   }
@@ -759,11 +854,14 @@ onMounted((): void => {
   updateVolume()
   audio.preload = 'metadata'
   audio.addEventListener('timeupdate', updateProgress)
-  audio.addEventListener('loadedmetadata', updateProgress)
+  audio.addEventListener('loadedmetadata', handleAudioLoadedMetadata)
   audio.addEventListener('ended', handleEnded)
   audio.addEventListener('error', handleAudioError)
+  window.addEventListener('beforeunload', handleBeforeUnload)
 
-  if (!playlist.value.length) {
+  if (playlist.value.length) {
+    void restoreCurrentSong()
+  } else {
     void searchSongs(1)
   }
 })
@@ -783,9 +881,10 @@ onUnmounted((): void => {
   saveState()
   audio.pause()
   audio.removeEventListener('timeupdate', updateProgress)
-  audio.removeEventListener('loadedmetadata', updateProgress)
+  audio.removeEventListener('loadedmetadata', handleAudioLoadedMetadata)
   audio.removeEventListener('ended', handleEnded)
   audio.removeEventListener('error', handleAudioError)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 </script>
 
@@ -925,7 +1024,7 @@ onUnmounted((): void => {
 
 .alapi-player-search button,
 .alapi-player-controls button,
-.alapi-player-mini button {
+.alapi-player-mini > button:first-child {
   height: 34px;
   color: #f5f7ff;
   font-weight: 800;
@@ -1287,15 +1386,26 @@ onUnmounted((): void => {
   border-radius: 999px;
 }
 
-.alapi-player-mini button {
+.alapi-player-mini > button:first-child {
   width: 44px;
+  height: 44px;
   border-radius: 50%;
 }
 
-.alapi-player-mini div {
+.alapi-player-mini-info {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  height: 44px;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
 .alapi-player-mini strong,
@@ -1308,6 +1418,10 @@ onUnmounted((): void => {
 .alapi-player-mini span {
   color: #a9afc4;
   font-size: 12px;
+}
+
+.alapi-player-mini-info:hover strong {
+  color: #ffffff;
 }
 
 @keyframes alapi-pulse {

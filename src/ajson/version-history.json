@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T01:11:02.530Z",
+  "generatedAt": "2026-07-16T01:57:31.193Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "1d94e13c1a6998680b98fce85380bf96e34d2edb",
+          "shortHash": "1d94e13",
+          "date": "2026-07-16",
+          "time": "09:12",
+          "type": "功能更新",
+          "title": "add scrollable music lyrics panel",
+          "scope": "",
+          "message": "feat: add scrollable music lyrics panel"
+        },
         {
           "hash": "a63c4622abfbc0f8013c8fa9aae1a95a7af01ddb",
           "shortHash": "a63c462",
@@ -303,16 +313,6 @@
           "title": "expand Element Plus showcase with 100+ examples across basic, intermediate, and advanced views",
           "scope": "",
           "message": "feat: expand Element Plus showcase with 100+ examples across basic, intermediate, and advanced views"
-        },
-        {
-          "hash": "886eaa9477e353667e656dc13f0fd312ce575920",
-          "shortHash": "886eaa9",
-          "date": "2026-07-14",
-          "time": "09:42",
-          "type": "功能更新",
-          "title": "integrate global and container backtop, advanced filterable tree node editing, and dynamic routing role permissions demo",
-          "scope": "",
-          "message": "feat: integrate global and container backtop, advanced filterable tree node editing, and dynamic routing role permissions demo"
         }
       ]
     }
