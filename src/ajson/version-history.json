@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T14:10:22.646Z",
+  "generatedAt": "2026-07-16T14:26:16.125Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "a92e01fc00fcf1499f1fc0e6e185c99696a1ebd8",
+          "shortHash": "a92e01f",
+          "date": "2026-07-16",
+          "time": "22:11",
+          "type": "问题修复",
+          "title": "refine music player ui and version dialog",
+          "scope": "",
+          "message": "fix: refine music player ui and version dialog"
+        },
         {
           "hash": "32c55e0167148dbd1e2c6eb021b94baf42de61f6",
           "shortHash": "32c55e0",
@@ -303,16 +313,6 @@
           "title": "complete Vite 8 + TS 7 upgrade, migrate all JS files to TS with full types, and extract page script constants & logic to vue-pages-text-fn-abc folder",
           "scope": "",
           "message": "feat: complete Vite 8 + TS 7 upgrade, migrate all JS files to TS with full types, and extract page script constants & logic to vue-pages-text-fn-abc folder"
-        },
-        {
-          "hash": "ff5a5c763213be53b90e340b111f692f939b6baa",
-          "shortHash": "ff5a5c7",
-          "date": "2026-07-14",
-          "time": "12:11",
-          "type": "功能更新",
-          "title": "add CombinedDemo.vue — commercial-grade admin dashboard combining Element Plus + Naive UI (stats, user table, kanban, activity feed, release countdown, system settings)",
-          "scope": "",
-          "message": "feat: add CombinedDemo.vue — commercial-grade admin dashboard combining Element Plus + Naive UI (stats, user table, kanban, activity feed, release countdown, system settings)"
         }
       ]
     }

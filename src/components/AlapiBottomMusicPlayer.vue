@@ -165,6 +165,7 @@
             tabindex="0"
             class="alapi-player-playlist-item"
             :class="{ active: currentIndex === song.originalIndex }"
+            :data-playlist-index="song.originalIndex"
             @click="playPlaylistSong(song.originalIndex)"
             @keydown.enter.prevent="playPlaylistSong(song.originalIndex)"
             @keydown.space.prevent="playPlaylistSong(song.originalIndex)"
@@ -238,18 +239,18 @@
       </aside>
 
       <div class="alapi-player-control-dock">
-        <el-radio-group v-model="playbackMode" class="alapi-player-mode-switch" size="large" @change="handlePlaybackModeChange">
-          <el-radio-button
-            v-for="mode in playbackModes"
-            :key="mode.value"
-            :value="mode.value"
-            :title="mode.label"
-          >
+        <div class="alapi-player-playback-tools">
+          <el-button class="alapi-player-mode-toggle" size="large" :title="currentPlaybackModeOption.label" @click="cyclePlaybackMode">
             <el-icon>
-              <component :is="mode.icon" />
+              <component :is="currentPlaybackModeOption.icon" />
             </el-icon>
-          </el-radio-button>
-        </el-radio-group>
+            <span>{{ currentPlaybackModeOption.label }}</span>
+          </el-button>
+          <label class="alapi-player-volume-control">
+            <span>音量</span>
+            <input v-model.number="volume" type="range" min="0" max="100" step="1" @input="updateVolume">
+          </label>
+        </div>
         <div class="alapi-player-controls">
           <el-button circle size="large" :disabled="!playlist.length" title="上一首" @click="playPrevious">
             <el-icon><DArrowLeft /></el-icon>
@@ -277,10 +278,6 @@
 
         <div class="alapi-player-footer">
           <span class="alapi-player-status">{{ statusText }}</span>
-          <label>
-            音量
-            <input v-model.number="volume" type="range" min="0" max="100" step="1" @input="updateVolume">
-          </label>
         </div>
       </div>
     </div>
@@ -666,6 +663,9 @@ const currentSong: ComputedRef<PlayerSong | null> = computed<PlayerSong | null>(
 
 const currentTimeText: ComputedRef<string> = computed<string>(() => formatSeconds(currentSeconds.value))
 const durationText: ComputedRef<string> = computed<string>(() => formatSeconds(durationSeconds.value))
+const currentPlaybackModeOption: ComputedRef<PlaybackModeOption> = computed<PlaybackModeOption>(() => {
+  return playbackModes.find((mode: PlaybackModeOption): boolean => mode.value === playbackMode.value) ?? playbackModes[0]
+})
 const playerThemeStyle: ComputedRef<Record<string, string>> = computed<Record<string, string>>(() => ({
   '--alapi-accent-color': playerTheme.value.accentColor,
   '--alapi-bg-color': hexToRgba(playerTheme.value.backgroundColor, 0.94),
@@ -726,6 +726,17 @@ function scrollPlaylistToTop(): void {
     if (playlistPanelRef.value) {
       playlistPanelRef.value.scrollTop = 0
     }
+  })
+}
+
+function scrollPlaylistToCurrentSong(): void {
+  void nextTick((): void => {
+    if (!playlistPanelRef.value) return
+    const activeItem: HTMLElement | null = playlistPanelRef.value.querySelector<HTMLElement>(`[data-playlist-index="${currentIndex.value}"]`)
+    activeItem?.scrollIntoView({
+      block: 'center',
+      behavior: 'smooth'
+    })
   })
 }
 
@@ -802,6 +813,12 @@ function setPlaybackMode(mode: PlaybackMode): void {
 function handlePlaybackModeChange(value: string | number | boolean | undefined): void {
   if (value !== 'sequence' && value !== 'shuffle' && value !== 'single') return
   setPlaybackMode(value)
+}
+
+function cyclePlaybackMode(): void {
+  const currentModeIndex: number = playbackModes.findIndex((mode: PlaybackModeOption): boolean => mode.value === playbackMode.value)
+  const nextMode: PlaybackModeOption = playbackModes[(currentModeIndex + 1) % playbackModes.length] ?? playbackModes[0]
+  setPlaybackMode(nextMode.value)
 }
 
 function pickNextIndex(): number {
@@ -913,7 +930,7 @@ function addSearchHistory(searchKeyword: string): void {
   searchHistory.value = [
     normalizedKeyword,
     ...searchHistory.value.filter((item: string): boolean => item !== normalizedKeyword)
-  ].slice(0, 8)
+  ].slice(0, 12)
   saveState()
 }
 
@@ -1079,7 +1096,7 @@ async function playSong(song: PlayerSong): Promise<void> {
     currentIndex.value = 0
   }
 
-  scrollPlaylistToTop()
+  scrollPlaylistToCurrentSong()
   await loadAndPlayCurrentSong(true)
   await fetchSongExtra(song.id)
   saveState()
@@ -1089,6 +1106,7 @@ async function playPlaylistSong(index: number): Promise<void> {
   const song: PlayerSong | undefined = playlist.value[index]
   if (!song) return
   currentIndex.value = index
+  scrollPlaylistToCurrentSong()
   await loadAndPlayCurrentSong(true)
   await fetchSongExtra(song.id)
   saveState()
@@ -1309,6 +1327,7 @@ function togglePlay(): void {
 function playPrevious(): void {
   if (!playlist.value.length) return
   currentIndex.value = pickPreviousIndex()
+  scrollPlaylistToCurrentSong()
   void loadAndPlayCurrentSong(true)
   saveState()
 }
@@ -1316,6 +1335,7 @@ function playPrevious(): void {
 function playNext(): void {
   if (!playlist.value.length) return
   currentIndex.value = pickNextIndex()
+  scrollPlaylistToCurrentSong()
   void loadAndPlayCurrentSong(true)
   saveState()
 }
@@ -1547,6 +1567,10 @@ watch(currentLyricIndex, (): void => {
       behavior: 'smooth'
     })
   })
+})
+
+watch(currentIndex, (): void => {
+  scrollPlaylistToCurrentSong()
 })
 
 onUnmounted((): void => {
@@ -1782,16 +1806,18 @@ onUnmounted((): void => {
 }
 
 .alapi-player-history-tags {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 2px;
 }
 
 .alapi-player-history-tags button {
-  flex: 0 0 auto;
+  min-width: 0;
   padding: 4px 9px;
+  overflow: hidden;
   color: #dfe4ff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: rgba(108, 114, 247, 0.18);
   border: 1px solid rgba(108, 114, 247, 0.28);
   border-radius: 999px;
@@ -2352,28 +2378,44 @@ onUnmounted((): void => {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.alapi-player-mode-switch {
+.alapi-player-playback-tools {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 8px;
 }
 
-.alapi-player-mode-switch :deep(.el-radio-button__inner) {
-  display: inline-grid;
-  width: 42px;
-  height: 34px;
-  place-items: center;
-  color: #a9afc4;
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+.alapi-player-mode-toggle {
+  --el-button-bg-color: rgba(255, 255, 255, 0.05);
+  --el-button-border-color: rgba(255, 255, 255, 0.12);
+  --el-button-text-color: var(--alapi-accent-color, #7fd7c8);
+  --el-button-hover-bg-color: rgba(127, 215, 200, 0.12);
+  --el-button-hover-border-color: rgba(127, 215, 200, 0.32);
+  --el-button-hover-text-color: var(--alapi-accent-color, #7fd7c8);
+  flex: 0 0 auto;
+  font-weight: 800;
 }
 
-.alapi-player-mode-switch :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  color: var(--alapi-accent-color, #7fd7c8);
-  background: rgba(127, 215, 200, 0.1);
-  border-color: rgba(127, 215, 200, 0.28);
-  box-shadow: -1px 0 0 0 rgba(127, 215, 200, 0.28);
+.alapi-player-mode-toggle :deep(span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alapi-player-volume-control {
+  flex: 0 1 260px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  color: #a9afc4;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.alapi-player-volume-control input {
+  width: min(190px, 22vw);
 }
 
 .alapi-player-controls {
@@ -2412,7 +2454,6 @@ onUnmounted((): void => {
 }
 
 .alapi-player-footer {
-  justify-content: space-between;
   margin-top: 8px;
 }
 
@@ -2421,17 +2462,6 @@ onUnmounted((): void => {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.alapi-player-footer label {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.alapi-player-footer input {
-  width: 78px;
 }
 
 .alapi-player.collapsed {

@@ -30,8 +30,9 @@ test('ALAPI music player supports playlist searching and playback modes', () => 
   assert.match(playerSource, /v-model\.trim=["']playlistSearchKeyword["']/)
   assert.match(playerSource, /const\s+filteredPlaylist:\s*ComputedRef<PlaylistSongView\[]>/)
   assert.match(playerSource, /type\s+PlaybackMode\s*=\s*'sequence'\s*\|\s*'shuffle'\s*\|\s*'single'/)
-  assert.match(playerSource, /<el-radio-group\s+v-model=["']playbackMode["']/)
-  assert.match(playerSource, /v-for=["']mode in playbackModes["']/)
+  assert.match(playerSource, /@click=["']cyclePlaybackMode["']/)
+  assert.match(playerSource, /function\s+cyclePlaybackMode\s*\(/)
+  assert.match(playerSource, /const\s+currentPlaybackModeOption:\s*ComputedRef<PlaybackModeOption>/)
   assert.match(playerSource, /<el-icon/)
   assert.match(playerSource, /function\s+pickNextIndex\s*\(/)
   assert.match(playerSource, /function\s+pickPreviousIndex\s*\(/)
@@ -53,9 +54,19 @@ test('ALAPI music player exposes search filters, empty state, details, and theme
 test('ALAPI music player keeps playlist controls visible and scrolls playlist to top after adding', () => {
   assert.match(playerSource, /ref=["']playlistPanelRef["']/)
   assert.match(playerSource, /function\s+scrollPlaylistToTop\s*\(/)
+  assert.match(playerSource, /function\s+scrollPlaylistToCurrentSong\s*\(/)
+  assert.match(playerSource, /data-playlist-index/)
+  assert.match(playerSource, /watch\(currentIndex/)
   assert.match(playerSource, /\.alapi-player-body\s*\{[\s\S]*?overflow:\s*hidden/)
   assert.match(playerSource, /\.alapi-player-workspace\s*\{[\s\S]*?overflow-y:\s*auto/)
   assert.match(playerSource, /\.alapi-player-control-dock\s*\{[\s\S]*?flex:\s*0\s+0\s+auto/)
+})
+
+test('ALAPI music player limits history to 12 and lays history tags in rows', () => {
+  assert.match(playerSource, /\.slice\(0,\s*12\)/)
+  assert.match(playerSource, /\.alapi-player-history-tags\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/)
+  assert.match(playerSource, /\.alapi-player-playback-tools\s*\{[\s\S]*?justify-content:\s*space-between/)
+  assert.match(playerSource, /\.alapi-player-volume-control/)
 })
 
 test('ALAPI music player keeps dialogs above the fixed player', () => {
