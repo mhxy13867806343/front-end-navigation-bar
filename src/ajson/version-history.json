@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T01:57:31.193Z",
+  "generatedAt": "2026-07-16T07:51:46.896Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "a1acd0ee5995fcb8c77921ce0742ed5624d7acdd",
+          "shortHash": "a1acd0e",
+          "date": "2026-07-16",
+          "time": "09:58",
+          "type": "功能更新",
+          "title": "persist music playback state",
+          "scope": "",
+          "message": "feat: persist music playback state"
+        },
         {
           "hash": "1d94e13c1a6998680b98fce85380bf96e34d2edb",
           "shortHash": "1d94e13",
@@ -303,16 +313,6 @@
           "title": "upgrade form showcase to enterprise-grade multi-step form with partial field validation and data persistence",
           "scope": "",
           "message": "feat: upgrade form showcase to enterprise-grade multi-step form with partial field validation and data persistence"
-        },
-        {
-          "hash": "425834f55193a9763c01c328a55143bbc81129f8",
-          "shortHash": "425834f",
-          "date": "2026-07-14",
-          "time": "10:13",
-          "type": "功能更新",
-          "title": "expand Element Plus showcase with 100+ examples across basic, intermediate, and advanced views",
-          "scope": "",
-          "message": "feat: expand Element Plus showcase with 100+ examples across basic, intermediate, and advanced views"
         }
       ]
     }

@@ -81,6 +81,38 @@
           </details>
         </div>
 
+        <section class="alapi-player-playlist" aria-label="播放列表">
+          <div class="alapi-player-playlist-header">
+            <div>
+              <strong>播放列表</strong>
+              <span>共 {{ playlist.length }} 首歌曲</span>
+            </div>
+            <button type="button" :disabled="!playlist.length" title="清空播放列表" @click="confirmClearPlaylist">
+              清空
+            </button>
+          </div>
+          <div v-if="playlist.length" class="alapi-player-playlist-list">
+            <button
+              v-for="(song, index) in playlist"
+              :key="song.id"
+              type="button"
+              class="alapi-player-playlist-item"
+              :class="{ active: currentIndex === index }"
+              @click="playPlaylistSong(index)"
+            >
+              <span class="playlist-index">{{ currentIndex === index && isPlaying ? '▶' : index + 1 }}</span>
+              <span class="playlist-title">
+                <strong>{{ song.name }}</strong>
+                <em>{{ song.artists }}</em>
+              </span>
+              <span class="playlist-duration">{{ formatSeconds(song.duration / 1000) }}</span>
+            </button>
+          </div>
+          <div v-else class="alapi-player-playlist-empty">
+            搜索歌曲后点击歌名，即可加入播放列表
+          </div>
+        </section>
+
         <div class="alapi-player-controls">
           <button type="button" :disabled="!playlist.length" title="上一首" @click="playPrevious">⏮</button>
           <button class="primary-control" type="button" :disabled="!currentSong" title="播放/暂停" @click="togglePlay">
@@ -524,6 +556,32 @@ function confirmClearHistory(): void {
   }).catch((): void => {})
 }
 
+function confirmClearPlaylist(): void {
+  void ElMessageBox.confirm(
+    '确定要清空当前播放列表吗？当前播放也会停止。',
+    '清空播放列表',
+    {
+      confirmButtonText: '确定清空',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then((): void => {
+    audio.pause()
+    audio.src = ''
+    playlist.value = []
+    currentIndex.value = 0
+    isPlaying.value = false
+    progress.value = 0
+    currentSeconds.value = 0
+    durationSeconds.value = 0
+    lyricLines.value = []
+    currentLyricIndex.value = -1
+    hotComments.value = []
+    statusText.value = '播放列表已清空'
+    saveState()
+  }).catch((): void => {})
+}
+
 async function playSong(song: PlayerSong): Promise<void> {
   const targetIndex: number = playlist.value.findIndex((item: PlayerSong): boolean => item.id === song.id)
   if (targetIndex >= 0) {
@@ -533,6 +591,15 @@ async function playSong(song: PlayerSong): Promise<void> {
     currentIndex.value = 0
   }
 
+  await loadAndPlayCurrentSong()
+  await fetchSongExtra(song.id)
+  saveState()
+}
+
+async function playPlaylistSong(index: number): Promise<void> {
+  const song: PlayerSong | undefined = playlist.value[index]
+  if (!song) return
+  currentIndex.value = index
   await loadAndPlayCurrentSong()
   await fetchSongExtra(song.id)
   saveState()
@@ -1198,6 +1265,130 @@ onUnmounted((): void => {
   line-height: 1.5;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.alapi-player-playlist {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.alapi-player-playlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.alapi-player-playlist-header div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.alapi-player-playlist-header strong {
+  color: #f5f7ff;
+  font-size: 14px;
+}
+
+.alapi-player-playlist-header span {
+  color: #9aa1b7;
+  font-size: 12px;
+}
+
+.alapi-player-playlist-header button {
+  padding: 4px 8px;
+  color: #ff7b7b;
+  background: rgba(255, 123, 123, 0.08);
+  border: 1px solid rgba(255, 123, 123, 0.24);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.alapi-player-playlist-header button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.alapi-player-playlist-list {
+  max-height: 176px;
+  overflow-y: auto;
+  border-radius: 10px;
+}
+
+.alapi-player-playlist-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 48px;
+  gap: 9px;
+  align-items: center;
+  padding: 9px 8px;
+  color: #dfe4ff;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.alapi-player-playlist-item:nth-child(even) {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.alapi-player-playlist-item:hover {
+  background: rgba(108, 114, 247, 0.16);
+}
+
+.alapi-player-playlist-item.active {
+  color: #7fd7c8;
+  background: rgba(108, 114, 247, 0.28);
+}
+
+.playlist-index {
+  color: #7fd7c8;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.playlist-title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.playlist-title strong,
+.playlist-title em {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.playlist-title strong {
+  font-size: 13px;
+}
+
+.playlist-title em,
+.playlist-duration {
+  color: #9aa1b7;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.playlist-duration {
+  text-align: right;
+}
+
+.alapi-player-playlist-empty {
+  display: grid;
+  min-height: 70px;
+  place-items: center;
+  color: #9aa1b7;
+  font-size: 12px;
+  text-align: center;
 }
 
 .alapi-player-side {
