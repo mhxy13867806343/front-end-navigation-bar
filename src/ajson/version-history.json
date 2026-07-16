@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-15T17:18:43.933Z",
+  "generatedAt": "2026-07-16T01:11:02.530Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "a63c4622abfbc0f8013c8fa9aae1a95a7af01ddb",
+          "shortHash": "a63c462",
+          "date": "2026-07-16",
+          "time": "01:20",
+          "type": "功能更新",
+          "title": "enhance alapi music player history",
+          "scope": "",
+          "message": "feat: enhance alapi music player history"
+        },
         {
           "hash": "e05fd74643209cd7e93772f9da9ca4512f41d623",
           "shortHash": "e05fd74",
@@ -303,16 +313,6 @@
           "title": "integrate global and container backtop, advanced filterable tree node editing, and dynamic routing role permissions demo",
           "scope": "",
           "message": "feat: integrate global and container backtop, advanced filterable tree node editing, and dynamic routing role permissions demo"
-        },
-        {
-          "hash": "47348c262ac7f32d685680c6f08e5204dc434e38",
-          "shortHash": "47348c2",
-          "date": "2026-07-14",
-          "time": "08:26",
-          "type": "功能更新",
-          "title": "integrate video explorer, photo gallery, dujitang quote board, and hotboard backup sources",
-          "scope": "",
-          "message": "feat: integrate video explorer, photo gallery, dujitang quote board, and hotboard backup sources"
         }
       ]
     }

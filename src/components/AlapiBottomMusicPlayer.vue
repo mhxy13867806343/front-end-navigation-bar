@@ -81,17 +81,6 @@
           </details>
         </div>
 
-        <div v-if="currentSong && (lyricPreview || hotComments.length)" class="alapi-player-extra">
-          <div v-if="lyricPreview" class="alapi-player-extra-card">
-            <strong>歌词预览</strong>
-            <p>{{ lyricPreview }}</p>
-          </div>
-          <div v-if="hotComments.length" class="alapi-player-extra-card">
-            <strong>热评</strong>
-            <p>{{ hotComments[0] }}</p>
-          </div>
-        </div>
-
         <div class="alapi-player-controls">
           <button type="button" :disabled="!playlist.length" title="上一首" @click="playPrevious">⏮</button>
           <button class="primary-control" type="button" :disabled="!currentSong" title="播放/暂停" @click="togglePlay">
@@ -118,6 +107,42 @@
           </label>
         </div>
       </div>
+
+      <aside class="alapi-player-side">
+        <div class="alapi-player-side-header">
+          <div>
+            <strong>歌词</strong>
+            <span>{{ currentSong?.name || '未选择歌曲' }}</span>
+          </div>
+          <em>{{ lyricLines.length }} 行</em>
+        </div>
+
+        <div ref="lyricPanelRef" class="alapi-player-lyrics">
+          <button
+            v-for="(line, index) in lyricLines"
+            :key="`${line.time}-${index}`"
+            type="button"
+            class="alapi-player-lyric-line"
+            :class="{ active: currentLyricIndex === index }"
+            :data-lyric-index="index"
+            @click="seekToLyric(line)"
+          >
+            <span>{{ formatSeconds(line.time / 1000) }}</span>
+            <strong>{{ line.text }}</strong>
+          </button>
+          <div v-if="!lyricLines.length" class="alapi-player-lyric-empty">
+            {{ currentSong ? '暂无歌词，换一首试试' : '播放歌曲后显示滚动歌词' }}
+          </div>
+        </div>
+
+        <div class="alapi-player-comments">
+          <strong>热评</strong>
+          <div v-if="hotComments.length" class="alapi-player-comment-list">
+            <p v-for="comment in hotComments" :key="comment">{{ comment }}</p>
+          </div>
+          <p v-else>暂无热评</p>
+        </div>
+      </aside>
     </div>
 
     <div v-else class="alapi-player-mini">
@@ -224,6 +249,11 @@ interface PlayerSong {
   url: string
 }
 
+interface LyricLine {
+  time: number
+  text: string
+}
+
 const ALAPI_TOKEN: string = 'qgqofofvmxtoskffd37omkscobipmn'
 const ALAPI_BASE_URL: string = 'https://v3.alapi.cn'
 const MUSIC_SEARCH_PATH: string = '/api-alapi/api/music/search'
@@ -296,7 +326,9 @@ const progress: Ref<number> = ref<number>(0)
 const volume: Ref<number> = ref<number>(70)
 const currentSeconds: Ref<number> = ref<number>(0)
 const durationSeconds: Ref<number> = ref<number>(0)
-const lyricPreview: Ref<string> = ref<string>('')
+const lyricLines: Ref<LyricLine[]> = ref<LyricLine[]>([])
+const currentLyricIndex: Ref<number> = ref<number>(-1)
+const lyricPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const hotComments: Ref<string[]> = ref<string[]>([])
 const audio: HTMLAudioElement = new Audio()
 
@@ -487,6 +519,9 @@ async function loadAndPlayCurrentSong(): Promise<void> {
   if (!song) return
 
   statusText.value = `正在加载：${song.name}`
+  lyricLines.value = []
+  currentLyricIndex.value = -1
+  hotComments.value = []
   const resolvedUrl: string = song.url || await resolveSongUrl(song.id)
   song.url = resolvedUrl
   audio.src = resolvedUrl
@@ -514,9 +549,11 @@ async function fetchLyricPreview(songId: number): Promise<void> {
   try {
     const response: AlapiResponse<AlapiLyricData> = await requestJson<AlapiResponse<AlapiLyricData>>(buildMusicLyricApi(songId))
     const rawLyric: string = response.data?.lyric ?? response.data?.lrc?.lyric ?? ''
-    lyricPreview.value = normalizeLyricPreview(rawLyric)
+    lyricLines.value = parseLyricLines(rawLyric)
+    updateCurrentLyric()
   } catch (error: unknown) {
-    lyricPreview.value = ''
+    lyricLines.value = []
+    currentLyricIndex.value = -1
     console.warn('ALAPI 歌词获取失败:', error)
   }
 }
@@ -539,13 +576,27 @@ async function fetchHotComments(songId: number): Promise<void> {
   }
 }
 
-function normalizeLyricPreview(rawLyric: string): string {
+function parseLyricLines(rawLyric: string): LyricLine[] {
   return rawLyric
     .split('\n')
-    .map((line: string): string => line.replace(/\[[^\]]+\]/g, '').trim())
-    .filter((line: string): boolean => Boolean(line))
-    .slice(0, 2)
-    .join(' / ')
+    .map((line: string): LyricLine | null => {
+      const match: RegExpMatchArray | null = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/)
+      if (!match) return null
+
+      const minutes: number = Number(match[1])
+      const seconds: number = Number(match[2])
+      const millisecondsText: string = (match[3] ?? '0').padEnd(3, '0')
+      const milliseconds: number = Number(millisecondsText)
+      const text: string = line.replace(/\[[^\]]+\]/g, '').trim()
+      if (!text) return null
+
+      return {
+        time: (minutes * 60 * 1000) + (seconds * 1000) + milliseconds,
+        text
+      }
+    })
+    .filter((line: LyricLine | null): line is LyricLine => line !== null)
+    .sort((a: LyricLine, b: LyricLine): number => a.time - b.time)
 }
 
 function togglePlay(): void {
@@ -595,6 +646,7 @@ function playNext(): void {
 function seekAudio(): void {
   if (!audio.duration) return
   audio.currentTime = (progress.value / 100) * audio.duration
+  updateCurrentLyric()
 }
 
 function updateVolume(): void {
@@ -607,6 +659,34 @@ function updateProgress(): void {
   currentSeconds.value = audio.currentTime || 0
   durationSeconds.value = audio.duration || fallbackDuration
   progress.value = durationSeconds.value ? (currentSeconds.value / durationSeconds.value) * 100 : 0
+  updateCurrentLyric()
+}
+
+function updateCurrentLyric(): void {
+  if (!lyricLines.value.length) {
+    currentLyricIndex.value = -1
+    return
+  }
+
+  const currentTime: number = audio.currentTime * 1000
+  const nextIndex: number = lyricLines.value.findIndex((line: LyricLine): boolean => line.time > currentTime)
+  currentLyricIndex.value = nextIndex === -1 ? lyricLines.value.length - 1 : Math.max(0, nextIndex - 1)
+}
+
+function seekToLyric(line: LyricLine): void {
+  audio.currentTime = line.time / 1000
+  updateCurrentLyric()
+
+  if (!isPlaying.value && currentSong.value) {
+    void audio.play()
+      .then((): void => {
+        isPlaying.value = true
+        statusText.value = `正在播放：${currentSong.value?.name ?? ''}`
+      })
+      .catch((error: unknown): void => {
+        console.warn('点击歌词播放失败:', error)
+      })
+  }
 }
 
 function handleEnded(): void {
@@ -688,6 +768,17 @@ onMounted((): void => {
   }
 })
 
+watch(currentLyricIndex, (): void => {
+  void nextTick((): void => {
+    if (!lyricPanelRef.value || currentLyricIndex.value < 0) return
+    const activeLine: HTMLElement | null = lyricPanelRef.value.querySelector<HTMLElement>(`[data-lyric-index="${currentLyricIndex.value}"]`)
+    activeLine?.scrollIntoView({
+      block: 'center',
+      behavior: 'smooth'
+    })
+  })
+})
+
 onUnmounted((): void => {
   saveState()
   audio.pause()
@@ -704,7 +795,7 @@ onUnmounted((): void => {
   left: 24px;
   bottom: 20px;
   z-index: 2600;
-  width: min(640px, calc(100vw - 48px));
+  width: min(980px, calc(100vw - 48px));
   color: #f5f7ff;
   pointer-events: auto;
 }
@@ -720,10 +811,12 @@ onUnmounted((): void => {
 
 .alapi-player-panel {
   display: grid;
-  grid-template-columns: 78px minmax(0, 1fr);
+  grid-template-columns: 78px minmax(360px, 1fr) minmax(280px, 340px);
   gap: 14px;
   padding: 14px;
   border-radius: 18px;
+  max-height: min(620px, calc(100vh - 80px));
+  overflow: hidden;
 }
 
 .alapi-player-toggle {
@@ -762,6 +855,8 @@ onUnmounted((): void => {
 
 .alapi-player-body {
   min-width: 0;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .alapi-player-title-row,
@@ -1006,6 +1101,132 @@ onUnmounted((): void => {
   text-overflow: ellipsis;
 }
 
+.alapi-player-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(124, 131, 255, 0.24);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+  overflow: hidden;
+}
+
+.alapi-player-side-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.alapi-player-side-header div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.alapi-player-side-header strong {
+  color: #f5f7ff;
+  font-size: 15px;
+}
+
+.alapi-player-side-header span,
+.alapi-player-side-header em {
+  overflow: hidden;
+  color: #9aa1b7;
+  font-size: 12px;
+  font-style: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.alapi-player-side-header em {
+  flex: 0 0 auto;
+}
+
+.alapi-player-lyrics {
+  min-height: 210px;
+  max-height: 330px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.alapi-player-lyric-line {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 7px 8px;
+  color: #b9bfd4;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.alapi-player-lyric-line:hover {
+  color: #f5f7ff;
+  background: rgba(108, 114, 247, 0.14);
+}
+
+.alapi-player-lyric-line.active {
+  color: #ffffff;
+  background: rgba(108, 114, 247, 0.28);
+  border-color: rgba(124, 131, 255, 0.42);
+}
+
+.alapi-player-lyric-line span {
+  color: #7fd7c8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.alapi-player-lyric-line strong {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.alapi-player-lyric-empty {
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  color: #9aa1b7;
+  font-size: 13px;
+  text-align: center;
+}
+
+.alapi-player-comments {
+  flex: 0 0 auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.alapi-player-comments > strong {
+  color: #f5f7ff;
+  font-size: 13px;
+}
+
+.alapi-player-comments p {
+  margin: 6px 0 0;
+  color: #a9afc4;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.alapi-player-comment-list {
+  max-height: 98px;
+  overflow-y: auto;
+}
+
 .alapi-player-controls {
   margin-top: 10px;
 }
@@ -1127,6 +1348,10 @@ onUnmounted((): void => {
   .alapi-player-api-grid,
   .alapi-player-extra {
     grid-template-columns: 1fr;
+  }
+
+  .alapi-player-side {
+    grid-column: 1 / -1;
   }
 }
 </style>
