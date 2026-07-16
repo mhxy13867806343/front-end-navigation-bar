@@ -805,9 +805,41 @@ function createPlaylistGroup(index: number): PlayerListGroup {
   }
 }
 
+function isDefaultPlaylistGroupName(name: string): boolean {
+  return /^播放列表\d+$/.test(name.trim())
+}
+
+function normalizePlaylistGroups(): void {
+  playlistGroups.value.forEach((group: PlayerListGroup, index: number): void => {
+    if (isDefaultPlaylistGroupName(group.name)) {
+      group.name = `播放列表${index + 1}`
+    }
+  })
+  activePlaylistGroupIndex.value = Math.min(
+    Math.max(activePlaylistGroupIndex.value, 0),
+    Math.max(playlistGroups.value.length - 1, 0)
+  )
+}
+
+function resetDeletedActivePlaylistPlayback(): void {
+  playRequestId += 1
+  audio.pause()
+  audio.removeAttribute('src')
+  audio.load()
+  isPlaying.value = false
+  progress.value = 0
+  currentSeconds.value = 0
+  durationSeconds.value = 0
+  lyricLines.value = []
+  currentLyricIndex.value = -1
+  hotComments.value = []
+  pendingRestoreSeconds.value = 0
+}
+
 function createPlaylistGroupTab(): void {
   const nextGroup: PlayerListGroup = createPlaylistGroup(playlistGroups.value.length)
   playlistGroups.value.push(nextGroup)
+  normalizePlaylistGroups()
   activePlaylistGroupIndex.value = playlistGroups.value.length - 1
   currentIndex.value = 0
   playlistSearchKeyword.value = ''
@@ -856,6 +888,7 @@ function deletePlaylistGroup(groupIndex: number): void {
       type: 'warning'
     }
   ).then((): void => {
+    const deletedGroupName: string = targetGroup.name
     const isDeletingActiveGroup: boolean = groupIndex === activePlaylistGroupIndex.value
     playlistGroups.value.splice(groupIndex, 1)
     if (activePlaylistGroupIndex.value > groupIndex) {
@@ -863,17 +896,13 @@ function deletePlaylistGroup(groupIndex: number): void {
     } else if (isDeletingActiveGroup) {
       activePlaylistGroupIndex.value = Math.min(groupIndex, playlistGroups.value.length - 1)
       currentIndex.value = 0
-      if (!playlist.value.length) {
-        isPlaying.value = false
-        progress.value = 0
-        currentSeconds.value = 0
-        durationSeconds.value = 0
-        lyricLines.value = []
-        currentLyricIndex.value = -1
-        hotComments.value = []
-      }
+      resetDeletedActivePlaylistPlayback()
     }
-    statusText.value = `已删除${targetGroup.name}`
+    normalizePlaylistGroups()
+    statusText.value = `已删除${deletedGroupName}`
+    if (isDeletingActiveGroup && playlist.value.length) {
+      void restoreCurrentSong()
+    }
     saveState()
     scrollPlaylistToTop()
   }).catch((): void => {})
@@ -898,6 +927,7 @@ function findAvailablePlaylistGroup(): PlayerListGroup {
 
   const nextGroup: PlayerListGroup = createPlaylistGroup(playlistGroups.value.length)
   playlistGroups.value.push(nextGroup)
+  normalizePlaylistGroups()
   return nextGroup
 }
 
@@ -1804,6 +1834,7 @@ function loadState(): void {
       Math.max(parsedState.activePlaylistGroupIndex ?? 0, 0),
       Math.max(playlistGroups.value.length - 1, 0)
     )
+    normalizePlaylistGroups()
     currentIndex.value = Math.min(Math.max(parsedState.currentIndex ?? 0, 0), Math.max(playlist.value.length - 1, 0))
     volume.value = parsedState.volume ?? 70
     isCollapsed.value = parsedState.isCollapsed ?? false

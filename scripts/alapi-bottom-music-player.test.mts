@@ -37,6 +37,15 @@ test('ALAPI music player supports playlist group create rename delete and horizo
   assert.match(playerSource, /\.alapi-player-playlist-tabs button\s*\{[\s\S]*?min-height:\s*40px/)
 })
 
+test('ALAPI music player keeps playlist group names and active index consistent after deletion', () => {
+  assert.match(playerSource, /function\s+isDefaultPlaylistGroupName\s*\(/)
+  assert.match(playerSource, /function\s+normalizePlaylistGroups\s*\(/)
+  assert.match(playerSource, /normalizePlaylistGroups\(\)/)
+  assert.match(playerSource, /activePlaylistGroupIndex\.value\s*=\s*Math\.min\(/)
+  assert.match(playerSource, /group\.name\s*=\s*`播放列表\$\{index\s*\+\s*1\}`/)
+  assert.match(playerSource, /const\s+deletedGroupName:\s*string\s*=\s*targetGroup\.name/)
+})
+
 test('ALAPI music player keeps playlist tabs and mini player sized to text without visible scrollbars', () => {
   assert.match(playerSource, /\.alapi-player-playlist-tabs\s*\{[\s\S]*?scrollbar-width:\s*none/)
   assert.match(playerSource, /\.alapi-player-playlist-tabs::\-webkit-scrollbar\s*\{[\s\S]*?display:\s*none/)

@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T16:38:41.682Z",
+  "generatedAt": "2026-07-16T16:49:20.221Z",
   "groups": [
     {
       "date": "2026-07-17",
       "items": [
+        {
+          "hash": "9cfcdf459fad0194797d9812269b1bb0d3efc7ae",
+          "shortHash": "9cfcdf4",
+          "date": "2026-07-17",
+          "time": "00:39",
+          "type": "问题修复",
+          "title": "adapt alapi player labels to content",
+          "scope": "",
+          "message": "fix: adapt alapi player labels to content"
+        },
         {
           "hash": "32681343dd08b4fd0db4df1dbb82b645f8477d39",
           "shortHash": "3268134",
@@ -308,16 +318,6 @@
           "title": "correct JuejinTheme data mapping to match actual API structure (nested theme object with name/brief/cover/hot/view_cnt/user_cnt + recent_users)",
           "scope": "",
           "message": "fix: correct JuejinTheme data mapping to match actual API structure (nested theme object with name/brief/cover/hot/view_cnt/user_cnt + recent_users)"
-        },
-        {
-          "hash": "3c0a7ff9b61a2278c7c7b13ca3e8005e6944dce7",
-          "shortHash": "3c0a7ff",
-          "date": "2026-07-14",
-          "time": "21:16",
-          "type": "功能更新",
-          "title": "add JuejinTheme page (掘金热门主题) with POST API, ranking badges, search, pagination, and sidebar nav entry",
-          "scope": "",
-          "message": "feat: add JuejinTheme page (掘金热门主题) with POST API, ranking badges, search, pagination, and sidebar nav entry"
         }
       ]
     }
