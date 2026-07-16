@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T07:51:46.896Z",
+  "generatedAt": "2026-07-16T08:41:00.671Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "c225586a0212e4e20404e762b22e4ee64cc4f376",
+          "shortHash": "c225586",
+          "date": "2026-07-16",
+          "time": "15:53",
+          "type": "功能更新",
+          "title": "show music playlist panel",
+          "scope": "",
+          "message": "feat: show music playlist panel"
+        },
         {
           "hash": "a1acd0ee5995fcb8c77921ce0742ed5624d7acdd",
           "shortHash": "a1acd0e",
@@ -303,16 +313,6 @@
           "title": "upgrade Element Plus to 2.14.3 and add Splitter, Input OTP, Input Tag, Virtualized Tree, Config Provider, Result, Skeleton, Typography components",
           "scope": "",
           "message": "feat: upgrade Element Plus to 2.14.3 and add Splitter, Input OTP, Input Tag, Virtualized Tree, Config Provider, Result, Skeleton, Typography components"
-        },
-        {
-          "hash": "75349a7b4addf3bfe97d7ba22de359677dc994af",
-          "shortHash": "75349a7",
-          "date": "2026-07-14",
-          "time": "10:42",
-          "type": "功能更新",
-          "title": "upgrade form showcase to enterprise-grade multi-step form with partial field validation and data persistence",
-          "scope": "",
-          "message": "feat: upgrade form showcase to enterprise-grade multi-step form with partial field validation and data persistence"
         }
       ]
     }

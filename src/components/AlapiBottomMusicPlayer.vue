@@ -49,18 +49,26 @@
           </div>
         </div>
 
-        <div v-if="searchResults.length" class="alapi-player-results">
-          <button
-            v-for="song in searchResults"
-            :key="song.id"
-            type="button"
-            class="alapi-player-result"
-            @click="playSong(song)"
-          >
-            <span>{{ song.name }}</span>
-            <em>{{ song.artists }}</em>
-          </button>
-        </div>
+        <template v-if="searchResults.length">
+          <div class="alapi-player-search-result-bar">
+            <span>搜索结果 {{ searchResults.length }} 首</span>
+            <button type="button" @click="addSearchResultsToPlaylist">
+              批量添加到播放列表
+            </button>
+          </div>
+          <div class="alapi-player-results">
+            <button
+              v-for="song in searchResults"
+              :key="song.id"
+              type="button"
+              class="alapi-player-result"
+              @click="playSong(song)"
+            >
+              <span>{{ song.name }}</span>
+              <em>{{ song.artists }}</em>
+            </button>
+          </div>
+        </template>
 
         <div class="alapi-player-api-panel">
           <details>
@@ -92,13 +100,16 @@
             </button>
           </div>
           <div v-if="playlist.length" class="alapi-player-playlist-list">
-            <button
+            <div
               v-for="(song, index) in playlist"
               :key="song.id"
-              type="button"
+              role="button"
+              tabindex="0"
               class="alapi-player-playlist-item"
               :class="{ active: currentIndex === index }"
               @click="playPlaylistSong(index)"
+              @keydown.enter.prevent="playPlaylistSong(index)"
+              @keydown.space.prevent="playPlaylistSong(index)"
             >
               <span class="playlist-index">{{ currentIndex === index && isPlaying ? '▶' : index + 1 }}</span>
               <span class="playlist-title">
@@ -106,7 +117,15 @@
                 <em>{{ song.artists }}</em>
               </span>
               <span class="playlist-duration">{{ formatSeconds(song.duration / 1000) }}</span>
-            </button>
+              <button
+                class="playlist-remove"
+                type="button"
+                title="从播放列表移除"
+                @click.stop="removePlaylistSong(index)"
+              >
+                移除
+              </button>
+            </div>
           </div>
           <div v-else class="alapi-player-playlist-empty">
             搜索歌曲后点击歌名，即可加入播放列表
@@ -386,6 +405,7 @@ const lyricPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const hotComments: Ref<string[]> = ref<string[]>([])
 const pendingRestoreSeconds: Ref<number> = ref<number>(0)
 let lastPlaybackSaveAt: number = 0
+let playRequestId: number = 0
 const audio: HTMLAudioElement = new Audio()
 
 const currentSong: ComputedRef<PlayerSong | null> = computed<PlayerSong | null>(() => {
@@ -566,20 +586,47 @@ function confirmClearPlaylist(): void {
       type: 'warning'
     }
   ).then((): void => {
-    audio.pause()
-    audio.src = ''
-    playlist.value = []
-    currentIndex.value = 0
-    isPlaying.value = false
-    progress.value = 0
-    currentSeconds.value = 0
-    durationSeconds.value = 0
-    lyricLines.value = []
-    currentLyricIndex.value = -1
-    hotComments.value = []
-    statusText.value = '播放列表已清空'
+    resetPlaybackState('播放列表已清空')
     saveState()
   }).catch((): void => {})
+}
+
+function resetPlaybackState(message: string): void {
+  playRequestId += 1
+  audio.pause()
+  audio.removeAttribute('src')
+  audio.load()
+  playlist.value = []
+  currentIndex.value = 0
+  isPlaying.value = false
+  progress.value = 0
+  currentSeconds.value = 0
+  durationSeconds.value = 0
+  lyricLines.value = []
+  currentLyricIndex.value = -1
+  hotComments.value = []
+  pendingRestoreSeconds.value = 0
+  statusText.value = message
+}
+
+function addSearchResultsToPlaylist(): void {
+  if (!searchResults.value.length) return
+
+  const existedIds: Set<number> = new Set(playlist.value.map((song: PlayerSong): number => song.id))
+  const songsToAdd: PlayerSong[] = searchResults.value
+    .filter((song: PlayerSong): boolean => !existedIds.has(song.id))
+    .map((song: PlayerSong): PlayerSong => ({ ...song }))
+
+  if (!songsToAdd.length) {
+    statusText.value = '搜索结果已在播放列表中'
+    return
+  }
+
+  const wasEmpty: boolean = playlist.value.length === 0
+  playlist.value = [...playlist.value, ...songsToAdd]
+  if (wasEmpty) currentIndex.value = 0
+  statusText.value = `已批量添加 ${songsToAdd.length} 首到播放列表`
+  saveState()
 }
 
 async function playSong(song: PlayerSong): Promise<void> {
@@ -591,7 +638,7 @@ async function playSong(song: PlayerSong): Promise<void> {
     currentIndex.value = 0
   }
 
-  await loadAndPlayCurrentSong()
+  await loadAndPlayCurrentSong(true)
   await fetchSongExtra(song.id)
   saveState()
 }
@@ -600,29 +647,89 @@ async function playPlaylistSong(index: number): Promise<void> {
   const song: PlayerSong | undefined = playlist.value[index]
   if (!song) return
   currentIndex.value = index
-  await loadAndPlayCurrentSong()
+  await loadAndPlayCurrentSong(true)
   await fetchSongExtra(song.id)
   saveState()
 }
 
-async function loadAndPlayCurrentSong(): Promise<void> {
+function removePlaylistSong(index: number): void {
+  const removingSong: PlayerSong | undefined = playlist.value[index]
+  if (!removingSong) return
+
+  const isRemovingCurrent: boolean = index === currentIndex.value
+  const shouldContinuePlaying: boolean = isRemovingCurrent && isPlaying.value
+  if (isRemovingCurrent) {
+    playRequestId += 1
+    audio.pause()
+    audio.removeAttribute('src')
+    audio.load()
+    isPlaying.value = false
+    progress.value = 0
+    currentSeconds.value = 0
+    durationSeconds.value = 0
+    lyricLines.value = []
+    currentLyricIndex.value = -1
+    hotComments.value = []
+  }
+
+  playlist.value.splice(index, 1)
+
+  if (!playlist.value.length) {
+    resetPlaybackState(`已移除：${removingSong.name}`)
+    saveState()
+    return
+  }
+
+  if (index < currentIndex.value) {
+    currentIndex.value -= 1
+  } else if (currentIndex.value >= playlist.value.length) {
+    currentIndex.value = playlist.value.length - 1
+  }
+
+  statusText.value = `已从播放列表移除：${removingSong.name}`
+  if (isRemovingCurrent) {
+    if (shouldContinuePlaying) {
+      void loadAndPlayCurrentSong(true)
+    } else {
+      void restoreCurrentSong()
+    }
+  }
+  saveState()
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError'
+}
+
+async function loadAndPlayCurrentSong(forceRefreshUrl: boolean = false): Promise<void> {
   const song: PlayerSong | null = currentSong.value
   if (!song) return
 
+  const requestId: number = ++playRequestId
   statusText.value = `正在加载：${song.name}`
   lyricLines.value = []
   currentLyricIndex.value = -1
   hotComments.value = []
-  const resolvedUrl: string = song.url || await resolveSongUrl(song.id)
+  audio.pause()
+  isPlaying.value = false
+  const resolvedUrl: string = forceRefreshUrl ? await resolveSongUrl(song.id) : song.url || await resolveSongUrl(song.id)
+  if (requestId !== playRequestId) return
   song.url = resolvedUrl
   audio.src = resolvedUrl
 
   try {
     await audio.play()
+    if (requestId !== playRequestId) return
     isPlaying.value = true
     statusText.value = `正在播放：${song.name}`
     void fetchSongExtra(song.id)
   } catch (error: unknown) {
+    if (requestId !== playRequestId || isAbortError(error)) return
+    if (!forceRefreshUrl) {
+      song.url = ''
+      await loadAndPlayCurrentSong(true)
+      return
+    }
     isPlaying.value = false
     statusText.value = '当前歌曲无法播放，请换一首'
     console.warn('音乐播放失败:', error)
@@ -738,6 +845,11 @@ function togglePlay(): void {
       statusText.value = `正在播放：${currentSong.value?.name ?? ''}`
     })
     .catch((error: unknown): void => {
+      if (currentSong.value) {
+        currentSong.value.url = ''
+        void loadAndPlayCurrentSong(true)
+        return
+      }
       isPlaying.value = false
       statusText.value = '播放失败，请换一首'
       console.warn('恢复播放失败:', error)
@@ -747,14 +859,14 @@ function togglePlay(): void {
 function playPrevious(): void {
   if (!playlist.value.length) return
   currentIndex.value = currentIndex.value <= 0 ? playlist.value.length - 1 : currentIndex.value - 1
-  void loadAndPlayCurrentSong()
+  void loadAndPlayCurrentSong(true)
   saveState()
 }
 
 function playNext(): void {
   if (!playlist.value.length) return
   currentIndex.value = currentIndex.value >= playlist.value.length - 1 ? 0 : currentIndex.value + 1
-  void loadAndPlayCurrentSong()
+  void loadAndPlayCurrentSong(true)
   saveState()
 }
 
@@ -960,8 +1072,8 @@ onUnmounted((): void => {
   position: fixed;
   left: 24px;
   bottom: 20px;
-  z-index: 2600;
-  width: min(980px, calc(100vw - 48px));
+  z-index: 1600;
+  width: min(1120px, calc(100vw - 40px));
   color: #f5f7ff;
   pointer-events: auto;
 }
@@ -977,11 +1089,11 @@ onUnmounted((): void => {
 
 .alapi-player-panel {
   display: grid;
-  grid-template-columns: 78px minmax(360px, 1fr) minmax(280px, 340px);
-  gap: 14px;
-  padding: 14px;
-  border-radius: 18px;
-  max-height: min(620px, calc(100vh - 80px));
+  grid-template-columns: 86px minmax(430px, 1fr) minmax(330px, 390px);
+  gap: 16px;
+  padding: 16px;
+  border-radius: 20px;
+  max-height: min(700px, calc(100vh - 72px));
   overflow: hidden;
 }
 
@@ -1001,8 +1113,8 @@ onUnmounted((): void => {
 }
 
 .alapi-player-cover {
-  width: 78px;
-  height: 78px;
+  width: 86px;
+  height: 86px;
   display: grid;
   place-items: center;
   border-radius: 16px;
@@ -1022,7 +1134,7 @@ onUnmounted((): void => {
 .alapi-player-body {
   min-width: 0;
   overflow-y: auto;
-  padding-right: 2px;
+  padding-right: 6px;
 }
 
 .alapi-player-title-row,
@@ -1146,9 +1258,31 @@ onUnmounted((): void => {
   cursor: pointer;
 }
 
+.alapi-player-search-result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  color: #a9afc4;
+  font-size: 12px;
+}
+
+.alapi-player-search-result-bar button {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  color: #7fd7c8;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(127, 215, 200, 0.1);
+  border: 1px solid rgba(127, 215, 200, 0.28);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
 .alapi-player-results {
-  max-height: 112px;
-  margin-top: 8px;
+  max-height: 132px;
+  margin-top: 6px;
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
@@ -1268,8 +1402,8 @@ onUnmounted((): void => {
 }
 
 .alapi-player-playlist {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 12px;
+  padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.045);
@@ -1314,7 +1448,7 @@ onUnmounted((): void => {
 }
 
 .alapi-player-playlist-list {
-  max-height: 176px;
+  max-height: 236px;
   overflow-y: auto;
   border-radius: 10px;
 }
@@ -1322,14 +1456,14 @@ onUnmounted((): void => {
 .alapi-player-playlist-item {
   width: 100%;
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 48px;
-  gap: 9px;
+  grid-template-columns: 32px minmax(0, 1fr) 48px 46px;
+  gap: 10px;
   align-items: center;
-  padding: 9px 8px;
+  padding: 10px 10px;
   color: #dfe4ff;
   text-align: left;
   background: transparent;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -1345,6 +1479,7 @@ onUnmounted((): void => {
 .alapi-player-playlist-item.active {
   color: #7fd7c8;
   background: rgba(108, 114, 247, 0.28);
+  border-color: rgba(124, 131, 255, 0.34);
 }
 
 .playlist-index {
@@ -1380,6 +1515,23 @@ onUnmounted((): void => {
 
 .playlist-duration {
   text-align: right;
+}
+
+.playlist-remove {
+  height: 26px;
+  padding: 0 8px;
+  color: #ff9a9a;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(255, 123, 123, 0.08);
+  border: 1px solid rgba(255, 123, 123, 0.22);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.playlist-remove:hover {
+  color: #ffffff;
+  background: rgba(255, 123, 123, 0.18);
 }
 
 .alapi-player-playlist-empty {
@@ -1623,6 +1775,21 @@ onUnmounted((): void => {
 
   50% {
     transform: scale(1.04);
+  }
+}
+
+@media (max-width: 1120px) {
+  .alapi-player-panel {
+    grid-template-columns: 70px minmax(0, 1fr);
+  }
+
+  .alapi-player-cover {
+    width: 70px;
+    height: 70px;
+  }
+
+  .alapi-player-side {
+    grid-column: 1 / -1;
   }
 }
 

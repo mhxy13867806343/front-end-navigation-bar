@@ -9,7 +9,7 @@ const [toolboxSource, packageJson] = await Promise.all([
 
 test('DeveloperToolbox lets users copy the current JS helper source code', () => {
   assert.match(toolboxSource, /import\s+copy\s+from\s+['"]clipboard-copy['"]/)
-  assert.match(toolboxSource, /const\s+copyCurrentFuncCode\s*=\s*async\s*\(\)\s*=>/)
+  assert.match(toolboxSource, /const\s+copyCurrentFuncCode\s*=\s*async\s*\(\)\s*:\s*Promise<void>\s*=>/)
   assert.match(toolboxSource, /@click=["']copyCurrentFuncCode["']/)
   assert.match(toolboxSource, /复制源码/)
 })
