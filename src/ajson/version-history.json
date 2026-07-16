@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T09:40:02.843Z",
+  "generatedAt": "2026-07-16T13:24:34.891Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "d4aa0919e8c58c0fe8d1d6a831e4905316940855",
+          "shortHash": "d4aa091",
+          "date": "2026-07-16",
+          "time": "17:44",
+          "type": "功能更新",
+          "title": "refine music player playlist layout",
+          "scope": "",
+          "message": "feat: refine music player playlist layout"
+        },
         {
           "hash": "f347055eba44160a0f94c552af514a99b8a2bb3d",
           "shortHash": "f347055",
@@ -303,16 +313,6 @@
           "title": "refactor sidebar to use el-menu, integrate Naive UI showcase, and modularize code into aglobal-xx.js, componentMapper.js and azh.js",
           "scope": "",
           "message": "feat: refactor sidebar to use el-menu, integrate Naive UI showcase, and modularize code into aglobal-xx.js, componentMapper.js and azh.js"
-        },
-        {
-          "hash": "64e8bd890bfc377e9d0c82a80e8a9233cecf8085",
-          "shortHash": "64e8bd8",
-          "date": "2026-07-14",
-          "time": "11:11",
-          "type": "工程维护",
-          "title": "upgrade vue version to 3.5.39 to support latest element-plus features and switch locale imports to standard ES paths",
-          "scope": "",
-          "message": "chore: upgrade vue version to 3.5.39 to support latest element-plus features and switch locale imports to standard ES paths"
         }
       ]
     }

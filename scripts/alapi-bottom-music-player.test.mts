@@ -9,11 +9,12 @@ const playerSource: string = await readFile(
 
 test('ALAPI music player supports batch playlist management', () => {
   assert.match(playerSource, /批量添加/)
-  assert.match(playerSource, /v-model=["']selectedSearchSongIds["']/)
+  assert.match(playerSource, /v-model=["']isBatchDialogVisible["']/)
   assert.match(playerSource, /<el-checkbox/)
+  assert.match(playerSource, /selectedSearchSongIds\.value\s*=\s*\[\]/)
   assert.match(playerSource, /function\s+addSearchResultsToPlaylist\s*\(/)
   assert.match(playerSource, /function\s+removePlaylistSong\s*\(/)
-  assert.match(playerSource, /@click\.stop=["']removePlaylistSong\(index\)["']/)
+  assert.match(playerSource, /@click\.stop=["']removePlaylistSong\(song\.originalIndex\)["']/)
 })
 
 test('ALAPI music player supports paged playlists and duplicate prompts', () => {
@@ -23,6 +24,27 @@ test('ALAPI music player supports paged playlists and duplicate prompts', () => 
   assert.match(playerSource, /播放列表 \{\{ group\.index \+ 1 \}\}/)
   assert.match(playerSource, /已存在/)
   assert.match(playerSource, /findAvailablePlaylistGroup/)
+})
+
+test('ALAPI music player supports playlist searching and playback modes', () => {
+  assert.match(playerSource, /v-model\.trim=["']playlistSearchKeyword["']/)
+  assert.match(playerSource, /const\s+filteredPlaylist:\s*ComputedRef<PlaylistSongView\[]>/)
+  assert.match(playerSource, /type\s+PlaybackMode\s*=\s*'sequence'\s*\|\s*'shuffle'\s*\|\s*'single'/)
+  assert.match(playerSource, /v-for=["']mode in playbackModes["']/)
+  assert.match(playerSource, /function\s+pickNextIndex\s*\(/)
+  assert.match(playerSource, /function\s+pickPreviousIndex\s*\(/)
+})
+
+test('ALAPI music player exposes search filters, empty state, details, and theme settings', () => {
+  assert.match(playerSource, /v-model\.number=["']searchLimit["']/)
+  assert.match(playerSource, /v-model\.number=["']searchPage["']/)
+  assert.match(playerSource, /v-model=["']searchType["']/)
+  assert.match(playerSource, /没有找到歌曲/)
+  assert.match(playerSource, /查看详情/)
+  assert.match(playerSource, /function\s+openSongDetail\s*\(/)
+  assert.match(playerSource, /v-model=["']playerTheme\.accentColor["']/)
+  assert.match(playerSource, /v-model\.number=["']playerTheme\.fontSize["']/)
+  assert.match(playerSource, /function\s+applyPlayerTheme\s*\(/)
 })
 
 test('ALAPI music player keeps playlist controls visible and scrolls playlist to top after adding', () => {
