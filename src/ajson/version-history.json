@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T08:41:00.671Z",
+  "generatedAt": "2026-07-16T09:40:02.843Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "f347055eba44160a0f94c552af514a99b8a2bb3d",
+          "shortHash": "f347055",
+          "date": "2026-07-16",
+          "time": "16:45",
+          "type": "功能更新",
+          "title": "improve music playlist controls",
+          "scope": "",
+          "message": "feat: improve music playlist controls"
+        },
         {
           "hash": "c225586a0212e4e20404e762b22e4ee64cc4f376",
           "shortHash": "c225586",
@@ -303,16 +313,6 @@
           "title": "upgrade vue version to 3.5.39 to support latest element-plus features and switch locale imports to standard ES paths",
           "scope": "",
           "message": "chore: upgrade vue version to 3.5.39 to support latest element-plus features and switch locale imports to standard ES paths"
-        },
-        {
-          "hash": "3149b50d579a7459e4867199f8564850edd7f294",
-          "shortHash": "3149b50",
-          "date": "2026-07-14",
-          "time": "11:04",
-          "type": "功能更新",
-          "title": "upgrade Element Plus to 2.14.3 and add Splitter, Input OTP, Input Tag, Virtualized Tree, Config Provider, Result, Skeleton, Typography components",
-          "scope": "",
-          "message": "feat: upgrade Element Plus to 2.14.3 and add Splitter, Input OTP, Input Tag, Virtualized Tree, Config Provider, Result, Skeleton, Typography components"
         }
       ]
     }

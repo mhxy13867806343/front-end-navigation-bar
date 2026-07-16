@@ -10,14 +10,12 @@
       </div>
 
       <div class="alapi-player-body">
+        <div class="alapi-player-workspace">
         <div class="alapi-player-title-row">
           <div class="alapi-player-song">
             <strong>{{ currentSong?.name || 'ALAPI 音乐播放器' }}</strong>
             <span>{{ currentSong?.artists || '搜索歌曲后点击播放' }}</span>
           </div>
-          <a class="alapi-player-source" href="https://musicplayer.xfyun.club/" target="_blank" rel="noopener noreferrer">
-            小枫播放器测试
-          </a>
         </div>
 
         <div class="alapi-player-search">
@@ -52,22 +50,31 @@
         <template v-if="searchResults.length">
           <div class="alapi-player-search-result-bar">
             <span>搜索结果 {{ searchResults.length }} 首</span>
-            <button type="button" @click="addSearchResultsToPlaylist">
-              批量添加到播放列表
-            </button>
+            <div>
+              <button type="button" @click="selectAllSearchResults">
+                全选
+              </button>
+              <button type="button" @click="clearSelectedSearchResults">
+                清空
+              </button>
+              <button type="button" @click="addSearchResultsToPlaylist">
+                批量添加选中
+              </button>
+            </div>
           </div>
-          <div class="alapi-player-results">
-            <button
+          <el-checkbox-group v-model="selectedSearchSongIds" class="alapi-player-results">
+            <div
               v-for="song in searchResults"
               :key="song.id"
-              type="button"
               class="alapi-player-result"
-              @click="playSong(song)"
             >
-              <span>{{ song.name }}</span>
-              <em>{{ song.artists }}</em>
-            </button>
-          </div>
+              <el-checkbox :value="song.id" @click.stop />
+              <button type="button" class="alapi-player-result-play" @click="playSong(song)">
+                <span>{{ song.name }}</span>
+                <em>{{ song.artists }}</em>
+              </button>
+            </div>
+          </el-checkbox-group>
         </template>
 
         <div class="alapi-player-api-panel">
@@ -88,78 +95,70 @@
             </div>
           </details>
         </div>
-
-        <section class="alapi-player-playlist" aria-label="播放列表">
-          <div class="alapi-player-playlist-header">
-            <div>
-              <strong>播放列表</strong>
-              <span>共 {{ playlist.length }} 首歌曲</span>
-            </div>
-            <button type="button" :disabled="!playlist.length" title="清空播放列表" @click="confirmClearPlaylist">
-              清空
-            </button>
-          </div>
-          <div v-if="playlist.length" class="alapi-player-playlist-list">
-            <div
-              v-for="(song, index) in playlist"
-              :key="song.id"
-              role="button"
-              tabindex="0"
-              class="alapi-player-playlist-item"
-              :class="{ active: currentIndex === index }"
-              @click="playPlaylistSong(index)"
-              @keydown.enter.prevent="playPlaylistSong(index)"
-              @keydown.space.prevent="playPlaylistSong(index)"
-            >
-              <span class="playlist-index">{{ currentIndex === index && isPlaying ? '▶' : index + 1 }}</span>
-              <span class="playlist-title">
-                <strong>{{ song.name }}</strong>
-                <em>{{ song.artists }}</em>
-              </span>
-              <span class="playlist-duration">{{ formatSeconds(song.duration / 1000) }}</span>
-              <button
-                class="playlist-remove"
-                type="button"
-                title="从播放列表移除"
-                @click.stop="removePlaylistSong(index)"
-              >
-                移除
-              </button>
-            </div>
-          </div>
-          <div v-else class="alapi-player-playlist-empty">
-            搜索歌曲后点击歌名，即可加入播放列表
-          </div>
-        </section>
-
-        <div class="alapi-player-controls">
-          <button type="button" :disabled="!playlist.length" title="上一首" @click="playPrevious">⏮</button>
-          <button class="primary-control" type="button" :disabled="!currentSong" title="播放/暂停" @click="togglePlay">
-            {{ isPlaying ? '暂停' : '播放' }}
-          </button>
-          <button type="button" :disabled="!playlist.length" title="下一首" @click="playNext">⏭</button>
-          <input
-            v-model.number="progress"
-            type="range"
-            min="0"
-            max="100"
-            step="0.1"
-            aria-label="播放进度"
-            @input="seekAudio"
-          >
-          <span class="alapi-player-time">{{ currentTimeText }} / {{ durationText }}</span>
-        </div>
-
-        <div class="alapi-player-footer">
-          <span class="alapi-player-status">{{ statusText }}</span>
-          <label>
-            音量
-            <input v-model.number="volume" type="range" min="0" max="100" step="1" @input="updateVolume">
-          </label>
         </div>
       </div>
 
+      <section class="alapi-player-playlist" aria-label="播放列表">
+        <div class="alapi-player-playlist-tabs">
+          <button
+            v-for="group in visiblePlaylistGroups"
+            :key="group.id"
+            type="button"
+            :class="{ active: activePlaylistGroupIndex === group.index }"
+            @click="switchPlaylistGroup(group.index)"
+          >
+            播放列表 {{ group.index + 1 }}
+            <em>{{ group.songs.length }}/{{ MAX_PLAYLIST_SONGS }}</em>
+          </button>
+        </div>
+        <div class="alapi-player-playlist-header">
+          <div>
+            <strong>{{ activePlaylistGroup?.name || '播放列表 1' }}</strong>
+            <span>当前 {{ playlist.length }} 首 / 总计 {{ totalPlaylistSongCount }} 首</span>
+          </div>
+          <button type="button" :disabled="!playlist.length" title="清空当前播放列表" @click="confirmClearPlaylist">
+            清空
+          </button>
+        </div>
+        <div v-if="playlist.length" ref="playlistPanelRef" class="alapi-player-playlist-list">
+          <div
+            v-for="(song, index) in playlist"
+            :key="song.id"
+            role="button"
+            tabindex="0"
+            class="alapi-player-playlist-item"
+            :class="{ active: currentIndex === index }"
+            @click="playPlaylistSong(index)"
+            @keydown.enter.prevent="playPlaylistSong(index)"
+            @keydown.space.prevent="playPlaylistSong(index)"
+          >
+            <span class="playlist-index">{{ currentIndex === index && isPlaying ? '▶' : index + 1 }}</span>
+            <span class="playlist-title">
+              <strong>{{ song.name }}</strong>
+              <em>{{ song.artists }}</em>
+            </span>
+            <span class="playlist-duration">{{ formatSeconds(song.duration / 1000) }}</span>
+            <button
+              class="playlist-remove"
+              type="button"
+              title="从播放列表移除"
+              @click.stop="removePlaylistSong(index)"
+            >
+              移除
+            </button>
+          </div>
+        </div>
+        <div v-else class="alapi-player-playlist-empty">
+          勾选搜索结果后批量添加，或点击歌名直接播放
+        </div>
+      </section>
+
       <aside class="alapi-player-side">
+        <div class="alapi-player-side-top">
+          <a class="alapi-player-source" href="https://musicplayer.xfyun.club/" target="_blank" rel="noopener noreferrer">
+            小枫播放器测试
+          </a>
+        </div>
         <div class="alapi-player-side-header">
           <div>
             <strong>歌词</strong>
@@ -194,6 +193,34 @@
           <p v-else>暂无热评</p>
         </div>
       </aside>
+
+      <div class="alapi-player-control-dock">
+        <div class="alapi-player-controls">
+          <button type="button" :disabled="!playlist.length" title="上一首" @click="playPrevious">⏮</button>
+          <button class="primary-control" type="button" :disabled="!currentSong" title="播放/暂停" @click="togglePlay">
+            {{ isPlaying ? '暂停' : '播放' }}
+          </button>
+          <button type="button" :disabled="!playlist.length" title="下一首" @click="playNext">⏭</button>
+          <input
+            v-model.number="progress"
+            type="range"
+            min="0"
+            max="100"
+            step="0.1"
+            aria-label="播放进度"
+            @input="seekAudio"
+          >
+          <span class="alapi-player-time">{{ currentTimeText }} / {{ durationText }}</span>
+        </div>
+
+        <div class="alapi-player-footer">
+          <span class="alapi-player-status">{{ statusText }}</span>
+          <label>
+            音量
+            <input v-model.number="volume" type="range" min="0" max="100" step="1" @input="updateVolume">
+          </label>
+        </div>
+      </div>
     </div>
 
     <div v-else class="alapi-player-mini">
@@ -212,7 +239,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { requestJson } from '@/utils/request'
 
 interface AlapiResponse<T> {
@@ -305,6 +332,16 @@ interface PlayerSong {
   url: string
 }
 
+interface PlayerListGroup {
+  id: string
+  name: string
+  songs: PlayerSong[]
+}
+
+interface PlayerListGroupView extends PlayerListGroup {
+  index: number
+}
+
 interface LyricLine {
   time: number
   text: string
@@ -314,6 +351,8 @@ interface PlayerStorageState {
   keyword?: string
   searchHistory?: string[]
   playlist?: PlayerSong[]
+  playlistGroups?: PlayerListGroup[]
+  activePlaylistGroupIndex?: number
   currentIndex?: number
   volume?: number
   isCollapsed?: boolean
@@ -337,6 +376,7 @@ const PLAYER_STORAGE_KEY: string = 'alapi_bottom_music_player_state'
 const DEFAULT_KEYWORD: string = '慢慢懂'
 const SEARCH_LIMIT: number = 10
 const SEARCH_TYPE: string = '1'
+const MAX_PLAYLIST_SONGS: number = 100
 const FALLBACK_SONGS: PlayerSong[] = [
   {
     id: 1345417796,
@@ -388,8 +428,12 @@ const apiDocs: ApiDocItem[] = [
 
 const keyword: Ref<string> = ref<string>(DEFAULT_KEYWORD)
 const searchResults: Ref<PlayerSong[]> = ref<PlayerSong[]>([])
+const selectedSearchSongIds: Ref<number[]> = ref<number[]>([])
 const searchHistory: Ref<string[]> = ref<string[]>([])
-const playlist: Ref<PlayerSong[]> = ref<PlayerSong[]>([])
+const playlistGroups: Ref<PlayerListGroup[]> = ref<PlayerListGroup[]>([
+  createPlaylistGroup(0)
+])
+const activePlaylistGroupIndex: Ref<number> = ref<number>(0)
 const currentIndex: Ref<number> = ref<number>(0)
 const isPlaying: Ref<boolean> = ref<boolean>(false)
 const isSearching: Ref<boolean> = ref<boolean>(false)
@@ -402,11 +446,31 @@ const durationSeconds: Ref<number> = ref<number>(0)
 const lyricLines: Ref<LyricLine[]> = ref<LyricLine[]>([])
 const currentLyricIndex: Ref<number> = ref<number>(-1)
 const lyricPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+const playlistPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const hotComments: Ref<string[]> = ref<string[]>([])
 const pendingRestoreSeconds: Ref<number> = ref<number>(0)
 let lastPlaybackSaveAt: number = 0
 let playRequestId: number = 0
 const audio: HTMLAudioElement = new Audio()
+
+const activePlaylistGroup: ComputedRef<PlayerListGroup> = computed<PlayerListGroup>(() => {
+  return getActivePlaylistGroup()
+})
+
+const visiblePlaylistGroups: ComputedRef<PlayerListGroupView[]> = computed<PlayerListGroupView[]>(() => {
+  return playlistGroups.value.map((group: PlayerListGroup, index: number): PlayerListGroupView => ({
+    ...group,
+    index
+  }))
+})
+
+const playlist: ComputedRef<PlayerSong[]> = computed<PlayerSong[]>(() => {
+  return activePlaylistGroup.value.songs
+})
+
+const totalPlaylistSongCount: ComputedRef<number> = computed<number>(() => {
+  return playlistGroups.value.reduce((total: number, group: PlayerListGroup): number => total + group.songs.length, 0)
+})
 
 const currentSong: ComputedRef<PlayerSong | null> = computed<PlayerSong | null>(() => {
   return playlist.value[currentIndex.value] ?? null
@@ -414,6 +478,62 @@ const currentSong: ComputedRef<PlayerSong | null> = computed<PlayerSong | null>(
 
 const currentTimeText: ComputedRef<string> = computed<string>(() => formatSeconds(currentSeconds.value))
 const durationText: ComputedRef<string> = computed<string>(() => formatSeconds(durationSeconds.value))
+
+function createPlaylistGroup(index: number): PlayerListGroup {
+  return {
+    id: `playlist-${index + 1}-${Date.now()}`,
+    name: `播放列表${index + 1}`,
+    songs: []
+  }
+}
+
+function getActivePlaylistGroup(): PlayerListGroup {
+  if (!playlistGroups.value.length) {
+    playlistGroups.value.push(createPlaylistGroup(0))
+  }
+
+  const safeIndex: number = Math.min(
+    Math.max(activePlaylistGroupIndex.value, 0),
+    playlistGroups.value.length - 1
+  )
+  activePlaylistGroupIndex.value = safeIndex
+  return playlistGroups.value[safeIndex]
+}
+
+function findAvailablePlaylistGroup(): PlayerListGroup {
+  const availableGroup: PlayerListGroup | undefined = playlistGroups.value.find((group: PlayerListGroup): boolean => group.songs.length < MAX_PLAYLIST_SONGS)
+  if (availableGroup) return availableGroup
+
+  const nextGroup: PlayerListGroup = createPlaylistGroup(playlistGroups.value.length)
+  playlistGroups.value.push(nextGroup)
+  return nextGroup
+}
+
+function findSongLocation(songId: number): { groupIndex: number, songIndex: number } | null {
+  for (let groupIndex: number = 0; groupIndex < playlistGroups.value.length; groupIndex += 1) {
+    const songIndex: number = playlistGroups.value[groupIndex].songs.findIndex((song: PlayerSong): boolean => song.id === songId)
+    if (songIndex >= 0) {
+      return { groupIndex, songIndex }
+    }
+  }
+  return null
+}
+
+function switchPlaylistGroup(groupIndex: number): void {
+  if (!playlistGroups.value[groupIndex]) return
+  activePlaylistGroupIndex.value = groupIndex
+  currentIndex.value = Math.min(currentIndex.value, Math.max(playlist.value.length - 1, 0))
+  scrollPlaylistToTop()
+  saveState()
+}
+
+function scrollPlaylistToTop(): void {
+  void nextTick((): void => {
+    if (playlistPanelRef.value) {
+      playlistPanelRef.value.scrollTop = 0
+    }
+  })
+}
 
 function buildMusicSearchUrl(searchKeyword: string, page: number): string {
   const params: URLSearchParams = new URLSearchParams({
@@ -532,6 +652,7 @@ async function searchSongs(page: number = 1): Promise<void> {
     searchResults.value = response.data.songs
       .map((song: AlapiSong): PlayerSong | null => normalizeSong(song))
       .filter((song: PlayerSong | null): song is PlayerSong => song !== null)
+    selectedSearchSongIds.value = searchResults.value.map((song: PlayerSong): number => song.id)
 
     statusText.value = searchResults.value.length
       ? `找到 ${searchResults.value.length} 首，点击歌名播放`
@@ -539,6 +660,7 @@ async function searchSongs(page: number = 1): Promise<void> {
   } catch (error: unknown) {
     const message: string = error instanceof Error ? error.message : '搜索失败，请稍后再试'
     searchResults.value = getFallbackSongs()
+    selectedSearchSongIds.value = searchResults.value.map((song: PlayerSong): number => song.id)
     statusText.value = `${message}，已展示备用歌曲`
   } finally {
     isSearching.value = false
@@ -560,6 +682,14 @@ function searchFromHistory(searchKeyword: string): void {
   void searchSongs(1)
 }
 
+function selectAllSearchResults(): void {
+  selectedSearchSongIds.value = searchResults.value.map((song: PlayerSong): number => song.id)
+}
+
+function clearSelectedSearchResults(): void {
+  selectedSearchSongIds.value = []
+}
+
 function confirmClearHistory(): void {
   void ElMessageBox.confirm(
     '确定要清空音乐搜索历史吗？清空后无法恢复。',
@@ -578,8 +708,8 @@ function confirmClearHistory(): void {
 
 function confirmClearPlaylist(): void {
   void ElMessageBox.confirm(
-    '确定要清空当前播放列表吗？当前播放也会停止。',
-    '清空播放列表',
+    `确定要清空${activePlaylistGroup.value.name}吗？当前播放也会停止。`,
+    `清空${activePlaylistGroup.value.name}`,
     {
       confirmButtonText: '确定清空',
       cancelButtonText: '取消',
@@ -596,7 +726,7 @@ function resetPlaybackState(message: string): void {
   audio.pause()
   audio.removeAttribute('src')
   audio.load()
-  playlist.value = []
+  activePlaylistGroup.value.songs = []
   currentIndex.value = 0
   isPlaying.value = false
   progress.value = 0
@@ -611,33 +741,75 @@ function resetPlaybackState(message: string): void {
 
 function addSearchResultsToPlaylist(): void {
   if (!searchResults.value.length) return
-
-  const existedIds: Set<number> = new Set(playlist.value.map((song: PlayerSong): number => song.id))
-  const songsToAdd: PlayerSong[] = searchResults.value
-    .filter((song: PlayerSong): boolean => !existedIds.has(song.id))
-    .map((song: PlayerSong): PlayerSong => ({ ...song }))
-
-  if (!songsToAdd.length) {
-    statusText.value = '搜索结果已在播放列表中'
+  if (!selectedSearchSongIds.value.length) {
+    statusText.value = '请先勾选要添加的歌曲'
+    ElMessage.warning('请先勾选要添加的歌曲')
     return
   }
 
-  const wasEmpty: boolean = playlist.value.length === 0
-  playlist.value = [...playlist.value, ...songsToAdd]
-  if (wasEmpty) currentIndex.value = 0
-  statusText.value = `已批量添加 ${songsToAdd.length} 首到播放列表`
+  const selectedIds: Set<number> = new Set(selectedSearchSongIds.value)
+  const songsToAdd: PlayerSong[] = searchResults.value
+    .filter((song: PlayerSong): boolean => selectedIds.has(song.id))
+    .map((song: PlayerSong): PlayerSong => ({ ...song }))
+
+  let addedCount: number = 0
+  let duplicateCount: number = 0
+  let firstTargetGroupIndex: number = activePlaylistGroupIndex.value
+
+  songsToAdd.forEach((song: PlayerSong): void => {
+    if (findSongLocation(song.id)) {
+      duplicateCount += 1
+      return
+    }
+
+    const targetGroup: PlayerListGroup = findAvailablePlaylistGroup()
+    const targetGroupIndex: number = playlistGroups.value.findIndex((group: PlayerListGroup): boolean => group.id === targetGroup.id)
+    targetGroup.songs.push({ ...song, url: '' })
+    if (addedCount === 0 && targetGroupIndex >= 0) {
+      firstTargetGroupIndex = targetGroupIndex
+    }
+    addedCount += 1
+  })
+
+  if (!songsToAdd.length) {
+    statusText.value = '请先勾选要添加的歌曲'
+    return
+  }
+
+  if (!addedCount) {
+    statusText.value = `选中的 ${duplicateCount} 首已存在播放列表`
+    ElMessage.warning('选中的歌曲已存在播放列表，不会重复添加')
+    return
+  }
+
+  activePlaylistGroupIndex.value = firstTargetGroupIndex
+  currentIndex.value = Math.min(currentIndex.value, Math.max(playlist.value.length - 1, 0))
+  scrollPlaylistToTop()
+  if (duplicateCount) {
+    ElMessage.warning(`${duplicateCount} 首已存在播放列表，已自动跳过`)
+  } else {
+    ElMessage.success(`已添加 ${addedCount} 首到${activePlaylistGroup.value.name}`)
+  }
+  statusText.value = duplicateCount
+    ? `已添加 ${addedCount} 首，${duplicateCount} 首已存在并跳过`
+    : `已批量添加 ${addedCount} 首到${activePlaylistGroup.value.name}`
   saveState()
 }
 
 async function playSong(song: PlayerSong): Promise<void> {
-  const targetIndex: number = playlist.value.findIndex((item: PlayerSong): boolean => item.id === song.id)
-  if (targetIndex >= 0) {
-    currentIndex.value = targetIndex
+  const existingLocation: { groupIndex: number, songIndex: number } | null = findSongLocation(song.id)
+  if (existingLocation) {
+    activePlaylistGroupIndex.value = existingLocation.groupIndex
+    currentIndex.value = existingLocation.songIndex
+    statusText.value = `已存在播放列表，切换到：${song.name}`
   } else {
-    playlist.value.unshift(song)
+    const targetGroup: PlayerListGroup = findAvailablePlaylistGroup()
+    targetGroup.songs.unshift({ ...song, url: '' })
+    activePlaylistGroupIndex.value = Math.max(0, playlistGroups.value.findIndex((group: PlayerListGroup): boolean => group.id === targetGroup.id))
     currentIndex.value = 0
   }
 
+  scrollPlaylistToTop()
   await loadAndPlayCurrentSong(true)
   await fetchSongExtra(song.id)
   saveState()
@@ -672,10 +844,18 @@ function removePlaylistSong(index: number): void {
     hotComments.value = []
   }
 
-  playlist.value.splice(index, 1)
+  activePlaylistGroup.value.songs.splice(index, 1)
 
   if (!playlist.value.length) {
-    resetPlaybackState(`已移除：${removingSong.name}`)
+    currentIndex.value = 0
+    isPlaying.value = false
+    progress.value = 0
+    currentSeconds.value = 0
+    durationSeconds.value = 0
+    lyricLines.value = []
+    currentLyricIndex.value = -1
+    hotComments.value = []
+    statusText.value = `已移除：${removingSong.name}`
     saveState()
     return
   }
@@ -982,6 +1162,8 @@ function saveState(): void {
     keyword: keyword.value,
     searchHistory: searchHistory.value,
     playlist: playlist.value,
+    playlistGroups: playlistGroups.value,
+    activePlaylistGroupIndex: activePlaylistGroupIndex.value,
     currentIndex: currentIndex.value,
     volume: volume.value,
     isCollapsed: isCollapsed.value,
@@ -1006,7 +1188,24 @@ function loadState(): void {
 
     keyword.value = parsedState.keyword ?? DEFAULT_KEYWORD
     searchHistory.value = parsedState.searchHistory ?? []
-    playlist.value = parsedState.playlist ?? []
+    if (parsedState.playlistGroups?.length) {
+      playlistGroups.value = parsedState.playlistGroups.map((group: PlayerListGroup, index: number): PlayerListGroup => ({
+        id: group.id || `playlist-${index + 1}`,
+        name: group.name || `播放列表${index + 1}`,
+        songs: group.songs ?? []
+      }))
+    } else {
+      playlistGroups.value = [
+        {
+          ...createPlaylistGroup(0),
+          songs: parsedState.playlist ?? []
+        }
+      ]
+    }
+    activePlaylistGroupIndex.value = Math.min(
+      Math.max(parsedState.activePlaylistGroupIndex ?? 0, 0),
+      Math.max(playlistGroups.value.length - 1, 0)
+    )
     currentIndex.value = Math.min(Math.max(parsedState.currentIndex ?? 0, 0), Math.max(playlist.value.length - 1, 0))
     volume.value = parsedState.volume ?? 70
     isCollapsed.value = parsedState.isCollapsed ?? false
@@ -1070,10 +1269,10 @@ onUnmounted((): void => {
 <style scoped>
 .alapi-player {
   position: fixed;
-  left: 24px;
+  left: 28px;
   bottom: 20px;
   z-index: 1600;
-  width: min(1120px, calc(100vw - 40px));
+  width: min(1500px, calc(100vw - 56px));
   color: #f5f7ff;
   pointer-events: auto;
 }
@@ -1089,11 +1288,12 @@ onUnmounted((): void => {
 
 .alapi-player-panel {
   display: grid;
-  grid-template-columns: 86px minmax(430px, 1fr) minmax(330px, 390px);
+  grid-template-columns: 86px minmax(320px, 380px) minmax(360px, 1fr) minmax(330px, 390px);
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 16px;
   padding: 16px;
   border-radius: 20px;
-  max-height: min(700px, calc(100vh - 72px));
+  height: min(760px, calc(100vh - 72px));
   overflow: hidden;
 }
 
@@ -1133,6 +1333,14 @@ onUnmounted((): void => {
 
 .alapi-player-body {
   min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.alapi-player-workspace {
+  min-height: 0;
   overflow-y: auto;
   padding-right: 6px;
 }
@@ -1268,6 +1476,13 @@ onUnmounted((): void => {
   font-size: 12px;
 }
 
+.alapi-player-search-result-bar div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 .alapi-player-search-result-bar button {
   flex: 0 0 auto;
   padding: 5px 10px;
@@ -1281,7 +1496,7 @@ onUnmounted((): void => {
 }
 
 .alapi-player-results {
-  max-height: 132px;
+  max-height: 210px;
   margin-top: 6px;
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1290,11 +1505,25 @@ onUnmounted((): void => {
 
 .alapi-player-result {
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
   padding: 8px 10px;
   color: #e8ebff;
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+.alapi-player-result-play {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 140px);
+  gap: 10px;
+  align-items: center;
+  padding: 0;
+  color: inherit;
   text-align: left;
   background: transparent;
   border: 0;
@@ -1305,18 +1534,18 @@ onUnmounted((): void => {
   background: rgba(108, 114, 247, 0.22);
 }
 
-.alapi-player-result span,
-.alapi-player-result em {
+.alapi-player-result-play span,
+.alapi-player-result-play em {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.alapi-player-result span {
+.alapi-player-result-play span {
   flex: 1 1 auto;
 }
 
-.alapi-player-result em {
+.alapi-player-result-play em {
   flex: 0 1 150px;
   color: #9aa1b7;
   font-style: normal;
@@ -1402,11 +1631,50 @@ onUnmounted((): void => {
 }
 
 .alapi-player-playlist {
-  margin-top: 12px;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
   padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.045);
+  overflow: hidden;
+}
+
+.alapi-player-playlist-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.alapi-player-playlist-tabs button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  color: #a9afc4;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.alapi-player-playlist-tabs button.active {
+  color: #7fd7c8;
+  background: rgba(127, 215, 200, 0.1);
+  border-color: rgba(127, 215, 200, 0.32);
+}
+
+.alapi-player-playlist-tabs em {
+  color: #8f96ad;
+  font-style: normal;
 }
 
 .alapi-player-playlist-header {
@@ -1448,7 +1716,9 @@ onUnmounted((): void => {
 }
 
 .alapi-player-playlist-list {
-  max-height: 236px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
   border-radius: 10px;
 }
@@ -1545,6 +1815,7 @@ onUnmounted((): void => {
 
 .alapi-player-side {
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1553,6 +1824,11 @@ onUnmounted((): void => {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.045);
   overflow: hidden;
+}
+
+.alapi-player-side-top {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .alapi-player-side-header {
@@ -1589,8 +1865,9 @@ onUnmounted((): void => {
 }
 
 .alapi-player-lyrics {
-  min-height: 210px;
-  max-height: 330px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1665,12 +1942,19 @@ onUnmounted((): void => {
 }
 
 .alapi-player-comment-list {
-  max-height: 98px;
+  max-height: 128px;
   overflow-y: auto;
 }
 
+.alapi-player-control-dock {
+  grid-column: 2 / -1;
+  flex: 0 0 auto;
+  padding: 12px 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .alapi-player-controls {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .alapi-player-controls button {
