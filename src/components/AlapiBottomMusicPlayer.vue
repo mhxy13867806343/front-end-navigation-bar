@@ -83,6 +83,41 @@
           </div>
         </div>
 
+        <details class="alapi-player-import-panel">
+          <summary>歌单导入</summary>
+          <div class="alapi-player-import-form">
+            <input
+              v-model.trim="playlistImportId"
+              type="text"
+              inputmode="numeric"
+              placeholder="输入网易云歌单 ID，例如 440342015"
+              @keydown.enter="fetchPlaylistSongs"
+            >
+            <button type="button" :disabled="isFetchingPlaylist" @click="fetchPlaylistSongs">
+              {{ isFetchingPlaylist ? '获取中' : '获取歌单' }}
+            </button>
+          </div>
+          <div v-if="playlistImportSongs.length" class="alapi-player-import-result">
+            <div class="alapi-player-import-header">
+              <span>已获取 {{ playlistImportSongs.length }} 首</span>
+              <button type="button" @click="openPlaylistImportDialog">
+                勾选添加
+              </button>
+            </div>
+            <div class="alapi-player-import-list">
+              <button
+                v-for="song in playlistImportSongs.slice(0, 8)"
+                :key="song.id"
+                type="button"
+                @click="playSong(song)"
+              >
+                <span>{{ song.name }}</span>
+                <em>{{ song.artists }}</em>
+              </button>
+            </div>
+          </div>
+        </details>
+
         <template v-if="searchResults.length">
           <div class="alapi-player-search-result-bar">
             <span>搜索结果 {{ searchResults.length }} 首</span>
@@ -141,14 +176,27 @@
       <section class="alapi-player-playlist" aria-label="播放列表">
         <div class="alapi-player-playlist-tabs">
           <button
+            class="alapi-player-playlist-add"
+            type="button"
+            title="新增播放列表"
+            @click="createPlaylistGroupTab"
+          >
+            + 新增
+          </button>
+          <button
             v-for="group in visiblePlaylistGroups"
             :key="group.id"
             type="button"
+            class="alapi-player-playlist-tab"
             :class="{ active: activePlaylistGroupIndex === group.index }"
+            :title="`播放列表 ${group.index + 1}`"
             @click="switchPlaylistGroup(group.index)"
           >
-            播放列表 {{ group.index + 1 }}
+            <span class="alapi-player-sr-only">播放列表 {{ group.index + 1 }}</span>
+            <span>{{ group.name }}</span>
             <em>{{ group.songs.length }}/{{ MAX_PLAYLIST_SONGS }}</em>
+            <i role="button" tabindex="0" title="重命名" @click.stop="renamePlaylistGroup(group.index)">改</i>
+            <i role="button" tabindex="0" title="删除" @click.stop="deletePlaylistGroup(group.index)">删</i>
           </button>
         </div>
         <div class="alapi-player-playlist-header">
@@ -333,6 +381,34 @@
       </template>
     </el-dialog>
 
+    <el-dialog v-model="isPlaylistImportDialogVisible" title="从歌单添加歌曲" class="alapi-player-dialog" width="620px">
+      <div class="alapi-player-dialog-hint">
+        默认不选中，勾选后会添加到播放列表顶部；已存在于任意播放列表的歌曲会自动跳过。
+      </div>
+      <div class="alapi-player-dialog-actions">
+        <button type="button" @click="selectAllPlaylistImportSongs">全选</button>
+        <button type="button" @click="clearSelectedPlaylistImportSongs">清空</button>
+      </div>
+      <el-checkbox-group v-model="selectedPlaylistImportSongIds" class="alapi-player-batch-list">
+        <el-checkbox
+          v-for="song in playlistImportSongs"
+          :key="song.id"
+          :value="song.id"
+        >
+          <span>{{ song.name }}</span>
+          <em>{{ song.artists }}</em>
+        </el-checkbox>
+      </el-checkbox-group>
+      <template #footer>
+        <button type="button" class="alapi-player-dialog-secondary" @click="isPlaylistImportDialogVisible = false">
+          取消
+        </button>
+        <button type="button" class="alapi-player-dialog-primary" @click="addPlaylistImportSongsToPlaylist">
+          添加到播放列表
+        </button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="isDetailDialogVisible" title="歌曲详情" class="alapi-player-dialog" width="460px">
       <div v-if="detailSong" class="alapi-player-song-detail">
         <strong>{{ detailSong.name }}</strong>
@@ -400,6 +476,20 @@ interface AlapiSearchData {
   songs?: AlapiSong[]
   hasMore?: boolean
   songCount?: number
+}
+
+interface AlapiPlaylistSong {
+  id?: number
+  name?: string
+  user_name?: string
+  user_id?: number
+  duration?: number
+}
+
+interface AlapiPlaylistData {
+  playlist?: AlapiPlaylistSong[]
+  name?: string
+  nickname?: string
 }
 
 interface AlapiMusicUrlItem {
@@ -523,6 +613,7 @@ const MUSIC_SEARCH_PATH: string = '/api-alapi/api/music/search'
 const MUSIC_URL_PATH: string = '/api-alapi/api/music/url'
 const MUSIC_LYRIC_PATH: string = '/api-alapi/api/music/lyric'
 const MUSIC_HOT_COMMENT_PATH: string = '/api-alapi/api/music/comment/hot'
+const MUSIC_PLAYLIST_PATH: string = '/api-alapi/api/music/playlist'
 const PLAYER_STORAGE_KEY: string = 'alapi_bottom_music_player_state'
 const DEFAULT_KEYWORD: string = '慢慢懂'
 const SEARCH_LIMIT: number = 10
@@ -648,6 +739,11 @@ const currentLyricIndex: Ref<number> = ref<number>(-1)
 const lyricPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const playlistPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const hotComments: Ref<string[]> = ref<string[]>([])
+const playlistImportId: Ref<string> = ref<string>('440342015')
+const playlistImportSongs: Ref<PlayerSong[]> = ref<PlayerSong[]>([])
+const selectedPlaylistImportSongIds: Ref<number[]> = ref<number[]>([])
+const isFetchingPlaylist: Ref<boolean> = ref<boolean>(false)
+const isPlaylistImportDialogVisible: Ref<boolean> = ref<boolean>(false)
 const pendingRestoreSeconds: Ref<number> = ref<number>(0)
 let lastPlaybackSaveAt: number = 0
 let playRequestId: number = 0
@@ -707,6 +803,80 @@ function createPlaylistGroup(index: number): PlayerListGroup {
     name: `播放列表${index + 1}`,
     songs: []
   }
+}
+
+function createPlaylistGroupTab(): void {
+  const nextGroup: PlayerListGroup = createPlaylistGroup(playlistGroups.value.length)
+  playlistGroups.value.push(nextGroup)
+  activePlaylistGroupIndex.value = playlistGroups.value.length - 1
+  currentIndex.value = 0
+  playlistSearchKeyword.value = ''
+  statusText.value = `已新增${nextGroup.name}`
+  saveState()
+  scrollPlaylistToTop()
+}
+
+function renamePlaylistGroup(groupIndex: number): void {
+  const targetGroup: PlayerListGroup | undefined = playlistGroups.value[groupIndex]
+  if (!targetGroup) return
+
+  void ElMessageBox.prompt(
+    '请输入新的播放列表名称',
+    `重命名${targetGroup.name}`,
+    {
+      confirmButtonText: '保存',
+      cancelButtonText: '取消',
+      inputValue: targetGroup.name,
+      inputPattern: /\S/,
+      inputErrorMessage: '名称不能为空'
+    }
+  ).then((result): void => {
+    const nextName: string = String(result.value ?? '').trim()
+    if (!nextName) return
+    targetGroup.name = nextName.slice(0, 16)
+    statusText.value = `已重命名为：${targetGroup.name}`
+    saveState()
+  }).catch((): void => {})
+}
+
+function deletePlaylistGroup(groupIndex: number): void {
+  const targetGroup: PlayerListGroup | undefined = playlistGroups.value[groupIndex]
+  if (!targetGroup) return
+  if (playlistGroups.value.length <= 1) {
+    ElMessage.warning('至少保留一个播放列表')
+    return
+  }
+
+  void ElMessageBox.confirm(
+    `确定要删除${targetGroup.name}吗？其中 ${targetGroup.songs.length} 首歌曲也会移除。`,
+    `删除${targetGroup.name}`,
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then((): void => {
+    const isDeletingActiveGroup: boolean = groupIndex === activePlaylistGroupIndex.value
+    playlistGroups.value.splice(groupIndex, 1)
+    if (activePlaylistGroupIndex.value > groupIndex) {
+      activePlaylistGroupIndex.value -= 1
+    } else if (isDeletingActiveGroup) {
+      activePlaylistGroupIndex.value = Math.min(groupIndex, playlistGroups.value.length - 1)
+      currentIndex.value = 0
+      if (!playlist.value.length) {
+        isPlaying.value = false
+        progress.value = 0
+        currentSeconds.value = 0
+        durationSeconds.value = 0
+        lyricLines.value = []
+        currentLyricIndex.value = -1
+        hotComments.value = []
+      }
+    }
+    statusText.value = `已删除${targetGroup.name}`
+    saveState()
+    scrollPlaylistToTop()
+  }).catch((): void => {})
 }
 
 function getActivePlaylistGroup(): PlayerListGroup {
@@ -805,6 +975,14 @@ function buildMusicHotCommentApi(songId: number): string {
   return `${MUSIC_HOT_COMMENT_PATH}?${params.toString()}`
 }
 
+function buildMusicPlaylistApi(playlistId: string): string {
+  const params: URLSearchParams = new URLSearchParams({
+    token: ALAPI_TOKEN,
+    id: playlistId
+  })
+  return `${MUSIC_PLAYLIST_PATH}?${params.toString()}`
+}
+
 function buildFallbackSongUrl(songId: number): string {
   return `https://music.163.com/song/media/outer/url?id=${songId}.mp3`
 }
@@ -826,6 +1004,18 @@ function normalizeSong(song: AlapiSong): PlayerSong | null {
     name: song.name,
     artists: getArtistText(song),
     album: album?.name ?? '未知专辑',
+    duration: song.duration ?? 0,
+    url: ''
+  }
+}
+
+function normalizePlaylistSong(song: AlapiPlaylistSong): PlayerSong | null {
+  if (!song.id || !song.name) return null
+  return {
+    id: song.id,
+    name: song.name,
+    artists: song.user_name?.trim() || '歌单歌曲',
+    album: '歌单导入',
     duration: song.duration ?? 0,
     url: ''
   }
@@ -975,6 +1165,14 @@ function clearSelectedSearchResults(): void {
   selectedSearchSongIds.value = []
 }
 
+function selectAllPlaylistImportSongs(): void {
+  selectedPlaylistImportSongIds.value = playlistImportSongs.value.map((song: PlayerSong): number => song.id)
+}
+
+function clearSelectedPlaylistImportSongs(): void {
+  selectedPlaylistImportSongIds.value = []
+}
+
 function openBatchAddDialog(): void {
   if (!searchResults.value.length) {
     ElMessage.warning('没有可添加的搜索结果')
@@ -988,6 +1186,51 @@ function openBatchAddDialog(): void {
 function openSongDetail(song: PlayerSong): void {
   detailSong.value = song
   isDetailDialogVisible.value = true
+}
+
+function openPlaylistImportDialog(): void {
+  if (!playlistImportSongs.value.length) {
+    ElMessage.warning('请先获取歌单歌曲')
+    return
+  }
+
+  selectedPlaylistImportSongIds.value = []
+  isPlaylistImportDialogVisible.value = true
+}
+
+async function fetchPlaylistSongs(): Promise<void> {
+  const safePlaylistId: string = playlistImportId.value.trim()
+  if (!safePlaylistId) {
+    statusText.value = '请输入网易云歌单 ID'
+    ElMessage.warning('请输入网易云歌单 ID')
+    return
+  }
+
+  isFetchingPlaylist.value = true
+  statusText.value = '正在获取歌单歌曲...'
+
+  try {
+    const response: AlapiResponse<AlapiPlaylistData> = await requestJson<AlapiResponse<AlapiPlaylistData>>(buildMusicPlaylistApi(safePlaylistId))
+    if (!response.success || !response.data?.playlist) {
+      throw new Error(response.message || '歌单获取失败')
+    }
+
+    playlistImportSongs.value = response.data.playlist
+      .map((song: AlapiPlaylistSong): PlayerSong | null => normalizePlaylistSong(song))
+      .filter((song: PlayerSong | null): song is PlayerSong => song !== null)
+    selectedPlaylistImportSongIds.value = []
+    statusText.value = playlistImportSongs.value.length
+      ? `歌单已获取 ${playlistImportSongs.value.length} 首，可勾选添加`
+      : '歌单里没有可导入的歌曲'
+  } catch (error: unknown) {
+    const message: string = error instanceof Error ? error.message : '歌单获取失败'
+    playlistImportSongs.value = []
+    selectedPlaylistImportSongIds.value = []
+    statusText.value = `${message}，请检查歌单 ID`
+  } finally {
+    isFetchingPlaylist.value = false
+    saveState()
+  }
 }
 
 function applyPlayerTheme(): void {
@@ -1044,18 +1287,12 @@ function resetPlaybackState(message: string): void {
   statusText.value = message
 }
 
-function addSearchResultsToPlaylist(): void {
-  if (!searchResults.value.length) return
-  if (!selectedSearchSongIds.value.length) {
-    statusText.value = '请先勾选要添加的歌曲'
+function addSongsToPlaylist(songs: PlayerSong[], emptyMessage: string): { addedCount: number, duplicateCount: number } {
+  if (!songs.length) {
+    statusText.value = emptyMessage
     ElMessage.warning('请先勾选要添加的歌曲')
-    return
+    return { addedCount: 0, duplicateCount: 0 }
   }
-
-  const selectedIds: Set<number> = new Set(selectedSearchSongIds.value)
-  const songsToAdd: PlayerSong[] = searchResults.value
-    .filter((song: PlayerSong): boolean => selectedIds.has(song.id))
-    .map((song: PlayerSong): PlayerSong => ({ ...song }))
 
   let addedCount: number = 0
   let duplicateCount: number = 0
@@ -1063,7 +1300,7 @@ function addSearchResultsToPlaylist(): void {
   const originalActiveGroupIndex: number = activePlaylistGroupIndex.value
   const originalActiveGroupId: string = activePlaylistGroup.value.id
 
-  songsToAdd.forEach((song: PlayerSong): void => {
+  songs.forEach((song: PlayerSong): void => {
     if (findSongLocation(song.id)) {
       duplicateCount += 1
       return
@@ -1078,15 +1315,10 @@ function addSearchResultsToPlaylist(): void {
     addedCount += 1
   })
 
-  if (!songsToAdd.length) {
-    statusText.value = '请先勾选要添加的歌曲'
-    return
-  }
-
   if (!addedCount) {
     statusText.value = `选中的 ${duplicateCount} 首已存在播放列表`
     ElMessage.warning('选中的歌曲已存在播放列表，不会重复添加')
-    return
+    return { addedCount, duplicateCount }
   }
 
   activePlaylistGroupIndex.value = firstTargetGroupIndex
@@ -1099,7 +1331,6 @@ function addSearchResultsToPlaylist(): void {
     currentIndex.value = 0
   }
   scrollPlaylistToTop()
-  isBatchDialogVisible.value = false
   if (duplicateCount) {
     ElMessage.warning(`${duplicateCount} 首已存在播放列表，已自动跳过`)
   } else {
@@ -1109,6 +1340,31 @@ function addSearchResultsToPlaylist(): void {
     ? `已添加 ${addedCount} 首，${duplicateCount} 首已存在并跳过`
     : `已批量添加 ${addedCount} 首到${activePlaylistGroup.value.name}`
   saveState()
+  return { addedCount, duplicateCount }
+}
+
+function addSearchResultsToPlaylist(): void {
+  if (!searchResults.value.length) return
+  const selectedIds: Set<number> = new Set(selectedSearchSongIds.value)
+  const songsToAdd: PlayerSong[] = searchResults.value
+    .filter((song: PlayerSong): boolean => selectedIds.has(song.id))
+    .map((song: PlayerSong): PlayerSong => ({ ...song }))
+  const result: { addedCount: number, duplicateCount: number } = addSongsToPlaylist(songsToAdd, '请先勾选要添加的歌曲')
+  if (result.addedCount > 0) {
+    isBatchDialogVisible.value = false
+  }
+}
+
+function addPlaylistImportSongsToPlaylist(): void {
+  if (!playlistImportSongs.value.length) return
+  const selectedIds: Set<number> = new Set(selectedPlaylistImportSongIds.value)
+  const songsToAdd: PlayerSong[] = playlistImportSongs.value
+    .filter((song: PlayerSong): boolean => selectedIds.has(song.id))
+    .map((song: PlayerSong): PlayerSong => ({ ...song }))
+  const result: { addedCount: number, duplicateCount: number } = addSongsToPlaylist(songsToAdd, '请先勾选要导入的歌单歌曲')
+  if (result.addedCount > 0) {
+    isPlaylistImportDialogVisible.value = false
+  }
 }
 
 async function playSong(song: PlayerSong): Promise<void> {
@@ -2006,6 +2262,105 @@ onUnmounted((): void => {
   border-radius: 12px;
 }
 
+.alapi-player-import-panel {
+  margin-top: 8px;
+}
+
+.alapi-player-import-panel summary {
+  color: #7c83ff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.alapi-player-import-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 94px;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.alapi-player-import-form input {
+  min-width: 0;
+  height: 36px;
+}
+
+.alapi-player-import-form button,
+.alapi-player-import-header button {
+  min-height: 34px;
+  padding: 0 10px;
+  color: var(--alapi-accent-color, #7fd7c8);
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(127, 215, 200, 0.08);
+  border: 1px solid rgba(127, 215, 200, 0.24);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.alapi-player-import-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.alapi-player-import-result {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.alapi-player-import-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #a9afc4;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.alapi-player-import-list {
+  max-height: 132px;
+  display: grid;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.alapi-player-import-list button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(72px, 120px);
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  color: #dfe4ff;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.alapi-player-import-list button:hover {
+  background: rgba(108, 114, 247, 0.16);
+}
+
+.alapi-player-import-list span,
+.alapi-player-import-list em {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.alapi-player-import-list em {
+  color: #9aa1b7;
+  font-size: 12px;
+  font-style: normal;
+}
+
 .alapi-player-api-panel {
   margin-top: 8px;
 }
@@ -2130,22 +2485,31 @@ onUnmounted((): void => {
   gap: 8px;
   margin-bottom: 10px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 0 0 8px;
+  scrollbar-width: thin;
 }
 
 .alapi-player-playlist-tabs button {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 6px 10px;
+  min-height: 40px;
+  padding: 8px 12px;
   color: #a9afc4;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
+  border-radius: 14px;
   cursor: pointer;
+}
+
+.alapi-player-playlist-add {
+  color: #dfe4ff;
+  background: rgba(108, 114, 247, 0.16);
+  border-color: rgba(108, 114, 247, 0.32);
 }
 
 .alapi-player-playlist-tabs button.active {
@@ -2154,9 +2518,45 @@ onUnmounted((): void => {
   border-color: rgba(127, 215, 200, 0.32);
 }
 
+.alapi-player-playlist-tab > span:not(.alapi-player-sr-only) {
+  max-width: 108px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .alapi-player-playlist-tabs em {
   color: #8f96ad;
+  font-size: 12px;
   font-style: normal;
+}
+
+.alapi-player-playlist-tabs i {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: #dfe4ff;
+  font-size: 11px;
+  font-style: normal;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+}
+
+.alapi-player-playlist-tabs i:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.alapi-player-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .alapi-player-playlist-header {

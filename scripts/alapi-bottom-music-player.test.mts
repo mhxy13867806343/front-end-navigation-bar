@@ -26,6 +26,29 @@ test('ALAPI music player supports paged playlists and duplicate prompts', () => 
   assert.match(playerSource, /findAvailablePlaylistGroup/)
 })
 
+test('ALAPI music player supports playlist group create rename delete and horizontal tabs', () => {
+  assert.match(playerSource, /@click=["']createPlaylistGroupTab["']/)
+  assert.match(playerSource, /@click\.stop=["']renamePlaylistGroup\(group\.index\)["']/)
+  assert.match(playerSource, /@click\.stop=["']deletePlaylistGroup\(group\.index\)["']/)
+  assert.match(playerSource, /function\s+createPlaylistGroupTab\s*\(/)
+  assert.match(playerSource, /function\s+renamePlaylistGroup\s*\(/)
+  assert.match(playerSource, /function\s+deletePlaylistGroup\s*\(/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs\s*\{[\s\S]*?overflow-x:\s*auto/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs button\s*\{[\s\S]*?min-height:\s*40px/)
+})
+
+test('ALAPI music player imports songs from the ALAPI playlist endpoint', () => {
+  assert.match(playerSource, /MUSIC_PLAYLIST_PATH:\s*string\s*=\s*['"]\/api-alapi\/api\/music\/playlist['"]/)
+  assert.match(playerSource, /interface\s+AlapiPlaylistData/)
+  assert.match(playerSource, /const\s+playlistImportSongs:\s*Ref<PlayerSong\[]>/)
+  assert.match(playerSource, /v-model\.trim=["']playlistImportId["']/)
+  assert.match(playerSource, /function\s+buildMusicPlaylistApi\s*\(/)
+  assert.match(playerSource, /function\s+fetchPlaylistSongs\s*\(/)
+  assert.match(playerSource, /function\s+openPlaylistImportDialog\s*\(/)
+  assert.match(playerSource, /function\s+addPlaylistImportSongsToPlaylist\s*\(/)
+  assert.match(playerSource, /\/api\/music\/playlist/)
+})
+
 test('ALAPI music player supports playlist searching and playback modes', () => {
   assert.match(playerSource, /v-model\.trim=["']playlistSearchKeyword["']/)
   assert.match(playerSource, /const\s+filteredPlaylist:\s*ComputedRef<PlaylistSongView\[]>/)

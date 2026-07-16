@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T14:39:06.323Z",
+  "generatedAt": "2026-07-16T16:22:14.726Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "bf9b507e120591d16804c00b8717292a2adf29fd",
+          "shortHash": "bf9b507",
+          "date": "2026-07-16",
+          "time": "22:40",
+          "type": "问题修复",
+          "title": "align alapi search type dropdown",
+          "scope": "",
+          "message": "fix: align alapi search type dropdown"
+        },
         {
           "hash": "4cda46fb314c5c7afb8b55eaf5fb9fcded84fbf9",
           "shortHash": "4cda46f",
@@ -303,16 +313,6 @@
           "title": "correct Loading icon component casing and add missing import",
           "scope": "",
           "message": "fix: correct Loading icon component casing and add missing import"
-        },
-        {
-          "hash": "7d999937674862afdcab7f2a46127855278147e0",
-          "shortHash": "7d99993",
-          "date": "2026-07-14",
-          "time": "21:05",
-          "type": "功能更新",
-          "title": "extract hardcoded select & radio options to formOptions.ts and refactor templates to loop dynamically using v-for",
-          "scope": "",
-          "message": "feat: extract hardcoded select & radio options to formOptions.ts and refactor templates to loop dynamically using v-for"
         }
       ]
     }
