@@ -2485,8 +2485,12 @@ onUnmounted((): void => {
   gap: 8px;
   margin-bottom: 10px;
   overflow-x: auto;
-  padding: 0 0 8px;
-  scrollbar-width: thin;
+  padding: 0 2px 4px;
+  scrollbar-width: none;
+}
+
+.alapi-player-playlist-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .alapi-player-playlist-tabs button {
@@ -2519,7 +2523,7 @@ onUnmounted((): void => {
 }
 
 .alapi-player-playlist-tab > span:not(.alapi-player-sr-only) {
-  max-width: 108px;
+  max-width: clamp(96px, 18vw, 220px);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -2932,12 +2936,14 @@ onUnmounted((): void => {
 }
 
 .alapi-player.collapsed {
-  width: min(230px, calc(100vw - 48px));
+  width: fit-content;
+  min-width: 230px;
+  max-width: calc(100vw - 48px);
 }
 
 .alapi-player-mini {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(120px, max-content);
   gap: 10px;
   align-items: center;
   padding: 10px;
@@ -2952,6 +2958,7 @@ onUnmounted((): void => {
 
 .alapi-player-mini-info {
   min-width: 0;
+  max-width: clamp(150px, 32vw, 520px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;

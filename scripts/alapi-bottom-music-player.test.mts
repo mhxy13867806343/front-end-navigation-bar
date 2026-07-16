@@ -37,6 +37,14 @@ test('ALAPI music player supports playlist group create rename delete and horizo
   assert.match(playerSource, /\.alapi-player-playlist-tabs button\s*\{[\s\S]*?min-height:\s*40px/)
 })
 
+test('ALAPI music player keeps playlist tabs and mini player sized to text without visible scrollbars', () => {
+  assert.match(playerSource, /\.alapi-player-playlist-tabs\s*\{[\s\S]*?scrollbar-width:\s*none/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs::\-webkit-scrollbar\s*\{[\s\S]*?display:\s*none/)
+  assert.match(playerSource, /\.alapi-player-playlist-tab > span:not\(\.alapi-player-sr-only\)\s*\{[\s\S]*?max-width:\s*clamp\(/)
+  assert.match(playerSource, /\.alapi-player\.collapsed\s*\{[\s\S]*?width:\s*fit-content/)
+  assert.match(playerSource, /\.alapi-player-mini-info\s*\{[\s\S]*?max-width:\s*clamp\(/)
+})
+
 test('ALAPI music player imports songs from the ALAPI playlist endpoint', () => {
   assert.match(playerSource, /MUSIC_PLAYLIST_PATH:\s*string\s*=\s*['"]\/api-alapi\/api\/music\/playlist['"]/)
   assert.match(playerSource, /interface\s+AlapiPlaylistData/)
