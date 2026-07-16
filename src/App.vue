@@ -174,6 +174,7 @@ const drawerAiDevTools: DrawerAiDevTool[] = [
 
 const projectRepositoryUrl: string = 'https://github.com/mhxy13867806343/front-end-navigation-bar'
 const projectRepositoryName: string = 'mhxy13867806343/front-end-navigation-bar'
+const VERSION_HISTORY_SEEN_KEY: string = 'front_end_navigation_version_history_seen'
 const versionHistory: VersionHistoryData = versionHistoryData as VersionHistoryData
 const showVersionHistoryDialog = ref<boolean>(false)
 const versionHistoryActiveTab = ref<string>('feature')
@@ -208,16 +209,18 @@ const openVersionHistoryDialog = (): void => {
   showVersionHistoryDialog.value = true
 }
 
+function handleVersionHistoryClose(): void {
+  localStorage.setItem(VERSION_HISTORY_SEEN_KEY, '1')
+}
+
 const openCommitOnGithub = (hash: string): void => {
   window.open(`${projectRepositoryUrl}/commit/${hash}`, '_blank')
 }
 
 onMounted((): void => {
-  showVersionHistoryDialog.value = true
-})
-
-watch((): string => route.fullPath, (): void => {
-  showVersionHistoryDialog.value = true
+  if (localStorage.getItem(VERSION_HISTORY_SEEN_KEY) !== '1') {
+    showVersionHistoryDialog.value = true
+  }
 })
 
 const blessingYear = computed<number>((): number => new Date().getFullYear())
@@ -2187,6 +2190,7 @@ watch(isDarkMode, () => {
       width="72%"
       destroy-on-close
       class="version-history-dialog"
+      @closed="handleVersionHistoryClose"
     >
       <div class="version-history-content">
         <el-card v-if="latestVersionItem" class="version-latest-card" shadow="never">
@@ -2198,7 +2202,7 @@ watch(isDarkMode, () => {
             </button>
           </div>
           <h3>{{ latestVersionItem.title }}</h3>
-          <p>下面根据 Git 提交历史自动整理版本更新记录，每次进入页面都会展示，关闭后可在右侧控制中心重新打开。</p>
+          <p>下面根据 Git 提交历史自动整理版本更新记录，首次进入页面会展示一次，关闭后可在右侧控制中心重新打开。</p>
         </el-card>
 
         <el-tabs v-model="versionHistoryActiveTab" class="version-history-tabs">

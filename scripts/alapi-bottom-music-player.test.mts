@@ -30,15 +30,18 @@ test('ALAPI music player supports playlist searching and playback modes', () => 
   assert.match(playerSource, /v-model\.trim=["']playlistSearchKeyword["']/)
   assert.match(playerSource, /const\s+filteredPlaylist:\s*ComputedRef<PlaylistSongView\[]>/)
   assert.match(playerSource, /type\s+PlaybackMode\s*=\s*'sequence'\s*\|\s*'shuffle'\s*\|\s*'single'/)
+  assert.match(playerSource, /<el-radio-group\s+v-model=["']playbackMode["']/)
   assert.match(playerSource, /v-for=["']mode in playbackModes["']/)
+  assert.match(playerSource, /<el-icon/)
   assert.match(playerSource, /function\s+pickNextIndex\s*\(/)
   assert.match(playerSource, /function\s+pickPreviousIndex\s*\(/)
 })
 
 test('ALAPI music player exposes search filters, empty state, details, and theme settings', () => {
-  assert.match(playerSource, /v-model\.number=["']searchLimit["']/)
-  assert.match(playerSource, /v-model\.number=["']searchPage["']/)
   assert.match(playerSource, /v-model=["']searchType["']/)
+  assert.match(playerSource, /<el-select\s+v-model=["']searchType["']/)
+  assert.match(playerSource, /<el-input-number\s+v-model=["']searchLimit["']/)
+  assert.match(playerSource, /<el-input-number\s+v-model=["']searchPage["']/)
   assert.match(playerSource, /没有找到歌曲/)
   assert.match(playerSource, /查看详情/)
   assert.match(playerSource, /function\s+openSongDetail\s*\(/)
@@ -58,7 +61,7 @@ test('ALAPI music player keeps playlist controls visible and scrolls playlist to
 test('ALAPI music player keeps dialogs above the fixed player', () => {
   const zIndexMatch: RegExpMatchArray | null = playerSource.match(/\.alapi-player\s*\{[\s\S]*?z-index:\s*(\d+)/)
   assert.ok(zIndexMatch)
-  assert.ok(Number(zIndexMatch[1]) < 2000)
+  assert.ok(Number(zIndexMatch[1]) > 3000)
 })
 
 test('ALAPI music player refreshes song urls safely when playlist items are clicked', () => {

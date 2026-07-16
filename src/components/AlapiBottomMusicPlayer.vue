@@ -31,26 +31,29 @@
         </div>
 
         <div class="alapi-player-search-filters">
-          <label>
-            类型
-            <select v-model="searchType">
-              <option
-                v-for="typeOption in searchTypeOptions"
-                :key="typeOption.value"
-                :value="typeOption.value"
-              >
-                {{ typeOption.label }}
-              </option>
-            </select>
-          </label>
-          <label>
-            数量
-            <input v-model.number="searchLimit" type="number" min="1" max="30">
-          </label>
-          <label>
-            页码
-            <input v-model.number="searchPage" type="number" min="1">
-          </label>
+          <el-select v-model="searchType" size="large" placeholder="搜索类型" popper-class="alapi-player-select-popper">
+            <el-option
+              v-for="typeOption in searchTypeOptions"
+              :key="typeOption.value"
+              :label="typeOption.label"
+              :value="typeOption.value"
+            />
+          </el-select>
+          <el-input-number
+            v-model="searchLimit"
+            size="large"
+            :min="1"
+            :max="30"
+            controls-position="right"
+            aria-label="返回数量"
+          />
+          <el-input-number
+            v-model="searchPage"
+            size="large"
+            :min="1"
+            controls-position="right"
+            aria-label="分页页码"
+          />
         </div>
 
         <div v-if="searchHistory.length" class="alapi-player-history">
@@ -122,24 +125,6 @@
           </div>
         </details>
 
-        <div class="alapi-player-api-panel">
-          <details>
-            <summary>ALAPI 接口信息</summary>
-            <div class="alapi-player-api-grid">
-              <a
-                v-for="api in apiDocs"
-                :key="api.name"
-                :href="api.url"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <strong>{{ api.name }}</strong>
-                <span>{{ api.method }} {{ api.path }}</span>
-                <em>{{ api.params }}</em>
-              </a>
-            </div>
-          </details>
-        </div>
         </div>
       </div>
 
@@ -217,11 +202,6 @@
       </section>
 
       <aside class="alapi-player-side">
-        <div class="alapi-player-side-top">
-          <a class="alapi-player-source" href="https://musicplayer.xfyun.club/" target="_blank" rel="noopener noreferrer">
-            小枫播放器测试
-          </a>
-        </div>
         <div class="alapi-player-side-header">
           <div>
             <strong>歌词</strong>
@@ -258,23 +238,31 @@
       </aside>
 
       <div class="alapi-player-control-dock">
-        <div class="alapi-player-mode-switch">
-          <button
+        <el-radio-group v-model="playbackMode" class="alapi-player-mode-switch" size="large" @change="handlePlaybackModeChange">
+          <el-radio-button
             v-for="mode in playbackModes"
             :key="mode.value"
-            type="button"
-            :class="{ active: playbackMode === mode.value }"
-            @click="setPlaybackMode(mode.value)"
+            :value="mode.value"
+            :title="mode.label"
           >
-            {{ mode.label }}
-          </button>
-        </div>
+            <el-icon>
+              <component :is="mode.icon" />
+            </el-icon>
+          </el-radio-button>
+        </el-radio-group>
         <div class="alapi-player-controls">
-          <button type="button" :disabled="!playlist.length" title="上一首" @click="playPrevious">⏮</button>
-          <button class="primary-control" type="button" :disabled="!currentSong" title="播放/暂停" @click="togglePlay">
-            {{ isPlaying ? '暂停' : '播放' }}
-          </button>
-          <button type="button" :disabled="!playlist.length" title="下一首" @click="playNext">⏭</button>
+          <el-button circle size="large" :disabled="!playlist.length" title="上一首" @click="playPrevious">
+            <el-icon><DArrowLeft /></el-icon>
+          </el-button>
+          <el-button class="primary-control" circle size="large" :disabled="!currentSong" title="播放/暂停" @click="togglePlay">
+            <el-icon>
+              <VideoPause v-if="isPlaying" />
+              <VideoPlay v-else />
+            </el-icon>
+          </el-button>
+          <el-button circle size="large" :disabled="!playlist.length" title="下一首" @click="playNext">
+            <el-icon><DArrowRight /></el-icon>
+          </el-button>
           <input
             v-model.number="progress"
             type="range"
@@ -355,6 +343,16 @@
 
 <script setup lang="ts">
 import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  DArrowLeft,
+  DArrowRight,
+  List,
+  Refresh,
+  Switch,
+  VideoPause,
+  VideoPlay
+} from '@element-plus/icons-vue'
+import type { Component } from 'vue'
 import { requestJson } from '@/utils/request'
 
 interface AlapiResponse<T> {
@@ -471,6 +469,7 @@ type PlaybackMode = 'sequence' | 'shuffle' | 'single'
 interface PlaybackModeOption {
   value: PlaybackMode
   label: string
+  icon: Component
 }
 
 interface SearchTypeOption {
@@ -539,9 +538,9 @@ const searchTypeOptions: SearchTypeOption[] = [
   { value: '1018', label: '综合' }
 ]
 const playbackModes: PlaybackModeOption[] = [
-  { value: 'sequence', label: '顺序播放' },
-  { value: 'shuffle', label: '随机播放' },
-  { value: 'single', label: '单曲循环' }
+  { value: 'sequence', label: '顺序播放', icon: List },
+  { value: 'shuffle', label: '随机播放', icon: Switch },
+  { value: 'single', label: '单曲循环', icon: Refresh }
 ]
 const FALLBACK_SONGS: PlayerSong[] = [
   {
@@ -798,6 +797,11 @@ function setPlaybackMode(mode: PlaybackMode): void {
   const modeLabel: string = playbackModes.find((item: PlaybackModeOption): boolean => item.value === mode)?.label ?? '顺序播放'
   statusText.value = `已切换为${modeLabel}`
   saveState()
+}
+
+function handlePlaybackModeChange(value: string | number | boolean | undefined): void {
+  if (value !== 'sequence' && value !== 'shuffle' && value !== 'single') return
+  setPlaybackMode(value)
 }
 
 function pickNextIndex(): number {
@@ -1561,7 +1565,7 @@ onUnmounted((): void => {
   position: fixed;
   left: 28px;
   bottom: 20px;
-  z-index: 1600;
+  z-index: 3600;
   width: min(1500px, calc(100vw - 56px));
   color: var(--alapi-text-color, #f5f7ff);
   font-size: var(--alapi-font-size, 13px);
@@ -1690,8 +1694,6 @@ onUnmounted((): void => {
 }
 
 .alapi-player-search input,
-.alapi-player-search-filters input,
-.alapi-player-search-filters select,
 .alapi-player-playlist-tools input {
   min-width: 0;
   height: 34px;
@@ -1705,12 +1707,11 @@ onUnmounted((): void => {
 
 .alapi-player-search-filters {
   display: grid;
-  grid-template-columns: 1.2fr 0.9fr 0.9fr;
+  grid-template-columns: minmax(120px, 1.2fr) minmax(96px, 0.9fr) minmax(96px, 0.9fr);
   gap: 8px;
   margin-top: 8px;
 }
 
-.alapi-player-search-filters label,
 .alapi-player-theme-grid label {
   min-width: 0;
   display: flex;
@@ -1721,8 +1722,23 @@ onUnmounted((): void => {
   font-weight: 800;
 }
 
-.alapi-player-search-filters select {
-  appearance: none;
+.alapi-player-search-filters :deep(.el-select),
+.alapi-player-search-filters :deep(.el-input-number) {
+  width: 100%;
+}
+
+.alapi-player-search-filters :deep(.el-select__wrapper),
+.alapi-player-search-filters :deep(.el-input-number__decrease),
+.alapi-player-search-filters :deep(.el-input-number__increase),
+.alapi-player-search-filters :deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.alapi-player-search-filters :deep(.el-select__selected-item),
+.alapi-player-search-filters :deep(.el-input__inner) {
+  color: var(--alapi-text-color, #f5f7ff);
 }
 
 .alapi-player-search button,
@@ -2062,6 +2078,12 @@ onUnmounted((): void => {
   margin-bottom: 8px;
 }
 
+.alapi-player-playlist-tools input {
+  width: 100%;
+  height: 42px;
+  font-size: 14px;
+}
+
 .alapi-player-playlist-header div {
   display: flex;
   flex-direction: column;
@@ -2337,35 +2359,45 @@ onUnmounted((): void => {
   margin-bottom: 8px;
 }
 
-.alapi-player-mode-switch button {
-  height: 26px;
-  padding: 0 10px;
+.alapi-player-mode-switch :deep(.el-radio-button__inner) {
+  display: inline-grid;
+  width: 42px;
+  height: 34px;
+  place-items: center;
   color: #a9afc4;
-  font-size: 11px;
-  font-weight: 800;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  cursor: pointer;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-.alapi-player-mode-switch button.active {
+.alapi-player-mode-switch :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
   color: var(--alapi-accent-color, #7fd7c8);
   background: rgba(127, 215, 200, 0.1);
   border-color: rgba(127, 215, 200, 0.28);
+  box-shadow: -1px 0 0 0 rgba(127, 215, 200, 0.28);
 }
 
 .alapi-player-controls {
   margin-top: 0;
 }
 
-.alapi-player-controls button {
-  min-width: 38px;
+.alapi-player-controls :deep(.el-button) {
+  --el-button-bg-color: rgba(108, 114, 247, 0.78);
+  --el-button-border-color: rgba(108, 114, 247, 0.78);
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: rgba(108, 114, 247, 0.95);
+  --el-button-hover-border-color: rgba(108, 114, 247, 0.95);
+  width: 42px;
+  height: 42px;
   padding: 0 10px;
 }
 
 .alapi-player-controls .primary-control {
-  min-width: 62px;
+  --el-button-bg-color: #18d968;
+  --el-button-border-color: #18d968;
+  --el-button-hover-bg-color: #20ec77;
+  --el-button-hover-border-color: #20ec77;
+  width: 54px;
+  height: 54px;
 }
 
 .alapi-player-controls input {

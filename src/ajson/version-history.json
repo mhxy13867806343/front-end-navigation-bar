@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T13:24:34.891Z",
+  "generatedAt": "2026-07-16T14:10:22.646Z",
   "groups": [
     {
       "date": "2026-07-16",
       "items": [
+        {
+          "hash": "32c55e0167148dbd1e2c6eb021b94baf42de61f6",
+          "shortHash": "32c55e0",
+          "date": "2026-07-16",
+          "time": "21:27",
+          "type": "功能更新",
+          "title": "enhance alapi music playlist controls",
+          "scope": "",
+          "message": "feat: enhance alapi music playlist controls"
+        },
         {
           "hash": "d4aa0919e8c58c0fe8d1d6a831e4905316940855",
           "shortHash": "d4aa091",
@@ -303,16 +313,6 @@
           "title": "add CombinedDemo.vue — commercial-grade admin dashboard combining Element Plus + Naive UI (stats, user table, kanban, activity feed, release countdown, system settings)",
           "scope": "",
           "message": "feat: add CombinedDemo.vue — commercial-grade admin dashboard combining Element Plus + Naive UI (stats, user table, kanban, activity feed, release countdown, system settings)"
-        },
-        {
-          "hash": "934c21efa2d58a241c1428ce880106ef1b4015a9",
-          "shortHash": "934c21e",
-          "date": "2026-07-14",
-          "time": "11:51",
-          "type": "功能更新",
-          "title": "refactor sidebar to use el-menu, integrate Naive UI showcase, and modularize code into aglobal-xx.js, componentMapper.js and azh.js",
-          "scope": "",
-          "message": "feat: refactor sidebar to use el-menu, integrate Naive UI showcase, and modularize code into aglobal-xx.js, componentMapper.js and azh.js"
         }
       ]
     }
