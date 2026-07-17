@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-16T16:49:20.221Z",
+  "generatedAt": "2026-07-17T08:36:34.808Z",
   "groups": [
     {
       "date": "2026-07-17",
       "items": [
+        {
+          "hash": "32d358f769fc2b02cd652246bfd08805f7184dac",
+          "shortHash": "32d358f",
+          "date": "2026-07-17",
+          "time": "01:05",
+          "type": "问题修复",
+          "title": "sync alapi playlist deletion state",
+          "scope": "",
+          "message": "fix: sync alapi playlist deletion state"
+        },
         {
           "hash": "9cfcdf459fad0194797d9812269b1bb0d3efc7ae",
           "shortHash": "9cfcdf4",
@@ -308,16 +318,6 @@
           "title": "add QQ User Info Query API utility to Smart Utility Toolbox",
           "scope": "",
           "message": "feat: add QQ User Info Query API utility to Smart Utility Toolbox"
-        },
-        {
-          "hash": "7e92a3d0442a8c343ecb11afcb8e6623a87fceab",
-          "shortHash": "7e92a3d",
-          "date": "2026-07-14",
-          "time": "21:27",
-          "type": "问题修复",
-          "title": "correct JuejinTheme data mapping to match actual API structure (nested theme object with name/brief/cover/hot/view_cnt/user_cnt + recent_users)",
-          "scope": "",
-          "message": "fix: correct JuejinTheme data mapping to match actual API structure (nested theme object with name/brief/cover/hot/view_cnt/user_cnt + recent_users)"
         }
       ]
     }

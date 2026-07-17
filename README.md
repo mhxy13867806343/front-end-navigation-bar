@@ -4,6 +4,10 @@
 
 一个基于 Vue 3 + Vite 构建的前端 AI 工具导航站，聚合 AI 聊天助手、AI 绘画、AI 编程、AI 开发平台等各类工具入口，并内置多款小游戏与实用小工具。
 
+## 📌 维护状态
+
+本项目已停止持续更新，仅保留当前线上预览与现有功能。后续不再计划新增功能、同步接口变更或维护第三方数据源可用性。
+
 ## 🌐 在线预览
 
 👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)

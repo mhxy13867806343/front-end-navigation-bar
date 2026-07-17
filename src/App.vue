@@ -55,6 +55,11 @@ const {
 
   // QQ exports
   qqNumber, qqUserInfo, isQqLoading, qqError, queryQqUserInfo,
+
+  // Zhihu Daily exports
+  zhihuQueryDate, zhihuDailyData, selectedZhihuStory, zhihuStoryDetail,
+  zhihuShortComments, zhihuLongComments, isZhihuLoading, isZhihuDetailLoading, zhihuError,
+  queryZhihuDaily, queryZhihuStoryDetail,
   
   // Shared configs & state
   ZH_TEXTS, GLOBAL_CONFIG, activeLibrary
@@ -274,6 +279,9 @@ const refreshUtility = async (): Promise<void> => {
       break
     case 'image':
       await queryRandomImage()
+      break
+    case 'zhihu':
+      await queryZhihuDaily(Boolean(zhihuQueryDate))
       break
   }
 }
@@ -1802,7 +1810,114 @@ watch(isDarkMode, () => {
           </div>
         </el-tab-pane>
 
-        <!-- 8. QQ用户信息查询 -->
+        <!-- 8. 知乎日报 -->
+        <el-tab-pane name="zhihu">
+          <template #label>
+            <span>📘 知乎日报</span>
+          </template>
+          <div class="zhihu-daily-panel">
+            <div class="zhihu-toolbar">
+              <el-date-picker
+                v-model="zhihuQueryDate"
+                type="date"
+                format="YYYY-MM-DD"
+                value-format="YYYYMMDD"
+                placeholder="选择日报日期"
+                style="width: 180px;"
+              />
+              <el-button type="primary" :loading="isZhihuLoading" @click="queryZhihuDaily(true)">指定日期日报</el-button>
+              <el-button :loading="isZhihuLoading" @click="queryZhihuDaily(false)">今日日报</el-button>
+            </div>
+
+            <el-alert
+              v-if="zhihuError"
+              :title="zhihuError"
+              type="warning"
+              show-icon
+              :closable="false"
+              style="margin-bottom: 12px;"
+            />
+
+            <div class="zhihu-daily-layout" v-loading="isZhihuLoading">
+              <section class="zhihu-story-list">
+                <div class="zhihu-section-title">
+                  <strong>{{ zhihuDailyData?.date || '知乎日报' }}</strong>
+                  <span>{{ zhihuDailyData?.stories?.length || 0 }} 篇</span>
+                </div>
+                <button
+                  v-for="story in zhihuDailyData?.stories || []"
+                  :key="story.id"
+                  type="button"
+                  class="zhihu-story-card"
+                  :class="{ active: selectedZhihuStory?.id === story.id }"
+                  @click="queryZhihuStoryDetail(story)"
+                >
+                  <img v-if="story.images?.[0]" :src="story.images[0]" alt="" />
+                  <span v-else class="zhihu-story-placeholder">知</span>
+                  <span class="zhihu-story-info">
+                    <strong>{{ story.title }}</strong>
+                    <em>{{ story.hint || '知乎日报' }}</em>
+                  </span>
+                </button>
+                <div v-if="!isZhihuLoading && !zhihuDailyData?.stories?.length" class="zhihu-empty">
+                  暂无日报内容
+                </div>
+              </section>
+
+              <section class="zhihu-story-detail" v-loading="isZhihuDetailLoading">
+                <div v-if="selectedZhihuStory" class="zhihu-detail-head">
+                  <div>
+                    <h3>{{ zhihuStoryDetail?.title || selectedZhihuStory.title }}</h3>
+                    <p>{{ selectedZhihuStory.hint || '知乎日报精选内容' }}</p>
+                  </div>
+                  <a :href="zhihuStoryDetail?.share_url || selectedZhihuStory.url" target="_blank" rel="noopener">打开原文</a>
+                </div>
+
+                <div v-if="zhihuStoryDetail" class="zhihu-detail-grid">
+                  <article class="zhihu-detail-body">
+                    <img v-if="zhihuStoryDetail.image" :src="zhihuStoryDetail.image" alt="" />
+                    <div class="zhihu-html-preview" v-html="zhihuStoryDetail.body || '暂无正文内容'"></div>
+                  </article>
+                  <aside class="zhihu-comments-panel">
+                    <div class="zhihu-comments-block">
+                      <h4>短评 {{ zhihuShortComments.length }}</h4>
+                      <div v-if="zhihuShortComments.length" class="zhihu-comments-list">
+                        <div v-for="comment in zhihuShortComments" :key="'short-' + comment.id" class="zhihu-comment-item">
+                          <img v-if="comment.avatar" :src="comment.avatar" alt="" />
+                          <div>
+                            <strong>{{ comment.author }}</strong>
+                            <p>{{ comment.content }}</p>
+                            <span>{{ comment.likes || 0 }} 赞</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p v-else class="zhihu-empty">暂无短评</p>
+                    </div>
+                    <div class="zhihu-comments-block">
+                      <h4>长评 {{ zhihuLongComments.length }}</h4>
+                      <div v-if="zhihuLongComments.length" class="zhihu-comments-list">
+                        <div v-for="comment in zhihuLongComments" :key="'long-' + comment.id" class="zhihu-comment-item">
+                          <img v-if="comment.avatar" :src="comment.avatar" alt="" />
+                          <div>
+                            <strong>{{ comment.author }}</strong>
+                            <p>{{ comment.content }}</p>
+                            <span>{{ comment.likes || 0 }} 赞</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p v-else class="zhihu-empty">暂无长评</p>
+                    </div>
+                  </aside>
+                </div>
+                <div v-else class="zhihu-empty">
+                  请选择一篇日报查看详情
+                </div>
+              </section>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 9. QQ用户信息查询 -->
         <el-tab-pane name="qq">
           <template #label>
             <span>🐧 QQ 信息查询</span>

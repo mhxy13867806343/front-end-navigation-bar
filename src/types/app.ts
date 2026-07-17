@@ -207,3 +207,49 @@ export interface QqUserInfo {
   code?: string
   message?: string
 }
+
+export interface ZhihuDailyStory {
+  id: number
+  url: string
+  hint?: string
+  type?: number
+  title: string
+  images?: string[]
+  image?: string
+  ga_prefix?: string
+  image_hue?: string
+}
+
+export interface ZhihuDailyData {
+  date: string
+  stories: ZhihuDailyStory[]
+  top_stories?: ZhihuDailyStory[]
+}
+
+export interface ZhihuDailyDetail {
+  id?: number
+  type?: number
+  title?: string
+  body?: string
+  image?: string
+  images?: string[]
+  image_source?: string
+  share_url?: string
+  url?: string
+  ga_prefix?: string
+  css?: string[]
+  js?: string[]
+}
+
+export interface ZhihuComment {
+  id: string | number
+  author: string
+  content: string
+  avatar?: string
+  time?: number
+  likes?: number
+}
+
+export interface ZhihuCommentsData {
+  comments: ZhihuComment[]
+}

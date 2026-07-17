@@ -1,5 +1,12 @@
 <template>
-  <section class="alapi-player" :class="{ collapsed: isCollapsed }" :style="playerThemeStyle" aria-label="ALAPI 底部音乐播放器">
+  <section
+    ref="playerRootRef"
+    class="alapi-player"
+    :class="{ collapsed: isCollapsed, dragging: isPlayerDragging }"
+    :style="playerRootStyle"
+    aria-label="ALAPI 底部音乐播放器"
+    @pointerdown="startPlayerDrag"
+  >
     <button class="alapi-player-toggle" type="button" @click="toggleCollapsed">
       {{ isCollapsed ? '展开音乐' : '收起' }}
     </button>
@@ -353,7 +360,7 @@
       </button>
     </div>
 
-    <el-dialog v-model="isBatchDialogVisible" title="批量添加歌曲" class="alapi-player-dialog" width="560px">
+    <el-dialog v-model="isBatchDialogVisible" title="批量添加歌曲" class="alapi-player-dialog" width="560px" :z-index="PLAYER_DIALOG_Z_INDEX">
       <div class="alapi-player-dialog-hint">
         默认不选中，勾选后会添加到播放列表顶部；已存在的歌曲会自动跳过。
       </div>
@@ -381,7 +388,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="isPlaylistImportDialogVisible" title="从歌单添加歌曲" class="alapi-player-dialog" width="620px">
+    <el-dialog v-model="isPlaylistImportDialogVisible" title="从歌单添加歌曲" class="alapi-player-dialog" width="620px" :z-index="PLAYER_DIALOG_Z_INDEX">
       <div class="alapi-player-dialog-hint">
         默认不选中，勾选后会添加到播放列表顶部；已存在于任意播放列表的歌曲会自动跳过。
       </div>
@@ -409,7 +416,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="isDetailDialogVisible" title="歌曲详情" class="alapi-player-dialog" width="460px">
+    <el-dialog v-model="isDetailDialogVisible" title="歌曲详情" class="alapi-player-dialog" width="460px" :z-index="PLAYER_DIALOG_Z_INDEX">
       <div v-if="detailSong" class="alapi-player-song-detail">
         <strong>{{ detailSong.name }}</strong>
         <p>歌手：{{ detailSong.artists }}</p>
@@ -582,6 +589,11 @@ interface PlayerTheme {
   fontSize: number
 }
 
+interface PlayerPosition {
+  left: number
+  top: number
+}
+
 interface PlayerStorageState {
   keyword?: string
   searchHistory?: string[]
@@ -605,6 +617,16 @@ interface PlayerStorageState {
   searchPage?: number
   searchType?: string
   playerTheme?: PlayerTheme
+  playerPosition?: PlayerPosition | null
+}
+
+interface PlayerDragState {
+  pointerId: number
+  startX: number
+  startY: number
+  originLeft: number
+  originTop: number
+  hasMoved: boolean
 }
 
 const ALAPI_TOKEN: string = 'qgqofofvmxtoskffd37omkscobipmn'
@@ -619,6 +641,12 @@ const DEFAULT_KEYWORD: string = '慢慢懂'
 const SEARCH_LIMIT: number = 10
 const SEARCH_TYPE: string = '1'
 const MAX_PLAYLIST_SONGS: number = 100
+const PLAYER_DIALOG_Z_INDEX: number = 5200
+const playerMessageBoxOptions: { customClass: string, modalClass: string, zIndex: number } = {
+  customClass: 'alapi-player-message-box',
+  modalClass: 'alapi-player-message-modal',
+  zIndex: PLAYER_DIALOG_Z_INDEX
+}
 const DEFAULT_PLAYER_THEME: PlayerTheme = {
   accentColor: '#7fd7c8',
   backgroundColor: '#0f1018',
@@ -738,6 +766,9 @@ const lyricLines: Ref<LyricLine[]> = ref<LyricLine[]>([])
 const currentLyricIndex: Ref<number> = ref<number>(-1)
 const lyricPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const playlistPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+const playerRootRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
+const playerPosition: Ref<PlayerPosition | null> = ref<PlayerPosition | null>(null)
+const isPlayerDragging: Ref<boolean> = ref<boolean>(false)
 const hotComments: Ref<string[]> = ref<string[]>([])
 const playlistImportId: Ref<string> = ref<string>('440342015')
 const playlistImportSongs: Ref<PlayerSong[]> = ref<PlayerSong[]>([])
@@ -747,6 +778,8 @@ const isPlaylistImportDialogVisible: Ref<boolean> = ref<boolean>(false)
 const pendingRestoreSeconds: Ref<number> = ref<number>(0)
 let lastPlaybackSaveAt: number = 0
 let playRequestId: number = 0
+let playerDragState: PlayerDragState | null = null
+let suppressNextPlayerClick: boolean = false
 const audio: HTMLAudioElement = new Audio()
 
 const activePlaylistGroup: ComputedRef<PlayerListGroup> = computed<PlayerListGroup>(() => {
@@ -797,12 +830,116 @@ const playerThemeStyle: ComputedRef<Record<string, string>> = computed<Record<st
   '--alapi-font-size': `${playerTheme.value.fontSize}px`
 }))
 
+const playerRootStyle: ComputedRef<Record<string, string>> = computed<Record<string, string>>(() => {
+  const style: Record<string, string> = { ...playerThemeStyle.value }
+  if (playerPosition.value) {
+    style.left = `${playerPosition.value.left}px`
+    style.top = `${playerPosition.value.top}px`
+    style.bottom = 'auto'
+  }
+  return style
+})
+
 function createPlaylistGroup(index: number): PlayerListGroup {
   return {
     id: `playlist-${index + 1}-${Date.now()}`,
     name: `播放列表${index + 1}`,
     songs: []
   }
+}
+
+function clampPlayerPosition(position: PlayerPosition): PlayerPosition {
+  const root: HTMLElement | null = playerRootRef.value
+  const width: number = root?.offsetWidth ?? 260
+  const height: number = root?.offsetHeight ?? 80
+  const margin: number = 10
+  const maxLeft: number = Math.max(margin, window.innerWidth - width - margin)
+  const maxTop: number = Math.max(margin, window.innerHeight - height - margin)
+
+  return {
+    left: Math.min(Math.max(position.left, margin), maxLeft),
+    top: Math.min(Math.max(position.top, margin), maxTop)
+  }
+}
+
+function isInteractiveDragTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.closest('.alapi-player-cover, .alapi-player-song, .alapi-player-title-row')) {
+    return false
+  }
+  return Boolean(target.closest('button, a, input, textarea, select, summary, label, [role="button"], .el-select, .el-input-number, .alapi-player-mini-info, .alapi-player-results, .alapi-player-playlist, .alapi-player-side, .alapi-player-control-dock, .alapi-player-workspace'))
+}
+
+function startPlayerDrag(event: PointerEvent): void {
+  if (event.button !== 0 || isInteractiveDragTarget(event.target)) return
+  const root: HTMLElement | null = playerRootRef.value
+  if (!root) return
+
+  const rect: DOMRect = root.getBoundingClientRect()
+  const originPosition: PlayerPosition = playerPosition.value ?? { left: rect.left, top: rect.top }
+  playerPosition.value = clampPlayerPosition(originPosition)
+  playerDragState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    originLeft: playerPosition.value.left,
+    originTop: playerPosition.value.top,
+    hasMoved: false
+  }
+  isPlayerDragging.value = true
+  document.body.style.userSelect = 'none'
+  root.setPointerCapture?.(event.pointerId)
+  window.addEventListener('pointermove', handlePlayerDragMove)
+  window.addEventListener('pointerup', stopPlayerDrag)
+  window.addEventListener('pointercancel', stopPlayerDrag)
+}
+
+function handlePlayerDragMove(event: PointerEvent): void {
+  if (!playerDragState || event.pointerId !== playerDragState.pointerId) return
+  const deltaX: number = event.clientX - playerDragState.startX
+  const deltaY: number = event.clientY - playerDragState.startY
+  if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+    playerDragState.hasMoved = true
+    suppressNextPlayerClick = true
+  }
+  playerPosition.value = clampPlayerPosition({
+    left: playerDragState.originLeft + deltaX,
+    top: playerDragState.originTop + deltaY
+  })
+}
+
+function stopPlayerDrag(event?: PointerEvent): void {
+  if (event && playerDragState && event.pointerId !== playerDragState.pointerId) return
+  const root: HTMLElement | null = playerRootRef.value
+  if (event && root) {
+    root.releasePointerCapture?.(event.pointerId)
+  }
+  window.removeEventListener('pointermove', handlePlayerDragMove)
+  window.removeEventListener('pointerup', stopPlayerDrag)
+  window.removeEventListener('pointercancel', stopPlayerDrag)
+  document.body.style.userSelect = ''
+  isPlayerDragging.value = false
+  playerDragState = null
+  if (playerPosition.value) {
+    playerPosition.value = clampPlayerPosition(playerPosition.value)
+  }
+  saveState()
+}
+
+function consumeSuppressedPlayerClick(): boolean {
+  if (!suppressNextPlayerClick) return false
+  suppressNextPlayerClick = false
+  return true
+}
+
+function refreshPlayerPositionBounds(): void {
+  if (!playerPosition.value) return
+  void nextTick((): void => {
+    if (playerPosition.value) {
+      playerPosition.value = clampPlayerPosition(playerPosition.value)
+      saveState()
+    }
+  })
 }
 
 function isDefaultPlaylistGroupName(name: string): boolean {
@@ -858,6 +995,7 @@ function renamePlaylistGroup(groupIndex: number): void {
     {
       confirmButtonText: '保存',
       cancelButtonText: '取消',
+      ...playerMessageBoxOptions,
       inputValue: targetGroup.name,
       inputPattern: /\S/,
       inputErrorMessage: '名称不能为空'
@@ -885,7 +1023,8 @@ function deletePlaylistGroup(groupIndex: number): void {
     {
       confirmButtonText: '确定删除',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
+      ...playerMessageBoxOptions
     }
   ).then((): void => {
     const deletedGroupName: string = targetGroup.name
@@ -1275,7 +1414,8 @@ function confirmClearHistory(): void {
     {
       confirmButtonText: '确定清空',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
+      ...playerMessageBoxOptions
     }
   ).then((): void => {
     searchHistory.value = []
@@ -1291,7 +1431,8 @@ function confirmClearPlaylist(): void {
     {
       confirmButtonText: '确定清空',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
+      ...playerMessageBoxOptions
     }
   ).then((): void => {
     resetPlaybackState('播放列表已清空')
@@ -1743,11 +1884,14 @@ function handleBeforeUnload(): void {
 
 function toggleCollapsed(): void {
   isCollapsed.value = !isCollapsed.value
+  refreshPlayerPositionBounds()
   saveState()
 }
 
 function openFullPlayer(): void {
+  if (consumeSuppressedPlayerClick()) return
   isCollapsed.value = false
+  refreshPlayerPositionBounds()
   saveState()
 }
 
@@ -1793,7 +1937,8 @@ function saveState(): void {
     searchLimit: searchLimit.value,
     searchPage: searchPage.value,
     searchType: searchType.value,
-    playerTheme: playerTheme.value
+    playerTheme: playerTheme.value,
+    playerPosition: playerPosition.value
   })
   localStorage.setItem(PLAYER_STORAGE_KEY, state)
 }
@@ -1816,6 +1961,7 @@ function loadState(): void {
       ...DEFAULT_PLAYER_THEME,
       ...(parsedState.playerTheme ?? {})
     }
+    playerPosition.value = parsedState.playerPosition ?? null
     if (parsedState.playlistGroups?.length) {
       playlistGroups.value = parsedState.playlistGroups.map((group: PlayerListGroup, index: number): PlayerListGroup => ({
         id: group.id || `playlist-${index + 1}`,
@@ -1865,12 +2011,14 @@ onMounted((): void => {
   audio.addEventListener('ended', handleEnded)
   audio.addEventListener('error', handleAudioError)
   window.addEventListener('beforeunload', handleBeforeUnload)
+  window.addEventListener('resize', refreshPlayerPositionBounds)
 
   if (playlist.value.length) {
     void restoreCurrentSong()
   } else {
     void searchSongs(1)
   }
+  refreshPlayerPositionBounds()
 })
 
 watch(currentLyricIndex, (): void => {
@@ -1890,12 +2038,14 @@ watch(currentIndex, (): void => {
 
 onUnmounted((): void => {
   saveState()
+  stopPlayerDrag()
   audio.pause()
   audio.removeEventListener('timeupdate', updateProgress)
   audio.removeEventListener('loadedmetadata', handleAudioLoadedMetadata)
   audio.removeEventListener('ended', handleEnded)
   audio.removeEventListener('error', handleAudioError)
   window.removeEventListener('beforeunload', handleBeforeUnload)
+  window.removeEventListener('resize', refreshPlayerPositionBounds)
 })
 </script>
 
@@ -1909,6 +2059,10 @@ onUnmounted((): void => {
   color: var(--alapi-text-color, #f5f7ff);
   font-size: var(--alapi-font-size, 13px);
   pointer-events: auto;
+}
+
+.alapi-player.dragging {
+  cursor: grabbing;
 }
 
 .alapi-player-panel,
@@ -1954,6 +2108,7 @@ onUnmounted((): void => {
   border-radius: 16px;
   background: linear-gradient(135deg, #6970ff, var(--alapi-accent-color, #38d7b8) 48%, #f6bf4f);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  cursor: grab;
 }
 
 .alapi-player-cover.playing {
@@ -1990,6 +2145,7 @@ onUnmounted((): void => {
 
 .alapi-player-title-row {
   justify-content: space-between;
+  cursor: grab;
 }
 
 .alapi-player-song {
@@ -3028,6 +3184,14 @@ onUnmounted((): void => {
   border: 1px solid rgba(124, 131, 255, 0.36);
   border-radius: 18px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
+}
+
+:global(.alapi-player-message-modal) {
+  z-index: 5199 !important;
+}
+
+:global(.alapi-player-message-box) {
+  z-index: 5200 !important;
 }
 
 .alapi-player-dialog-hint {

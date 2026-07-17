@@ -4,7 +4,7 @@ import type { JuejinListResponse } from './vue-interface'
 // Re-export shared types
 export type { JuejinListResponse }
 
-// Reuse the same API base as aicoding (proxy: /api-juejin -> https://api.juejin.cn)
+// Reuse the aicoding API base: dev uses Vite proxy, production uses the remote Juejin host.
 export { API_BASE } from './aicoding'
 
 // ─── Raw API response shape ──────────────────────────────────────────

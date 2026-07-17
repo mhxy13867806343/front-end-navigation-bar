@@ -20,7 +20,12 @@ import type {
   SubTabMap,
   TrackingInfo,
   WeatherForecast,
-  QqUserInfo
+  QqUserInfo,
+  ZhihuComment,
+  ZhihuCommentsData,
+  ZhihuDailyData,
+  ZhihuDailyDetail,
+  ZhihuDailyStory
 } from '@/types/app'
 
 // Custom Components
@@ -39,6 +44,8 @@ import { resolveApiUrl } from './utils/resolveApiUrl'
 
 const UAPIS_API_BASE: string = '/api-uapis'
 const AA1_API_BASE: string = '/api-aa1'
+const ALAPI_API_BASE: string = '/api-alapi'
+const ALAPI_TOKEN: string = 'qgqofofvmxtoskffd37omkscobipmn'
 
 function buildUapisUrl(path: string): string {
   return resolveApiUrl(`${UAPIS_API_BASE}${path}`)
@@ -46,6 +53,17 @@ function buildUapisUrl(path: string): string {
 
 function buildAa1Url(path: string): string {
   return resolveApiUrl(`${AA1_API_BASE}${path}`)
+}
+
+function buildAlapiUrl(path: string): string {
+  return resolveApiUrl(`${ALAPI_API_BASE}${path}`)
+}
+
+interface AlapiResponse<T> {
+  code?: number
+  success?: boolean
+  message?: string
+  data?: T
 }
 
 interface Aa1BilibiliHotItem {
@@ -1352,6 +1370,103 @@ export function useAppLogic() {
     }
   }
 
+  // 8. 知乎日报
+  const formatZhihuDate = (date: Date): string => {
+    const year: number = date.getFullYear()
+    const month: string = String(date.getMonth() + 1).padStart(2, '0')
+    const day: string = String(date.getDate()).padStart(2, '0')
+    return `${year}${month}${day}`
+  }
+
+  const zhihuQueryDate = ref<string>(formatZhihuDate(new Date()))
+  const zhihuDailyData = ref<ZhihuDailyData | null>(null)
+  const selectedZhihuStory = ref<ZhihuDailyStory | null>(null)
+  const zhihuStoryDetail = ref<ZhihuDailyDetail | null>(null)
+  const zhihuShortComments = ref<ZhihuComment[]>([])
+  const zhihuLongComments = ref<ZhihuComment[]>([])
+  const isZhihuLoading = ref<boolean>(false)
+  const isZhihuDetailLoading = ref<boolean>(false)
+  const zhihuError = ref<string>('')
+
+  const mapZhihuStory = (item: Partial<ZhihuDailyStory>): ZhihuDailyStory => {
+    return {
+      id: Number(item.id || 0),
+      url: item.url || '',
+      hint: item.hint || '',
+      type: item.type || 0,
+      title: item.title || '未命名日报',
+      images: item.images || (item.image ? [item.image] : []),
+      image: item.image || item.images?.[0] || '',
+      ga_prefix: item.ga_prefix || '',
+      image_hue: item.image_hue || ''
+    }
+  }
+
+  const getAlapiData = <T>(response: AlapiResponse<T>, fallbackMessage: string): T => {
+    if (response.code && response.code !== 200) {
+      throw new Error(response.message || fallbackMessage)
+    }
+    if (!response.data) {
+      throw new Error(fallbackMessage)
+    }
+    return response.data
+  }
+
+  const queryZhihuDaily = async (useDate: boolean = false): Promise<void> => {
+    isZhihuLoading.value = true
+    zhihuError.value = ''
+    try {
+      const path: string = useDate ? '/api/zhihu/get' : '/api/zhihu'
+      const params: Record<string, string> = { token: ALAPI_TOKEN }
+      if (useDate) params.date = zhihuQueryDate.value
+      const res = await axios.get<AlapiResponse<ZhihuDailyData>>(buildAlapiUrl(path), { params })
+      const data: ZhihuDailyData = getAlapiData(res.data, '知乎日报接口暂无数据')
+      zhihuDailyData.value = {
+        date: data.date,
+        stories: (data.stories || []).map(mapZhihuStory),
+        top_stories: (data.top_stories || []).map(mapZhihuStory)
+      }
+      const firstStory: ZhihuDailyStory | undefined = zhihuDailyData.value.stories[0] || zhihuDailyData.value.top_stories?.[0]
+      if (firstStory) {
+        await queryZhihuStoryDetail(firstStory)
+      }
+    } catch (e: unknown) {
+      zhihuError.value = getRequestErrorMessage(e, '知乎日报接口暂不可用，请稍后再试')
+      zhihuDailyData.value = null
+      selectedZhihuStory.value = null
+      zhihuStoryDetail.value = null
+      zhihuShortComments.value = []
+      zhihuLongComments.value = []
+    } finally {
+      isZhihuLoading.value = false
+    }
+  }
+
+  const queryZhihuStoryDetail = async (story: ZhihuDailyStory): Promise<void> => {
+    if (!story.id) return
+    selectedZhihuStory.value = story
+    isZhihuDetailLoading.value = true
+    zhihuStoryDetail.value = null
+    zhihuShortComments.value = []
+    zhihuLongComments.value = []
+    try {
+      const params: Record<string, string | number> = { token: ALAPI_TOKEN, id: story.id }
+      const [detailRes, shortRes, longRes] = await Promise.all([
+        axios.get<AlapiResponse<ZhihuDailyDetail>>(buildAlapiUrl('/api/zhihu/news'), { params }),
+        axios.get<AlapiResponse<ZhihuCommentsData>>(buildAlapiUrl('/api/zhihu/short_comments'), { params }),
+        axios.get<AlapiResponse<ZhihuCommentsData>>(buildAlapiUrl('/api/zhihu/long_comments'), { params })
+      ])
+
+      zhihuStoryDetail.value = getAlapiData(detailRes.data, '知乎日报详情暂无数据')
+      zhihuShortComments.value = getAlapiData(shortRes.data, '知乎日报短评暂无数据').comments || []
+      zhihuLongComments.value = getAlapiData(longRes.data, '知乎日报长评暂无数据').comments || []
+    } catch (e: unknown) {
+      zhihuError.value = getRequestErrorMessage(e, '知乎日报详情获取失败，请换一篇试试')
+    } finally {
+      isZhihuDetailLoading.value = false
+    }
+  }
+
   // tab 切换触发自动查询
   const handleUtilityTabChange = () => {
     if (utilityActiveTab.value === 'holiday' && !holidayData.value) {
@@ -1369,6 +1484,8 @@ export function useAppLogic() {
       queryDujitang()
     } else if (utilityActiveTab.value === 'qq' && !qqUserInfo.value) {
       queryQqUserInfo()
+    } else if (utilityActiveTab.value === 'zhihu' && !zhihuDailyData.value) {
+      queryZhihuDaily()
     }
   }
 
@@ -1436,6 +1553,11 @@ export function useAppLogic() {
 
     // QQ exports
     qqNumber, qqUserInfo, isQqLoading, qqError, queryQqUserInfo,
+
+    // Zhihu Daily exports
+    zhihuQueryDate, zhihuDailyData, selectedZhihuStory, zhihuStoryDetail,
+    zhihuShortComments, zhihuLongComments, isZhihuLoading, isZhihuDetailLoading, zhihuError,
+    queryZhihuDaily, queryZhihuStoryDetail,
     
     // Shared globals
     ZH_TEXTS, GLOBAL_CONFIG,

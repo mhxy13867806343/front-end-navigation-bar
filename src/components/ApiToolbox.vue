@@ -4,9 +4,12 @@ import { GENDER_OPTIONS } from '@/vue-pages-text-fn-abc/formOptions'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import apiCategoriesData from '../utlis/api_list.json'
 import { jsonHeaders, request, requestJson } from '@/utils/request'
+import { resolveApiUrl } from '@/utils/resolveApiUrl'
 
 type ApiValue = string | number | boolean
 type QueryInputs = Record<string, ApiValue>
+type PublicDataKind = 'zhihu' | 'bejson' | 'pokemon' | 'pexels' | 'video' | 'game' | 'generic'
+type UnknownRecord = Record<string, unknown>
 
 interface ApiResponse<T = unknown> {
   code?: number
@@ -73,13 +76,28 @@ interface ApiParam {
 interface ApiEndpoint {
   name: string
   desc?: string
+  baseUrl?: string
   path: string
   method: string
   params: ApiParam[]
   pathParams: ApiParam[]
   hasBody: boolean
   bodyPlaceholder: string
+  headers?: Record<string, string>
+  skipAuth?: boolean
+  responseType?: 'json' | 'text'
   categoryName?: string
+}
+
+interface PublicDataItem {
+  id: string
+  title: string
+  subtitle: string
+  description: string
+  image: string
+  url: string
+  tags: string[]
+  extra: string[]
 }
 
 interface ArticleForm {
@@ -598,17 +616,7 @@ onMounted(() => {
 // ----------------------------------------------------
 // Mode 2: Sandbox Developer Settings (Old variables)
 // ----------------------------------------------------
-const categoriesList: string[] = [
-  '所有接口列表',
-  '认证',
-  'JSON仓库',
-  '图片视频',
-  '工具类',
-  '文件管理',
-  '文章管理',
-  '用户管理',
-  '社交'
-]
+const categoriesList = computed<string[]>((): string[] => ['所有接口列表', ...Object.keys(apiCategories)])
 const selectedCategory = ref<string>('所有接口列表')
 const selectedApi = ref<ApiEndpoint | null>(null)
 const activeEndpoints = computed<ApiEndpoint[]>(() => {
@@ -631,11 +639,275 @@ const sandboxLoading = ref<boolean>(false)
 const sandboxResponse = ref<string | null>(null)
 const sandboxHeaders = ref<string>('')
 const sandboxRequestUrl = ref<string>('')
+const envPlaceholderRegexp: RegExp = /\{\{([A-Z0-9_]+)\}\}/g
+const publicDataCategories: ReadonlySet<string> = new Set<string>([
+  'ALAPI知乎日报',
+  'BEJSON免费接口',
+  'PokeAPI',
+  'Pexels视频',
+  '开放视频接口',
+  '游戏接口'
+])
+const publicDataItems = ref<PublicDataItem[]>([])
+const publicDataLoading = ref<boolean>(false)
+const publicDataError = ref<string>('')
+const publicDataUpdatedAt = ref<string>('')
+
+const isPublicDataCategory = computed<boolean>((): boolean => publicDataCategories.has(selectedCategory.value))
+
+const getEndpointKey = (endpoint: ApiEndpoint): string => {
+  return [
+    endpoint.categoryName || selectedCategory.value,
+    endpoint.baseUrl || 'https://api.apiopen.top',
+    endpoint.method,
+    endpoint.path,
+    endpoint.name
+  ].join('::')
+}
+
+const resolveTemplateValue = (value: string): string => {
+  return value.replace(envPlaceholderRegexp, (_match: string, key: string): string => {
+    const resolved: unknown = import.meta.env[key]
+    return resolved === undefined || resolved === null ? '' : String(resolved)
+  })
+}
+
+const buildEndpointUrl = (api: ApiEndpoint, path: string): string => {
+  if (/^https?:\/\//i.test(path)) return path
+
+  const baseUrl: string = api.baseUrl || 'https://api.apiopen.top'
+  return `${baseUrl.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`
+}
+
+const isRecord = (value: unknown): value is UnknownRecord => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+const toDisplayText = (value: unknown): string => {
+  if (value === undefined || value === null) return ''
+  return String(value).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+}
+
+const pickText = (source: UnknownRecord, keys: string[]): string => {
+  for (const key of keys) {
+    const value: unknown = source[key]
+    const text: string = toDisplayText(value)
+    if (text) return text
+  }
+  return ''
+}
+
+const normalizeMediaUrl = (url: string, kind: PublicDataKind): string => {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  if (url.startsWith('//')) return `https:${url}`
+  if (url.startsWith('/') && kind === 'video') return `https://tilvids.com${url}`
+  return url
+}
+
+const pickImage = (source: UnknownRecord, kind: PublicDataKind): string => {
+  const directImage: string = pickText(source, [
+    'image',
+    'cover',
+    'thumbnail',
+    'thumbnailUrl',
+    'thumbnail_url',
+    'background_image',
+    'main_image'
+  ])
+  if (directImage) return normalizeMediaUrl(directImage, kind)
+
+  const sprites: unknown = source.sprites
+  if (isRecord(sprites)) {
+    return normalizeMediaUrl(pickText(sprites, ['front_default', 'front_shiny']), kind)
+  }
+
+  const thumbnails: unknown = source.thumbnails
+  if (Array.isArray(thumbnails)) {
+    const firstThumbnail: unknown = thumbnails.find((item: unknown): boolean => isRecord(item) && Boolean(item.fileUrl || item.url || item.path))
+    if (isRecord(firstThumbnail)) {
+      return normalizeMediaUrl(pickText(firstThumbnail, ['fileUrl', 'url', 'path']), kind)
+    }
+  }
+
+  return ''
+}
+
+const getPublicDataKind = (category: string): PublicDataKind => {
+  if (category === 'ALAPI知乎日报') return 'zhihu'
+  if (category === 'BEJSON免费接口') return 'bejson'
+  if (category === 'PokeAPI') return 'pokemon'
+  if (category === 'Pexels视频') return 'pexels'
+  if (category === '开放视频接口') return 'video'
+  if (category === '游戏接口') return 'game'
+  return 'generic'
+}
+
+const getPublicDataIcon = (kind: PublicDataKind): string => {
+  const iconMap: Record<PublicDataKind, string> = {
+    zhihu: '📰',
+    bejson: '🧰',
+    pokemon: '⚡',
+    pexels: '🎬',
+    video: '📺',
+    game: '🎮',
+    generic: '📦'
+  }
+  return iconMap[kind]
+}
+
+const extractPublicArray = (payload: unknown): unknown[] => {
+  if (Array.isArray(payload)) return payload
+  if (!isRecord(payload)) return []
+
+  const data: unknown = payload.data
+  if (Array.isArray(data)) return data
+  if (isRecord(data)) {
+    const nestedKeys: string[] = ['stories', 'top_stories', 'results', 'videos', 'items', 'list', 'games', 'deals', 'giveaways']
+    for (const key of nestedKeys) {
+      const nestedValue: unknown = data[key]
+      if (Array.isArray(nestedValue)) return nestedValue
+    }
+    return [data]
+  }
+
+  const rootKeys: string[] = ['stories', 'top_stories', 'results', 'videos', 'items', 'list', 'games', 'deals', 'giveaways']
+  for (const key of rootKeys) {
+    const rootValue: unknown = payload[key]
+    if (Array.isArray(rootValue)) return rootValue
+  }
+
+  return [payload]
+}
+
+const getItemTags = (source: UnknownRecord, kind: PublicDataKind): string[] => {
+  const rawTags: string[] = [
+    pickText(source, ['category', 'genre', 'platform', 'type', 'status']),
+    pickText(source, ['release_date', 'publishedAt', 'published_at', 'salePrice', 'normalPrice'])
+  ].filter(Boolean)
+
+  if (kind === 'pokemon') {
+    const types: unknown = source.types
+    if (Array.isArray(types)) {
+      rawTags.push(...types.map((item: unknown): string => {
+        if (!isRecord(item) || !isRecord(item.type)) return ''
+        return pickText(item.type, ['name'])
+      }).filter(Boolean))
+    }
+  }
+
+  return Array.from(new Set(rawTags)).slice(0, 4)
+}
+
+const toPublicDataItem = (item: unknown, index: number, kind: PublicDataKind): PublicDataItem => {
+  const source: UnknownRecord = isRecord(item) ? item : { value: item }
+  const title: string = pickText(source, ['title', 'name', 'word', 'displayName', 'shortUUID', 'gameTitle']) || `${getPublicDataIcon(kind)} 数据 ${index + 1}`
+  const subtitle: string = pickText(source, ['author', 'user_name', 'developer', 'publisher', 'pinyin', 'channel', 'artist', 'owner']) || selectedCategory.value
+  const description: string = pickText(source, [
+    'desc',
+    'description',
+    'short_description',
+    'explanation',
+    'truncatedDescription',
+    'body',
+    'content',
+    'deck'
+  ]) || '点击刷新可获取最新数据。'
+  const url: string = pickText(source, ['url', 'article_url', 'game_url', 'open_giveaway_url', 'steamAppID', 'dealID'])
+  const id: string = pickText(source, ['id', 'uuid', 'shortUUID', 'gameID', 'dealID']) || `${kind}-${index}`
+
+  return {
+    id: `${kind}-${id}-${index}`,
+    title,
+    subtitle,
+    description,
+    image: pickImage(source, kind),
+    url: url.startsWith('http') ? url : '',
+    tags: getItemTags(source, kind),
+    extra: [
+      pickText(source, ['views', 'likes', 'downloads']).replace(/^$/, ''),
+      pickText(source, ['duration', 'rating', 'metacriticScore']).replace(/^$/, '')
+    ].filter(Boolean)
+  }
+}
+
+const normalizePublicResponse = (payload: unknown, category: string): PublicDataItem[] => {
+  const kind: PublicDataKind = getPublicDataKind(category)
+  return extractPublicArray(payload)
+    .slice(0, 24)
+    .map((item: unknown, index: number): PublicDataItem => toPublicDataItem(item, index, kind))
+}
+
+const getVisibleParams = (params: ApiParam[] = []): ApiParam[] => {
+  return params.filter((param: ApiParam): boolean => param.name !== 'token')
+}
+
+const buildCurrentEndpointUrl = (api: ApiEndpoint): string => {
+  let path: string = api.path
+  if (api.pathParams) {
+    api.pathParams.forEach((param: ApiParam): void => {
+      const value: string = String(pathInputs[param.name] || param.default || '')
+      path = path.replace(`{${param.name}}`, value)
+    })
+  }
+
+  let url: string = buildEndpointUrl(api, path)
+  const queryParams: URLSearchParams = new URLSearchParams()
+  Object.keys(queryInputs).forEach((key: string): void => {
+    const value: ApiValue = queryInputs[key]
+    if (value !== undefined && value !== null && value !== '') {
+      queryParams.append(key, String(value))
+    }
+  })
+  const queryString: string = queryParams.toString()
+  if (queryString) url += `?${queryString}`
+  return url
+}
+
+const fetchPublicData = async (): Promise<void> => {
+  if (!selectedApi.value || !isPublicDataCategory.value) return
+  const currentApiKey: string = getEndpointKey(selectedApi.value)
+  const isActiveApi: boolean = activeEndpoints.value.some((endpoint: ApiEndpoint): boolean => getEndpointKey(endpoint) === currentApiKey)
+  if (!isActiveApi) return
+
+  publicDataLoading.value = true
+  publicDataError.value = ''
+  publicDataItems.value = []
+  const api: ApiEndpoint = selectedApi.value
+  const headers: Record<string, string> = jsonHeaders()
+
+  Object.entries(api.headers || {}).forEach(([key, value]: [string, string]): void => {
+    const resolvedValue: string = resolveTemplateValue(value)
+    if (resolvedValue) headers[key] = resolvedValue
+  })
+
+  try {
+    const response: Response = await request(buildCurrentEndpointUrl(api), { method: api.method, headers })
+    const responseText: string = await response.text()
+    if (!response.ok) {
+      throw new Error(`数据加载失败：${response.status}`)
+    }
+    let payload: unknown = responseText
+    try {
+      payload = JSON.parse(responseText) as unknown
+    } catch (_error: unknown) {
+      payload = responseText
+    }
+    publicDataItems.value = normalizePublicResponse(payload, selectedCategory.value)
+    publicDataUpdatedAt.value = new Date().toLocaleTimeString('zh-CN', { hour12: false })
+  } catch (error: unknown) {
+    publicDataError.value = error instanceof Error ? error.message : String(error)
+  } finally {
+    publicDataLoading.value = false
+  }
+}
 
 watch(selectedApi, (newApi: ApiEndpoint | null): void => {
   sandboxResponse.value = null
   sandboxRequestUrl.value = ''
   sandboxHeaders.value = ''
+  publicDataItems.value = []
+  publicDataError.value = ''
   if (!newApi) return
   Object.keys(pathInputs).forEach((k: string): boolean => delete pathInputs[k])
   if (newApi.pathParams) {
@@ -646,6 +918,14 @@ watch(selectedApi, (newApi: ApiEndpoint | null): void => {
     newApi.params.forEach((p: ApiParam): void => { queryInputs[p.name] = p.default !== undefined ? p.default : '' })
   }
   sandboxBodyContent.value = newApi.hasBody ? newApi.bodyPlaceholder : ''
+}, { immediate: true })
+
+watch([selectedCategory, selectedApi], (): void => {
+  if (isPublicDataCategory.value && selectedApi.value) {
+    void nextTick((): void => {
+      void fetchPublicData()
+    })
+  }
 }, { immediate: true })
 
 watch(activeEndpoints, (newList: ApiEndpoint[]): void => {
@@ -669,7 +949,7 @@ const sendSandboxRequest = async (): Promise<void> => {
       path = path.replace(`{${p.name}}`, val)
     })
   }
-  let url: string = `https://api.apiopen.top${path}`
+  let url: string = buildEndpointUrl(api, path)
   const queryParams: URLSearchParams = new URLSearchParams()
   Object.keys(queryInputs).forEach((key: string): void => {
     const val: ApiValue = queryInputs[key]
@@ -679,10 +959,14 @@ const sendSandboxRequest = async (): Promise<void> => {
   })
   const queryString: string = queryParams.toString()
   if (queryString) url += `?${queryString}`
-  sandboxRequestUrl.value = url
+  sandboxRequestUrl.value = resolveApiUrl(url)
 
   const headers: Record<string, string> = jsonHeaders()
-  if (authToken.value) headers['Authorization'] = `Bearer ${authToken.value}`
+  Object.entries(api.headers || {}).forEach(([key, value]: [string, string]): void => {
+    const resolvedValue: string = resolveTemplateValue(value)
+    if (resolvedValue) headers[key] = resolvedValue
+  })
+  if (!api.skipAuth && authToken.value) headers['Authorization'] = `Bearer ${authToken.value}`
   const options: RequestInit = { method: api.method, headers }
   if (api.hasBody && sandboxBodyContent.value) {
     Object.assign(headers, jsonHeaders(headers, true))
@@ -692,10 +976,22 @@ const sendSandboxRequest = async (): Promise<void> => {
   try {
     const response: Response = await request(url, options)
     sandboxHeaders.value = `Status: ${response.status} ${response.statusText}\nContent-Type: ${response.headers.get('content-type')}`
-    const json: ApiResponse<{ token?: string; accessToken?: string }> = await response.json() as ApiResponse<{ token?: string; accessToken?: string }>
-    sandboxResponse.value = JSON.stringify(json, null, 2)
-    if (api.path === '/api/auth/login' && json && json.code === 200 && json.data) {
-      const token: string | undefined = json.data.token || json.data.accessToken
+    const responseText: string = await response.text()
+    let parsedJson: ApiResponse<{ token?: string; accessToken?: string }> | null = null
+
+    if (api.responseType === 'text') {
+      sandboxResponse.value = responseText
+    } else {
+      try {
+        parsedJson = JSON.parse(responseText) as ApiResponse<{ token?: string; accessToken?: string }>
+        sandboxResponse.value = JSON.stringify(parsedJson, null, 2)
+      } catch (_err: unknown) {
+        sandboxResponse.value = responseText || '{}'
+      }
+    }
+
+    if (api.path === '/api/auth/login' && parsedJson && parsedJson.code === 200 && parsedJson.data) {
+      const token: string | undefined = parsedJson.data.token || parsedJson.data.accessToken
       if (token) {
         authToken.value = token
         saveToken()
@@ -739,8 +1035,8 @@ const clearToken = (): void => {
     <!-- Mode Select Header -->
     <div class="mode-select-header">
       <div class="header-left">
-        <h2 class="main-title">🔌 api.apiopen.top 云端接口应用枢纽</h2>
-        <p class="main-subtitle">您既可以以常规用户身份发表动态、上传云盘，也可以切换到调试沙盒联调全部后台接口。</p>
+        <h2 class="main-title">🔌 多源云端接口应用枢纽</h2>
+        <p class="main-subtitle">您既可以以常规用户身份发表动态、上传云盘，也可以切换到调试沙盒联调 ALAPI、PokeAPI、开放视频、游戏等接口。</p>
       </div>
       <div class="mode-toggles">
         <button 
@@ -1125,16 +1421,17 @@ const clearToken = (): void => {
           <div class="endpoint-list-box">
             <button 
               v-for="ep in activeEndpoints" 
-              :key="ep.method + ep.path"
+              :key="getEndpointKey(ep)"
               class="ep-item"
-              :class="{ active: selectedApi && selectedApi.path === ep.path && selectedApi.method === ep.method }"
+              :class="{ active: selectedApi && getEndpointKey(selectedApi) === getEndpointKey(ep) }"
               @click="selectedApi = ep"
             >
               <div class="ep-header-row">
-                <span class="method-badge" :class="getMethodClass(ep.method)">{{ ep.method }}</span>
+                <span v-if="!isPublicDataCategory" class="method-badge" :class="getMethodClass(ep.method)">{{ ep.method }}</span>
                 <span class="ep-name-title">{{ ep.name }}</span>
               </div>
-              <div class="ep-path-sub">{{ ep.path }}</div>
+              <div v-if="!isPublicDataCategory" class="ep-path-sub">{{ ep.path }}</div>
+              <div v-else class="ep-path-sub public-entry-desc">{{ ep.desc || '点击查看数据页面' }}</div>
               <div v-if="selectedCategory === '所有接口列表'" class="ep-cat-sub">
                 来自: {{ ep.categoryName }}
               </div>
@@ -1144,7 +1441,117 @@ const clearToken = (): void => {
 
         <!-- Column 3: Sandbox Debug Workspace -->
         <div class="column-workspace" v-if="selectedApi">
-          <div class="workspace-card">
+          <div v-if="isPublicDataCategory" class="public-data-page">
+            <div class="public-data-header">
+              <div>
+                <span class="public-data-kicker">{{ selectedCategory }}</span>
+                <h3>{{ selectedApi.name }}</h3>
+                <p>{{ selectedApi.desc || '选择左侧功能后即可查看整理好的数据。' }}</p>
+              </div>
+              <el-button type="primary" :loading="publicDataLoading" @click="fetchPublicData">
+                刷新数据
+              </el-button>
+            </div>
+
+            <div
+              v-if="getVisibleParams(selectedApi.pathParams).length || getVisibleParams(selectedApi.params).length"
+              class="public-data-filters"
+            >
+              <div
+                v-for="p in getVisibleParams(selectedApi.pathParams)"
+                :key="`path-${p.name}`"
+                class="public-filter-item"
+              >
+                <label>{{ p.label || p.description || p.name }}</label>
+                <el-input v-model="pathInputs[p.name]" :placeholder="p.placeholder || p.description || p.name" size="small" clearable />
+              </div>
+              <div
+                v-for="p in getVisibleParams(selectedApi.params)"
+                :key="`query-${p.name}`"
+                class="public-filter-item"
+              >
+                <label>{{ p.label || p.description || p.name }}</label>
+                <el-input
+                  v-if="p.type === 'text'"
+                  v-model="queryInputs[p.name]"
+                  :placeholder="p.placeholder || p.label"
+                  size="small"
+                  clearable
+                />
+                <el-input-number
+                  v-else-if="p.type === 'number'"
+                  v-model="queryInputs[p.name]"
+                  size="small"
+                  :min="0"
+                  controls-position="right"
+                />
+                <el-select
+                  v-else-if="p.type === 'select'"
+                  v-model="queryInputs[p.name]"
+                  size="small"
+                  style="width: 100%"
+                >
+                  <el-option
+                    v-for="o in p.options"
+                    :key="o.value"
+                    :value="o.value"
+                    :label="o.label"
+                  />
+                </el-select>
+                <el-switch
+                  v-else-if="p.type === 'switch'"
+                  v-model="queryInputs[p.name]"
+                  size="small"
+                />
+                <el-input v-else v-model="queryInputs[p.name]" size="small" clearable />
+              </div>
+            </div>
+
+            <div class="public-data-toolbar">
+              <span>{{ publicDataUpdatedAt ? `最近更新 ${publicDataUpdatedAt}` : '准备加载数据' }}</span>
+              <span>{{ publicDataItems.length ? `共 ${publicDataItems.length} 条` : '' }}</span>
+            </div>
+
+            <div v-if="publicDataLoading" class="public-data-state">
+              <span class="loading-spinner"></span>
+              <strong>正在整理数据...</strong>
+            </div>
+            <div v-else-if="publicDataError" class="public-data-state error">
+              <strong>加载失败</strong>
+              <span>{{ publicDataError }}</span>
+              <el-button type="primary" plain @click="fetchPublicData">重试</el-button>
+            </div>
+            <div v-else-if="!publicDataItems.length" class="public-data-state">
+              <strong>暂无数据</strong>
+              <span>换一个条件后点击刷新试试。</span>
+            </div>
+            <div v-else class="public-data-grid">
+              <article
+                v-for="item in publicDataItems"
+                :key="item.id"
+                class="public-data-card"
+              >
+                <div v-if="item.image" class="public-data-image">
+                  <img :src="item.image" :alt="item.title">
+                </div>
+                <div class="public-data-content">
+                  <div class="public-data-title-row">
+                    <strong>{{ item.title }}</strong>
+                    <a v-if="item.url" :href="item.url" target="_blank" rel="noopener noreferrer">打开</a>
+                  </div>
+                  <span class="public-data-subtitle">{{ item.subtitle }}</span>
+                  <p>{{ item.description }}</p>
+                  <div v-if="item.tags.length" class="public-data-tags">
+                    <span v-for="tag in item.tags" :key="tag">{{ tag }}</span>
+                  </div>
+                  <div v-if="item.extra.length" class="public-data-extra">
+                    <span v-for="extra in item.extra" :key="extra">{{ extra }}</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+          <div v-else class="workspace-card">
             <!-- Path & Method info -->
             <div class="api-meta-info">
               <span class="method-tag" :class="getMethodClass(selectedApi.method)">
@@ -2032,13 +2439,27 @@ const clearToken = (): void => {
   padding: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  min-height: 0;
 }
 
 .cat-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 500px;
   display: flex;
   flex-direction: column;
   gap: 5px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.cat-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.cat-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
 }
 
 .cat-item {
@@ -2148,6 +2569,13 @@ const clearToken = (): void => {
   word-break: break-all;
 }
 
+.ep-path-sub.public-entry-desc {
+  margin-top: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .ep-cat-sub {
   font-size: 9px;
   color: var(--primary-color);
@@ -2216,6 +2644,214 @@ const clearToken = (): void => {
 .workspace-card::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 4px;
+}
+
+.public-data-page {
+  height: 100%;
+  max-height: 640px;
+  overflow-y: auto;
+  padding: 18px;
+  padding-bottom: 92px;
+}
+
+.public-data-page::-webkit-scrollbar {
+  width: 5px;
+}
+
+.public-data-page::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+.public-data-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.13), rgba(20, 184, 166, 0.08));
+  border: 1px solid rgba(var(--primary-color-rgb, 99, 102, 241), 0.22);
+  border-radius: 12px;
+}
+
+.public-data-kicker {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: var(--primary-color);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.public-data-header h3 {
+  margin: 0;
+  color: var(--text-color);
+  font-size: 20px;
+}
+
+.public-data-header p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.public-data-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.public-filter-item {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.public-filter-item label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.public-data-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.public-data-state {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  background: var(--hover-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 14px;
+}
+
+.public-data-state strong {
+  color: var(--text-color);
+  font-size: 16px;
+}
+
+.public-data-state.error {
+  color: #ff8c8c;
+  border-color: rgba(255, 92, 92, 0.45);
+}
+
+.public-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.public-data-card {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.public-data-card:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.public-data-image {
+  height: 138px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.public-data-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.public-data-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.public-data-title-row {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.public-data-title-row strong {
+  min-width: 0;
+  color: var(--text-color);
+  font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.public-data-title-row a {
+  flex: 0 0 auto;
+  color: var(--primary-color);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.public-data-subtitle {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.public-data-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.public-data-tags,
+.public-data-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.public-data-tags span,
+.public-data-extra span {
+  max-width: 100%;
+  padding: 3px 7px;
+  color: var(--primary-color);
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(var(--primary-color-rgb, 99, 102, 241), 0.1);
+  border: 1px solid rgba(var(--primary-color-rgb, 99, 102, 241), 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .api-meta-info {

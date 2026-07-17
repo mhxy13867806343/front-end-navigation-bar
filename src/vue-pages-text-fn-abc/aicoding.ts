@@ -8,4 +8,6 @@ export const SORT_TABS: AiCodingSortTab[] = [
   { label: '最新', value: 2 }
 ]
 
-export const API_BASE = '/api-juejin'
+export const JUEJIN_DEV_API_BASE: string = '/api-juejin'
+export const JUEJIN_REMOTE_API_BASE: string = 'https://api.juejin.cn'
+export const API_BASE: string = import.meta.env.PROD ? JUEJIN_REMOTE_API_BASE : JUEJIN_DEV_API_BASE

@@ -1087,5 +1087,1246 @@
       "hasBody": false,
       "bodyPlaceholder": ""
     }
+  ],
+  "ALAPI知乎日报": [
+    {
+      "name": "知乎日报",
+      "desc": "获取今日知乎日报列表，返回 stories 和 top_stories。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/zhihu",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "qgqofofvmxtoskffd37omkscobipmn"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "指定日期日报",
+      "desc": "按日期获取知乎日报，日期格式为 YYYYMMDD。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/zhihu/get",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "qgqofofvmxtoskffd37omkscobipmn"
+        },
+        {
+          "name": "date",
+          "label": "日报日期",
+          "description": "YYYYMMDD",
+          "type": "text",
+          "placeholder": "YYYYMMDD",
+          "required": true,
+          "default": "20260717"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "获取日报详情",
+      "desc": "列表返回 id 后，查询该日报的正文详情。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/zhihu/news",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "qgqofofvmxtoskffd37omkscobipmn"
+        },
+        {
+          "name": "id",
+          "label": "日报ID",
+          "description": "",
+          "type": "text",
+          "placeholder": "日报ID",
+          "required": true,
+          "default": "9791214"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "获取日报短评论列表",
+      "desc": "列表返回 id 后，查询短评论。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/zhihu/short_comments",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "qgqofofvmxtoskffd37omkscobipmn"
+        },
+        {
+          "name": "id",
+          "label": "日报ID",
+          "description": "",
+          "type": "text",
+          "placeholder": "日报ID",
+          "required": true,
+          "default": "9791214"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "获取日报长评论列表",
+      "desc": "列表返回 id 后，查询长评论。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/zhihu/long_comments",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "qgqofofvmxtoskffd37omkscobipmn"
+        },
+        {
+          "name": "id",
+          "label": "日报ID",
+          "description": "",
+          "type": "text",
+          "placeholder": "日报ID",
+          "required": true,
+          "default": "9791214"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "BEJSON免费接口": [
+    {
+      "name": "淘宝关键词建议",
+      "desc": "BEJSON 收录的淘宝搜索建议接口，历史接口可能会调整。",
+      "baseUrl": "/api-taobao-suggest",
+      "path": "/sug",
+      "method": "GET",
+      "params": [
+        {
+          "name": "code",
+          "label": "编码",
+          "description": "",
+          "type": "text",
+          "placeholder": "编码",
+          "required": false,
+          "default": "utf-8"
+        },
+        {
+          "name": "q",
+          "label": "关键词",
+          "description": "",
+          "type": "text",
+          "placeholder": "关键词",
+          "required": false,
+          "default": "电脑"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "快递100查询",
+      "desc": "快递轨迹查询示例，真实单号和快递公司编码需自行替换。",
+      "baseUrl": "/api-kuaidi100",
+      "path": "/query",
+      "method": "GET",
+      "params": [
+        {
+          "name": "type",
+          "label": "快递公司编码",
+          "description": "",
+          "type": "text",
+          "placeholder": "快递公司编码",
+          "required": false,
+          "default": "yuantong"
+        },
+        {
+          "name": "postid",
+          "label": "快递单号",
+          "description": "",
+          "type": "text",
+          "placeholder": "快递单号",
+          "required": false,
+          "default": "11111111111"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "Google Feed 转 JSON",
+      "desc": "BEJSON 旧版 Feed API 示例，接口可能已经下线。",
+      "baseUrl": "/api-google-ajax",
+      "path": "/ajax/services/feed/load",
+      "method": "GET",
+      "params": [
+        {
+          "name": "v",
+          "label": "版本",
+          "description": "",
+          "type": "text",
+          "placeholder": "版本",
+          "required": false,
+          "default": "1.0"
+        },
+        {
+          "name": "num",
+          "label": "数量",
+          "description": "",
+          "type": "number",
+          "placeholder": "数量",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "q",
+          "label": "Feed 地址",
+          "description": "",
+          "type": "text",
+          "placeholder": "Feed 地址",
+          "required": false,
+          "default": "https://www.weather.com.cn/data/sk/101010100.html"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "百度百科摘要",
+      "desc": "查询百度百科词条摘要。",
+      "baseUrl": "/api-baidu-baike",
+      "path": "/api/openapi/BaikeLemmaCardApi",
+      "method": "GET",
+      "params": [
+        {
+          "name": "scope",
+          "label": "范围",
+          "description": "",
+          "type": "text",
+          "placeholder": "范围",
+          "required": false,
+          "default": "103"
+        },
+        {
+          "name": "format",
+          "label": "返回格式",
+          "description": "",
+          "type": "text",
+          "placeholder": "返回格式",
+          "required": false,
+          "default": "json"
+        },
+        {
+          "name": "appid",
+          "label": "应用ID",
+          "description": "",
+          "type": "text",
+          "placeholder": "应用ID",
+          "required": false,
+          "default": "379020"
+        },
+        {
+          "name": "bk_key",
+          "label": "词条",
+          "description": "",
+          "type": "text",
+          "placeholder": "词条",
+          "required": false,
+          "default": "人工智能"
+        },
+        {
+          "name": "bk_length",
+          "label": "摘要长度",
+          "description": "",
+          "type": "number",
+          "placeholder": "摘要长度",
+          "required": false,
+          "default": 600
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "百度天气旧接口",
+      "desc": "BEJSON 收录的百度天气旧接口，需要可用 AK。",
+      "baseUrl": "/api-baidu-map",
+      "path": "/telematics/v3/weather",
+      "method": "GET",
+      "params": [
+        {
+          "name": "location",
+          "label": "城市",
+          "description": "",
+          "type": "text",
+          "placeholder": "城市",
+          "required": false,
+          "default": "北京"
+        },
+        {
+          "name": "output",
+          "label": "输出格式",
+          "description": "",
+          "type": "text",
+          "placeholder": "输出格式",
+          "required": false,
+          "default": "json"
+        },
+        {
+          "name": "ak",
+          "label": "百度 AK",
+          "description": "",
+          "type": "text",
+          "placeholder": "百度 AK",
+          "required": false,
+          "default": "your_baidu_ak"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "新浪天气旧接口",
+      "desc": "新浪天气历史接口，返回可能是 JS 文本。",
+      "baseUrl": "/api-sina-weather",
+      "path": "/iframe/index/w_cl.php",
+      "method": "GET",
+      "params": [
+        {
+          "name": "code",
+          "label": "代码格式",
+          "description": "",
+          "type": "text",
+          "placeholder": "代码格式",
+          "required": false,
+          "default": "js"
+        },
+        {
+          "name": "day",
+          "label": "天数",
+          "description": "",
+          "type": "number",
+          "placeholder": "天数",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "city",
+          "label": "城市",
+          "description": "",
+          "type": "text",
+          "placeholder": "城市",
+          "required": false,
+          "default": "北京"
+        },
+        {
+          "name": "dfc",
+          "label": "dfc",
+          "description": "",
+          "type": "number",
+          "placeholder": "dfc",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "charset",
+          "label": "编码",
+          "description": "",
+          "type": "text",
+          "placeholder": "编码",
+          "required": false,
+          "default": "utf-8"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "text"
+    }
+  ],
+  "PokeAPI": [
+    {
+      "name": "宝可梦列表",
+      "desc": "分页获取宝可梦列表。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/pokemon",
+      "method": "GET",
+      "params": [
+        {
+          "name": "limit",
+          "label": "返回数量",
+          "description": "",
+          "type": "number",
+          "placeholder": "返回数量",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "offset",
+          "label": "分页偏移",
+          "description": "",
+          "type": "number",
+          "placeholder": "分页偏移",
+          "required": false,
+          "default": 0
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "宝可梦详情",
+      "desc": "按名称或 ID 查询宝可梦详情。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/pokemon/{nameOrId}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "nameOrId",
+          "label": "宝可梦名称或ID",
+          "description": "宝可梦名称或ID",
+          "type": "text",
+          "placeholder": "宝可梦名称或ID",
+          "required": true,
+          "default": "pikachu"
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "宝可梦种族详情",
+      "desc": "获取是否神兽、颜色、捕获率和进化链地址。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/pokemon-species/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "label": "宝可梦种族ID",
+          "description": "宝可梦种族ID",
+          "type": "text",
+          "placeholder": "宝可梦种族ID",
+          "required": true,
+          "default": "25"
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "属性列表",
+      "desc": "获取所有属性列表。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/type",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "属性详情",
+      "desc": "按属性名称或 ID 查询详情。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/type/{nameOrId}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "nameOrId",
+          "label": "属性名称或ID",
+          "description": "属性名称或ID",
+          "type": "text",
+          "placeholder": "属性名称或ID",
+          "required": true,
+          "default": "3"
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "火属性详情",
+      "desc": "火属性详情快捷示例。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/type/{name}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "name",
+          "label": "属性名称",
+          "description": "属性名称",
+          "type": "text",
+          "placeholder": "属性名称",
+          "required": true,
+          "default": "fire"
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "技能详情",
+      "desc": "按技能名称查询详情。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/move/{name}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "name",
+          "label": "技能名称",
+          "description": "技能名称",
+          "type": "text",
+          "placeholder": "技能名称",
+          "required": true,
+          "default": "thunderbolt"
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "道具列表",
+      "desc": "分页获取道具列表。",
+      "baseUrl": "/api-pokeapi",
+      "path": "/api/v2/item",
+      "method": "GET",
+      "params": [
+        {
+          "name": "limit",
+          "label": "返回数量",
+          "description": "",
+          "type": "number",
+          "placeholder": "返回数量",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "offset",
+          "label": "分页偏移",
+          "description": "",
+          "type": "number",
+          "placeholder": "分页偏移",
+          "required": false,
+          "default": 0
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "Pexels视频": [
+    {
+      "name": "Pexels 短视频搜索",
+      "desc": "搜索竖屏短视频；需要在环境变量里配置 VITE_PEXELS_API_KEY。",
+      "baseUrl": "/api-pexels",
+      "path": "/v1/videos/search",
+      "method": "GET",
+      "params": [
+        {
+          "name": "query",
+          "label": "搜索关键词",
+          "description": "",
+          "type": "text",
+          "placeholder": "搜索关键词",
+          "required": false,
+          "default": "music dance"
+        },
+        {
+          "name": "orientation",
+          "label": "视频方向",
+          "description": "视频方向",
+          "type": "select",
+          "required": false,
+          "default": "portrait",
+          "options": [
+            {
+              "label": "竖屏",
+              "value": "portrait"
+            },
+            {
+              "label": "横屏",
+              "value": "landscape"
+            },
+            {
+              "label": "方形",
+              "value": "square"
+            }
+          ]
+        },
+        {
+          "name": "page",
+          "label": "页码",
+          "description": "",
+          "type": "number",
+          "placeholder": "页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "label": "每页数量",
+          "description": "",
+          "type": "number",
+          "placeholder": "每页数量",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "headers": {
+        "Authorization": "{{VITE_PEXELS_API_KEY}}"
+      },
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "开放视频接口": [
+    {
+      "name": "Tilvids 视频列表",
+      "desc": "获取 Tilvids 视频列表，可控制起始位置、数量、排序和 NSFW。",
+      "baseUrl": "/api-tilvids",
+      "path": "/api/v1/videos",
+      "method": "GET",
+      "params": [
+        {
+          "name": "start",
+          "label": "起始位置",
+          "description": "",
+          "type": "number",
+          "placeholder": "起始位置",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "count",
+          "label": "数量",
+          "description": "",
+          "type": "number",
+          "placeholder": "数量",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "sort",
+          "label": "排序",
+          "description": "排序",
+          "type": "select",
+          "required": false,
+          "default": "-publishedAt",
+          "options": [
+            {
+              "label": "发布时间倒序",
+              "value": "-publishedAt"
+            },
+            {
+              "label": "播放量倒序",
+              "value": "-views"
+            },
+            {
+              "label": "点赞倒序",
+              "value": "-likes"
+            }
+          ]
+        },
+        {
+          "name": "nsfw",
+          "label": "是否包含 NSFW",
+          "description": "是否包含 NSFW",
+          "type": "switch",
+          "required": false,
+          "default": false
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "Tilvids 视频详情",
+      "desc": "列表获取 uuid 后查询详情，返回视频名称、简介、作者、封面和播放地址。",
+      "baseUrl": "/api-tilvids",
+      "path": "/api/v1/videos/{uuid}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "uuid",
+          "label": "视频 UUID",
+          "description": "视频 UUID",
+          "type": "text",
+          "placeholder": "视频 UUID",
+          "required": true,
+          "default": "1b0dfcca-39c9-45c2-b94f-5e8c2d9bed98"
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "Invidious 中文视频搜索",
+      "desc": "通过 Invidious 搜索公开视频。",
+      "baseUrl": "/api-invidious",
+      "path": "/api/v1/search",
+      "method": "GET",
+      "params": [
+        {
+          "name": "q",
+          "label": "关键词",
+          "description": "",
+          "type": "text",
+          "placeholder": "关键词",
+          "required": false,
+          "default": "搞笑"
+        },
+        {
+          "name": "type",
+          "label": "类型",
+          "description": "类型",
+          "type": "select",
+          "required": false,
+          "default": "video",
+          "options": [
+            {
+              "label": "视频",
+              "value": "video"
+            },
+            {
+              "label": "频道",
+              "value": "channel"
+            },
+            {
+              "label": "播放列表",
+              "value": "playlist"
+            }
+          ]
+        },
+        {
+          "name": "duration",
+          "label": "时长",
+          "description": "时长",
+          "type": "select",
+          "required": false,
+          "default": "short",
+          "options": [
+            {
+              "label": "短视频",
+              "value": "short"
+            },
+            {
+              "label": "中等",
+              "value": "medium"
+            },
+            {
+              "label": "长视频",
+              "value": "long"
+            }
+          ]
+        },
+        {
+          "name": "page",
+          "label": "页码",
+          "description": "",
+          "type": "number",
+          "placeholder": "页码",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "hl",
+          "label": "语言",
+          "description": "",
+          "type": "text",
+          "placeholder": "语言",
+          "required": false,
+          "default": "zh-CN"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "Invidious 视频详情",
+      "desc": "按 VIDEO_ID 获取视频详情。",
+      "baseUrl": "/api-invidious",
+      "path": "/api/v1/videos/{id}",
+      "method": "GET",
+      "params": [],
+      "pathParams": [
+        {
+          "name": "id",
+          "label": "视频ID",
+          "description": "视频ID",
+          "type": "text",
+          "placeholder": "视频ID",
+          "required": true,
+          "default": "dQw4w9WgXcQ"
+        }
+      ],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "游戏接口": [
+    {
+      "name": "FreeToGame 游戏列表",
+      "desc": "免费游戏列表，可按平台、分类、排序筛选。",
+      "baseUrl": "/api-freetogame",
+      "path": "/api/games",
+      "method": "GET",
+      "params": [
+        {
+          "name": "platform",
+          "label": "平台",
+          "description": "平台",
+          "type": "select",
+          "required": false,
+          "default": "",
+          "options": [
+            {
+              "label": "全部",
+              "value": ""
+            },
+            {
+              "label": "Windows",
+              "value": "windows"
+            },
+            {
+              "label": "Browser",
+              "value": "browser"
+            }
+          ]
+        },
+        {
+          "name": "category",
+          "label": "分类",
+          "description": "分类",
+          "type": "select",
+          "required": false,
+          "default": "",
+          "options": [
+            {
+              "label": "全部",
+              "value": ""
+            },
+            {
+              "label": "Shooter",
+              "value": "shooter"
+            },
+            {
+              "label": "MMORPG",
+              "value": "mmorpg"
+            },
+            {
+              "label": "Racing",
+              "value": "racing"
+            },
+            {
+              "label": "Strategy",
+              "value": "strategy"
+            }
+          ]
+        },
+        {
+          "name": "sort-by",
+          "label": "排序",
+          "description": "排序",
+          "type": "select",
+          "required": false,
+          "default": "",
+          "options": [
+            {
+              "label": "默认",
+              "value": ""
+            },
+            {
+              "label": "发布日期",
+              "value": "release-date"
+            },
+            {
+              "label": "热度",
+              "value": "popularity"
+            },
+            {
+              "label": "字母",
+              "value": "alphabetical"
+            },
+            {
+              "label": "相关性",
+              "value": "relevance"
+            }
+          ]
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "FreeToGame 游戏详情",
+      "desc": "列表返回 id 后查询详情。",
+      "baseUrl": "/api-freetogame",
+      "path": "/api/game",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "label": "游戏ID",
+          "description": "",
+          "type": "number",
+          "placeholder": "游戏ID",
+          "required": true,
+          "default": 452
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "GamerPower 免费游戏礼包",
+      "desc": "当前可领取的免费游戏、DLC、道具、测试资格和礼包。",
+      "baseUrl": "/api-gamerpower",
+      "path": "/api/giveaways",
+      "method": "GET",
+      "params": [
+        {
+          "name": "platform",
+          "label": "平台",
+          "description": "平台",
+          "type": "select",
+          "required": false,
+          "default": "",
+          "options": [
+            {
+              "label": "全部",
+              "value": ""
+            },
+            {
+              "label": "Steam",
+              "value": "steam"
+            },
+            {
+              "label": "Epic Games Store",
+              "value": "epic-games-store"
+            },
+            {
+              "label": "PC",
+              "value": "pc"
+            },
+            {
+              "label": "PlayStation 4/5",
+              "value": "ps4"
+            },
+            {
+              "label": "Xbox",
+              "value": "xbox-one"
+            },
+            {
+              "label": "Switch",
+              "value": "switch"
+            },
+            {
+              "label": "Android",
+              "value": "android"
+            },
+            {
+              "label": "iOS",
+              "value": "ios"
+            }
+          ]
+        },
+        {
+          "name": "type",
+          "label": "类型",
+          "description": "类型",
+          "type": "select",
+          "required": false,
+          "default": "",
+          "options": [
+            {
+              "label": "全部",
+              "value": ""
+            },
+            {
+              "label": "完整游戏",
+              "value": "game"
+            },
+            {
+              "label": "礼包/战利品",
+              "value": "loot"
+            },
+            {
+              "label": "测试资格",
+              "value": "beta"
+            }
+          ]
+        },
+        {
+          "name": "sort-by",
+          "label": "排序",
+          "description": "排序",
+          "type": "select",
+          "required": false,
+          "default": "",
+          "options": [
+            {
+              "label": "默认",
+              "value": ""
+            },
+            {
+              "label": "热度",
+              "value": "popularity"
+            },
+            {
+              "label": "价值",
+              "value": "value"
+            },
+            {
+              "label": "发布日期",
+              "value": "date"
+            }
+          ]
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "GamerPower 礼包详情",
+      "desc": "列表返回 id 后查询详情。",
+      "baseUrl": "/api-gamerpower",
+      "path": "/api/giveaway",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "label": "礼包ID",
+          "description": "",
+          "type": "number",
+          "placeholder": "礼包ID",
+          "required": true,
+          "default": 2537
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "CheapShark 游戏折扣列表",
+      "desc": "PC 游戏商城折扣列表。",
+      "baseUrl": "/api-cheapshark",
+      "path": "/api/1.0/deals",
+      "method": "GET",
+      "params": [
+        {
+          "name": "pageNumber",
+          "label": "页码",
+          "description": "",
+          "type": "number",
+          "placeholder": "页码",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pageSize",
+          "label": "每页数量",
+          "description": "",
+          "type": "number",
+          "placeholder": "每页数量",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "upperPrice",
+          "label": "最高价格",
+          "description": "",
+          "type": "number",
+          "placeholder": "最高价格",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "metacritic",
+          "label": "Metacritic 最低分",
+          "description": "",
+          "type": "number",
+          "placeholder": "Metacritic 最低分",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "CheapShark 按名称搜索游戏",
+      "desc": "按游戏名称搜索，返回 gameID。",
+      "baseUrl": "/api-cheapshark",
+      "path": "/api/1.0/games",
+      "method": "GET",
+      "params": [
+        {
+          "name": "title",
+          "label": "游戏名称",
+          "description": "",
+          "type": "text",
+          "placeholder": "游戏名称",
+          "required": true,
+          "default": "batman"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "CheapShark 游戏价格详情",
+      "desc": "搜索结果返回 gameID 后查询价格详情。",
+      "baseUrl": "/api-cheapshark",
+      "path": "/api/1.0/games",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "label": "gameID",
+          "description": "",
+          "type": "number",
+          "placeholder": "gameID",
+          "required": true,
+          "default": 612
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "CheapShark 商店列表",
+      "desc": "获取 CheapShark 支持的商店列表。",
+      "baseUrl": "/api-cheapshark",
+      "path": "/api/1.0/stores",
+      "method": "GET",
+      "params": [],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
   ]
 }

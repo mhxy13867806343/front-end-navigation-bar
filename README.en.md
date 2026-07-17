@@ -4,6 +4,10 @@
 
 A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entries for AI chat assistants, AI painting, AI coding, AI development platforms and more, with built-in mini games and handy utilities.
 
+## 📌 Maintenance Status
+
+This project is no longer actively updated. The current live demo and existing features are kept as-is, with no planned new features, API sync work, or maintenance for third-party data-source availability.
+
 ## 🌐 Live Demo
 
 👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)

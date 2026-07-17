@@ -1,4 +1,6 @@
-export const JUEJIN_API_BASE: string = '/api-juejin'
+export const JUEJIN_DEV_API_BASE: string = '/api-juejin'
+export const JUEJIN_REMOTE_API_BASE: string = 'https://api.juejin.cn'
+export const JUEJIN_API_BASE: string = import.meta.env.PROD ? JUEJIN_REMOTE_API_BASE : JUEJIN_DEV_API_BASE
 
 export type JuejinArticleRankType = 'hot' | 'collect'
 export type JuejinHotListType = 'articles' | 'columns' | 'collections' | 'authors' | 'collected-articles'
