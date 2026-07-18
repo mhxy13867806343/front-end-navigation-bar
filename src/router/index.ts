@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteLocationNormalized } from 'vue-router'
 
 const routes = [
   {
@@ -24,6 +25,26 @@ const routes = [
     path: '/dyform',
     name: 'DyForm',
     component: () => import('../views/DyForm.vue')
+  },
+  {
+    path: '/terminal',
+    name: 'Terminal',
+    component: () => import('../views/DyForm.vue')
+  },
+  {
+    path: '/runcode',
+    name: 'RunCode',
+    component: () => import('../views/runcode/index.vue')
+  },
+  {
+    path: '/toolbox',
+    name: 'Toolbox',
+    component: () => import('../views/toolbox/index.vue')
+  },
+  {
+    path: '/h5/:ticket',
+    name: 'H5DesktopLink',
+    component: () => import('../views/h5DesktopLink/index.vue')
   },
   {
     path: '/flash',
@@ -55,6 +76,45 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+})
+
+const isMobileLikeClient = (): boolean => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+
+  const userAgent: string = navigator.userAgent || ''
+  const isMobileUserAgent: boolean = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(userAgent)
+  const hasCoarsePointer: boolean = window.matchMedia?.('(pointer: coarse)').matches ?? false
+  const isNarrowScreen: boolean = window.matchMedia?.('(max-width: 820px)').matches ?? false
+
+  return isMobileUserAgent || (hasCoarsePointer && isNarrowScreen)
+}
+
+const hasAllowedMobilePageAccess = (): boolean => {
+  try {
+    return sessionStorage.getItem('front_end_navigation_allow_mobile_page') === '1'
+  } catch {
+    return false
+  }
+}
+
+const buildH5Ticket = (to: RouteLocationNormalized): string => {
+  const pageName: string = to.path.replace(/^\/+/, '').replace(/[^a-zA-Z0-9-]+/g, '-') || 'home'
+  return `${pageName}-${Date.now()}`
+}
+
+router.beforeEach((to: RouteLocationNormalized) => {
+  if (!import.meta.env.PROD) return true
+  if (to.path === '/h5' || to.path.startsWith('/h5/')) return true
+  if (hasAllowedMobilePageAccess()) return true
+  if (!isMobileLikeClient()) return true
+
+  return {
+    path: `/h5/${buildH5Ticket(to)}`,
+    query: {
+      target: to.fullPath
+    },
+    replace: true
+  }
 })
 
 export default router

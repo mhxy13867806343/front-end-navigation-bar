@@ -84,11 +84,12 @@ import versionHistoryData from './ajson/version-history.json'
 
 const route = useRoute()
 const router = useRouter()
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/h5']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
-  return routeViewPaths.some(p => path === p || path.endsWith(p))
+  return routeViewPaths.some(p => path === p || path.endsWith(p) || (p === '/h5' && path.startsWith('/h5/')))
 })
+const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
 
 interface DrawerCloudLink {
   name: string
@@ -180,12 +181,30 @@ const drawerAiDevTools: DrawerAiDevTool[] = [
 const projectRepositoryUrl: string = 'https://github.com/mhxy13867806343/front-end-navigation-bar'
 const projectRepositoryName: string = 'mhxy13867806343/front-end-navigation-bar'
 const VERSION_HISTORY_SEEN_KEY: string = 'front_end_navigation_version_history_seen'
+const TERMINAL_CATEGORY_ID = 26
+const terminalPreviewLines: string[] = [
+  'Last login: Wed Jul 15 11:00:06 on ttys002',
+  'You have new mail.',
+  '$ brew install --cask warp',
+  '$ npm install @xterm/xterm',
+  '$ starship init zsh'
+]
 const versionHistory: VersionHistoryData = versionHistoryData as VersionHistoryData
 const showVersionHistoryDialog = ref<boolean>(false)
 const versionHistoryActiveTab = ref<string>('feature')
 const versionFeatureActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
 const versionCodeActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
 const versionHistoryGroups = computed<VersionHistoryGroup[]>((): VersionHistoryGroup[] => versionHistory.groups)
+const syncRouteCategory = (): void => {
+  if (route.path === '/terminal') {
+    activeItem.value = 26
+    activeSubItem.value = null
+    isNewsActive.value = false
+    isAppStoreActive.value = false
+    isArticlesListActive.value = false
+    localStorage.setItem('activeItem', TERMINAL_CATEGORY_ID.toString())
+  }
+}
 const filterVersionGroups = (predicate: (item: VersionHistoryCommit) => boolean): VersionHistoryGroup[] => {
   return versionHistory.groups
     .map((group: VersionHistoryGroup): VersionHistoryGroup => ({
@@ -223,10 +242,13 @@ const openCommitOnGithub = (hash: string): void => {
 }
 
 onMounted((): void => {
+  syncRouteCategory()
   if (localStorage.getItem(VERSION_HISTORY_SEEN_KEY) !== '1') {
     showVersionHistoryDialog.value = true
   }
 })
+
+watch(() => route.path, syncRouteCategory)
 
 const blessingYear = computed<number>((): number => new Date().getFullYear())
 
@@ -241,7 +263,11 @@ const goFlash = (): Promise<void | Error> => router.push('/flash')
 const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
 const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
 const goJuejinTheme = (): Promise<void | Error> => router.push('/juejin-theme')
+const goToolbox = (): Promise<void | Error> => router.push('/toolbox')
 const backFromFlash = (): Promise<void | Error> => router.push('/')
+const openQqContact = (): void => {
+  window.location.href = 'mqqwpa://im/chat?chat_type=wpa&uin=869710179&version=1&src_type=web'
+}
 
 const activeMenuIndex = computed<string>(() => {
   if (activeItem.value === 25) {
@@ -645,6 +671,11 @@ watch(isDarkMode, () => {
               <span class="tool-icon">🧰</span>
               <span>智能工具箱</span>
             </div>
+            <div class="popover-tool-item" @click="goToolbox">
+              <span class="tool-icon">🗂️</span>
+              <span>工具集合</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
+            </div>
           </div>
         </el-popover>
       </div>
@@ -926,11 +957,34 @@ watch(isDarkMode, () => {
           </div>
         </div>
 
+        <section v-if="activeItem === TERMINAL_CATEGORY_ID && !searchQuery" class="terminal-showcase" aria-label="终端界面预览">
+          <div class="terminal-window">
+            <div class="terminal-titlebar">
+              <div class="terminal-traffic-lights" aria-hidden="true">
+                <span class="terminal-light close"></span>
+                <span class="terminal-light minimize"></span>
+                <span class="terminal-light zoom"></span>
+              </div>
+              <div class="terminal-title">终端 - tail - zsh - 80x24</div>
+              <div class="terminal-scroll-mark" aria-hidden="true"></div>
+            </div>
+            <div class="terminal-body">
+              <p v-for="line in terminalPreviewLines" :key="line">{{ line }}</p>
+              <span class="terminal-cursor" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="terminal-showcase-copy">
+            <h2>终端界面</h2>
+            <p>收集真实终端、Shell 美化和 Web 终端组件，适合做开发环境、命令行演示和页面内控制台。</p>
+          </div>
+        </section>
+
         <div :class="['tools-grid', `cols-${gridCols}`]">
           <!-- 工具卡片列表 -->
           <template v-if="filteredTools.length > 0">
             <div v-for="(tool, index) in filteredTools" :key="tool.id" class="tool-wrapper">
               <div class="tool-card"
+                  :class="{ 'terminal-tool-card': tool.type === 'terminal' || tool.type === 'terminal-ui' }"
                   :title="`${tool.name} - ${tool.desc}`"
 
                   @contextmenu="(event) => handleRightClick(event, tool)">
@@ -953,6 +1007,10 @@ watch(isDarkMode, () => {
                   </div>
                 <div class="tool-info">
                   <p>{{ tool.desc }}</p>
+                  <div v-if="activeItem === TERMINAL_CATEGORY_ID" class="terminal-meta">
+                    <span>{{ tool.platform }}</span>
+                    <span>{{ tool.price }}</span>
+                  </div>
                   <div v-if="tool.needVPN" class="vpn-tag">需要VPN</div>
                   <div v-if="searchQuery" class="search-category-tag" style="margin-top: 4px; font-size: 10px; color: var(--primary-color); font-weight: bold;">
                     来自: {{ tool.categoryIcon }} {{ tool.categoryName }}
@@ -2028,11 +2086,20 @@ watch(isDarkMode, () => {
       </el-tabs>
     </el-dialog>
 
-    <!-- 邮箱图标 -->
-    <a href="mailto:869710179@qq.com" class="floating-email-icon" title="联系我">
-      <i class="el-icon-message"></i>
-      📧
-    </a>
+    <!-- 悬浮联系入口 -->
+    <div class="floating-contact-bar" aria-label="联系入口">
+      <button
+        type="button"
+        class="floating-contact-icon floating-qq-icon"
+        title="QQ 联系"
+        @click="openQqContact"
+      >
+        QQ
+      </button>
+      <a href="mailto:869710179@qq.com" class="floating-contact-icon floating-email-icon" title="邮箱联系">
+        📧
+      </a>
+    </div>
     <!-- 历史爱心记录弹窗 -->
     <el-dialog
       v-model="showLikeHistory"
@@ -2407,7 +2474,7 @@ watch(isDarkMode, () => {
       <div class="route-view-bar">
         <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
       </div>
-      <div class="route-browser-notice">
+      <div v-if="!isH5DesktopHintRoute" class="route-browser-notice">
         <BrowserSupportNotice :auto-open="false" />
       </div>
       <router-view />

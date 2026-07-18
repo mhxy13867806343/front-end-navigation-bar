@@ -37,6 +37,29 @@ test('ALAPI music player supports playlist group create rename delete and horizo
   assert.match(playerSource, /\.alapi-player-playlist-tabs button\s*\{[\s\S]*?min-height:\s*40px/)
 })
 
+test('ALAPI music player adds songs to the active playlist group first', () => {
+  assert.match(playerSource, /function\s+ensurePlaylistGroupsForInsert\s*\(/)
+  assert.match(playerSource, /已自动创建\$\{createdGroup\.name\}/)
+  assert.match(playerSource, /function\s+findAvailablePlaylistGroup\s*\(\s*preferredGroupIndex:\s*number\s*=\s*activePlaylistGroupIndex\.value\s*\)/)
+  assert.match(playerSource, /const\s+preferredGroup:\s*PlayerListGroup\s*\|\s*undefined\s*=\s*playlistGroups\.value\[preferredGroupIndex\]/)
+  assert.match(playerSource, /preferredGroup\.songs\.length\s*<\s*MAX_PLAYLIST_SONGS/)
+  assert.match(playerSource, /ensurePlaylistGroupsForInsert\(\)/)
+  assert.match(playerSource, /findAvailablePlaylistGroup\(activePlaylistGroupIndex\.value\)/)
+  assert.match(playerSource, /已添加 \$\{addedCount\} 首到\$\{activePlaylistGroup\.value\.name\}/)
+})
+
+test('ALAPI music player exposes a playlist overview popover for quick switching', () => {
+  assert.match(playerSource, /v-model:visible=["']isPlaylistOverviewVisible["']/)
+  assert.match(playerSource, /placement=["']right-end["']/)
+  assert.match(playerSource, /class=["']alapi-player-playlist-overview-btn["']/)
+  assert.match(playerSource, /查看列表/)
+  assert.match(playerSource, /class=["']alapi-player-playlist-overview-panel["']/)
+  assert.match(playerSource, /@click=["']switchPlaylistGroupFromOverview\(group\.index\)["']/)
+  assert.match(playerSource, /function\s+switchPlaylistGroupFromOverview\s*\(/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs-wrap\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/)
+  assert.match(playerSource, /\.alapi-player-playlist-overview-btn\s*\{[\s\S]*?flex:\s*0\s+0\s+auto/)
+})
+
 test('ALAPI music player keeps playlist group names and active index consistent after deletion', () => {
   assert.match(playerSource, /function\s+isDefaultPlaylistGroupName\s*\(/)
   assert.match(playerSource, /function\s+normalizePlaylistGroups\s*\(/)
@@ -46,9 +69,12 @@ test('ALAPI music player keeps playlist group names and active index consistent 
   assert.match(playerSource, /const\s+deletedGroupName:\s*string\s*=\s*targetGroup\.name/)
 })
 
-test('ALAPI music player keeps playlist tabs and mini player sized to text without visible scrollbars', () => {
-  assert.match(playerSource, /\.alapi-player-playlist-tabs\s*\{[\s\S]*?scrollbar-width:\s*none/)
-  assert.match(playerSource, /\.alapi-player-playlist-tabs::\-webkit-scrollbar\s*\{[\s\S]*?display:\s*none/)
+test('ALAPI music player keeps playlist tabs horizontally scrollable with a visible scrollbar', () => {
+  assert.match(playerSource, /\.alapi-player-playlist\s*\{[\s\S]*?overflow:\s*hidden/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs\s*\{[\s\S]*?max-width:\s*100%/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs\s*\{[\s\S]*?overflow-x:\s*auto/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs\s*\{[\s\S]*?scrollbar-width:\s*thin/)
+  assert.match(playerSource, /\.alapi-player-playlist-tabs::\-webkit-scrollbar\s*\{[\s\S]*?height:\s*8px/)
   assert.match(playerSource, /\.alapi-player-playlist-tab > span:not\(\.alapi-player-sr-only\)\s*\{[\s\S]*?max-width:\s*clamp\(/)
   assert.match(playerSource, /\.alapi-player\.collapsed\s*\{[\s\S]*?width:\s*fit-content/)
   assert.match(playerSource, /\.alapi-player-mini-info\s*\{[\s\S]*?max-width:\s*clamp\(/)

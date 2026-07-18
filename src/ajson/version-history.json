@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-17T08:36:34.808Z",
+  "generatedAt": "2026-07-18T04:24:42.161Z",
   "groups": [
     {
       "date": "2026-07-17",
       "items": [
+        {
+          "hash": "22adb622a368fd9afa86122172a38a943ccb7ad3",
+          "shortHash": "22adb62",
+          "date": "2026-07-17",
+          "time": "16:37",
+          "type": "工程维护",
+          "title": "final update before maintenance stop",
+          "scope": "",
+          "message": "chore: final update before maintenance stop"
+        },
         {
           "hash": "32d358f769fc2b02cd652246bfd08805f7184dac",
           "shortHash": "32d358f",
@@ -303,21 +313,6 @@
           "title": "improve live data proxies and news feeds",
           "scope": "",
           "message": "feat: improve live data proxies and news feeds"
-        }
-      ]
-    },
-    {
-      "date": "2026-07-14",
-      "items": [
-        {
-          "hash": "6692703f6c6fc14fba61e95c558f02638d1dce94",
-          "shortHash": "6692703",
-          "date": "2026-07-14",
-          "time": "21:30",
-          "type": "功能更新",
-          "title": "add QQ User Info Query API utility to Smart Utility Toolbox",
-          "scope": "",
-          "message": "feat: add QQ User Info Query API utility to Smart Utility Toolbox"
         }
       ]
     }

@@ -181,30 +181,63 @@
       </div>
 
       <section class="alapi-player-playlist" aria-label="播放列表">
-        <div class="alapi-player-playlist-tabs">
-          <button
-            class="alapi-player-playlist-add"
-            type="button"
-            title="新增播放列表"
-            @click="createPlaylistGroupTab"
+        <div class="alapi-player-playlist-tabs-wrap">
+          <div class="alapi-player-playlist-tabs">
+            <button
+              class="alapi-player-playlist-add"
+              type="button"
+              title="新增播放列表"
+              @click="createPlaylistGroupTab"
+            >
+              + 新增
+            </button>
+            <button
+              v-for="group in visiblePlaylistGroups"
+              :key="group.id"
+              type="button"
+              class="alapi-player-playlist-tab"
+              :class="{ active: activePlaylistGroupIndex === group.index }"
+              :title="`播放列表 ${group.index + 1}`"
+              @click="switchPlaylistGroup(group.index)"
+            >
+              <span class="alapi-player-sr-only">播放列表 {{ group.index + 1 }}</span>
+              <span>{{ group.name }}</span>
+              <em>{{ group.songs.length }}/{{ MAX_PLAYLIST_SONGS }}</em>
+              <i role="button" tabindex="0" title="重命名" @click.stop="renamePlaylistGroup(group.index)">改</i>
+              <i role="button" tabindex="0" title="删除" @click.stop="deletePlaylistGroup(group.index)">删</i>
+            </button>
+          </div>
+          <el-popover
+            v-model:visible="isPlaylistOverviewVisible"
+            placement="right-end"
+            trigger="click"
+            width="320"
+            popper-class="alapi-player-playlist-popover"
+            :teleported="false"
           >
-            + 新增
-          </button>
-          <button
-            v-for="group in visiblePlaylistGroups"
-            :key="group.id"
-            type="button"
-            class="alapi-player-playlist-tab"
-            :class="{ active: activePlaylistGroupIndex === group.index }"
-            :title="`播放列表 ${group.index + 1}`"
-            @click="switchPlaylistGroup(group.index)"
-          >
-            <span class="alapi-player-sr-only">播放列表 {{ group.index + 1 }}</span>
-            <span>{{ group.name }}</span>
-            <em>{{ group.songs.length }}/{{ MAX_PLAYLIST_SONGS }}</em>
-            <i role="button" tabindex="0" title="重命名" @click.stop="renamePlaylistGroup(group.index)">改</i>
-            <i role="button" tabindex="0" title="删除" @click.stop="deletePlaylistGroup(group.index)">删</i>
-          </button>
+            <template #reference>
+              <button
+                type="button"
+                class="alapi-player-playlist-overview-btn"
+                title="查看所有播放列表"
+              >
+                查看列表
+              </button>
+            </template>
+            <div class="alapi-player-playlist-overview-panel">
+              <strong>播放列表</strong>
+              <button
+                v-for="group in visiblePlaylistGroups"
+                :key="`overview-${group.id}`"
+                type="button"
+                :class="{ active: activePlaylistGroupIndex === group.index }"
+                @click="switchPlaylistGroupFromOverview(group.index)"
+              >
+                <span>{{ group.name }}</span>
+                <em>{{ group.songs.length }}/{{ MAX_PLAYLIST_SONGS }}</em>
+              </button>
+            </div>
+          </el-popover>
         </div>
         <div class="alapi-player-playlist-header">
           <div>
@@ -752,6 +785,7 @@ const playlistSearchKeyword: Ref<string> = ref<string>('')
 const playbackMode: Ref<PlaybackMode> = ref<PlaybackMode>('sequence')
 const isBatchDialogVisible: Ref<boolean> = ref<boolean>(false)
 const isDetailDialogVisible: Ref<boolean> = ref<boolean>(false)
+const isPlaylistOverviewVisible: Ref<boolean> = ref<boolean>(false)
 const detailSong: Ref<PlayerSong | null> = ref<PlayerSong | null>(null)
 const playerTheme: Ref<PlayerTheme> = ref<PlayerTheme>({ ...DEFAULT_PLAYER_THEME })
 const isPlaying: Ref<boolean> = ref<boolean>(false)
@@ -1060,7 +1094,23 @@ function getActivePlaylistGroup(): PlayerListGroup {
   return playlistGroups.value[safeIndex]
 }
 
-function findAvailablePlaylistGroup(): PlayerListGroup {
+function ensurePlaylistGroupsForInsert(): void {
+  if (playlistGroups.value.length) return
+
+  const createdGroup: PlayerListGroup = createPlaylistGroup(0)
+  playlistGroups.value.push(createdGroup)
+  activePlaylistGroupIndex.value = 0
+  normalizePlaylistGroups()
+  statusText.value = `已自动创建${createdGroup.name}`
+  ElMessage.success(`已自动创建${createdGroup.name}`)
+}
+
+function findAvailablePlaylistGroup(preferredGroupIndex: number = activePlaylistGroupIndex.value): PlayerListGroup {
+  const preferredGroup: PlayerListGroup | undefined = playlistGroups.value[preferredGroupIndex]
+  if (preferredGroup && preferredGroup.songs.length < MAX_PLAYLIST_SONGS) {
+    return preferredGroup
+  }
+
   const availableGroup: PlayerListGroup | undefined = playlistGroups.value.find((group: PlayerListGroup): boolean => group.songs.length < MAX_PLAYLIST_SONGS)
   if (availableGroup) return availableGroup
 
@@ -1086,6 +1136,11 @@ function switchPlaylistGroup(groupIndex: number): void {
   currentIndex.value = Math.min(currentIndex.value, Math.max(playlist.value.length - 1, 0))
   scrollPlaylistToTop()
   saveState()
+}
+
+function switchPlaylistGroupFromOverview(groupIndex: number): void {
+  switchPlaylistGroup(groupIndex)
+  isPlaylistOverviewVisible.value = false
 }
 
 function scrollPlaylistToTop(): void {
@@ -1465,6 +1520,7 @@ function addSongsToPlaylist(songs: PlayerSong[], emptyMessage: string): { addedC
     return { addedCount: 0, duplicateCount: 0 }
   }
 
+  ensurePlaylistGroupsForInsert()
   let addedCount: number = 0
   let duplicateCount: number = 0
   let firstTargetGroupIndex: number = activePlaylistGroupIndex.value
@@ -1477,7 +1533,7 @@ function addSongsToPlaylist(songs: PlayerSong[], emptyMessage: string): { addedC
       return
     }
 
-    const targetGroup: PlayerListGroup = findAvailablePlaylistGroup()
+    const targetGroup: PlayerListGroup = findAvailablePlaylistGroup(activePlaylistGroupIndex.value)
     const targetGroupIndex: number = playlistGroups.value.findIndex((group: PlayerListGroup): boolean => group.id === targetGroup.id)
     targetGroup.songs.unshift({ ...song, url: '' })
     if (addedCount === 0 && targetGroupIndex >= 0) {
@@ -1539,13 +1595,14 @@ function addPlaylistImportSongsToPlaylist(): void {
 }
 
 async function playSong(song: PlayerSong): Promise<void> {
+  ensurePlaylistGroupsForInsert()
   const existingLocation: { groupIndex: number, songIndex: number } | null = findSongLocation(song.id)
   if (existingLocation) {
     activePlaylistGroupIndex.value = existingLocation.groupIndex
     currentIndex.value = existingLocation.songIndex
     statusText.value = `已存在播放列表，切换到：${song.name}`
   } else {
-    const targetGroup: PlayerListGroup = findAvailablePlaylistGroup()
+    const targetGroup: PlayerListGroup = findAvailablePlaylistGroup(activePlaylistGroupIndex.value)
     targetGroup.songs.unshift({ ...song, url: '' })
     activePlaylistGroupIndex.value = Math.max(0, playlistGroups.value.findIndex((group: PlayerListGroup): boolean => group.id === targetGroup.id))
     currentIndex.value = 0
@@ -2667,17 +2724,44 @@ onUnmounted((): void => {
   overflow: hidden;
 }
 
+.alapi-player-playlist-tabs-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
 .alapi-player-playlist-tabs {
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   gap: 8px;
-  margin-bottom: 10px;
   overflow-x: auto;
-  padding: 0 2px 4px;
-  scrollbar-width: none;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  padding: 0 2px 8px;
+  scrollbar-color: rgba(124, 131, 255, 0.72) rgba(255, 255, 255, 0.08);
+  scrollbar-width: thin;
+  touch-action: pan-x;
 }
 
 .alapi-player-playlist-tabs::-webkit-scrollbar {
-  display: none;
+  height: 8px;
+}
+
+.alapi-player-playlist-tabs::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.alapi-player-playlist-tabs::-webkit-scrollbar-thumb {
+  background: rgba(124, 131, 255, 0.72);
+  border-radius: 999px;
+}
+
+.alapi-player-playlist-tabs::-webkit-scrollbar-thumb:hover {
+  background: rgba(154, 160, 255, 0.92);
 }
 
 .alapi-player-playlist-tabs button {
@@ -2737,6 +2821,88 @@ onUnmounted((): void => {
 .alapi-player-playlist-tabs i:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.14);
+}
+
+.alapi-player-playlist-overview-btn {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 12px;
+  color: var(--alapi-accent-color, #7fd7c8);
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(127, 215, 200, 0.1);
+  border: 1px solid rgba(127, 215, 200, 0.34);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.alapi-player-playlist-overview-btn:hover {
+  color: #ffffff;
+  background: rgba(127, 215, 200, 0.18);
+}
+
+:deep(.alapi-player-playlist-popover) {
+  --el-popover-bg-color: rgba(25, 26, 36, 0.98);
+  --el-popover-border-color: rgba(124, 131, 255, 0.34);
+  --el-text-color-regular: #dfe4ff;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+}
+
+.alapi-player-playlist-overview-panel {
+  max-height: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.alapi-player-playlist-overview-panel > strong {
+  color: #f5f7ff;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.alapi-player-playlist-overview-panel button {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  color: #dfe4ff;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.alapi-player-playlist-overview-panel button.active {
+  color: var(--alapi-accent-color, #7fd7c8);
+  background: rgba(127, 215, 200, 0.12);
+  border-color: rgba(127, 215, 200, 0.34);
+}
+
+.alapi-player-playlist-overview-panel span,
+.alapi-player-playlist-overview-panel em {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.alapi-player-playlist-overview-panel span {
+  font-weight: 900;
+}
+
+.alapi-player-playlist-overview-panel em {
+  flex: 0 0 auto;
+  color: #8f96ad;
+  font-size: 12px;
+  font-style: normal;
 }
 
 .alapi-player-sr-only {

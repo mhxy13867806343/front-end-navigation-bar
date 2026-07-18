@@ -6,6 +6,7 @@ import { aiOffice } from './menu/ai_office.ts'
 import { devIde } from './menu/dev_ide.ts'
 import { devFrontend } from './menu/dev_frontend.ts'
 import { devBackend } from './menu/dev_backend.ts'
+import { terminals } from './menu/terminals.ts'
 import { mcpTools } from './menu/mcp_tools.ts'
 import { localApps } from './menu/local_apps.ts'
 import { onlineWorksList, authorWorksList } from './menu/others.ts'
@@ -18,6 +19,7 @@ export const menuItemsList: NavigationList = [
   ...devIde,
   ...devFrontend,
   ...devBackend,
+  ...terminals,
   ...mcpTools,
   ...localApps
 ]
