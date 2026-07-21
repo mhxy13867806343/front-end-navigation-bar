@@ -28,6 +28,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '▶️',
     path: '/runcode',
     tag: 'RunCode'
+  },
+  {
+    id: 'api-center',
+    name: '接口中心',
+    desc: '统一查看所有 API 分类与接口入口，先看列表，再进入独立详情页请求和展示结果。',
+    icon: '🧩',
+    path: '/api-center',
+    tag: 'API Center'
   }
 ]
 

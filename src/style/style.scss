@@ -358,6 +358,59 @@ body {
   color: #ff4757;
 }
 
+.gold-price-btn {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(255, 191, 73, 0.34);
+  background:
+    linear-gradient(135deg, rgba(255, 217, 102, 0.2), rgba(255, 168, 0, 0.14)),
+    var(--bg-secondary);
+  color: color-mix(in srgb, #7a4a00 74%, var(--text-color));
+  box-shadow:
+    0 10px 24px rgba(255, 184, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.gold-price-btn::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.gold-price-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 191, 73, 0.52);
+  background:
+    linear-gradient(135deg, rgba(255, 221, 87, 0.3), rgba(255, 168, 0, 0.2)),
+    var(--card-bg);
+  color: #9a5c00;
+  box-shadow:
+    0 14px 28px rgba(255, 184, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.dark .gold-price-btn {
+  border-color: rgba(255, 210, 106, 0.28);
+  background:
+    linear-gradient(135deg, rgba(255, 210, 106, 0.18), rgba(191, 127, 0, 0.14)),
+    rgba(34, 28, 16, 0.86);
+  color: #ffd46b;
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 210, 106, 0.08) inset;
+}
+
+.dark .gold-price-btn:hover {
+  border-color: rgba(255, 214, 120, 0.44);
+  background:
+    linear-gradient(135deg, rgba(255, 214, 120, 0.24), rgba(217, 145, 0, 0.2)),
+    rgba(44, 33, 14, 0.94);
+  color: #ffe39b;
+}
+
 /* 聚合搜索区域 */
 .aggregator-search-container {
   width: 100%;
@@ -1210,6 +1263,12 @@ body {
   .sticky-command-center {
     margin: -20px -20px 14px;
     padding: 20px 20px 12px;
+  }
+
+  .header-right-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
   }
 
   .tools-grid {

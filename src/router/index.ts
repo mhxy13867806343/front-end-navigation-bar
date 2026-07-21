@@ -75,6 +75,16 @@ const routes = [
     path: '/weather',
     name: 'Weather',
     component: () => import('../views/weather/index.vue')
+  },
+  {
+    path: '/api-center',
+    name: 'ApiCenter',
+    component: () => import('../views/apiCenter/index.vue')
+  },
+  {
+    path: '/api-center/:category/:endpoint',
+    name: 'ApiCenterDetail',
+    component: () => import('../views/apiCenter/detail.vue')
   }
 ]
 

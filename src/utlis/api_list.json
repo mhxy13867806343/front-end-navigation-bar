@@ -1275,6 +1275,63 @@
       "responseType": "json"
     }
   ],
+  "ALAPI黄金价格": [
+    {
+      "name": "黄金实时价格",
+      "desc": "获取贵金属实时价格，支持 LF 现货黄金、SH 上海黄金交易所等市场。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/gold",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "market",
+          "label": "市场类型",
+          "description": "支持 LF 现货黄金、SH 上海黄金交易所",
+          "type": "text",
+          "placeholder": "例如 LF / SH",
+          "required": false,
+          "default": "LF"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "品牌黄金价格",
+      "desc": "获取周生生、周大福、老凤祥等品牌黄金价格列表。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/gold/brand",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",

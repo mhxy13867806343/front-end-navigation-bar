@@ -90,10 +90,15 @@ import versionHistoryData from './ajson/version-history.json'
 
 const route = useRoute()
 const router = useRouter()
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/h5']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
-  return routeViewPaths.some(p => path === p || path.endsWith(p) || (p === '/h5' && path.startsWith('/h5/')))
+  return routeViewPaths.some((p: string): boolean => {
+    if (path === p || path.endsWith(p)) return true
+    if (p === '/h5' && path.startsWith('/h5/')) return true
+    if (p === '/api-center' && path.startsWith('/api-center/')) return true
+    return false
+  })
 })
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
@@ -271,6 +276,17 @@ const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
 const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
 const goJuejinTheme = (): Promise<void | Error> => router.push('/juejin-theme')
 const goToolbox = (): Promise<void | Error> => router.push('/toolbox')
+const openGoldPriceToolbox = async (): Promise<void | Error> => {
+  isNewsActive.value = false
+  isAppStoreActive.value = false
+  isArticlesListActive.value = false
+  return router.push({
+    path: '/api-center',
+    query: {
+      category: 'ALAPI黄金价格'
+    }
+  })
+}
 const backFromFlash = (): Promise<void | Error> => router.push('/')
 const openQqContact = (): void => {
   window.location.href = 'mqqwpa://im/chat?chat_type=wpa&uin=869710179&version=1&src_type=web'
@@ -787,6 +803,10 @@ watch(isDarkMode, () => {
             <a href="mailto:869710179@qq.com" class="email-icon" title="联系我" style="font-size: 20px; display: inline-flex; align-items: center;">
               📧
             </a>
+
+            <button class="dropdown-trigger gold-price-btn" @click="openGoldPriceToolbox">
+              🪙 黄金价格
+            </button>
 
             <button class="dropdown-trigger like-history-btn" @click="openLikeHistory">
               ❤️ 历史爱心
