@@ -64,6 +64,29 @@ const resetInputRecord = (record: QueryInputs): void => {
   Object.keys(record).forEach((key: string): boolean => delete record[key])
 }
 
+const buildPreviewUrl = (endpoint: ApiEndpointRecord): string => {
+  let resolvedPath: string = endpoint.path
+  endpoint.pathParams.forEach((param: ApiParam): void => {
+    const value: string = String(resolveApiValue(pathInputs[param.name] ?? ''))
+    resolvedPath = resolvedPath.replace(`{${param.name}}`, value)
+  })
+
+  let url: string = `${(endpoint.baseUrl || 'https://api.apiopen.top').replace(/\/$/, '')}${resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`}`
+  const queryParams: URLSearchParams = new URLSearchParams()
+
+  Object.keys(queryInputs).forEach((key: string): void => {
+    const value: ApiValue = resolveApiValue(queryInputs[key])
+    if (value !== undefined && value !== null && value !== '') {
+      queryParams.append(key, String(value))
+    }
+  })
+
+  const queryString: string = queryParams.toString()
+  if (queryString) url += `?${queryString}`
+
+  return resolveApiUrl(url)
+}
+
 const initializeEndpointState = (endpoint: ApiEndpointRecord | null): void => {
   resetInputRecord(pathInputs)
   resetInputRecord(queryInputs)
@@ -92,29 +115,6 @@ watch([pathInputs, queryInputs, bodyContent], (): void => {
   if (!currentEndpoint.value) return
   requestUrl.value = buildPreviewUrl(currentEndpoint.value)
 }, { deep: true })
-
-const buildPreviewUrl = (endpoint: ApiEndpointRecord): string => {
-  let resolvedPath: string = endpoint.path
-  endpoint.pathParams.forEach((param: ApiParam): void => {
-    const value: string = String(resolveApiValue(pathInputs[param.name] ?? ''))
-    resolvedPath = resolvedPath.replace(`{${param.name}}`, value)
-  })
-
-  let url: string = `${(endpoint.baseUrl || 'https://api.apiopen.top').replace(/\/$/, '')}${resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`}`
-  const queryParams: URLSearchParams = new URLSearchParams()
-
-  Object.keys(queryInputs).forEach((key: string): void => {
-    const value: ApiValue = resolveApiValue(queryInputs[key])
-    if (value !== undefined && value !== null && value !== '') {
-      queryParams.append(key, String(value))
-    }
-  })
-
-  const queryString: string = queryParams.toString()
-  if (queryString) url += `?${queryString}`
-
-  return resolveApiUrl(url)
-}
 
 const saveAuthToken = (): void => {
   localStorage.setItem('auth_token', authToken.value)
