@@ -21,6 +21,9 @@ import type {
   TrackingInfo,
   WeatherForecast,
   QqUserInfo,
+  BlessingTickerItem,
+  OneDailyItem,
+  ZaobaoData,
   ZhihuComment,
   ZhihuCommentsData,
   ZhihuDailyData,
@@ -45,7 +48,7 @@ import { resolveApiUrl } from './utils/resolveApiUrl'
 const UAPIS_API_BASE: string = '/api-uapis'
 const AA1_API_BASE: string = '/api-aa1'
 const ALAPI_API_BASE: string = '/api-alapi'
-const ALAPI_TOKEN: string = 'qgqofofvmxtoskffd37omkscobipmn'
+const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || ''
 
 function buildUapisUrl(path: string): string {
   return resolveApiUrl(`${UAPIS_API_BASE}${path}`)
@@ -450,6 +453,8 @@ export function useAppLogic() {
 
     fetchHomeDatabase()
     homeRefreshInterval = setInterval(fetchHomeDatabase, 60000)
+
+    queryOneDaily()
   })
 
   // Bing 每日壁纸逻辑
@@ -1467,6 +1472,95 @@ export function useAppLogic() {
     }
   }
 
+  // 底部祝福语滚动播报（ONE 一个：每日一文 / 摄影 / 问答）
+  const blessingText: string = `祝您身体健康万事如意，心想事成，${new Date().getFullYear()} 年加油`
+  const blessingTickerItems = ref<BlessingTickerItem[]>([{ label: '', text: blessingText }])
+  const blessingTickerIndex = ref<number>(0)
+  let blessingTickerTimer: ReturnType<typeof setInterval> | null = null
+
+  const stripHtml = (html: string): string => {
+    const div: HTMLDivElement = document.createElement('div')
+    div.innerHTML = html
+    return (div.textContent || '').replace(/\s+/g, ' ').trim()
+  }
+
+  const startBlessingTicker = (): void => {
+    if (blessingTickerTimer) {
+      clearInterval(blessingTickerTimer)
+      blessingTickerTimer = null
+    }
+    if (blessingTickerItems.value.length <= 1) return
+    blessingTickerTimer = setInterval((): void => {
+      blessingTickerIndex.value = (blessingTickerIndex.value + 1) % blessingTickerItems.value.length
+    }, 4000)
+  }
+
+  const queryOneDaily = async (date?: string): Promise<void> => {
+    try {
+      const params: Record<string, string> = { token: ALAPI_TOKEN }
+      if (date) params.date = date
+      const [oneRes, photoRes, questionRes] = await Promise.allSettled([
+        axios.get<AlapiResponse<OneDailyItem>>(buildAlapiUrl('/api/one'), { params }),
+        axios.get<AlapiResponse<OneDailyItem>>(buildAlapiUrl('/api/one/photo'), { params }),
+        axios.get<AlapiResponse<OneDailyItem>>(buildAlapiUrl('/api/one/question'), { params })
+      ])
+
+      const items: BlessingTickerItem[] = [{ label: '', text: blessingText }]
+
+      if (oneRes.status === 'fulfilled' && oneRes.value.data?.data) {
+        const one: OneDailyItem = oneRes.value.data.data
+        const text: string = [one.title, one.subtitle].filter(Boolean).join(' · ')
+        if (text) items.push({ label: '📖 每日一文', text })
+      }
+
+      if (photoRes.status === 'fulfilled' && photoRes.value.data?.data) {
+        const photo: OneDailyItem = photoRes.value.data.data
+        const quote: string = stripHtml(photo.content || '') || [photo.title, photo.subtitle].filter(Boolean).join(' · ')
+        if (quote) items.push({ label: '📷 每日摄影', text: quote })
+      }
+
+      if (questionRes.status === 'fulfilled' && questionRes.value.data?.data) {
+        const question: OneDailyItem = questionRes.value.data.data
+        const text: string = [question.title, question.subtitle].filter(Boolean).join(' —— ')
+        if (text) items.push({ label: '❓ 每日问答', text })
+      }
+
+      blessingTickerItems.value = items
+      blessingTickerIndex.value = 0
+      startBlessingTicker()
+    } catch (e: unknown) {
+      console.error('ONE 每日内容获取失败:', e)
+    }
+  }
+
+  // 9. 每日早报
+  const zaobaoData = ref<ZaobaoData | null>(null)
+  const isZaobaoLoading = ref<boolean>(false)
+  const zaobaoError = ref<string>('')
+
+  const queryZaobao = async (): Promise<void> => {
+    isZaobaoLoading.value = true
+    zaobaoError.value = ''
+    try {
+      const params: Record<string, string> = { token: ALAPI_TOKEN, format: 'json' }
+      const res = await axios.get<AlapiResponse<ZaobaoData>>(buildAlapiUrl('/api/zaobao'), { params })
+      const data: ZaobaoData = getAlapiData(res.data, '每日早报接口暂无数据')
+      zaobaoData.value = {
+        date: data.date || '',
+        news: data.news || [],
+        weiyu: data.weiyu || '',
+        image: data.image || '',
+        audio: data.audio || '',
+        head_image: data.head_image || ''
+      }
+    } catch (e: unknown) {
+      zaobaoError.value = getRequestErrorMessage(e, '每日早报接口暂不可用，请稍后再试')
+      zaobaoData.value = null
+    } finally {
+      isZaobaoLoading.value = false
+    }
+  }
+
   // tab 切换触发自动查询
   const handleUtilityTabChange = () => {
     if (utilityActiveTab.value === 'holiday' && !holidayData.value) {
@@ -1486,6 +1580,8 @@ export function useAppLogic() {
       queryQqUserInfo()
     } else if (utilityActiveTab.value === 'zhihu' && !zhihuDailyData.value) {
       queryZhihuDaily()
+    } else if (utilityActiveTab.value === 'zaobao' && !zaobaoData.value) {
+      queryZaobao()
     }
   }
 
@@ -1507,6 +1603,9 @@ export function useAppLogic() {
     }
     if (homeRefreshInterval) {
       clearInterval(homeRefreshInterval)
+    }
+    if (blessingTickerTimer) {
+      clearInterval(blessingTickerTimer)
     }
   })
 
@@ -1558,6 +1657,12 @@ export function useAppLogic() {
     zhihuQueryDate, zhihuDailyData, selectedZhihuStory, zhihuStoryDetail,
     zhihuShortComments, zhihuLongComments, isZhihuLoading, isZhihuDetailLoading, zhihuError,
     queryZhihuDaily, queryZhihuStoryDetail,
+
+    // Zaobao exports
+    zaobaoData, isZaobaoLoading, zaobaoError, queryZaobao,
+
+    // Blessing ticker exports (ONE 一个)
+    blessingTickerItems, blessingTickerIndex, queryOneDaily,
     
     // Shared globals
     ZH_TEXTS, GLOBAL_CONFIG,

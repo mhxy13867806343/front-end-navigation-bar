@@ -1,0 +1,20 @@
+/* 各分类示例的公共样式（子组件共用，不使用 scoped） */
+.component-showcase .demo-section {
+  margin-bottom: 28px;
+}
+
+.component-showcase .demo-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid var(--primary-color, #409eff);
+}
+
+.component-showcase .demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+  align-items: center;
+}

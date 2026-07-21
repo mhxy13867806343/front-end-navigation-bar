@@ -60,6 +60,12 @@ const {
   zhihuQueryDate, zhihuDailyData, selectedZhihuStory, zhihuStoryDetail,
   zhihuShortComments, zhihuLongComments, isZhihuLoading, isZhihuDetailLoading, zhihuError,
   queryZhihuDaily, queryZhihuStoryDetail,
+
+  // Zaobao exports
+  zaobaoData, isZaobaoLoading, zaobaoError, queryZaobao,
+
+  // Blessing ticker exports (ONE 一个)
+  blessingTickerItems, blessingTickerIndex,
   
   // Shared configs & state
   ZH_TEXTS, GLOBAL_CONFIG, activeLibrary
@@ -84,7 +90,7 @@ import versionHistoryData from './ajson/version-history.json'
 
 const route = useRoute()
 const router = useRouter()
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/h5']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/h5']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some(p => path === p || path.endsWith(p) || (p === '/h5' && path.startsWith('/h5/')))
@@ -308,6 +314,9 @@ const refreshUtility = async (): Promise<void> => {
       break
     case 'zhihu':
       await queryZhihuDaily(Boolean(zhihuQueryDate))
+      break
+    case 'zaobao':
+      await queryZaobao()
       break
   }
 }
@@ -685,7 +694,7 @@ watch(isDarkMode, () => {
     <main class="main-content" :class="{ 'expanded': !isSidebarOpen }">
       <div class="glow-bg"></div>
       <div class="sticky-command-center">
-        <BrowserSupportNotice />
+        <BrowserSupportNotice v-if="!isFlashRoute" />
         <div class="header-actions">
           <div class="nav-horizontal">
             <!-- 菜单折叠按钮 -->
@@ -1031,7 +1040,18 @@ watch(isDarkMode, () => {
           </template>
         </div>
         <footer class="home-blessing-footer">
-          祝您身体健康万事如意，心想事成，{{ blessingYear }} 年加油
+          <div class="blessing-ticker">
+            <Transition name="blessing-ticker-up">
+              <div class="blessing-ticker-item" :key="blessingTickerIndex">
+                <span v-if="blessingTickerItems[blessingTickerIndex]?.label" class="blessing-ticker-label">
+                  {{ blessingTickerItems[blessingTickerIndex]?.label }}
+                </span>
+                <span class="blessing-ticker-text">
+                  {{ blessingTickerItems[blessingTickerIndex]?.text || `祝您身体健康万事如意，心想事成，${blessingYear} 年加油` }}
+                </span>
+              </div>
+            </Transition>
+          </div>
         </footer>
       </template>
     </main>
@@ -2083,6 +2103,49 @@ watch(isDarkMode, () => {
             </div>
           </div>
         </el-tab-pane>
+
+        <!-- 10. 每日早报 -->
+        <el-tab-pane name="zaobao">
+          <template #label>
+            <span>📰 每日早报</span>
+          </template>
+          <div style="padding: 10px;">
+            <div v-if="isZaobaoLoading" style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <el-icon class="is-loading"><Loading /></el-icon> 正在获取今日早报，60 秒读懂世界...
+            </div>
+
+            <div v-else-if="zaobaoError" style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <p>{{ zaobaoError }}</p>
+              <el-button type="primary" size="small" @click="queryZaobao">重新加载</el-button>
+            </div>
+
+            <div v-else-if="zaobaoData" class="zaobao-container">
+              <div class="zaobao-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="font-weight: 600; font-size: 16px;">📅 {{ zaobaoData.date }} · 每天 60 秒读懂世界</div>
+                <el-link v-if="zaobaoData.image" type="primary" :href="zaobaoData.image" target="_blank">查看早报图片</el-link>
+              </div>
+
+              <div v-if="zaobaoData.audio" style="margin-bottom: 12px;">
+                <audio :src="zaobaoData.audio" controls preload="none" style="width: 100%;"></audio>
+              </div>
+
+              <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                <li v-for="(item, index) in zaobaoData.news" :key="index" style="line-height: 1.6; color: var(--text-primary);">
+                  {{ item.replace(/^\d+[、.]\s*/, '') }}
+                </li>
+              </ol>
+
+              <div v-if="zaobaoData.weiyu" style="margin-top: 16px; padding: 12px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); font-style: italic;">
+                💬 {{ zaobaoData.weiyu }}
+              </div>
+            </div>
+
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <p>点击下方按钮获取今日早报</p>
+              <el-button type="primary" size="small" @click="queryZaobao">获取早报</el-button>
+            </div>
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </el-dialog>
 
@@ -2489,327 +2552,4 @@ watch(isDarkMode, () => {
 
 <style scoped src="./App.css"></style>
 
-<style scoped>
-.route-view-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 3000;
-  background: #f2f2f2;
-  overflow-y: auto;
-}
-.route-view-bar {
-  position: sticky;
-  top: 0;
-  z-index: 3001;
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  background: #2f5b88;
-}
 
-.route-browser-notice {
-  padding: 20px 24px 0;
-  background: #121416;
-}
-
-.version-history-drawer-entry {
-  display: block;
-  width: 100%;
-  text-align: left;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  cursor: pointer;
-}
-
-.version-history-drawer-entry:hover {
-  border-color: var(--primary-color);
-}
-
-:deep(.version-history-dialog .el-dialog) {
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--card-bg);
-}
-
-:deep(.version-history-dialog .el-dialog__header) {
-  border-bottom: 1px solid var(--border-color);
-  margin-right: 0;
-  padding: 18px 22px;
-}
-
-:deep(.version-history-dialog .el-dialog__body) {
-  padding: 20px 22px 24px;
-}
-
-.version-history-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.version-latest-card,
-.version-card {
-  border-color: var(--border-color);
-  background: var(--hover-bg);
-}
-
-.version-latest-meta,
-.version-card-header,
-.version-card-footer,
-.version-collapse-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.version-latest-card h3,
-.version-card h4 {
-  margin: 12px 0 8px;
-  color: var(--text-color);
-}
-
-.version-latest-card p,
-.version-card p {
-  margin: 0;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.version-latest-meta,
-.version-card-footer {
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.version-latest-meta button,
-.version-card-header button {
-  border: 1px solid rgba(var(--primary-color-rgb, 99, 102, 241), 0.34);
-  border-radius: 6px;
-  padding: 2px 8px;
-  color: var(--primary-color);
-  background: rgba(var(--primary-color-rgb, 99, 102, 241), 0.08);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.version-badge {
-  border-radius: 999px;
-  padding: 3px 9px;
-  color: #1dd1a1;
-  background: rgba(29, 209, 161, 0.12);
-  border: 1px solid rgba(29, 209, 161, 0.25);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.version-code-badge {
-  color: #79b8ff;
-  background: rgba(121, 184, 255, 0.12);
-  border-color: rgba(121, 184, 255, 0.25);
-}
-
-.version-code-card {
-  background: color-mix(in srgb, var(--hover-bg) 86%, #1f2937);
-}
-
-.version-history-tabs :deep(.el-tabs__item) {
-  color: var(--text-secondary);
-  font-weight: 900;
-}
-
-.version-history-tabs :deep(.el-tabs__item.is-active) {
-  color: var(--primary-color);
-}
-
-.version-history-tabs :deep(.el-tabs__nav-wrap::after) {
-  background: var(--border-color);
-}
-
-.version-collapse {
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-}
-
-:deep(.version-collapse .el-collapse-item__header),
-:deep(.version-collapse .el-collapse-item__wrap) {
-  background: transparent;
-  border-bottom-color: var(--border-color);
-}
-
-.version-collapse-title {
-  width: 100%;
-  justify-content: space-between;
-  padding-right: 12px;
-  color: var(--text-color);
-  font-weight: 900;
-}
-
-.version-collapse-title em {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-style: normal;
-}
-
-.version-card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 14px 0 4px;
-}
-
-.version-card :deep(.el-card__body) {
-  display: flex;
-  min-height: 126px;
-  flex-direction: column;
-}
-
-.version-card-footer {
-  margin-top: auto;
-  padding-top: 14px;
-  justify-content: space-between;
-}
-
-@media (max-width: 860px) {
-  :deep(.version-history-dialog .el-dialog) {
-    width: 92% !important;
-  }
-
-  .version-card-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* QQ Info Card Styles */
-.qq-card {
-  background: var(--bg-color-overlay, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--border-color-light, rgba(255, 255, 255, 0.1));
-  border-radius: 12px;
-  padding: 24px;
-  margin-top: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-.qq-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-.qq-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-.avatar-wrapper {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  padding: 4px;
-  background: var(--border-color-light, rgba(255, 255, 255, 0.1));
-}
-.avatar-wrapper.is-vip {
-  background: linear-gradient(135deg, #ff4e50, #f9d423);
-}
-.qq-avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--bg-color-dialog, #fff);
-}
-.vip-tag {
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 10px;
-  color: #fff;
-  white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-.vip-tag.svip {
-  background: linear-gradient(to right, #e52d27, #b31217);
-}
-.vip-tag.vip {
-  background: linear-gradient(to right, #ff4e50, #f9d423);
-}
-.qq-title-info {
-  flex: 1;
-  min-width: 0;
-}
-.qq-nick-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.qq-nick {
-  font-size: 20px;
-  font-weight: bold;
-  color: var(--text-color, #303133);
-}
-.gender {
-  font-size: 14px;
-  font-weight: bold;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.gender.male {
-  color: #409eff;
-  background: rgba(64, 158, 255, 0.1);
-}
-.gender.female {
-  color: #f56c6c;
-  background: rgba(245, 108, 108, 0.1);
-}
-.qq-signature {
-  font-size: 14px;
-  color: var(--text-secondary, #909399);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.qq-details-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
-  border: 1px solid var(--border-color-extra-light, rgba(255, 255, 255, 0.05));
-}
-.detail-item .label {
-  font-size: 12px;
-  color: var(--text-secondary, #909399);
-}
-.detail-item .value {
-  font-size: 14px;
-  color: var(--text-color, #303133);
-  font-weight: 500;
-}
-.detail-item .valueHighlight {
-  font-size: 15px;
-  color: var(--color-primary, #409eff);
-  font-weight: bold;
-}
-.active-diamond {
-  color: #e6a23c !important;
-  font-weight: bold;
-}
-.active-diamond-green {
-  color: #67c23a !important;
-  font-weight: bold;
-}
-</style>

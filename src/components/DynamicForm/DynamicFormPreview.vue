@@ -200,25 +200,4 @@ const resetForm = (): void => {
 }
 </script>
 
-<style scoped>
-.dynamic-form-preview {
-  padding: 20px;
-}
-
-.preview-form {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.full-width {
-  width: 100%;
-}
-
-:deep(.el-upload) {
-  width: 100%;
-}
-
-:deep(.el-upload-dragger) {
-  width: 100%;
-}
-</style>
+<style scoped src="./css/DynamicFormPreview.css"></style>

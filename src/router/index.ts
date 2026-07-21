@@ -70,6 +70,11 @@ const routes = [
     path: '/wechat-featured',
     name: 'WechatFeatured',
     component: () => import('../views/wechatFeatured/index.vue')
+  },
+  {
+    path: '/weather',
+    name: 'Weather',
+    component: () => import('../views/weather/index.vue')
   }
 ]
 

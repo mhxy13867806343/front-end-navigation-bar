@@ -1,0 +1,53 @@
+.component-showcase {
+  padding: 20px;
+}
+
+.showcase-header {
+  margin-bottom: 20px;
+}
+
+.showcase-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary-color, #409eff);
+  margin-bottom: 6px;
+}
+
+.showcase-subtitle {
+  font-size: 13px;
+  color: var(--text-color-secondary, #909399);
+  line-height: 1.5;
+}
+
+.showcase-tabs {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.combined-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(64,158,255,0.08), rgba(24,160,88,0.08));
+  border: 1px solid rgba(64,158,255,0.25);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.combined-badge {
+  background: linear-gradient(90deg, #409eff, #18a058);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.combined-desc {
+  font-size: 13px;
+  color: var(--text-color-secondary, #606266);
+  line-height: 1.5;
+}

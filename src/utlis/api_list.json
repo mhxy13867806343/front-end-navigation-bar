@@ -1103,7 +1103,7 @@
           "type": "text",
           "placeholder": "token秘钥",
           "required": true,
-          "default": "qgqofofvmxtoskffd37omkscobipmn"
+          "default": "{{VITE_ALAPI_TOKEN}}"
         }
       ],
       "pathParams": [],
@@ -1126,7 +1126,7 @@
           "type": "text",
           "placeholder": "token秘钥",
           "required": true,
-          "default": "qgqofofvmxtoskffd37omkscobipmn"
+          "default": "{{VITE_ALAPI_TOKEN}}"
         },
         {
           "name": "date",
@@ -1158,7 +1158,7 @@
           "type": "text",
           "placeholder": "token秘钥",
           "required": true,
-          "default": "qgqofofvmxtoskffd37omkscobipmn"
+          "default": "{{VITE_ALAPI_TOKEN}}"
         },
         {
           "name": "id",
@@ -1190,7 +1190,7 @@
           "type": "text",
           "placeholder": "token秘钥",
           "required": true,
-          "default": "qgqofofvmxtoskffd37omkscobipmn"
+          "default": "{{VITE_ALAPI_TOKEN}}"
         },
         {
           "name": "id",
@@ -1222,7 +1222,7 @@
           "type": "text",
           "placeholder": "token秘钥",
           "required": true,
-          "default": "qgqofofvmxtoskffd37omkscobipmn"
+          "default": "{{VITE_ALAPI_TOKEN}}"
         },
         {
           "name": "id",

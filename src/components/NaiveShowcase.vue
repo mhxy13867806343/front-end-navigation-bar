@@ -154,20 +154,4 @@ const calendarValue = ref(Date.now())
   </div>
 </template>
 
-<style scoped>
-.naive-showcase-container {
-  padding: 8px 0;
-}
-.carousel-slide {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-}
-.slide-1 { background-color: #18a058; }
-.slide-2 { background-color: #2080f0; }
-.slide-3 { background-color: #f0a020; }
-</style>
+<style scoped src="./css/NaiveShowcase.css"></style>

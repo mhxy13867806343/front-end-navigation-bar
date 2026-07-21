@@ -18,8 +18,4 @@ const handleSave = (formData: DynamicFormPayload): void => {
 }
 </script>
 
-<style scoped>
-.dy-form {
-  height: 100vh;
-}
-</style>
+<style scoped src="./css/DyForm.css"></style>

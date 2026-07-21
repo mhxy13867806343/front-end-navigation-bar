@@ -86,14 +86,48 @@
               </div>
               <!-- 参与用户头像 -->
               <div v-if="item.recentUsers.length" class="recent-users">
-                <img
+                <el-popover
                   v-for="u in item.recentUsers"
                   :key="u.user_id"
-                  :src="u.avatar_large"
-                  :title="u.user_name"
-                  class="user-avatar"
-                  loading="lazy"
-                />
+                  placement="top"
+                  :width="220"
+                  trigger="click"
+                  effect="dark"
+                  popper-style="border-radius: 12px; padding: 14px; background: #1e1e38; border: 1px solid rgba(255,255,255,0.15);"
+                >
+                  <template #reference>
+                    <img
+                      :src="u.avatar_large"
+                      :title="u.user_name"
+                      class="user-avatar"
+                      loading="lazy"
+                    />
+                  </template>
+                  <div class="user-popover-content">
+                    <div class="user-popover-header">
+                      <img :src="u.avatar_large" class="popover-avatar" />
+                      <div class="user-info">
+                        <div class="user-name">{{ u.user_name }}</div>
+                        <div v-if="u.job_title || u.company" class="user-desc">
+                          {{ [u.job_title, u.company].filter(Boolean).join(' @ ') }}
+                        </div>
+                        <div v-if="u.level" class="user-level-tag">
+                          掘金 Lv.{{ u.level }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="user-popover-actions">
+                      <el-button
+                        type="primary"
+                        size="small"
+                        style="width: 100%; font-weight: 500;"
+                        @click="openJuejinUser(u.user_id)"
+                      >
+                        访问个人主页 🔗
+                      </el-button>
+                    </div>
+                  </div>
+                </el-popover>
               </div>
             </div>
           </div>
@@ -216,324 +250,11 @@ function rankClass(index: number): string {
   if (index === 2) return 'bronze'
   return ''
 }
+
+function openJuejinUser(userId: string): void {
+  if (!userId) return
+  window.open(`https://juejin.cn/user/${userId}`, '_blank')
+}
 </script>
 
-<style scoped>
-.theme-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 40%, #24243e 100%);
-  color: #e0e0e6;
-  padding: 32px 0;
-}
-.page-inner {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-/* ─── Header ────────────────────────────── */
-.theme-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.header-left {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.page-title {
-  font-size: 26px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #ff6b35, #f7c948, #4ecdc4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
-}
-.subtitle {
-  font-size: 13px;
-  color: rgba(255,255,255,0.45);
-}
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* ─── Stats Bar ─────────────────────────── */
-.stats-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-}
-.stat-card {
-  flex: 1;
-  min-width: 120px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 18px 20px;
-  text-align: center;
-  backdrop-filter: blur(8px);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(78,205,196,0.15);
-}
-.stat-value {
-  display: block;
-  font-size: 28px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #4ecdc4, #45b7d1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.stat-label {
-  display: block;
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  margin-top: 4px;
-}
-
-/* ─── State Blocks ──────────────────────── */
-.state-block {
-  text-align: center;
-  padding: 60px 20px;
-  color: rgba(255,255,255,0.5);
-  font-size: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-.state-block.error {
-  color: #f56c6c;
-}
-.state-block a {
-  color: #4ecdc4;
-  margin-left: 8px;
-  text-decoration: underline;
-}
-
-/* ─── Theme Grid ────────────────────────── */
-.theme-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.theme-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 16px;
-  padding: 20px 24px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  animation: fadeSlideIn 0.5s ease forwards;
-  opacity: 0;
-  cursor: default;
-}
-.theme-card:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(78,205,196,0.3);
-  transform: translateX(6px);
-  box-shadow: 0 8px 32px rgba(78,205,196,0.1);
-}
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Rank Badge ────────────────────────── */
-.card-rank {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 800;
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.4);
-  margin-top: 4px;
-}
-.card-rank.gold {
-  background: linear-gradient(135deg, #ffd700, #ffb300);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(255,215,0,0.35);
-}
-.card-rank.silver {
-  background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(192,192,192,0.3);
-}
-.card-rank.bronze {
-  background: linear-gradient(135deg, #cd7f32, #b8691e);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(205,127,50,0.3);
-}
-
-/* ─── Card Cover ────────────────────────── */
-.card-cover {
-  flex-shrink: 0;
-  width: 80px;
-  height: 80px;
-  border-radius: 14px;
-  overflow: hidden;
-  background: rgba(255,255,255,0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.theme-cover-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.cover-placeholder {
-  font-size: 28px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #4ecdc4, #45b7d1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ─── Card Body ─────────────────────────── */
-.card-body {
-  flex: 1;
-  min-width: 0;
-}
-.card-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-.theme-name {
-  font-size: 17px;
-  font-weight: 700;
-  color: #f0f0f4;
-  margin: 0;
-  line-height: 1.3;
-}
-.card-badges {
-  display: flex;
-  gap: 6px;
-}
-.badge {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-.badge.rec {
-  background: rgba(78,205,196,0.15);
-  color: #4ecdc4;
-  border: 1px solid rgba(78,205,196,0.3);
-}
-.badge.lottery {
-  background: rgba(247,201,72,0.15);
-  color: #f7c948;
-  border: 1px solid rgba(247,201,72,0.3);
-}
-.theme-brief {
-  font-size: 13px;
-  color: rgba(255,255,255,0.45);
-  margin: 0 0 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-height: 1.5;
-}
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.theme-stats {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.stat {
-  font-size: 13px;
-  color: rgba(255,255,255,0.55);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.2s;
-}
-.stat:hover {
-  color: rgba(255,255,255,0.85);
-}
-
-/* ─── Recent Users ──────────────────────── */
-.recent-users {
-  display: flex;
-  gap: 0;
-}
-.user-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid rgba(15,12,41,0.8);
-  margin-left: -8px;
-  object-fit: cover;
-  transition: transform 0.2s;
-}
-.user-avatar:first-child {
-  margin-left: 0;
-}
-.user-avatar:hover {
-  transform: scale(1.2);
-  z-index: 1;
-}
-
-/* ─── Load More ─────────────────────────── */
-.load-more {
-  text-align: center;
-  padding: 32px 0;
-}
-.no-more {
-  color: rgba(255,255,255,0.25);
-  font-size: 13px;
-  letter-spacing: 2px;
-}
-
-/* ─── Responsive ────────────────────────── */
-@media (max-width: 640px) {
-  .theme-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .stats-bar {
-    flex-direction: column;
-  }
-  .theme-card {
-    flex-wrap: wrap;
-    padding: 16px;
-  }
-  .card-cover {
-    width: 60px;
-    height: 60px;
-  }
-}
-</style>
+<style scoped src="./css/index.css"></style>

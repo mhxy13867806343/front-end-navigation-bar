@@ -1,0 +1,142 @@
+.flappy-bird {
+  width: min(100%, 430px);
+  margin: 0 auto;
+  color: #eafcff;
+  font-family: ui-rounded, "PingFang SC", system-ui, sans-serif;
+  user-select: none;
+}
+
+.status-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.status-row span {
+  padding: 7px 8px;
+  border: 1px solid #367887;
+  border-radius: 7px;
+  background: #123b48;
+}
+
+.canvas-shell {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 10 / 13;
+  border: 4px solid #245d69;
+  border-radius: 8px;
+  background: #72d8ec;
+  box-shadow: 0 0 0 2px #0e313b;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(7, 39, 48, 0.48);
+}
+
+.overlay-card {
+  width: min(100%, 270px);
+  padding: 22px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  background: rgba(14, 61, 71, 0.92);
+  box-shadow: 0 10px 0 rgba(5, 36, 43, 0.45);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #ffdf5a;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.overlay-card h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 27px;
+}
+
+.overlay-card p:not(.eyebrow) {
+  margin: 8px 0 16px;
+  color: #c8eef2;
+  font-size: 13px;
+}
+
+button {
+  min-height: 42px;
+  border: 1px solid #3d8190;
+  border-radius: 7px;
+  background: #185162;
+  color: #edfdff;
+  font: 800 13px/1 ui-rounded, "PingFang SC", system-ui, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.overlay-card button {
+  width: 100%;
+  border-color: #c99e25;
+  background: #f0bd35;
+  color: #513d08;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(1.1);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1.45fr 0.8fr 0.8fr;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.flap-button {
+  min-height: 50px;
+  border-color: #c99e25;
+  background: #e8b532;
+  color: #463506;
+  font-size: 15px;
+}
+
+.help {
+  margin: 10px 0 0;
+  color: #8fb4be;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+  .actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .flap-button {
+    grid-column: 1 / -1;
+  }
+}

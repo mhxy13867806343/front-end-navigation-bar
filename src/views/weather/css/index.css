@@ -1,0 +1,320 @@
+.weather-page {
+  min-height: 100vh;
+  background-color: var(--bg-primary, #f5f7fa);
+  color: var(--text-primary, #303133);
+}
+
+.header-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 30px 20px 60px;
+  color: white;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: -40px;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: white !important;
+}
+.back-btn:hover {
+  background-color: rgba(255,255,255,0.1) !important;
+}
+
+.page-title {
+  margin: 0 0 20px 0;
+  font-size: 28px;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.search-box {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+}
+
+.region-picker {
+  flex: 1;
+  min-width: 240px;
+}
+
+.search-input-group {
+  flex: 1;
+  min-width: 220px;
+}
+
+@media (max-width: 640px) {
+  .search-box {
+    flex-direction: column;
+  }
+  .region-picker, .search-input-group {
+    width: 100%;
+  }
+}
+
+.city-input :deep(.el-input__wrapper) {
+  border-radius: 20px 0 0 20px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: none !important;
+}
+.city-input :deep(.el-input-group__append) {
+  border-radius: 0 20px 20px 0;
+  background: var(--primary-color, #409eff);
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+.city-input :deep(.el-input-group__append:hover) {
+  opacity: 0.9;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  position: relative;
+  z-index: 10;
+}
+
+.custom-tabs {
+  background: var(--bg-secondary, #ffffff);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--card-shadow, 0 8px 20px rgba(0,0,0,0.05));
+}
+.custom-tabs :deep(.el-tabs__nav-wrap::after) {
+  height: 1px;
+  background-color: var(--border-color, #ebeef5);
+}
+
+.glass-card {
+  background: var(--bg-secondary, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+  border-radius: 16px;
+  box-shadow: var(--card-shadow, 0 4px 15px rgba(0,0,0,0.05));
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow, 0 8px 25px rgba(0,0,0,0.1));
+}
+
+.loading-state, .error-state {
+  padding: 40px;
+}
+
+/* 实况天气 */
+.main-weather-card {
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, rgba(64, 158, 255, 0.1) 0%, rgba(245, 108, 108, 0.05) 100%);
+  border-radius: 24px;
+}
+
+.weather-header h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+.weather-header .province {
+  font-size: 14px;
+  color: var(--text-secondary, #909399);
+  font-weight: normal;
+}
+.update-time {
+  font-size: 13px;
+  color: var(--text-secondary, #909399);
+}
+
+.temp-display {
+  margin-top: 20px;
+}
+.temp-value {
+  font-size: 96px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--primary-color, #409eff);
+  text-shadow: 2px 4px 8px rgba(64,158,255,0.2);
+  animation: pulse 3s infinite alternate;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.02); }
+}
+.unit {
+  font-size: 48px;
+  vertical-align: super;
+}
+
+.weather-desc {
+  font-size: 20px;
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+.weather-text {
+  font-weight: 500;
+}
+.temp-range {
+  color: var(--text-secondary, #909399);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary, #fff);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--card-shadow, 0 2px 12px 0 rgba(0,0,0,0.05));
+  border: 1px solid var(--border-color, #ebeef5);
+}
+.info-icon {
+  font-size: 32px;
+  margin-right: 15px;
+}
+.info-label {
+  font-size: 13px;
+  color: var(--text-secondary, #909399);
+  margin-bottom: 5px;
+}
+.info-val {
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Charts */
+.chart-container {
+  height: 350px;
+  width: 100%;
+}
+.echarts-box {
+  width: 100%;
+  height: 100%;
+}
+
+/* 7天预报列表 */
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+.forecast-card {
+  text-align: center;
+  padding: 15px;
+}
+.date-row {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.date-row .date { font-size: 16px; font-weight: bold; }
+.date-row .week { font-size: 12px; color: var(--text-secondary, #909399); }
+.weather-row { margin-bottom: 10px; display: flex; flex-direction: column; }
+.small-text { font-size: 12px; color: var(--text-secondary, #909399); }
+.temp-row { margin-bottom: 10px; font-size: 15px; font-weight: bold; }
+.temp-row .high { color: #f56c6c; }
+.temp-row .low { color: #409eff; }
+.wind-row { margin-bottom: 10px; }
+
+/* 40天预报列表 */
+.forty-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0;
+}
+.forty-header-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr;
+  padding: 15px 20px;
+  background: var(--hover-bg, #f5f7fa);
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid var(--border-color, #ebeef5);
+}
+.forty-list {
+  padding: 0 20px;
+}
+.forty-item-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color, #ebeef5);
+}
+.forty-item-row:last-child {
+  border-bottom: none;
+}
+.high-temp { color: #f56c6c; font-weight: 500; }
+.low-temp { color: #409eff; font-weight: 500; }
+.wind-cell { color: var(--text-secondary, #909399); font-size: 13px; }
+
+/* 天气指数 */
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.index-card {
+  display: flex;
+  flex-direction: column;
+}
+.index-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.index-name {
+  font-weight: bold;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.emoji-icon {
+  font-size: 20px;
+}
+.index-desc {
+  font-size: 14px;
+  color: var(--text-secondary, #606266);
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .page-title { font-size: 24px; }
+  .temp-value { font-size: 72px; }
+  .forty-header-row, .forty-item-row {
+    font-size: 12px;
+  }
+}

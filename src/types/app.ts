@@ -253,3 +253,25 @@ export interface ZhihuComment {
 export interface ZhihuCommentsData {
   comments: ZhihuComment[]
 }
+
+export interface OneDailyItem {
+  title?: string
+  subtitle?: string
+  content?: string
+  cover?: string | null
+  make_time?: string
+}
+
+export interface BlessingTickerItem {
+  label: string
+  text: string
+}
+
+export interface ZaobaoData {
+  date: string
+  news: string[]
+  weiyu?: string
+  image?: string
+  audio?: string
+  head_image?: string
+}

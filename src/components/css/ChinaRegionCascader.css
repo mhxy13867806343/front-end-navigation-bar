@@ -1,0 +1,23 @@
+.china-region-cascader {
+  width: 100%;
+}
+
+.china-region-cascader :deep(.el-cascader) {
+  width: 100%;
+}
+
+.china-region-cascader :deep(.el-input__wrapper) {
+  border-radius: 20px;
+  background: var(--bg-secondary, rgba(255, 255, 255, 0.9));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.china-region-cascader :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+}
+
+.china-region-cascader :deep(.el-input__inner) {
+  color: var(--text-primary, #303133);
+  font-weight: 500;
+}

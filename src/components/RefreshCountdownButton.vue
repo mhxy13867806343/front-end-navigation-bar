@@ -76,8 +76,4 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped>
-.refresh-countdown-btn {
-  min-width: 108px;
-}
-</style>
+<style scoped src="./css/RefreshCountdownButton.css"></style>

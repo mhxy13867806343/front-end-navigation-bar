@@ -8,19 +8,4 @@
 <script setup lang="ts">
 </script>
 
-<style scoped>
-.home {
-  padding: 20px;
-  text-align: center;
-}
-
-h1 {
-  color: var(--el-color-primary);
-  margin-bottom: 20px;
-}
-
-p {
-  color: var(--el-text-color-regular);
-  font-size: 16px;
-}
-</style>`
+<style scoped src="./css/Home.css"></style>`
