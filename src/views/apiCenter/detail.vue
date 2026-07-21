@@ -87,66 +87,6 @@ const buildPreviewUrl = (endpoint: ApiEndpointRecord): string => {
   return resolveApiUrl(url)
 }
 
-const initializeEndpointState = (endpoint: ApiEndpointRecord | null): void => {
-  resetInputRecord(pathInputs)
-  resetInputRecord(queryInputs)
-  bodyContent.value = ''
-  requestUrl.value = ''
-  responseHeaders.value = ''
-  responseText.value = ''
-
-  if (!endpoint) return
-
-  endpoint.pathParams.forEach((param: ApiParam): void => {
-    pathInputs[param.name] = param.default !== undefined ? resolveApiValue(param.default) : ''
-  })
-
-  endpoint.params.forEach((param: ApiParam): void => {
-    queryInputs[param.name] = param.default !== undefined ? resolveApiValue(param.default) : ''
-  })
-
-  bodyContent.value = endpoint.hasBody ? endpoint.bodyPlaceholder : ''
-  requestUrl.value = buildPreviewUrl(endpoint)
-
-  // Auto fetch data on load
-  sendRequest()
-}
-
-watch(currentEndpoint, initializeEndpointState, { immediate: true })
-
-watch([pathInputs, queryInputs, bodyContent], (): void => {
-  if (!currentEndpoint.value) return
-  requestUrl.value = buildPreviewUrl(currentEndpoint.value)
-}, { deep: true })
-
-const saveAuthToken = (): void => {
-  localStorage.setItem('auth_token', authToken.value)
-  ElMessage.success('认证 Token 已保存')
-}
-
-const clearAuthToken = (): void => {
-  authToken.value = ''
-  localStorage.removeItem('auth_token')
-  ElMessage.success('认证 Token 已清空')
-}
-
-const openEndpoint = (endpoint: ApiEndpointRecord): void => {
-  void router.push({
-    name: 'ApiCenterDetail',
-    params: {
-      category: endpoint.categoryName,
-      endpoint: endpoint.name
-    }
-  })
-}
-
-const goBack = (): void => {
-  void router.push({
-    name: 'ApiCenter',
-    query: categoryName.value ? { category: categoryName.value } : {}
-  })
-}
-
 const sendRequest = async (): Promise<void> => {
   if (!currentEndpoint.value) return
 
@@ -216,6 +156,38 @@ const sendRequest = async (): Promise<void> => {
     requestLoading.value = false
   }
 }
+
+const initializeEndpointState = (endpoint: ApiEndpointRecord | null): void => {
+  resetInputRecord(pathInputs)
+  resetInputRecord(queryInputs)
+  bodyContent.value = ''
+  requestUrl.value = ''
+  responseHeaders.value = ''
+  responseText.value = ''
+
+  if (!endpoint) return
+
+  endpoint.pathParams.forEach((param: ApiParam): void => {
+    pathInputs[param.name] = param.default !== undefined ? resolveApiValue(param.default) : ''
+  })
+
+  endpoint.params.forEach((param: ApiParam): void => {
+    queryInputs[param.name] = param.default !== undefined ? resolveApiValue(param.default) : ''
+  })
+
+  bodyContent.value = endpoint.hasBody ? endpoint.bodyPlaceholder : ''
+  requestUrl.value = buildPreviewUrl(endpoint)
+
+  // Auto fetch data on load
+  sendRequest()
+}
+
+watch(currentEndpoint, initializeEndpointState, { immediate: true })
+
+watch([pathInputs, queryInputs, bodyContent], (): void => {
+  if (!currentEndpoint.value) return
+  requestUrl.value = buildPreviewUrl(currentEndpoint.value)
+}, { deep: true })
 
 const viewMode = ref<'visual' | 'json'>('visual')
 
