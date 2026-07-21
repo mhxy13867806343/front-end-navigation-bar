@@ -166,7 +166,64 @@
               </section>
             </div>
 
-            <div class="forecast-grid">
+            <div class="weather-chart-showcase seven-chart-showcase secondary-chart-showcase">
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">06</div>
+                    <h3>高低温堆叠面积</h3>
+                    <p>把一周冷热层叠成更连续的能量带，视觉更饱满。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('stack')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">07</div>
+                    <h3>极坐标温风图</h3>
+                    <p>将每日节奏映射到极坐标，突出方向感和周期感。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('polar')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">08</div>
+                    <h3>天气占比矩阵树图</h3>
+                    <p>把白天和夜间天气拆成树图模块，快速看占比结构。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('treemap')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">09</div>
+                    <h3>舒适度仪表盘</h3>
+                    <p>用炫酷仪表图概括一周舒适度和空气综合指数。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('gauge')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">10</div>
+                    <h3>天气关系网络</h3>
+                    <p>用 graph 把日期和天气类型连起来，形成更实验性的视图。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('graph')" class="echarts-box chart-card"></div>
+              </section>
+            </div>
+
+            <div class="forecast-grid forecast-grid-enhanced">
               <div v-for="(item, index) in sevenData" :key="index" class="forecast-card glass-card">
                 <div class="date-row">
                   <span class="date">{{ item.date ? item.date.substring(5) : '' }}</span>
@@ -261,7 +318,64 @@
               </section>
             </div>
 
-            <div class="forty-table-container glass-card">
+            <div class="weather-chart-showcase forty-chart-showcase secondary-chart-showcase">
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">06</div>
+                    <h3>日历热力图</h3>
+                    <p>按真实日期落到日历视图，直接看哪几天最热。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('calendar')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">07</div>
+                    <h3>温度河流图</h3>
+                    <p>把高温、低温、均温做成 flowing river，层次更动感。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('river')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">08</div>
+                    <h3>周箱线分布</h3>
+                    <p>用箱线图看每周温度分布与波动区间，更偏分析。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('box')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">09</div>
+                    <h3>天气层级旭日图</h3>
+                    <p>把 40 天按天气类型和周次分层，做成更复杂的结构图。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('sunburst')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">10</div>
+                    <h3>多维平行坐标</h3>
+                    <p>把最高温、最低温、温差、均温一起展开成多维对比。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('parallel')" class="echarts-box chart-card"></div>
+              </section>
+            </div>
+
+            <div class="forty-table-container glass-card forty-table-enhanced">
               <div class="forty-header-row">
                 <div>日期</div>
                 <div>天气</div>

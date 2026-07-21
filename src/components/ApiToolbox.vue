@@ -89,6 +89,12 @@ interface ApiEndpoint {
   categoryName?: string
 }
 
+interface ApiToolboxPreset {
+  category?: string
+  endpointName?: string
+  path?: string
+}
+
 interface PublicDataItem {
   id: string
   title: string
@@ -122,6 +128,7 @@ interface ProfileForm {
 }
 
 const apiCategories = apiCategoriesData as Record<string, ApiEndpoint[]>
+const TOOLBOX_PRESET_STORAGE_KEY = 'front_end_navigation_api_toolbox_preset'
 
 // Main mode toggle: 'app' (Application Workspace) or 'sandbox' (Developer API Sandbox)
 const activeMode = ref<string>('app')
@@ -611,6 +618,8 @@ onMounted(() => {
     fetchUserProfile()
     fetchMoments()
   }
+
+  applyToolboxPreset()
 })
 
 // ----------------------------------------------------
@@ -665,11 +674,46 @@ const getEndpointKey = (endpoint: ApiEndpoint): string => {
   ].join('::')
 }
 
+const readToolboxPreset = (): ApiToolboxPreset | null => {
+  try {
+    const raw = window.localStorage.getItem(TOOLBOX_PRESET_STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as ApiToolboxPreset
+  } catch {
+    return null
+  }
+}
+
+const clearToolboxPreset = (): void => {
+  try {
+    window.localStorage.removeItem(TOOLBOX_PRESET_STORAGE_KEY)
+  } catch {
+    // ignore storage failures
+  }
+}
+
+const applyToolboxPreset = (): void => {
+  const preset = readToolboxPreset()
+  if (!preset?.category) return
+  if (!apiCategories[preset.category]) {
+    clearToolboxPreset()
+    return
+  }
+  selectedCategory.value = preset.category
+}
+
 const resolveTemplateValue = (value: string): string => {
   return value.replace(envPlaceholderRegexp, (_match: string, key: string): string => {
     const resolved: unknown = import.meta.env[key]
     return resolved === undefined || resolved === null ? '' : String(resolved)
   })
+}
+
+const resolveApiValue = (value: ApiValue): ApiValue => {
+  if (typeof value === 'string') {
+    return resolveTemplateValue(value)
+  }
+  return value
 }
 
 const buildEndpointUrl = (api: ApiEndpoint, path: string): string => {
@@ -846,7 +890,8 @@ const buildCurrentEndpointUrl = (api: ApiEndpoint): string => {
   let path: string = api.path
   if (api.pathParams) {
     api.pathParams.forEach((param: ApiParam): void => {
-      const value: string = String(pathInputs[param.name] || param.default || '')
+      const rawValue: ApiValue = pathInputs[param.name] ?? param.default ?? ''
+      const value: string = String(resolveApiValue(rawValue))
       path = path.replace(`{${param.name}}`, value)
     })
   }
@@ -854,7 +899,7 @@ const buildCurrentEndpointUrl = (api: ApiEndpoint): string => {
   let url: string = buildEndpointUrl(api, path)
   const queryParams: URLSearchParams = new URLSearchParams()
   Object.keys(queryInputs).forEach((key: string): void => {
-    const value: ApiValue = queryInputs[key]
+    const value: ApiValue = resolveApiValue(queryInputs[key])
     if (value !== undefined && value !== null && value !== '') {
       queryParams.append(key, String(value))
     }
@@ -911,11 +956,15 @@ watch(selectedApi, (newApi: ApiEndpoint | null): void => {
   if (!newApi) return
   Object.keys(pathInputs).forEach((k: string): boolean => delete pathInputs[k])
   if (newApi.pathParams) {
-    newApi.pathParams.forEach((p: ApiParam): void => { pathInputs[p.name] = p.default || '' })
+    newApi.pathParams.forEach((p: ApiParam): void => {
+      pathInputs[p.name] = p.default !== undefined ? resolveApiValue(p.default) : ''
+    })
   }
   Object.keys(queryInputs).forEach((k: string): boolean => delete queryInputs[k])
   if (newApi.params) {
-    newApi.params.forEach((p: ApiParam): void => { queryInputs[p.name] = p.default !== undefined ? p.default : '' })
+    newApi.params.forEach((p: ApiParam): void => {
+      queryInputs[p.name] = p.default !== undefined ? resolveApiValue(p.default) : ''
+    })
   }
   sandboxBodyContent.value = newApi.hasBody ? newApi.bodyPlaceholder : ''
 }, { immediate: true })
@@ -929,6 +978,21 @@ watch([selectedCategory, selectedApi], (): void => {
 }, { immediate: true })
 
 watch(activeEndpoints, (newList: ApiEndpoint[]): void => {
+  const preset = readToolboxPreset()
+  if (preset?.category === selectedCategory.value && newList.length > 0) {
+    const matched: ApiEndpoint | undefined = newList.find((endpoint: ApiEndpoint): boolean => {
+      if (preset.endpointName && endpoint.name === preset.endpointName) return true
+      if (preset.path && endpoint.path === preset.path) return true
+      return false
+    })
+    if (matched) {
+      selectedApi.value = matched
+      clearToolboxPreset()
+      return
+    }
+    clearToolboxPreset()
+  }
+
   if (newList && newList.length > 0) {
     selectedApi.value = newList[0]
   } else {
@@ -945,14 +1009,14 @@ const sendSandboxRequest = async (): Promise<void> => {
   let path: string = api.path
   if (api.pathParams) {
     api.pathParams.forEach((p: ApiParam): void => {
-      const val: string = String(pathInputs[p.name] || '')
+      const val: string = String(resolveApiValue(pathInputs[p.name] ?? ''))
       path = path.replace(`{${p.name}}`, val)
     })
   }
   let url: string = buildEndpointUrl(api, path)
   const queryParams: URLSearchParams = new URLSearchParams()
   Object.keys(queryInputs).forEach((key: string): void => {
-    const val: ApiValue = queryInputs[key]
+    const val: ApiValue = resolveApiValue(queryInputs[key])
     if (val !== undefined && val !== null && val !== '') {
       queryParams.append(key, String(val))
     }

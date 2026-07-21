@@ -1,6 +1,76 @@
 {
-  "generatedAt": "2026-07-18T04:24:42.161Z",
+  "generatedAt": "2026-07-21T16:38:34.784Z",
   "groups": [
+    {
+      "date": "2026-07-21",
+      "items": [
+        {
+          "hash": "a4c0bda556f681eacf0a16603d889392646e8f8d",
+          "shortHash": "a4c0bda",
+          "date": "2026-07-21",
+          "time": "22:20",
+          "type": "功能更新",
+          "title": "add ALAPI abbr endpoint",
+          "scope": "toolbox",
+          "message": "feat(toolbox): add ALAPI abbr endpoint"
+        },
+        {
+          "hash": "67635b2b40c230cdcbe25ca13eccea9a56d869d7",
+          "shortHash": "67635b2",
+          "date": "2026-07-21",
+          "time": "22:08",
+          "type": "功能更新",
+          "title": "redesign forecast charts and sync region selection",
+          "scope": "weather",
+          "message": "feat(weather): redesign forecast charts and sync region selection"
+        },
+        {
+          "hash": "49ed534df0cfc314922e109b9229eb235d25b84f",
+          "shortHash": "49ed534",
+          "date": "2026-07-21",
+          "time": "17:25",
+          "type": "问题修复",
+          "title": "restrict top bar to dyform route, remove weather header back button, fix region cascader markRaw, and enable 7/40 day chart resize on tab switch",
+          "scope": "",
+          "message": "fix: restrict top bar to dyform route, remove weather header back button, fix region cascader markRaw, and enable 7/40 day chart resize on tab switch"
+        },
+        {
+          "hash": "1214fdb6796a4ff24da15508c5b2368d012042eb",
+          "shortHash": "1214fdb",
+          "date": "2026-07-21",
+          "time": "17:18",
+          "type": "样式调整",
+          "title": "convert CSS files to SCSS, fix duplicate style closing tags and improve ECharts/top-bar visibility",
+          "scope": "",
+          "message": "style: convert CSS files to SCSS, fix duplicate style closing tags and improve ECharts/top-bar visibility"
+        },
+        {
+          "hash": "f71878a6196b29beb9b6b2ba5e57e756f2508378",
+          "shortHash": "f71878a",
+          "date": "2026-07-21",
+          "time": "17:08",
+          "type": "功能更新",
+          "title": "add weather page with ECharts, extract region cascader component, add juejin theme user popover and refactor Vue styles/composables",
+          "scope": "",
+          "message": "feat: add weather page with ECharts, extract region cascader component, add juejin theme user popover and refactor Vue styles/composables"
+        }
+      ]
+    },
+    {
+      "date": "2026-07-18",
+      "items": [
+        {
+          "hash": "9c0207771330f36b0bf872afd72124bc21a2455b",
+          "shortHash": "9c02077",
+          "date": "2026-07-18",
+          "time": "12:25",
+          "type": "功能更新",
+          "title": "add toolbox routes and improve alapi playlists",
+          "scope": "",
+          "message": "feat: add toolbox routes and improve alapi playlists"
+        }
+      ]
+    },
     {
       "date": "2026-07-17",
       "items": [
@@ -253,66 +323,6 @@
           "title": "show browser check in element dialog",
           "scope": "",
           "message": "feat: show browser check in element dialog"
-        },
-        {
-          "hash": "9d11c8b4965c6eb21c760f8408d04c7ed0cba074",
-          "shortHash": "9d11c8b",
-          "date": "2026-07-15",
-          "time": "11:14",
-          "type": "功能更新",
-          "title": "add browser support notice and rank cache",
-          "scope": "",
-          "message": "feat: add browser support notice and rank cache"
-        },
-        {
-          "hash": "bdad67754cd15391af3470d11ead07a08d0272fa",
-          "shortHash": "bdad677",
-          "date": "2026-07-15",
-          "time": "09:05",
-          "type": "问题修复",
-          "title": "resolve API proxy paths to real URLs in production (GitHub Pages has no proxy server)",
-          "scope": "",
-          "message": "fix: resolve API proxy paths to real URLs in production (GitHub Pages has no proxy server)"
-        },
-        {
-          "hash": "4cb62cfb03b945fe47e7c34d8b8a079f204e8bc3",
-          "shortHash": "4cb62cf",
-          "date": "2026-07-15",
-          "time": "08:57",
-          "type": "问题修复",
-          "title": "configure Vite base + router base for GitHub Pages subdirectory deployment, add 404.html SPA fallback",
-          "scope": "",
-          "message": "fix: configure Vite base + router base for GitHub Pages subdirectory deployment, add 404.html SPA fallback"
-        },
-        {
-          "hash": "f9f3b965be3ce915b5f3bf97cb1df30b9b46f903",
-          "shortHash": "f9f3b96",
-          "date": "2026-07-15",
-          "time": "00:44",
-          "type": "工程配置",
-          "title": "upgrade Node.js to version 20 to satisfy Vite 8 requirements",
-          "scope": "",
-          "message": "ci: upgrade Node.js to version 20 to satisfy Vite 8 requirements"
-        },
-        {
-          "hash": "a5ffd32520b419438ac3a66777cd07a34630f9ac",
-          "shortHash": "a5ffd32",
-          "date": "2026-07-15",
-          "time": "00:39",
-          "type": "问题修复",
-          "title": "adjust isFlashRoute to check endsWith to support subdirectory routing on GitHub Pages",
-          "scope": "",
-          "message": "fix: adjust isFlashRoute to check endsWith to support subdirectory routing on GitHub Pages"
-        },
-        {
-          "hash": "a2aec06a1420a0fe06d3bf34d93342d97c4771e1",
-          "shortHash": "a2aec06",
-          "date": "2026-07-15",
-          "time": "00:35",
-          "type": "功能更新",
-          "title": "improve live data proxies and news feeds",
-          "scope": "",
-          "message": "feat: improve live data proxies and news feeds"
         }
       ]
     }

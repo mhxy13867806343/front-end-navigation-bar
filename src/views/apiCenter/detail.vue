@@ -22,8 +22,23 @@ const requestLoading = ref<boolean>(false)
 
 const envPlaceholderRegexp: RegExp = /\{\{([A-Z0-9_]+)\}\}/g
 
-const categoryName = computed<string>((): string => String(route.params.category || ''))
-const endpointName = computed<string>((): string => String(route.params.endpoint || ''))
+const categoryName = computed<string>((): string => {
+  const raw = String(route.params.category || '')
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw
+  }
+})
+
+const endpointName = computed<string>((): string => {
+  const raw = String(route.params.endpoint || '')
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw
+  }
+})
 const currentEndpoint = computed<ApiEndpointRecord | null>((): ApiEndpointRecord | null => {
   return findApiEndpoint(categoryName.value, endpointName.value)
 })

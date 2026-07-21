@@ -55,8 +55,28 @@ export const flattenApiEndpoints = (): ApiEndpointRecord[] => {
 }
 
 export const findApiEndpoint = (categoryName: string, endpointName: string): ApiEndpointRecord | null => {
-  const matched: ApiEndpointRecord | undefined = getCategoryEndpoints(categoryName)
-    .find((endpoint: ApiEndpointRecord): boolean => endpoint.name === endpointName)
+  let decodedCategory = categoryName || ''
+  let decodedEndpoint = endpointName || ''
+  try {
+    decodedCategory = decodeURIComponent(decodedCategory).trim()
+  } catch {}
+  try {
+    decodedEndpoint = decodeURIComponent(decodedEndpoint).trim()
+  } catch {}
 
-  return matched || null
+  const matched: ApiEndpointRecord | undefined = getCategoryEndpoints(decodedCategory)
+    .find((endpoint: ApiEndpointRecord): boolean => endpoint.name === decodedEndpoint)
+
+  if (matched) return matched
+
+  // Fallback 1: Search all categories for matching category & endpoint name
+  const allEndpoints: ApiEndpointRecord[] = flattenApiEndpoints()
+  const matchedCategoryAndName = allEndpoints.find(
+    (ep) => ep.categoryName === decodedCategory && ep.name === decodedEndpoint
+  )
+  if (matchedCategoryAndName) return matchedCategoryAndName
+
+  // Fallback 2: Search all categories by endpoint name only
+  const matchedByName = allEndpoints.find((ep) => ep.name === decodedEndpoint)
+  return matchedByName || null
 }
