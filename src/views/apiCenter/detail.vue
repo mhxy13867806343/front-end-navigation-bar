@@ -107,6 +107,9 @@ const initializeEndpointState = (endpoint: ApiEndpointRecord | null): void => {
 
   bodyContent.value = endpoint.hasBody ? endpoint.bodyPlaceholder : ''
   requestUrl.value = buildPreviewUrl(endpoint)
+
+  // Auto fetch data on load
+  sendRequest()
 }
 
 watch(currentEndpoint, initializeEndpointState, { immediate: true })
@@ -273,34 +276,17 @@ const getObjectKeys = (obj: any): string[] => {
           <div>
             <p class="detail-kicker">{{ currentEndpoint.categoryName }}</p>
             <h1>{{ currentEndpoint.name }}</h1>
-            <p>{{ currentEndpoint.desc || '查看接口说明、填写参数并直接请求返回结果。' }}</p>
+            <p>{{ currentEndpoint.desc || '实时拉取并展示最新数据内容。' }}</p>
           </div>
           <div class="hero-method-card">
             <span class="method-badge" :class="currentEndpoint.method.toLowerCase()">{{ currentEndpoint.method }}</span>
             <strong>{{ currentEndpoint.path }}</strong>
-            <span>{{ currentEndpoint.skipAuth ? '免登录' : '需要认证' }}</span>
           </div>
         </div>
       </section>
 
       <section class="detail-layout">
         <aside class="detail-sidebar">
-          <div class="sidebar-block" v-if="!currentEndpoint.skipAuth">
-            <div class="sidebar-block-head">
-              <strong>Authorization Header</strong>
-            </div>
-            <el-input
-              v-model="authToken"
-              placeholder="请输入 Bearer Token"
-              type="textarea"
-              :rows="3"
-            />
-            <div class="auth-actions">
-              <el-button type="primary" size="small" @click="saveAuthToken">保存</el-button>
-              <el-button size="small" @click="clearAuthToken">清空</el-button>
-            </div>
-          </div>
-
           <div class="sidebar-block">
             <div class="sidebar-block-head">
               <strong>同分类接口</strong>
@@ -321,102 +307,10 @@ const getObjectKeys = (obj: any): string[] => {
           </div>
         </aside>
 
-        <section class="detail-main">
-          <div class="detail-card">
-            <div class="detail-card-head">
-              <h2>请求参数</h2>
-              <span>{{ currentEndpoint.params.length + currentEndpoint.pathParams.length }} 项</span>
-            </div>
-
-            <div v-if="currentEndpoint.pathParams.length" class="param-group">
-              <h3>Path Parameters</h3>
-              <div v-for="param in currentEndpoint.pathParams" :key="`path-${param.name}`" class="param-row">
-                <label>{{ param.label || param.name }}</label>
-                <el-input v-model="pathInputs[param.name]" :placeholder="param.placeholder || param.name" />
-              </div>
-            </div>
-
-            <div v-if="currentEndpoint.params.length" class="param-group">
-              <h3>Query Parameters</h3>
-              <div v-for="param in currentEndpoint.params" :key="`query-${param.name}`" class="param-row">
-                <label>
-                  {{ param.label || param.name }}
-                  <span v-if="param.required" class="required-mark">*</span>
-                </label>
-                <el-select
-                  v-if="param.type === 'select'"
-                  v-model="queryInputs[param.name]"
-                  :placeholder="param.placeholder || param.name"
-                  style="width: 100%;"
-                >
-                  <el-option
-                    v-for="option in param.options || []"
-                    :key="`${param.name}-${option.value}`"
-                    :label="option.label"
-                    :value="option.value"
-                  />
-                </el-select>
-                <el-input-number
-                  v-else-if="param.type === 'number'"
-                  v-model="queryInputs[param.name]"
-                  style="width: 100%;"
-                />
-                <div v-else-if="param.type === 'switch'" class="switch-row">
-                  <el-switch v-model="queryInputs[param.name]" />
-                  <span>{{ param.description || param.label || param.name }}</span>
-                </div>
-                <el-input
-                  v-else
-                  v-model="queryInputs[param.name]"
-                  :placeholder="param.placeholder || param.name"
-                />
-                <small v-if="param.description" class="param-desc">{{ param.description }}</small>
-              </div>
-            </div>
-
-            <div v-if="currentEndpoint.hasBody" class="param-group">
-              <h3>Request Body</h3>
-              <textarea
-                v-model="bodyContent"
-                class="body-editor"
-                spellcheck="false"
-              ></textarea>
-            </div>
-
-            <div class="request-actions">
-              <el-button type="primary" :loading="requestLoading" @click="sendRequest">发送接口请求</el-button>
-              <span class="request-tip">当前页面会直接展示请求 URL、响应头和响应结果。</span>
-            </div>
-          </div>
-
-          <div class="detail-card">
-            <div class="detail-card-head">
-              <h2>请求预览</h2>
-              <span>{{ currentEndpoint.baseUrl || 'https://api.apiopen.top' }}</span>
-            </div>
-            <pre class="preview-box">{{ requestUrl }}</pre>
-          </div>
-
-          <div class="detail-card">
-            <div class="detail-card-head">
-              <h2>响应头</h2>
-            </div>
-            <pre class="preview-box">{{ responseHeaders || '发送请求后，这里会展示响应头。' }}</pre>
-          </div>
-
-          <div class="detail-card">
-            <div class="detail-card-head">
-              <h2>响应结果</h2>
-              <div v-if="parsedResponseBody" class="view-mode-toggle">
-                <el-radio-group v-model="viewMode" size="small">
-                  <el-radio-button label="visual">🎨 可视化视图</el-radio-button>
-                  <el-radio-button label="json">📜 原始 JSON</el-radio-button>
-                </el-radio-group>
-              </div>
-            </div>
-
-            <!-- 可视化视图渲染层 -->
-            <div v-if="viewMode === 'visual' && parsedResponseBody" class="visual-response-container">
+        <section class="detail-main" v-loading="requestLoading" element-loading-background="rgba(10, 13, 20, 0.7)">
+          <div class="detail-card main-visual-card">
+            <!-- 纯可视化数据展示层 -->
+            <div v-if="parsedResponseBody" class="visual-response-container">
               <!-- 1. 贵金属/黄金实时价格行情卡片 -->
               <div v-if="isGoldRealtimeData" class="visual-gold-grid">
                 <div v-for="(item, idx) in parsedResponseBody" :key="item.symbol || idx" class="metal-card">
@@ -473,13 +367,13 @@ const getObjectKeys = (obj: any): string[] => {
 
               <!-- 4. 通用数组表格视图 -->
               <div v-else-if="isArrayData" class="visual-table-box">
-                <el-table :data="parsedResponseBody" stripe border style="width: 100%" max-height="450" class="custom-data-table">
+                <el-table :data="parsedResponseBody" stripe border style="width: 100%" max-height="550" class="custom-data-table">
                   <el-table-column
                     v-for="key in getObjectKeys(parsedResponseBody[0])"
                     :key="key"
                     :prop="key"
                     :label="key"
-                    min-width="120"
+                    min-width="130"
                     show-overflow-tooltip
                   />
                 </el-table>
@@ -494,8 +388,9 @@ const getObjectKeys = (obj: any): string[] => {
               </div>
             </div>
 
-            <!-- 原始 JSON 格式/兜底 -->
-            <pre v-else class="response-box">{{ responseText || '发送请求后，这里会展示响应结果。' }}</pre>
+            <div v-else class="visual-empty-box">
+              <el-empty description="正在拉取数据中..." />
+            </div>
           </div>
         </section>
       </section>

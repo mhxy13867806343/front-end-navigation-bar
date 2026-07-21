@@ -805,7 +805,7 @@ watch(isDarkMode, () => {
             </a>
 
             <button class="dropdown-trigger gold-price-btn" @click="openGoldPriceToolbox">
-              🪙 黄金价格
+              🪙 第三方页面集
             </button>
 
             <button class="dropdown-trigger like-history-btn" @click="openLikeHistory">
