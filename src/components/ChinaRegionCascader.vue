@@ -17,8 +17,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import chinaCascaderOptions from '../ajson/china-cascader-options.json'
+import { ref, watch, markRaw } from 'vue'
+import rawCascaderOptions from '../ajson/china-cascader-options.json'
+
+const chinaCascaderOptions = markRaw(rawCascaderOptions as CascaderNode[])
 
 interface CascaderNode {
   value: string

@@ -2,9 +2,6 @@
   <div class="weather-page">
     <div class="header-banner">
       <div class="header-content">
-        <el-button @click="goBack" class="back-btn" :icon="'Back'" text>
-          ← 返回首页
-        </el-button>
         <h1 class="page-title">🌦️ 天气查询</h1>
         <div class="search-box">
           <ChinaRegionCascader
@@ -360,7 +357,9 @@ const fetchSeven = async () => {
     })
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
       sevenData.value = res.data.data
-      nextTick(() => initSevenChart())
+      nextTick(() => {
+        setTimeout(() => initSevenChart(), 100)
+      })
     } else {
       error.value.seven = true
     }
@@ -380,7 +379,9 @@ const fetchForty = async () => {
     })
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
       fortyData.value = res.data.data
-      nextTick(() => initFortyChart())
+      nextTick(() => {
+        setTimeout(() => initFortyChart(), 100)
+      })
     } else {
       error.value.forty = true
     }
@@ -427,11 +428,13 @@ const searchWeather = async () => {
 
 const handleTabChange = (tabName: string) => {
   if (tabName === 'seven') {
-    fetchSeven()
+    if (!sevenData.value) fetchSeven()
+    else nextTick(() => setTimeout(() => { if (!sevenChart) initSevenChart(); else sevenChart.resize(); }, 100))
   } else if (tabName === 'forty') {
-    fetchForty()
+    if (!fortyData.value) fetchForty()
+    else nextTick(() => setTimeout(() => { if (!fortyChart) initFortyChart(); else fortyChart.resize(); }, 100))
   } else if (tabName === 'index') {
-    fetchIndex()
+    if (!indexData.value) fetchIndex()
   }
 }
 

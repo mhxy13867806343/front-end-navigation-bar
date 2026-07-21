@@ -95,6 +95,7 @@ const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some(p => path === p || path.endsWith(p) || (p === '/h5' && path.startsWith('/h5/')))
 })
+const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
 
 interface DrawerCloudLink {
@@ -693,7 +694,7 @@ watch(isDarkMode, () => {
     <!-- 主内容区域 -->
     <main class="main-content" :class="{ 'expanded': !isSidebarOpen }">
       <div class="glow-bg"></div>
-      <div v-if="!isFlashRoute" class="sticky-command-center">
+      <div v-if="isDyFormRoute" class="sticky-command-center">
         <BrowserSupportNotice />
         <div class="header-actions">
           <div class="nav-horizontal">
