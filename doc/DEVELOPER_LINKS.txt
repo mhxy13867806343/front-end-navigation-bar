@@ -1,28 +1,38 @@
 ==================================================
-        开发者信息与常用站点导航 (Developer Links)
+   开发者信息与全栈/AI工具生态导航 (Developer Links)
 ==================================================
 
+一、个人主页与社交账号:
 1. GitHub 主页:
    https://github.com/mhxy13867806343
-
 2. 掘金个人主页:
    https://juejin.cn/user/1310273588955581
-
 3. X (Twitter):
    https://x.com/lichnsng491890
-
-4. ALAPI 官方网站:
-   https://www.alapi.cn/
-
-5. AI Bot 导航:
-   https://ai-bot.cn/
-
-6. 电子邮箱 (Email):
+4. 电子邮箱 (Email):
    869710179@qq.com
 
-7. 技术栈 (Tech Stack):
-   - Vue 3 / Vue 2
-   - UniApp (小程序 / App / H5 跨端开发)
-   - Vite, TypeScript, SCSS, Element Plus, ECharts
+二、AI 原生 IDE & 智能编程工具:
+1. Antigravity: https://antigravity.google/
+2. TRAE IDE: https://www.trae.ai/
+3. Devin AI: https://devin.ai/
+4. OpenAI Codex: https://openai.com/index/openai-codex/
+5. ChatGPT: https://chatgpt.com/
+6. Google Gemini: https://gemini.google.com/
+
+三、编程语言、IDE & 游戏引擎:
+1. Python: https://www.python.org/
+2. Rust: https://www.rust-lang.org/
+3. JetBrains: https://www.jetbrains.com/
+4. Godot Engine: https://godotengine.org/
+
+四、常用推荐与 API 数据源:
+1. ALAPI 官方网站: https://www.alapi.cn/
+2. AI Bot 导航: https://ai-bot.cn/
+
+五、核心技术栈:
+- Vue 3 / Vue 2
+- UniApp (小程序 / App / H5 跨端开发)
+- Vite, TypeScript, SCSS, Element Plus, ECharts
 
 ==================================================
