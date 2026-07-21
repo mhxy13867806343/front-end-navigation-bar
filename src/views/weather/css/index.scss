@@ -214,16 +214,76 @@
 }
 
 /* Charts */
-.chart-container {
-  height: 360px !important;
-  min-height: 360px;
-  width: 100%;
-  margin-bottom: 20px;
+.weather-chart-showcase {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
 }
+
+.weather-chart-panel {
+  grid-column: span 4;
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  padding: 18px 18px 12px;
+}
+
+.chart-panel-hero {
+  grid-column: span 8;
+  min-height: 420px;
+}
+
+.chart-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chart-panel-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(91, 97, 249, 0.16);
+  color: #8fa4ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.weather-chart-panel h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-color, #e3e5e8);
+}
+
+.weather-chart-panel p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary, #9aa0a6);
+}
+
 .echarts-box {
   width: 100% !important;
-  height: 360px !important;
-  min-height: 360px;
+}
+
+.chart-hero {
+  height: 330px !important;
+  min-height: 330px;
+}
+
+.chart-card {
+  height: 220px !important;
+  min-height: 220px;
 }
 
 /* 7天预报列表 */
@@ -317,6 +377,19 @@
 @media (max-width: 768px) {
   .page-title { font-size: 24px; }
   .temp-value { font-size: 72px; }
+  .weather-chart-showcase {
+    grid-template-columns: 1fr;
+  }
+  .weather-chart-panel,
+  .chart-panel-hero {
+    grid-column: span 1;
+    min-height: 300px;
+  }
+  .chart-hero,
+  .chart-card {
+    height: 240px !important;
+    min-height: 240px;
+  }
   .forty-header-row, .forty-item-row {
     font-size: 12px;
   }

@@ -8,16 +8,36 @@
 
 .china-region-cascader :deep(.el-input__wrapper) {
   border-radius: 20px;
-  background: var(--bg-secondary, rgba(255, 255, 255, 0.9));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: rgba(29, 31, 53, 0.88);
+  border: 1px solid rgba(116, 165, 255, 0.7);
+  box-shadow: 0 6px 18px rgba(27, 30, 58, 0.28);
   transition: all 0.3s ease;
 }
 
 .china-region-cascader :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+  box-shadow: 0 8px 22px rgba(64, 158, 255, 0.24);
 }
 
 .china-region-cascader :deep(.el-input__inner) {
-  color: var(--text-primary, #303133);
+  color: var(--text-color, #e3e5e8);
   font-weight: 500;
+}
+
+.china-region-cascader :deep(.el-input__inner::placeholder) {
+  color: rgba(227, 229, 232, 0.55);
+}
+
+.china-region-cascader :deep(.el-cascader__label) {
+  color: var(--text-color, #e3e5e8);
+  font-weight: 600;
+}
+
+.china-region-cascader :deep(.el-input__icon),
+.china-region-cascader :deep(.el-input__clear) {
+  color: rgba(227, 229, 232, 0.72);
+}
+
+.china-region-cascader :deep(.el-input__wrapper.is-focus) {
+  border-color: rgba(80, 174, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(80, 174, 255, 0.3), 0 10px 24px rgba(55, 111, 255, 0.24);
 }

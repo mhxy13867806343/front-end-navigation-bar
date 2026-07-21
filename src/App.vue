@@ -671,7 +671,8 @@ watch(isDarkMode, () => {
             </div>
             <div class="popover-tool-item" @click="showWeatherDialog = true">
               <span class="tool-icon">🌦️</span>
-              <span>实时天气</span>
+              <span>天气预报</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
             </div>
             <div class="popover-tool-item" @click="showBingDialog = true">
               <span class="tool-icon">🌅</span>
@@ -1801,7 +1802,7 @@ watch(isDarkMode, () => {
                     :timestamp="step.time"
                     :type="idx === 0 ? 'primary' : 'info'"
                   >
-                    <div style="font-size: 12px; line-height: 1.5; color: idx === 0 ? 'var(--text-color)' : 'var(--text-secondary)';">
+                    <div :style="{ fontSize: '12px', lineHeight: 1.5, color: idx === 0 ? 'var(--text-color)' : 'var(--text-secondary)' }">
                       {{ step.status_desc || step.context }}
                     </div>
                   </el-timeline-item>
@@ -2538,9 +2539,6 @@ watch(isDarkMode, () => {
       <div class="route-view-bar">
         <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
       </div>
-      <div v-if="!isH5DesktopHintRoute" class="route-browser-notice">
-        <BrowserSupportNotice :auto-open="false" />
-      </div>
       <router-view />
     </div>
 
@@ -2552,5 +2550,3 @@ watch(isDarkMode, () => {
 </template>
 
 <style scoped lang="scss" src="./App.scss"></style>
-
-

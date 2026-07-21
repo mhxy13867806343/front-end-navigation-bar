@@ -29,7 +29,7 @@
     </div>
 
     <div class="main-content">
-      <el-tabs v-model="activeTab" class="custom-tabs">
+      <el-tabs v-model="activeTab" class="custom-tabs" @tab-change="handleTabChange">
         <!-- 实况天气 -->
         <el-tab-pane label="实况天气" name="realtime">
           <div v-if="loading.realtime" class="loading-state">
@@ -109,10 +109,63 @@
             </el-empty>
           </div>
           <div v-else-if="sevenData && sevenData.length" class="forecast-tab">
-            <div class="chart-container glass-card">
-              <div ref="sevenChartRef" class="echarts-box"></div>
+            <div class="weather-chart-showcase seven-chart-showcase">
+              <section class="weather-chart-panel chart-panel-hero glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">01</div>
+                    <h3>七日温度主趋势</h3>
+                    <p>基础双折线升级为霓虹渐变趋势图，先看整体温度起伏。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('trend')" class="echarts-box chart-hero"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">02</div>
+                    <h3>日夜温差柱线图</h3>
+                    <p>从简单柱状过渡到组合图，直接看哪天昼夜反差最大。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('range')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">03</div>
+                    <h3>空气与温度联动</h3>
+                    <p>空气质量、白天温度、夜间温度三条维度一起看。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('air')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">04</div>
+                    <h3>七日天气能力雷达</h3>
+                    <p>把最高温、最低温、温差、风力映射成雷达图，更偏分析视角。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('radar')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">05</div>
+                    <h3>天气状态玫瑰图</h3>
+                    <p>最后用更炫的玫瑰图收尾，快速看一周天气分布占比。</p>
+                  </div>
+                </div>
+                <div :ref="setSevenChartRef('rose')" class="echarts-box chart-card"></div>
+              </section>
             </div>
-            
+
             <div class="forecast-grid">
               <div v-for="(item, index) in sevenData" :key="index" class="forecast-card glass-card">
                 <div class="date-row">
@@ -151,10 +204,63 @@
             </el-empty>
           </div>
           <div v-else-if="fortyData && fortyData.length" class="forecast-tab">
-            <div class="chart-container glass-card">
-              <div ref="fortyChartRef" class="echarts-box"></div>
+            <div class="weather-chart-showcase forty-chart-showcase">
+              <section class="weather-chart-panel chart-panel-hero glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">01</div>
+                    <h3>40天长周期总览</h3>
+                    <p>从最基础的长周期趋势开始，加入 dataZoom 和渐变面积。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('overview')" class="echarts-box chart-hero"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">02</div>
+                    <h3>日夜温差与均线</h3>
+                    <p>用柱线混合图把温差变化和均线节奏拉开来看。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('delta')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">03</div>
+                    <h3>温度热力矩阵</h3>
+                    <p>把 40 天压成热力网格，一眼看出冷热区段。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('heat')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">04</div>
+                    <h3>温差气泡分布</h3>
+                    <p>散点气泡图展示高温、低温和昼夜温差之间的关系。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('scatter')" class="echarts-box chart-card"></div>
+              </section>
+
+              <section class="weather-chart-panel glass-card">
+                <div class="chart-panel-head">
+                  <div>
+                    <div class="chart-panel-index">05</div>
+                    <h3>周节律极坐标</h3>
+                    <p>更复杂的极坐标图，把一周节奏感做成更炫的动态视觉。</p>
+                  </div>
+                </div>
+                <div :ref="setFortyChartRef('weekly')" class="echarts-box chart-card"></div>
+              </section>
             </div>
-            
+
             <div class="forty-table-container glass-card">
               <div class="forty-header-row">
                 <div>日期</div>
@@ -207,7 +313,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import * as echarts from 'echarts'
@@ -215,6 +321,7 @@ import { resolveApiUrl } from '../../utils/resolveApiUrl'
 import { ElMessage } from 'element-plus'
 import ChinaRegionCascader from '../../components/ChinaRegionCascader.vue'
 import type { RegionChangeEvent } from '../../components/ChinaRegionCascader.vue'
+import rawChinaCascaderOptions from '../../ajson/china-cascader-options.json'
 
 const router = useRouter()
 const selectedRegion = ref<string[]>([])
@@ -259,6 +366,124 @@ interface AlapiResponse<T> {
   code?: number; success?: boolean; message?: string; data?: T;
 }
 
+interface RegionOption {
+  value: string
+  label: string
+  children?: RegionOption[]
+}
+
+const chinaCascaderOptions = rawChinaCascaderOptions as RegionOption[]
+
+function simplifyRegionLabel(label: string): string {
+  return label
+    .replace(/特别行政区$/u, '')
+    .replace(/壮族自治区$|回族自治区$|维吾尔自治区$/u, '')
+    .replace(/自治区$/u, '')
+    .replace(/自治州$/u, '')
+    .replace(/自治县$/u, '')
+    .replace(/自治旗$/u, '')
+    .replace(/地区$/u, '')
+    .replace(/林区$/u, '')
+    .replace(/新区$/u, '')
+    .replace(/市辖区$/u, '')
+    .replace(/省$/u, '')
+    .replace(/市$/u, '')
+    .replace(/区$/u, '')
+    .replace(/县$/u, '')
+    .replace(/盟$/u, '')
+    .replace(/旗$/u, '')
+    .trim()
+}
+
+function findRegionPathByCity(cityName: string, provinceName = ''): string[] {
+  const normalizedCity = simplifyRegionLabel(cityName)
+  const normalizedProvince = simplifyRegionLabel(provinceName)
+
+  for (const province of chinaCascaderOptions) {
+    const provinceLabel = simplifyRegionLabel(province.label)
+    if (normalizedProvince && provinceLabel !== normalizedProvince) continue
+
+    if (provinceLabel === normalizedCity) {
+      return [province.value]
+    }
+
+    for (const city of province.children || []) {
+      const cityLabel = simplifyRegionLabel(city.label)
+      if (cityLabel === normalizedCity) {
+        return [province.value, city.value]
+      }
+
+      for (const district of city.children || []) {
+        const districtLabel = simplifyRegionLabel(district.label)
+        if (districtLabel === normalizedCity) {
+          return [province.value, city.value, district.value]
+        }
+      }
+    }
+  }
+
+  if (normalizedProvince) {
+    return findRegionPathByCity(cityName)
+  }
+
+  return []
+}
+
+function syncSelectedRegion(cityName: string, provinceName = ''): void {
+  const matchedPath = findRegionPathByCity(cityName, provinceName)
+  if (matchedPath.length) {
+    selectedRegion.value = matchedPath
+  }
+}
+
+function findRegionLabelsByPath(path: string[]): string[] {
+  const labels: string[] = []
+  let nodes = chinaCascaderOptions
+
+  for (const value of path) {
+    const matched = nodes.find(node => node.value === value)
+    if (!matched) break
+    labels.push(simplifyRegionLabel(matched.label))
+    nodes = matched.children || []
+  }
+
+  return labels
+}
+
+function getActiveWeatherCity(): string {
+  const selectedLabels = findRegionLabelsByPath(selectedRegion.value)
+  if (selectedLabels.length) {
+    return selectedLabels[selectedLabels.length - 1]
+  }
+
+  return searchQuery.value.trim()
+    || currentCity.value.trim()
+    || realtimeData.value?.city
+    || '杭州'
+}
+
+function getActiveWeatherLocation(): { city: string; province: string } {
+  const selectedLabels = findRegionLabelsByPath(selectedRegion.value)
+  if (selectedLabels.length >= 2) {
+    return {
+      province: selectedLabels[0],
+      city: selectedLabels[1]
+    }
+  }
+
+  if (selectedLabels.length === 1) {
+    return {
+      province: selectedLabels[0],
+      city: selectedLabels[0]
+    }
+  }
+
+  return {
+    city: getActiveWeatherCity(),
+    province: simplifyRegionLabel(realtimeData.value?.province || '')
+  }
+}
+
 // State
 const searchQuery = ref('杭州')
 const currentCity = ref('杭州')
@@ -283,11 +508,35 @@ const sevenData = ref<TianqiSevenDayItem[] | null>(null)
 const fortyData = ref<TianqiFortyDayItem[] | null>(null)
 const indexData = ref<TianqiIndexItem[] | null>(null)
 
-// Refs for ECharts
-const sevenChartRef = ref<HTMLDivElement | null>(null)
-const fortyChartRef = ref<HTMLDivElement | null>(null)
-let sevenChart: echarts.ECharts | null = null
-let fortyChart: echarts.ECharts | null = null
+type SevenChartKey = 'trend' | 'range' | 'air' | 'radar' | 'rose'
+type FortyChartKey = 'overview' | 'delta' | 'heat' | 'scatter' | 'weekly'
+
+const sevenChartRefs = reactive<Record<SevenChartKey, HTMLDivElement | null>>({
+  trend: null,
+  range: null,
+  air: null,
+  radar: null,
+  rose: null
+})
+
+const fortyChartRefs = reactive<Record<FortyChartKey, HTMLDivElement | null>>({
+  overview: null,
+  delta: null,
+  heat: null,
+  scatter: null,
+  weekly: null
+})
+
+const sevenCharts: Partial<Record<SevenChartKey, echarts.ECharts>> = {}
+const fortyCharts: Partial<Record<FortyChartKey, echarts.ECharts>> = {}
+
+const setSevenChartRef = (key: SevenChartKey) => (el: any) => {
+  sevenChartRefs[key] = el as HTMLDivElement | null
+}
+
+const setFortyChartRef = (key: FortyChartKey) => (el: any) => {
+  fortyChartRefs[key] = el as HTMLDivElement | null
+}
 
 // Functions
 const goBack = () => {
@@ -299,6 +548,36 @@ const handleRegionChange = (e: RegionChangeEvent) => {
     searchQuery.value = e.cityName
     searchWeather()
   }
+}
+
+const numberValue = (value?: string | number): number => {
+  const matched = String(value ?? '').match(/-?\d+(\.\d+)?/)
+  return matched ? Number(matched[0]) : 0
+}
+
+const shortDate = (value?: string): string => value ? value.slice(5) : ''
+
+const weekdayName = (value?: string): string => {
+  if (!value) return '--'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '--'
+  return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()]
+}
+
+const movingAverage = (values: number[], windowSize = 5): number[] => {
+  return values.map((_, index) => {
+    const start = Math.max(0, index - windowSize + 1)
+    const subset = values.slice(start, index + 1)
+    return Number((subset.reduce((sum, item) => sum + item, 0) / subset.length).toFixed(1))
+  })
+}
+
+const weatherCounts = (values: Array<string | undefined>) => {
+  return values.reduce<Record<string, number>>((acc, item) => {
+    const key = item || '未知'
+    acc[key] = (acc[key] || 0) + 1
+    return acc
+  }, {})
 }
 
 const getIndexIcon = (name: string): string => {
@@ -325,6 +604,30 @@ const getIndexTagType = (level: string) => {
   return 'success'
 }
 
+function ensureChart<K extends string>(
+  refsMap: Record<K, HTMLDivElement | null>,
+  store: Partial<Record<K, echarts.ECharts>>,
+  key: K
+): echarts.ECharts | null {
+  const el = refsMap[key]
+  if (!el) return null
+  if (!store[key]) {
+    store[key] = echarts.init(el)
+  }
+  return store[key] || null
+}
+
+function resizeChartStore<K extends string>(store: Partial<Record<K, echarts.ECharts>>): void {
+  Object.values(store).forEach((instance) => instance?.resize())
+}
+
+function disposeChartStore<K extends string>(store: Partial<Record<K, echarts.ECharts>>): void {
+  Object.keys(store).forEach((key) => {
+    store[key as K]?.dispose()
+    delete store[key as K]
+  })
+}
+
 // API Calls
 const fetchRealtime = async (city: string) => {
   loading.value.realtime = true
@@ -336,6 +639,7 @@ const fetchRealtime = async (city: string) => {
     if (res.data.code === 200 && res.data.data) {
       realtimeData.value = res.data.data
       currentCity.value = res.data.data.city || city
+      syncSelectedRegion(currentCity.value, res.data.data.province || '')
     } else {
       error.value.realtime = true
       ElMessage.error(res.data.message || '获取实况天气失败')
@@ -349,16 +653,17 @@ const fetchRealtime = async (city: string) => {
 }
 
 const fetchSeven = async () => {
+  const { city, province } = getActiveWeatherLocation()
   loading.value.seven = true
   error.value.seven = false
   try {
     const res = await axios.get<AlapiResponse<TianqiSevenDayItem[]>>(buildAlapiUrl('/api/tianqi/seven'), {
-      params: { token: ALAPI_TOKEN, city: currentCity.value }
+      params: { token: ALAPI_TOKEN, city, province }
     })
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
       sevenData.value = res.data.data
       nextTick(() => {
-        setTimeout(() => initSevenChart(), 100)
+        setTimeout(() => initSevenCharts(), 120)
       })
     } else {
       error.value.seven = true
@@ -371,16 +676,17 @@ const fetchSeven = async () => {
 }
 
 const fetchForty = async () => {
+  const { city, province } = getActiveWeatherLocation()
   loading.value.forty = true
   error.value.forty = false
   try {
     const res = await axios.get<AlapiResponse<TianqiFortyDayItem[]>>(buildAlapiUrl('/api/tianqi/forty'), {
-      params: { token: ALAPI_TOKEN, city: currentCity.value }
+      params: { token: ALAPI_TOKEN, city, province }
     })
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
       fortyData.value = res.data.data
       nextTick(() => {
-        setTimeout(() => initFortyChart(), 100)
+        setTimeout(() => initFortyCharts(), 120)
       })
     } else {
       error.value.forty = true
@@ -413,158 +719,378 @@ const fetchIndex = async () => {
 }
 
 const searchWeather = async () => {
-  if (!searchQuery.value.trim()) {
+  const targetCity = getActiveWeatherCity()
+  if (!targetCity) {
     ElMessage.warning('请输入城市名称')
     return
   }
-  
+
+  searchQuery.value = targetCity
+  currentCity.value = targetCity
   sevenData.value = null
   fortyData.value = null
   indexData.value = null
-  
-  await fetchRealtime(searchQuery.value)
+
+  await fetchRealtime(targetCity)
   handleTabChange(activeTab.value)
 }
 
 const handleTabChange = (tabName: string) => {
   if (tabName === 'seven') {
-    if (!sevenData.value) fetchSeven()
-    else nextTick(() => setTimeout(() => { if (!sevenChart) initSevenChart(); else sevenChart.resize(); }, 100))
+    if (!sevenData.value || error.value.seven) fetchSeven()
+    else nextTick(() => setTimeout(() => initSevenCharts(), 120))
   } else if (tabName === 'forty') {
-    if (!fortyData.value) fetchForty()
-    else nextTick(() => setTimeout(() => { if (!fortyChart) initFortyChart(); else fortyChart.resize(); }, 100))
+    if (!fortyData.value || error.value.forty) fetchForty()
+    else nextTick(() => setTimeout(() => initFortyCharts(), 120))
   } else if (tabName === 'index') {
-    if (!indexData.value) fetchIndex()
+    if (!indexData.value || error.value.index) fetchIndex()
   }
 }
 
-watch(activeTab, (newVal) => {
-  handleTabChange(newVal)
-})
-
 const handleResize = () => {
-  if (sevenChart) sevenChart.resize()
-  if (fortyChart) fortyChart.resize()
+  resizeChartStore(sevenCharts)
+  resizeChartStore(fortyCharts)
 }
 
 onMounted(() => {
+  syncSelectedRegion(searchQuery.value)
   searchWeather()
   window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  if (sevenChart) {
-    sevenChart.dispose()
-    sevenChart = null
-  }
-  if (fortyChart) {
-    fortyChart.dispose()
-    fortyChart = null
-  }
+  disposeChartStore(sevenCharts)
+  disposeChartStore(fortyCharts)
 })
 
 // ECharts
 const getTextColor = () => {
   const root = document.documentElement
-  return getComputedStyle(root).getPropertyValue('--text-primary').trim() || '#303133'
+  return getComputedStyle(root).getPropertyValue('--text-color').trim() || '#e3e5e8'
 }
 
-const initSevenChart = () => {
-  if (!sevenChartRef.value || !sevenData.value) return
-  
-  if (!sevenChart) {
-    sevenChart = echarts.init(sevenChartRef.value)
-  }
-  
-  const dates = sevenData.value.map(item => `${item.date ? item.date.substring(5) : ''}${item.week ? '\n' + item.week : ''}`)
-  const maxTemps = sevenData.value.map(item => parseInt(item.temp_day || '0'))
-  const minTemps = sevenData.value.map(item => parseInt(item.temp_night || '0'))
+const getSecondaryTextColor = () => {
+  const root = document.documentElement
+  return getComputedStyle(root).getPropertyValue('--text-secondary').trim() || '#9aa0a6'
+}
+
+const baseGrid = { left: 46, right: 28, top: 64, bottom: 44 }
+
+const initSevenCharts = () => {
+  if (!sevenData.value?.length) return
+
+  const dates = sevenData.value.map(item => shortDate(item.date))
+  const labels = sevenData.value.map(item => `${shortDate(item.date)}\n${item.week || weekdayName(item.date)}`)
+  const maxTemps = sevenData.value.map(item => numberValue(item.temp_day))
+  const minTemps = sevenData.value.map(item => numberValue(item.temp_night))
+  const airValues = sevenData.value.map(item => numberValue(item.air))
+  const windValues = sevenData.value.map(item => numberValue(item.wind_day_level))
+  const rangeValues = maxTemps.map((value, index) => Number((value - minTemps[index]).toFixed(1)))
   const textColor = getTextColor()
-  
-  const option: echarts.EChartsOption = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' }
-    },
-    legend: {
-      data: ['最高温', '最低温'],
-      textStyle: { color: textColor },
-      top: 0
-    },
-    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true, top: 40 },
+  const secondaryColor = getSecondaryTextColor()
+
+  const trendChart = ensureChart(sevenChartRefs, sevenCharts, 'trend')
+  trendChart?.setOption({
+    backgroundColor: 'transparent',
+    color: ['#ff7b7b', '#70b8ff'],
+    tooltip: { trigger: 'axis' },
+    legend: { top: 12, textStyle: { color: secondaryColor } },
+    grid: baseGrid,
     xAxis: {
       type: 'category',
-      data: dates,
-      axisLabel: { color: textColor }
+      data: labels,
+      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.14)' } },
+      axisLabel: { color: secondaryColor }
     },
     yAxis: {
       type: 'value',
-      axisLabel: { formatter: '{value} °C', color: textColor }
+      axisLabel: { color: secondaryColor, formatter: '{value}°' },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
     },
+    graphic: [
+      {
+        type: 'text',
+        right: 30,
+        top: 18,
+        style: {
+          text: 'Simple → Glow',
+          fill: 'rgba(255,255,255,0.35)',
+          font: '600 12px sans-serif'
+        }
+      }
+    ],
     series: [
       {
         name: '最高温',
-        type: 'bar',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 9,
         data: maxTemps,
-        itemStyle: { color: '#ff7675', borderRadius: [4, 4, 0, 0] }
+        lineStyle: { width: 4, shadowBlur: 18, shadowColor: 'rgba(255,123,123,0.45)' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(255,123,123,0.45)' },
+            { offset: 1, color: 'rgba(255,123,123,0.02)' }
+          ])
+        }
       },
       {
         name: '最低温',
-        type: 'bar',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 8,
         data: minTemps,
-        itemStyle: { color: '#74b9ff', borderRadius: [4, 4, 0, 0] }
+        lineStyle: { width: 3, shadowBlur: 14, shadowColor: 'rgba(112,184,255,0.35)' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(112,184,255,0.32)' },
+            { offset: 1, color: 'rgba(112,184,255,0.02)' }
+          ])
+        }
       }
     ]
-  }
-  
-  sevenChart.setOption(option)
+  })
+
+  const rangeChart = ensureChart(sevenChartRefs, sevenCharts, 'range')
+  rangeChart?.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis' },
+    grid: baseGrid,
+    legend: { top: 12, textStyle: { color: secondaryColor } },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLabel: { color: secondaryColor },
+      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        axisLabel: { color: secondaryColor, formatter: '{value}°' },
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+      },
+      {
+        type: 'value',
+        axisLabel: { color: secondaryColor, formatter: '{value}°' }
+      }
+    ],
+    series: [
+      {
+        name: '温差',
+        type: 'bar',
+        data: rangeValues,
+        barWidth: 18,
+        itemStyle: {
+          borderRadius: [10, 10, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#8b5cf6' },
+            { offset: 1, color: '#4f46e5' }
+          ])
+        }
+      },
+      {
+        name: '平均温度',
+        type: 'line',
+        yAxisIndex: 1,
+        data: maxTemps.map((value, index) => Number(((value + minTemps[index]) / 2).toFixed(1))),
+        smooth: true,
+        symbol: 'diamond',
+        symbolSize: 7,
+        lineStyle: { width: 3, color: '#ffd166' }
+      }
+    ]
+  })
+
+  const airChart = ensureChart(sevenChartRefs, sevenCharts, 'air')
+  airChart?.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { top: 12, textStyle: { color: secondaryColor } },
+    grid: baseGrid,
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLabel: { color: secondaryColor },
+      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: 'AQI',
+        nameTextStyle: { color: secondaryColor },
+        axisLabel: { color: secondaryColor },
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+      },
+      {
+        type: 'value',
+        name: '气温',
+        nameTextStyle: { color: secondaryColor },
+        axisLabel: { color: secondaryColor, formatter: '{value}°' }
+      }
+    ],
+    series: [
+      {
+        name: '空气指数',
+        type: 'bar',
+        data: airValues,
+        barWidth: 14,
+        itemStyle: { color: '#4ade80', borderRadius: [8, 8, 0, 0] }
+      },
+      {
+        name: '白天气温',
+        type: 'line',
+        yAxisIndex: 1,
+        smooth: true,
+        data: maxTemps,
+        lineStyle: { width: 3, color: '#fb7185' }
+      },
+      {
+        name: '夜间气温',
+        type: 'line',
+        yAxisIndex: 1,
+        smooth: true,
+        data: minTemps,
+        lineStyle: { width: 2, type: 'dashed', color: '#60a5fa' }
+      }
+    ]
+  })
+
+  const radarChart = ensureChart(sevenChartRefs, sevenCharts, 'radar')
+  radarChart?.setOption({
+    tooltip: {},
+    legend: { top: 12, textStyle: { color: secondaryColor } },
+    radar: {
+      radius: '62%',
+      indicator: sevenData.value.map((item) => ({
+        name: item.week || shortDate(item.date),
+        max: Math.max(...maxTemps) + 10
+      })),
+      axisName: { color: textColor },
+      splitArea: { areaStyle: { color: ['rgba(255,255,255,0.03)', 'rgba(255,255,255,0.01)'] } },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+    },
+    series: [
+      {
+        type: 'radar',
+        data: [
+          {
+            value: maxTemps,
+            name: '最高温',
+            areaStyle: { color: 'rgba(251,113,133,0.25)' },
+            lineStyle: { color: '#fb7185' }
+          },
+          {
+            value: rangeValues.map((value, index) => Number((value + windValues[index]).toFixed(1))),
+            name: '温差+风力',
+            areaStyle: { color: 'rgba(59,130,246,0.2)' },
+            lineStyle: { color: '#60a5fa' }
+          }
+        ]
+      }
+    ]
+  })
+
+  const roseData = Object.entries(weatherCounts(sevenData.value.flatMap(item => [item.wea_day, item.wea_night]))).map(([name, value]) => ({
+    name,
+    value
+  }))
+  const roseChart = ensureChart(sevenChartRefs, sevenCharts, 'rose')
+  roseChart?.setOption({
+    tooltip: { trigger: 'item' },
+    legend: { bottom: 6, textStyle: { color: secondaryColor } },
+    graphic: [
+      {
+        type: 'text',
+        left: 'center',
+        top: '42%',
+        style: {
+          text: 'Weather\nRose',
+          textAlign: 'center',
+          fill: textColor,
+          font: '700 18px sans-serif'
+        }
+      }
+    ],
+    series: [
+      {
+        type: 'pie',
+        radius: ['26%', '72%'],
+        center: ['50%', '50%'],
+        roseType: 'area',
+        itemStyle: { borderRadius: 10, borderColor: 'rgba(15,16,17,0.35)', borderWidth: 2 },
+        label: { color: textColor },
+        data: roseData
+      }
+    ]
+  })
 }
 
-const initFortyChart = () => {
-  if (!fortyChartRef.value || !fortyData.value) return
-  
-  if (!fortyChart) {
-    fortyChart = echarts.init(fortyChartRef.value)
-  }
-  
-  const dates = fortyData.value.map(item => item.date ? item.date.substring(5) : '')
-  const maxTemps = fortyData.value.map(item => parseInt(item.temp_day || '0'))
-  const minTemps = fortyData.value.map(item => parseInt(item.temp_night || '0'))
+const initFortyCharts = () => {
+  if (!fortyData.value?.length) return
+
+  const dates = fortyData.value.map(item => shortDate(item.date))
+  const maxTemps = fortyData.value.map(item => numberValue(item.temp_day))
+  const minTemps = fortyData.value.map(item => numberValue(item.temp_night))
+  const deltaTemps = maxTemps.map((value, index) => Number((value - minTemps[index]).toFixed(1)))
+  const avgTemps = movingAverage(maxTemps.map((value, index) => Number(((value + minTemps[index]) / 2).toFixed(1))), 5)
   const textColor = getTextColor()
-  
-  const option: echarts.EChartsOption = {
-    tooltip: {
-      trigger: 'axis'
-    },
-    legend: {
-      data: ['最高温', '最低温'],
-      textStyle: { color: textColor },
-      top: 0
-    },
-    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true, top: 40 },
+  const secondaryColor = getSecondaryTextColor()
+
+  const overviewChart = ensureChart(fortyChartRefs, fortyCharts, 'overview')
+  overviewChart?.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { top: 12, textStyle: { color: secondaryColor } },
+    grid: baseGrid,
+    dataZoom: [
+      { type: 'inside', start: 0, end: 55 },
+      { type: 'slider', bottom: 10, height: 18, start: 0, end: 55 }
+    ],
     xAxis: {
       type: 'category',
       boundaryGap: false,
       data: dates,
-      axisLabel: { color: textColor }
+      axisLabel: { color: secondaryColor, interval: 4 },
+      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } }
     },
     yAxis: {
       type: 'value',
-      axisLabel: { formatter: '{value} °C', color: textColor }
+      axisLabel: { color: secondaryColor, formatter: '{value}°' },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
     },
+    graphic: [
+      {
+        type: 'group',
+        right: 30,
+        top: 18,
+        children: [
+          {
+            type: 'rect',
+            shape: { width: 92, height: 30, r: 15 },
+            style: { fill: 'rgba(255,255,255,0.06)' }
+          },
+          {
+            type: 'text',
+            left: 18,
+            top: 8,
+            style: { text: 'Long Run', fill: textColor, font: '600 12px sans-serif' }
+          }
+        ]
+      }
+    ],
     series: [
       {
         name: '最高温',
         type: 'line',
         smooth: true,
         data: maxTemps,
-        itemStyle: { color: '#e17055' },
-        lineStyle: { width: 3 },
+        symbol: 'none',
+        lineStyle: { width: 3, color: '#ff7b7b' },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(225, 112, 85, 0.4)' },
-            { offset: 1, color: 'rgba(225, 112, 85, 0.05)' }
+            { offset: 0, color: 'rgba(255,123,123,0.4)' },
+            { offset: 1, color: 'rgba(255,123,123,0.02)' }
           ])
         }
       },
@@ -573,19 +1099,204 @@ const initFortyChart = () => {
         type: 'line',
         smooth: true,
         data: minTemps,
-        itemStyle: { color: '#0984e3' },
-        lineStyle: { width: 3 },
+        symbol: 'none',
+        lineStyle: { width: 3, color: '#60a5fa' },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(9, 132, 227, 0.4)' },
-            { offset: 1, color: 'rgba(9, 132, 227, 0.05)' }
+            { offset: 0, color: 'rgba(96,165,250,0.32)' },
+            { offset: 1, color: 'rgba(96,165,250,0.02)' }
           ])
         }
       }
     ]
-  }
-  
-  fortyChart.setOption(option)
+  })
+
+  const deltaChart = ensureChart(fortyChartRefs, fortyCharts, 'delta')
+  deltaChart?.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { top: 12, textStyle: { color: secondaryColor } },
+    grid: baseGrid,
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLabel: { color: secondaryColor, interval: 5 },
+      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        axisLabel: { color: secondaryColor, formatter: '{value}°' },
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+      },
+      {
+        type: 'value',
+        axisLabel: { color: secondaryColor, formatter: '{value}°' }
+      }
+    ],
+    series: [
+      {
+        name: '昼夜温差',
+        type: 'bar',
+        data: deltaTemps,
+        barWidth: 10,
+        itemStyle: { color: '#a78bfa', borderRadius: [8, 8, 0, 0] }
+      },
+      {
+        name: '五日均温',
+        type: 'line',
+        yAxisIndex: 1,
+        smooth: true,
+        data: avgTemps,
+        lineStyle: { width: 3, color: '#facc15' },
+        symbol: 'circle',
+        symbolSize: 5
+      }
+    ]
+  })
+
+  const heatData = fortyData.value.map((item, index) => {
+    const weekIndex = Math.floor(index / 8)
+    const dayIndex = index % 8
+    return [weekIndex, dayIndex, maxTemps[index]]
+  })
+  const heatChart = ensureChart(fortyChartRefs, fortyCharts, 'heat')
+  heatChart?.setOption({
+    tooltip: {
+      formatter: (params: any) => {
+        const rawIndex = params.value[0] * 8 + params.value[1]
+        const item = fortyData.value?.[rawIndex]
+        return `${item?.date || '--'}<br/>最高温：${params.value[2]}°`
+      }
+    },
+    grid: { left: 40, right: 20, top: 48, bottom: 30, containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: Array.from({ length: Math.ceil(fortyData.value.length / 8) }, (_, index) => `第${index + 1}列`),
+      axisLabel: { color: secondaryColor },
+      splitArea: { show: true }
+    },
+    yAxis: {
+      type: 'category',
+      data: Array.from({ length: 8 }, (_, index) => `序列 ${index + 1}`),
+      axisLabel: { color: secondaryColor },
+      splitArea: { show: true }
+    },
+    visualMap: {
+      min: Math.min(...maxTemps),
+      max: Math.max(...maxTemps),
+      calculable: true,
+      orient: 'horizontal',
+      left: 'center',
+      bottom: 0,
+      textStyle: { color: secondaryColor },
+      inRange: { color: ['#0f172a', '#2563eb', '#7c3aed', '#fb7185', '#f97316'] }
+    },
+    series: [
+      {
+        type: 'heatmap',
+        data: heatData,
+        label: {
+          show: true,
+          color: '#fff',
+          formatter: ({ value }: any) => `${value[2]}°`
+        },
+        emphasis: { itemStyle: { shadowBlur: 15, shadowColor: 'rgba(0,0,0,0.35)' } }
+      }
+    ]
+  })
+
+  const scatterChart = ensureChart(fortyChartRefs, fortyCharts, 'scatter')
+  scatterChart?.setOption({
+    tooltip: {
+      formatter: (params: any) => {
+        const item = fortyData.value?.[params.dataIndex]
+        return `${item?.date || '--'}<br/>最高温：${params.value[0]}°<br/>最低温：${params.value[1]}°<br/>温差：${params.value[2]}°`
+      }
+    },
+    grid: baseGrid,
+    xAxis: {
+      name: '最高温',
+      nameTextStyle: { color: secondaryColor },
+      axisLabel: { color: secondaryColor, formatter: '{value}°' },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+    },
+    yAxis: {
+      name: '最低温',
+      nameTextStyle: { color: secondaryColor },
+      axisLabel: { color: secondaryColor, formatter: '{value}°' },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+    },
+    series: [
+      {
+        type: 'scatter',
+        data: maxTemps.map((value, index) => [value, minTemps[index], deltaTemps[index]]),
+        symbolSize: (value: number[]) => Math.max(12, value[2] * 3),
+        itemStyle: {
+          color: new echarts.graphic.RadialGradient(0.4, 0.3, 1, [
+            { offset: 0, color: '#f9a8d4' },
+            { offset: 1, color: '#7c3aed' }
+          ]),
+          shadowBlur: 12,
+          shadowColor: 'rgba(124,58,237,0.45)'
+        }
+      }
+    ]
+  })
+
+  const weekdayBuckets = Array.from({ length: 7 }, () => ({ high: [] as number[], low: [] as number[] }))
+  fortyData.value.forEach((item, index) => {
+    const dayIndex = new Date(item.date).getDay()
+    const bucket = weekdayBuckets[Number.isNaN(dayIndex) ? index % 7 : dayIndex]
+    bucket.high.push(maxTemps[index])
+    bucket.low.push(minTemps[index])
+  })
+  const weekLabels = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  const avgHighByWeek = weekdayBuckets.map(item => Number((item.high.reduce((sum, value) => sum + value, 0) / Math.max(item.high.length, 1)).toFixed(1)))
+  const avgLowByWeek = weekdayBuckets.map(item => Number((item.low.reduce((sum, value) => sum + value, 0) / Math.max(item.low.length, 1)).toFixed(1)))
+  const weeklyChart = ensureChart(fortyChartRefs, fortyCharts, 'weekly')
+  weeklyChart?.setOption({
+    angleAxis: {
+      type: 'category',
+      data: weekLabels,
+      axisLabel: { color: textColor }
+    },
+    radiusAxis: {
+      axisLabel: { color: secondaryColor, formatter: '{value}°' },
+      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+    },
+    polar: {},
+    legend: { top: 12, textStyle: { color: secondaryColor } },
+    graphic: [
+      {
+        type: 'text',
+        left: 'center',
+        top: '46%',
+        style: {
+          text: '40D',
+          fill: textColor,
+          font: '700 22px sans-serif'
+        }
+      }
+    ],
+    series: [
+      {
+        name: '均高温',
+        type: 'bar',
+        coordinateSystem: 'polar',
+        roundCap: true,
+        data: avgHighByWeek,
+        itemStyle: { color: '#fb7185' }
+      },
+      {
+        name: '均低温',
+        type: 'bar',
+        coordinateSystem: 'polar',
+        roundCap: true,
+        data: avgLowByWeek,
+        itemStyle: { color: '#60a5fa' }
+      }
+    ]
+  })
 }
 </script>
 
