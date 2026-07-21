@@ -1,0 +1,28 @@
+==================================================
+        开发者信息与常用站点导航 (Developer Links)
+==================================================
+
+1. GitHub 主页:
+   https://github.com/mhxy13867806343
+
+2. 掘金个人主页:
+   https://juejin.cn/user/1310273588955581
+
+3. X (Twitter):
+   https://x.com/lichnsng491890
+
+4. ALAPI 官方网站:
+   https://www.alapi.cn/
+
+5. AI Bot 导航:
+   https://ai-bot.cn/
+
+6. 电子邮箱 (Email):
+   869710179@qq.com
+
+7. 技术栈 (Tech Stack):
+   - Vue 3 / Vue 2
+   - UniApp (小程序 / App / H5 跨端开发)
+   - Vite, TypeScript, SCSS, Element Plus, ECharts
+
+==================================================
