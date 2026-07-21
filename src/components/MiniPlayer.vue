@@ -46,4 +46,4 @@ const props = defineProps({
 defineEmits(['toggle-play', 'next', 'show-player'])
 </script>
 
-<style scoped src="./css/MiniPlayer.css"></style>
+<style scoped lang="scss" src="./css/MiniPlayer.scss"></style>

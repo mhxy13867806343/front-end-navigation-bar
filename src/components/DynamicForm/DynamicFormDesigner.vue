@@ -990,4 +990,4 @@ const uploadToServer = (_formData: DynamicFormPayload): void => {
 }
 </script>
 
-<style scoped src="./css/DynamicFormDesigner.css"></style>
+<style scoped lang="scss" src="./css/DynamicFormDesigner.scss"></style>

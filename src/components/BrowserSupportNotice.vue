@@ -314,4 +314,4 @@ onUnmounted((): void => {
   </section>
 </template>
 
-<style scoped src="./css/BrowserSupportNotice.css"></style>
+<style scoped lang="scss" src="./css/BrowserSupportNotice.scss"></style>

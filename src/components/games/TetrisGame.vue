@@ -378,4 +378,4 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped src="./css/TetrisGame.css"></style>
+<style scoped lang="scss" src="./css/TetrisGame.scss"></style>

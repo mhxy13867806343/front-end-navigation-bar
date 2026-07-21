@@ -64,4 +64,4 @@ const openTool = (item: ToolboxItem): Promise<void | Error> => router.push(item.
   </main>
 </template>
 
-<style scoped src="./css/index.css"></style>
+<style scoped lang="scss" src="./css/index.scss"></style>

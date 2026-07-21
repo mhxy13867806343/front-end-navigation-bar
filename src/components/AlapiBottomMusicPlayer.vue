@@ -2106,4 +2106,4 @@ onUnmounted((): void => {
 })
 </script>
 
-<style scoped src="./css/AlapiBottomMusicPlayer.css"></style>
+<style scoped lang="scss" src="./css/AlapiBottomMusicPlayer.scss"></style>

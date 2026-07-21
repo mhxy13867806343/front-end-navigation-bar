@@ -109,4 +109,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped src="./css/AnalogClock.css"></style>
+<style scoped lang="scss" src="./css/AnalogClock.scss"></style>

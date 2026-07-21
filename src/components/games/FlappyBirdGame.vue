@@ -402,4 +402,4 @@ onUnmounted(() => {
   </section>
 </template>
 
-<style scoped src="./css/FlappyBirdGame.css"></style>
+<style scoped lang="scss" src="./css/FlappyBirdGame.scss"></style>

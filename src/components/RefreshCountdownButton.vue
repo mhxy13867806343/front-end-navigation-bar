@@ -76,4 +76,4 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped src="./css/RefreshCountdownButton.css"></style>
+<style scoped lang="scss" src="./css/RefreshCountdownButton.scss"></style>

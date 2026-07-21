@@ -634,4 +634,4 @@ onUnmounted(() => {
   </section>
 </template>
 
-<style scoped src="./css/SpaceShooterGame.css"></style>
+<style scoped lang="scss" src="./css/SpaceShooterGame.scss"></style>

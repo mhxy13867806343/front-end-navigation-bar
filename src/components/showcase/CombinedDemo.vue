@@ -667,4 +667,4 @@ const releaseSchedule = ref([
   </div>
 </template>
 
-<style scoped src="./css/CombinedDemo.css"></style>
+<style scoped lang="scss" src="./css/CombinedDemo.scss"></style>

@@ -110,4 +110,4 @@ function handleChange(val: any): void {
 }
 </script>
 
-<style scoped src="./css/ChinaRegionCascader.css"></style>
+<style scoped lang="scss" src="./css/ChinaRegionCascader.scss"></style>

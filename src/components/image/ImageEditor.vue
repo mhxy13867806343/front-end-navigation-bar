@@ -325,4 +325,4 @@ defineExpose({
 })
 </script>
 
-<style scoped src="./css/ImageEditor.css"></style>
+<style scoped lang="scss" src="./css/ImageEditor.scss"></style>

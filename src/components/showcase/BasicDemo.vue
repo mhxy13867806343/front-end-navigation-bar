@@ -260,4 +260,4 @@ const handleInputConfirm = (): void => {
   </div>
 </template>
 
-<style scoped src="./css/BasicDemo.css"></style>
+<style scoped lang="scss" src="./css/BasicDemo.scss"></style>

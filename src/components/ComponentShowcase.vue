@@ -75,6 +75,6 @@ const localActiveLibrary = computed({
   </div>
 </template>
 
-<style scoped src="./css/ComponentShowcase-1.css"></style>
+<style scoped lang="scss" src="./css/ComponentShowcase-1.scss"></style>
 
-<style src="./css/ComponentShowcase-2.css"></style>
+<style lang="scss" src="./css/ComponentShowcase-2.scss"></style>

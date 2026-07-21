@@ -268,4 +268,4 @@ export default {
 }
 </script>
 
-<style scoped src="./css/QiteTodo.css"></style>
+<style scoped lang="scss" src="./css/QiteTodo.scss"></style>

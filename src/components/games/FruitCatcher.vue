@@ -585,4 +585,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped src="./css/FruitCatcher.css"></style>
+<style scoped lang="scss" src="./css/FruitCatcher.scss"></style>

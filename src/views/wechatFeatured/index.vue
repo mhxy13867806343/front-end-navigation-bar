@@ -339,4 +339,4 @@ watch(() => route.query.article, (nextArticle: unknown): void => {
   </main>
 </template>
 
-<style scoped src="./css/index.css"></style>
+<style scoped lang="scss" src="./css/index.scss"></style>

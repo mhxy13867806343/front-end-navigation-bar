@@ -169,4 +169,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped src="./css/TicTacToeGame.css"></style>
+<style scoped lang="scss" src="./css/TicTacToeGame.scss"></style>

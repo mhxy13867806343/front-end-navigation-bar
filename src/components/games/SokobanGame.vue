@@ -281,4 +281,4 @@ watch(isLevelComplete, (newValue: boolean): void => {
 })
 </script>
 
-<style scoped src="./css/SokobanGame.css"></style>
+<style scoped lang="scss" src="./css/SokobanGame.scss"></style>

@@ -310,4 +310,4 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped src="./css/AiAppStore.css"></style>
+<style scoped lang="scss" src="./css/AiAppStore.scss"></style>

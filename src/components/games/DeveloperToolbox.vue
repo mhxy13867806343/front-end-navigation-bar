@@ -676,4 +676,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped src="./css/DeveloperToolbox.css"></style>
+<style scoped lang="scss" src="./css/DeveloperToolbox.scss"></style>

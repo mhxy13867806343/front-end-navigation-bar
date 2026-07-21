@@ -257,4 +257,4 @@ function openJuejinUser(userId: string): void {
 }
 </script>
 
-<style scoped src="./css/index.css"></style>
+<style scoped lang="scss" src="./css/index.scss"></style>

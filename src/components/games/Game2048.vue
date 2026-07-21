@@ -245,4 +245,4 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped src="./css/Game2048.css"></style>
+<style scoped lang="scss" src="./css/Game2048.scss"></style>

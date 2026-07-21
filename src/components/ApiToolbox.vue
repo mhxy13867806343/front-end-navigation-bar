@@ -1761,4 +1761,4 @@ const clearToken = (): void => {
   </div>
 </template>
 
-<style scoped src="./css/ApiToolbox.css"></style>
+<style scoped lang="scss" src="./css/ApiToolbox.scss"></style>

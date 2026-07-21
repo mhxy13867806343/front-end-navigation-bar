@@ -217,4 +217,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped src="./css/MinesweeperGame.css"></style>
+<style scoped lang="scss" src="./css/MinesweeperGame.scss"></style>

@@ -693,8 +693,8 @@ watch(isDarkMode, () => {
     <!-- 主内容区域 -->
     <main class="main-content" :class="{ 'expanded': !isSidebarOpen }">
       <div class="glow-bg"></div>
-      <div class="sticky-command-center">
-        <BrowserSupportNotice v-if="!isFlashRoute" />
+      <div v-if="!isFlashRoute" class="sticky-command-center">
+        <BrowserSupportNotice />
         <div class="header-actions">
           <div class="nav-horizontal">
             <!-- 菜单折叠按钮 -->
@@ -2550,6 +2550,6 @@ watch(isDarkMode, () => {
   </div>
 </template>
 
-<style scoped src="./App.css"></style>
+<style scoped lang="scss" src="./App.scss"></style>
 
 

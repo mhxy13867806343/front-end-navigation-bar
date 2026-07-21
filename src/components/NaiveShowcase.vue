@@ -154,4 +154,4 @@ const calendarValue = ref(Date.now())
   </div>
 </template>
 
-<style scoped src="./css/NaiveShowcase.css"></style>
+<style scoped lang="scss" src="./css/NaiveShowcase.scss"></style>

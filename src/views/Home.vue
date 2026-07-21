@@ -8,4 +8,4 @@
 <script setup lang="ts">
 </script>
 
-<style scoped src="./css/Home.css"></style>`
+<style scoped lang="scss" src="./css/Home.scss"></style>`

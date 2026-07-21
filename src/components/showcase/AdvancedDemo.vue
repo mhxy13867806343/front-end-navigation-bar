@@ -963,4 +963,4 @@ const loadMore = () => {
   </div>
 </template>
 
-<style scoped src="./css/AdvancedDemo.css"></style>
+<style scoped lang="scss" src="./css/AdvancedDemo.scss"></style>

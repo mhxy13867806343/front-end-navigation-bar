@@ -200,4 +200,4 @@ const resetForm = (): void => {
 }
 </script>
 
-<style scoped src="./css/DynamicFormPreview.css"></style>
+<style scoped lang="scss" src="./css/DynamicFormPreview.scss"></style>

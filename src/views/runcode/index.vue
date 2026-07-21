@@ -131,7 +131,7 @@ const runHtmlPreview = (): string => {
 }
 
 const runCssPreview = (): string => {
-  previewHtml.value = `<!doctype html><html><head><style src="./css/index-1.css"></style></head><body></body></html>`
+  previewHtml.value = `<!doctype html><html><head><style lang="scss" src="./css/index-1.scss"></style></head><body></body></html>`
   return 'CSS 已在预览窗口渲染。'
 }
 
@@ -241,4 +241,4 @@ const handleKeydown = (event: KeyboardEvent): void => {
   </section>
 </template>
 
-<style scoped src="./css/index-2.css"></style>
+<style scoped lang="scss" src="./css/index-2.scss"></style>

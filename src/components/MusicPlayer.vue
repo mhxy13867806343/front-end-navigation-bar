@@ -1003,4 +1003,4 @@ const toggleMute = (): void => {
 const lastVolume = ref<number>(50)
 </script>
 
-<style scoped src="./css/MusicPlayer.css"></style>
+<style scoped lang="scss" src="./css/MusicPlayer.scss"></style>

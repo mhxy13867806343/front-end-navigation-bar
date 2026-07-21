@@ -496,4 +496,4 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped src="./css/AiNewsTimeline.css"></style>
+<style scoped lang="scss" src="./css/AiNewsTimeline.scss"></style>
