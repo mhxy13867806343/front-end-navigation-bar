@@ -1241,6 +1241,40 @@
       "responseType": "json"
     }
   ],
+  "ALAPI文字工具": [
+    {
+      "name": "不能好好说话",
+      "desc": "将网络缩写、数字梗等内容翻译成正常语句，适合调试 abbr 参数返回结果。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/abbr",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "abbr",
+          "label": "要查询的缩写",
+          "description": "例如：666、yyds、xswl",
+          "type": "text",
+          "placeholder": "请输入缩写内容",
+          "required": true,
+          "default": "666"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",
