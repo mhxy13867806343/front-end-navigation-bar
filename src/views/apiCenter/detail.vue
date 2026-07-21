@@ -184,6 +184,23 @@ const initializeEndpointState = (endpoint: ApiEndpointRecord | null): void => {
 
 watch(currentEndpoint, initializeEndpointState, { immediate: true })
 
+const openEndpoint = (endpoint: ApiEndpointRecord): void => {
+  void router.push({
+    name: 'ApiCenterDetail',
+    params: {
+      category: endpoint.categoryName,
+      endpoint: endpoint.name
+    }
+  })
+}
+
+const goBack = (): void => {
+  void router.push({
+    name: 'ApiCenter',
+    query: categoryName.value ? { category: categoryName.value } : {}
+  })
+}
+
 watch([pathInputs, queryInputs, bodyContent], (): void => {
   if (!currentEndpoint.value) return
   requestUrl.value = buildPreviewUrl(currentEndpoint.value)
