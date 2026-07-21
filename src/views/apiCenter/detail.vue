@@ -213,6 +213,55 @@ const sendRequest = async (): Promise<void> => {
     requestLoading.value = false
   }
 }
+
+const viewMode = ref<'visual' | 'json'>('visual')
+
+const parsedResponseBody = computed<any>(() => {
+  if (!responseText.value) return null
+  try {
+    const obj = JSON.parse(responseText.value)
+    if (obj && typeof obj === 'object') {
+      if (obj.data !== undefined) return obj.data
+      return obj
+    }
+    return obj
+  } catch {
+    return null
+  }
+})
+
+const isGoldRealtimeData = computed<boolean>(() => {
+  const data = parsedResponseBody.value
+  if (!Array.isArray(data) || data.length === 0) return false
+  return data.some(item => item && (item.symbol !== undefined || item.buy_price !== undefined || (item.name && ['黄金', '白银', '铂金', '钯金'].includes(item.name))))
+})
+
+const isGoldBrandData = computed<boolean>(() => {
+  const data = parsedResponseBody.value
+  if (!Array.isArray(data) || data.length === 0) return false
+  return data.some(item => item && item.brand_name !== undefined && item.price !== undefined)
+})
+
+const isImageUrlData = computed<boolean>(() => {
+  const data = parsedResponseBody.value
+  if (typeof data === 'string') {
+    return /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp)(\?.*)?$/i.test(data)
+  }
+  return false
+})
+
+const isArrayData = computed<boolean>(() => {
+  return Array.isArray(parsedResponseBody.value)
+})
+
+const isObjectData = computed<boolean>(() => {
+  return typeof parsedResponseBody.value === 'object' && parsedResponseBody.value !== null && !Array.isArray(parsedResponseBody.value)
+})
+
+const getObjectKeys = (obj: any): string[] => {
+  if (!obj || typeof obj !== 'object') return []
+  return Object.keys(obj)
+}
 </script>
 
 <template>
@@ -358,8 +407,95 @@ const sendRequest = async (): Promise<void> => {
           <div class="detail-card">
             <div class="detail-card-head">
               <h2>响应结果</h2>
+              <div v-if="parsedResponseBody" class="view-mode-toggle">
+                <el-radio-group v-model="viewMode" size="small">
+                  <el-radio-button label="visual">🎨 可视化视图</el-radio-button>
+                  <el-radio-button label="json">📜 原始 JSON</el-radio-button>
+                </el-radio-group>
+              </div>
             </div>
-            <pre class="response-box">{{ responseText || '发送请求后，这里会展示响应结果。' }}</pre>
+
+            <!-- 可视化视图渲染层 -->
+            <div v-if="viewMode === 'visual' && parsedResponseBody" class="visual-response-container">
+              <!-- 1. 贵金属/黄金实时价格行情卡片 -->
+              <div v-if="isGoldRealtimeData" class="visual-gold-grid">
+                <div v-for="(item, idx) in parsedResponseBody" :key="item.symbol || idx" class="metal-card">
+                  <div class="metal-card-header">
+                    <div class="metal-symbol-badge">{{ item.symbol || 'Au' }}</div>
+                    <div class="metal-title">{{ item.name || '贵金属' }}</div>
+                  </div>
+                  <div class="metal-price-hero">
+                    <span class="price-currency">¥</span>
+                    <span class="price-value">{{ item.buy_price || item.price }}</span>
+                    <span class="price-tag">买入指导价</span>
+                  </div>
+                  <div class="metal-price-details">
+                    <div class="detail-row">
+                      <span class="detail-label">卖出价</span>
+                      <span class="detail-val">¥ {{ item.sell_price || '-' }}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">最高价</span>
+                      <span class="detail-val high">¥ {{ item.high_price || '-' }}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">最低价</span>
+                      <span class="detail-val low">¥ {{ item.low_price || '-' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. 品牌黄金价格卡片 -->
+              <div v-else-if="isGoldBrandData" class="visual-brand-grid">
+                <div v-for="(item, idx) in parsedResponseBody" :key="item.brand_name || idx" class="brand-card">
+                  <div class="brand-header">
+                    <span class="brand-icon">🏬</span>
+                    <span class="brand-name">{{ item.brand_name }}</span>
+                  </div>
+                  <div class="brand-price-box">
+                    <span class="brand-price">¥ {{ item.price }}</span>
+                    <span class="brand-unit">/克</span>
+                  </div>
+                  <div class="brand-footer" v-if="item.rise_price !== undefined">
+                    <span class="rise-label">较昨日</span>
+                    <span class="rise-badge" :class="{ 'up': item.rise_price > 0, 'down': item.rise_price < 0, 'flat': item.rise_price === 0 }">
+                      {{ item.rise_price > 0 ? `+${item.rise_price} ▲` : item.rise_price < 0 ? `${item.rise_price} ▼` : '0 -' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. 图片直预览 -->
+              <div v-else-if="isImageUrlData" class="visual-image-box">
+                <el-image :src="parsedResponseBody" fit="contain" :preview-src-list="[parsedResponseBody]" class="response-img" />
+              </div>
+
+              <!-- 4. 通用数组表格视图 -->
+              <div v-else-if="isArrayData" class="visual-table-box">
+                <el-table :data="parsedResponseBody" stripe border style="width: 100%" max-height="450" class="custom-data-table">
+                  <el-table-column
+                    v-for="key in getObjectKeys(parsedResponseBody[0])"
+                    :key="key"
+                    :prop="key"
+                    :label="key"
+                    min-width="120"
+                    show-overflow-tooltip
+                  />
+                </el-table>
+              </div>
+
+              <!-- 5. 通用 Key-Value 属性卡片视图 -->
+              <div v-else-if="isObjectData" class="visual-object-grid">
+                <div v-for="(val, key) in parsedResponseBody" :key="key" class="kv-card">
+                  <span class="kv-key">{{ key }}</span>
+                  <span class="kv-value">{{ typeof val === 'object' ? JSON.stringify(val) : val }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 原始 JSON 格式/兜底 -->
+            <pre v-else class="response-box">{{ responseText || '发送请求后，这里会展示响应结果。' }}</pre>
           </div>
         </section>
       </section>
