@@ -702,10 +702,18 @@ const applyToolboxPreset = (): void => {
   selectedCategory.value = preset.category
 }
 
+const DEFAULT_ALAPI_TOKEN = 'qgqofofvmxtoskffd37omkscobipmn'
+
 const resolveTemplateValue = (value: string): string => {
   return value.replace(envPlaceholderRegexp, (_match: string, key: string): string => {
     const resolved: unknown = import.meta.env[key]
-    return resolved === undefined || resolved === null ? '' : String(resolved)
+    if (resolved !== undefined && resolved !== null && String(resolved).trim() !== '') {
+      return String(resolved)
+    }
+    if (key === 'VITE_ALAPI_TOKEN') {
+      return DEFAULT_ALAPI_TOKEN
+    }
+    return ''
   })
 }
 

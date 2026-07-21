@@ -48,7 +48,7 @@ import { resolveApiUrl } from './utils/resolveApiUrl'
 const UAPIS_API_BASE: string = '/api-uapis'
 const AA1_API_BASE: string = '/api-aa1'
 const ALAPI_API_BASE: string = '/api-alapi'
-const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || ''
+const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || 'qgqofofvmxtoskffd37omkscobipmn'
 
 function buildUapisUrl(path: string): string {
   return resolveApiUrl(`${UAPIS_API_BASE}${path}`)

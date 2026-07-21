@@ -662,7 +662,7 @@ interface PlayerDragState {
   hasMoved: boolean
 }
 
-const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || ''
+const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || 'qgqofofvmxtoskffd37omkscobipmn'
 const ALAPI_BASE_URL: string = 'https://v3.alapi.cn'
 const MUSIC_SEARCH_PATH: string = '/api-alapi/api/music/search'
 const MUSIC_URL_PATH: string = '/api-alapi/api/music/url'

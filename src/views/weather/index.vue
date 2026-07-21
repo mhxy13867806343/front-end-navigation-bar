@@ -440,7 +440,7 @@ import rawChinaCascaderOptions from '../../ajson/china-cascader-options.json'
 const router = useRouter()
 const selectedRegion = ref<string[]>([])
 
-const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || ''
+const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || 'qgqofofvmxtoskffd37omkscobipmn'
 const ALAPI_API_BASE: string = '/api-alapi'
 
 function buildAlapiUrl(path: string): string {
