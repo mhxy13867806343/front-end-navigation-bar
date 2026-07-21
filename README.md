@@ -6,37 +6,40 @@
 
 ## 📌 维护状态
 
-本项目已停止持续更新，仅保留当前线上预览与现有功能。后续不再计划新增功能、同步接口变更或维护第三方数据源可用性。
+本项目持续积极维护更新中，已重构支持 SCSS 样式架构、工具函数/Hooks 抽离、可视化天气与 API 接口数据看板。
 
 ## 🌐 在线预览
 
-👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
+- 🏠 **主页入口**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
+- 🌦️ **天气预报可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
+- 💰 **黄金行情/接口可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC](https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC)
 
 ## ✨ 功能特性
 
 - **AI 工具导航**：侧边栏分类 + 子分类导航，覆盖 AI 聊天、写作、绘画、编程、开发平台等数十个分类
-- **实时数据同步**：支持从远端数据源实时抓取并与本地静态数据合并，失败时自动回退本地数据
+- **🌦️ 实时天气可视化**：集成 ALAPI 天气数据，支持实况、7 天柱状图、40 天折线图 (ECharts) 及天气指数
+- **💰 统一接口可视化看板**：自动拉取接口数据，提供贵金属实时行情、品牌黄金价格、图片与表格可视化呈现
+- **📍 全国省市区级联组件**：内置 `ChinaRegionCascader` 高性能全国省/市/区县级联选择器
+- **🎨 全站 SCSS 样式架构**：全面转换为 SCSS，内置玻璃拟态、自定义滚动条等 SCSS Mixins
+- **🛠️ 复用 Hooks 与工具**：封装 `useECharts`、`usePagination` 自定义 Hooks 及格式化工具库 `src/utils/format.ts`
 - **全局搜索**：支持按名称/描述跨分类搜索，带搜索历史记录（最多保留 8 条）
-- **浏览器兼容提示**：入口顶部检测浏览器能力，通过 Element Plus Dialog 提供 5 个浏览器官网下载入口、二维码、当前时间、作者 GitHub、年度祝福与从 `package.json` 读取的软件版本链接
+- **浏览器兼容提示**：入口顶部检测浏览器能力，通过 Element Plus Dialog 提供浏览器下载入口与天气链接
 - **收藏点赞**：工具卡片点赞收藏，收藏记录本地持久化，可查看收藏历史
 - **控制中心资源**：右侧菜单集中展示网盘资料、AI 开发工具官网与简介，支持新页面打开
 - **AI 资讯与应用**：每日 AI 资讯时间线、IT之家 API 标签分页资讯、AI 应用集、AI 教程/百科文章列表
 - **实时热榜与影视数据**：支持微博、B 站热搜、掘金、OSChina 等热榜，以及院线票房、影视收视/评分榜
-- **API 工具箱**：内置常用 API 接口集合
-- **组件示例**：基于 Element Plus 的组件在线演示，按基础 / 中级 / 高级三个 Tab 分级，含表单校验、搜索分页计算表格、穿梭框、Tour 引导、水印等高级用法
 - **主题切换**：明暗主题一键切换，偏好本地记忆
 - **自定义布局**：网格列数可调（本地记忆），侧边栏可折叠
 - **右键菜单**：工具卡片支持"新标签页打开 / 复制链接"
 
 ## 🆕 近期更新
 
-- 掘金热榜在生产环境改为构建时生成同源缓存，GitHub Pages 上不再直接跨域请求掘金接口。
-- 首页与独立路由顶部新增浏览器兼容检测条，详情使用 Element Plus Dialog 展示，二维码资源统一放在 `src/assets/qc/`。
-- 控制中心新增文档数据网盘入口、Codex / TRAE / Devin / Antigravity 官网入口和动态年份祝福。
-- 新增 `/api-uapis`、`/api-aa1`、`/api-ithome` 本地代理，统一绕开浏览器 CORS 限制。
-- 今日热榜的哔哩哔哩来源改为优先调用 aa1 B 站热搜接口，失败时回退原热榜源。
-- 每日 AI 资讯保留 `ai-bot.cn/daily-ai-news`，并新增 IT之家 `NewsTag=API` 分页入口，支持上一页 / 下一页。
-- 影视收视评分榜兼容 uapis 新的 `groups` 返回结构，接口不可用时显示真实错误，不再展示误导性假数据。
+- 🌦️ **新增天气预报独立视图** (`/weather`)：内置实况天气、ECharts 双温 7 天柱状图 / 40 天平滑折线图及天气指数卡片。
+- 💰 **升级接口中心纯可视化看板** (`/api-center`)：自动直接呈现黄金/白银/铂金/钯金行情卡片、品牌金价列表、数据表格及大图预览。
+- 🎨 **样式全面 SCSS 化**：全站样式重构转换为 `.scss` 文件，新增 `src/style/mixins.scss` 混入库。
+- 🛠️ **抽离公共逻辑**：新增 `useECharts` 和 `usePagination` 自定义 Composables，以及 `src/utils/format.ts` 通用格式化工具。
+- 📍 **封装全国省市区选择器**：创建 `ChinaRegionCascader.vue` 并使用 `markRaw` 极致优化万级节点展开性能。
+- 👤 **掘金主题板块优化**：点击用户头像弹出 Popover 展示用户资料，支持点击跳转至掘金主页新页面。
 
 ## 🎮 内置小游戏
 
