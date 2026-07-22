@@ -46,6 +46,7 @@ interface CocoTopic {
   tags: CocoTag[]
   posters: CocoPoster[]
   category_id?: number
+  pinned?: boolean
   image_url?: string | null
 }
 
@@ -59,6 +60,21 @@ interface CocoTopicListResponse {
   }
 }
 
+// Sidebar Categories List (Matching CocoLoop Website)
+const sidebarCategories = [
+  { name: '技术交流', icon: '🌚', slug: 'tech' },
+  { name: 'OpenClaw交流', icon: '🐙', slug: 'openclaw' },
+  { name: 'Molili社区', icon: '🔻', slug: 'molili' },
+  { name: 'Skill技能', icon: '💜', slug: 'skill' },
+  { name: '龙虾赚钱副业', icon: '🐥', slug: 'money' },
+  { name: 'Github精品资源', icon: '😼', slug: 'github' },
+  { name: 'AI大百科', icon: '🧸', slug: 'wiki' },
+  { name: '翻车事件', icon: '🦈', slug: 'crash' },
+  { name: '综合交流大区', icon: '🐳', slug: 'general' },
+  { name: 'AI机器人讨论', icon: '🅰️', slug: 'bot' },
+  { name: 'Hermes Agent', icon: '🦀', slug: 'hermes' }
+]
+
 // State
 const currentPage = ref<number>(1)
 const topics = ref<CocoTopic[]>([])
@@ -67,7 +83,10 @@ const topTags = ref<CocoTag[]>([])
 const loading = ref<boolean>(false)
 const hasMore = ref<boolean>(true)
 const searchKeyword = ref<string>('')
+const selectedTab = ref<'latest' | 'hot' | 'category'>('latest')
 const selectedTag = ref<string>('')
+const activeCategory = ref<string>('')
+const isSidebarCollapsed = ref<boolean>(false)
 
 // Detail Modal State
 const showDetailModal = ref<boolean>(false)
@@ -86,7 +105,14 @@ function getAvatarUrl(template?: string): string {
   return `https://www.cocoloop.cn${path}`
 }
 
-// Helper to format date
+// Helper to format view count (e.g. 4.8k, 1.2k, 960)
+function formatViews(views: number): string {
+  if (!views) return '0'
+  if (views >= 1000) return `${(views / 1000).toFixed(1)}k`
+  return `${views}`
+}
+
+// Helper to format relative date
 function formatDate(dateStr?: string): string {
   if (!dateStr) return ''
   const d = new Date(dateStr)
@@ -100,8 +126,8 @@ function formatDate(dateStr?: string): string {
   if (diffMins < 5) return '刚刚'
   if (diffMins < 60) return `${diffMins} 分钟前`
   if (diffHours < 24) return `${diffHours} 小时前`
-  if (diffDays < 7) return `${diffDays} 天前`
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  if (diffDays < 30) return `${diffDays}天`
+  return `${d.getMonth() + 1}月 ${d.getDate()} 日`
 }
 
 // Get original OP poster for a topic
@@ -111,9 +137,22 @@ function getTopicOPUser(topic: CocoTopic): CocoUser | null {
   return usersMap.value.get(opPoster.user_id) || null
 }
 
-// Filtered topics computed property
+// Get list of poster users (up to 5 for avatar stack)
+function getTopicPosters(topic: CocoTopic): CocoUser[] {
+  if (!topic.posters || topic.posters.length === 0) return []
+  const list: CocoUser[] = []
+  topic.posters.forEach(p => {
+    const user = usersMap.value.get(p.user_id)
+    if (user && !list.some(u => u.id === user.id)) {
+      list.push(user)
+    }
+  })
+  return list.slice(0, 5)
+}
+
+// Filtered and sorted topics computed property
 const filteredTopics = computed<CocoTopic[]>(() => {
-  let list = topics.value
+  let list = [...topics.value]
 
   if (selectedTag.value) {
     list = list.filter(t => t.tags && t.tags.some(tag => tag.name === selectedTag.value || tag.slug === selectedTag.value))
@@ -122,6 +161,10 @@ const filteredTopics = computed<CocoTopic[]>(() => {
   if (searchKeyword.value.trim()) {
     const kw = searchKeyword.value.trim().toLowerCase()
     list = list.filter(t => (t.title && t.title.toLowerCase().includes(kw)) || (t.fancy_title && t.fancy_title.toLowerCase().includes(kw)))
+  }
+
+  if (selectedTab.value === 'hot') {
+    list.sort((a, b) => (b.views || 0) - (a.views || 0))
   }
 
   return list
@@ -176,7 +219,7 @@ const refreshData = async (): Promise<void> => {
   currentPage.value = 1
   hasMore.value = true
   await fetchPageData(1)
-  ElMessage({ message: '已成功刷新社区最新动态！', type: 'success', grouping: true })
+  ElMessage({ message: '已成功刷新 CocoLoop 社区动态！', type: 'success', grouping: true })
 }
 
 // Open Topic Detail Modal
@@ -201,7 +244,7 @@ const openExternalUrl = (url: string): void => {
 // Scroll Handler & Intersection Observer setup for Infinite Scroll
 const handleScroll = (): void => {
   if (typeof window === 'undefined') return
-  showBackToTop.value = window.scrollY > 400
+  showBackToTop.value = window.scrollY > 300
 }
 
 const scrollToTop = (): void => {
@@ -242,145 +285,227 @@ onUnmounted(() => {
 
 <template>
   <div class="cocoloop-page">
-    <!-- Header Banner -->
-    <header class="header-banner">
-      <div class="header-content">
-        <div class="header-top-row">
-          <h1 class="page-title">
-            <el-button
-              type="info"
-              circle
-              :icon="ArrowLeft"
-              style="margin-right: 6px; font-weight: 700;"
-              @click="router.push('/dyform')"
-            />
-            🌌 CocoLoop 极客社区动态
-          </h1>
-          <div class="header-actions">
-            <el-tag type="primary" effect="dark" round style="font-size: 13px; font-weight: 700;">
-              已加载 {{ topics.length }} 篇帖子 (第 {{ currentPage }} 页)
-            </el-tag>
-            <el-button type="primary" :icon="Refresh" style="font-weight: 700;" @click="refreshData()">
-              🔄 刷新
-            </el-button>
-          </div>
-        </div>
-        <p class="page-subtitle">探索 AI 前沿技术、编程开发心得、工具分享与社区讨论（支持无限上拉滚动加载）。</p>
+    <!-- Top Navigation Bar -->
+    <header class="cocoloop-topbar">
+      <div class="topbar-left">
+        <button
+          type="button"
+          class="sidebar-toggle-btn"
+          title="切换侧边栏"
+          @click="isSidebarCollapsed = !isSidebarCollapsed"
+        >
+          ☰
+        </button>
+        <a href="javascript:;" class="brand-logo" @click="router.push('/dyform')">
+          <span class="brand-icon">🔄</span>
+          <span>CocoLoop</span>
+        </a>
+      </div>
+
+      <!-- Search Input -->
+      <div class="topbar-search">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索 CocoLoop 帖子..."
+          clearable
+          size="medium"
+          :prefix-icon="Search"
+        />
+      </div>
+
+      <div class="topbar-right">
+        <el-button type="info" plain size="small" style="font-weight: 600;" @click="router.push('/dyform')">
+          <el-icon style="margin-right: 4px;"><ArrowLeft /></el-icon> 返回首页
+        </el-button>
+        <el-button type="primary" size="small" style="font-weight: 700;" @click="openExternalUrl('https://www.cocoloop.cn/u/signup')">
+          注册
+        </el-button>
+        <el-button type="success" size="small" style="font-weight: 700;" @click="openExternalUrl('https://www.cocoloop.cn/u/login')">
+          👤 登录
+        </el-button>
       </div>
     </header>
 
-    <main class="main-container">
-      <!-- Search & Tag Filter Bar -->
-      <section class="filter-bar-card">
-        <div class="search-row">
-          <el-input
-            v-model="searchKeyword"
-            placeholder="搜索社区帖子标题关键词..."
-            size="large"
-            clearable
-            style="flex: 1; min-width: 260px;"
-            :prefix-icon="Search"
-          />
-          <el-button type="success" size="large" style="font-weight: 700;" @click="selectedTag = ''">
-            🌐 全部分类 ({{ topics.length }})
-          </el-button>
+    <!-- Main Container Layout: Left Sidebar + Right Feed -->
+    <div class="cocoloop-body">
+      <!-- Left Sidebar Menu -->
+      <aside class="cocoloop-sidebar" :class="{ collapsed: isSidebarCollapsed }">
+        <div class="sidebar-group">
+          <div class="sidebar-item active">
+            <span class="item-icon">💬</span>
+            <span>话题</span>
+          </div>
+          <div class="sidebar-item">
+            <span class="item-icon">⋮</span>
+            <span>更多</span>
+          </div>
         </div>
 
-        <!-- Hot Tags -->
-        <div v-if="topTags.length > 0" class="tag-list">
-          <span
-            class="tag-chip"
-            :class="{ active: selectedTag === '' }"
-            @click="selectedTag = ''"
+        <!-- Category Menu -->
+        <div class="sidebar-group">
+          <div class="sidebar-title">类别</div>
+          <div
+            v-for="cat in sidebarCategories"
+            :key="cat.slug"
+            class="sidebar-item"
+            :class="{ active: activeCategory === cat.slug }"
+            @click="activeCategory = activeCategory === cat.slug ? '' : cat.slug"
           >
-            🔥 全部
-          </span>
-          <span
-            v-for="tag in topTags.slice(0, 16)"
-            :key="tag.id"
-            class="tag-chip"
-            :class="{ active: selectedTag === tag.name || selectedTag === tag.slug }"
-            @click="selectedTag = selectedTag === tag.name ? '' : tag.name"
-          >
-            # {{ tag.name }}
-          </span>
+            <span class="item-icon">{{ cat.icon }}</span>
+            <span>{{ cat.name }}</span>
+          </div>
         </div>
-      </section>
+      </aside>
 
-      <!-- Topics Feed List -->
-      <div v-if="filteredTopics.length > 0" class="topics-grid">
-        <div
-          v-for="topic in filteredTopics"
-          :key="topic.id"
-          class="topic-card"
-          @click="openDetail(topic)"
-        >
-          <div>
-            <!-- Author Header -->
-            <div class="topic-header">
-              <div class="author-info">
-                <img
-                  :src="getAvatarUrl(getTopicOPUser(topic)?.avatar_template)"
-                  :alt="getTopicOPUser(topic)?.username || 'User'"
-                  class="author-avatar"
-                />
-                <div class="author-meta">
-                  <span class="author-name">
-                    {{ getTopicOPUser(topic)?.name || getTopicOPUser(topic)?.username || '匿名极客' }}
-                  </span>
-                  <span class="author-trust">
-                    Trust Lv.{{ getTopicOPUser(topic)?.trust_level ?? 1 }}
-                  </span>
-                </div>
+      <!-- Right Content Area -->
+      <main class="cocoloop-content">
+        <!-- Welcome Banner Card -->
+        <section class="welcome-banner-card">
+          <div class="banner-text">
+            <h2>欢迎来到CocoLoop AI社区！</h2>
+            <p>一起讨论分享养OpenClaw龙虾的乐趣，讨论赚钱、部署、玩法、Skill技能等..</p>
+          </div>
+          <div class="banner-actions">
+            <div class="banner-action-item" @click="openExternalUrl('https://www.cocoloop.cn/')">
+              <span class="action-icon">📥</span>
+              <span class="action-label">Skill商店</span>
+            </div>
+            <div class="banner-action-item" @click="openExternalUrl('https://www.cocoloop.cn/')">
+              <span class="action-icon">🎨</span>
+              <span class="action-label">AI生图</span>
+            </div>
+            <div class="banner-action-item" @click="openExternalUrl('https://www.cocoloop.cn/')">
+              <span class="action-icon">🤖</span>
+              <span class="action-label">Molili龙虾</span>
+            </div>
+            <div class="banner-action-item" @click="openExternalUrl('https://www.cocoloop.cn/')">
+              <span class="action-icon">🚀</span>
+              <span class="action-label">提示词反推</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Feed Control Subbar -->
+        <section class="feed-control-bar">
+          <div class="feed-tabs">
+            <button type="button" class="filter-dropdown-btn" @click="selectedTag = ''">
+              类别 ❯
+            </button>
+            <button type="button" class="filter-dropdown-btn" @click="selectedTag = ''">
+              标签 ❯
+            </button>
+
+            <span
+              class="tab-link"
+              :class="{ active: selectedTab === 'latest' }"
+              @click="selectedTab = 'latest'"
+            >
+              最新
+            </span>
+            <span
+              class="tab-link"
+              :class="{ active: selectedTab === 'hot' }"
+              @click="selectedTab = 'hot'"
+            >
+              热门
+            </span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <el-tag type="info" effect="dark" size="small" style="font-weight: 600;">
+              已加载 {{ topics.length }} 篇帖子 (第 {{ currentPage }} 页)
+            </el-tag>
+            <el-button type="primary" size="small" :icon="Refresh" style="font-weight: 700;" @click="refreshData()">
+              刷新
+            </el-button>
+          </div>
+        </section>
+
+        <!-- Topic Table Header -->
+        <div class="topic-table-header">
+          <span class="col-title">话题</span>
+          <span class="col-posters">参与人</span>
+          <span class="col-replies">回复</span>
+          <span class="col-views">浏览量</span>
+          <span class="col-activity">活动</span>
+        </div>
+
+        <!-- Topic List Rows -->
+        <div v-if="filteredTopics.length > 0" class="topic-list-container">
+          <div
+            v-for="(topic, idx) in filteredTopics"
+            :key="topic.id"
+            class="topic-row-item"
+            @click="openDetail(topic)"
+          >
+            <!-- Topic Main Info -->
+            <div class="topic-row-main">
+              <div class="title-area">
+                <span v-if="idx < 2 || topic.pinned" class="pin-icon" title="置顶">📌</span>
+                <span class="topic-row-title">{{ topic.title }}</span>
+                <span v-if="topic.tags && topic.tags.length > 0" class="category-pill-badge">
+                  {{ topic.tags[0].name }}
+                </span>
               </div>
-              <span style="font-size: 12px; color: #64748b;">
-                {{ formatDate(topic.last_posted_at || topic.created_at) }}
-              </span>
+
+              <!-- Tags list -->
+              <div v-if="topic.tags && topic.tags.length > 1" class="topic-row-tags">
+                <span
+                  v-for="t in topic.tags.slice(1, 5)"
+                  :key="t.id"
+                  class="row-tag"
+                >
+                  #{{ t.name }}
+                </span>
+              </div>
             </div>
 
-            <!-- Title -->
-            <h2 class="topic-title" :title="topic.title">
-              {{ topic.title }}
-            </h2>
+            <!-- Overlapping Poster Avatars -->
+            <div class="topic-row-posters">
+              <div class="avatar-stack">
+                <img
+                  v-for="user in getTopicPosters(topic)"
+                  :key="user.id"
+                  :src="getAvatarUrl(user.avatar_template)"
+                  :alt="user.username"
+                  :title="user.name || user.username"
+                  class="stacked-avatar"
+                />
+              </div>
+            </div>
 
-            <!-- Tags -->
-            <div v-if="topic.tags && topic.tags.length > 0" class="topic-tags">
-              <span
-                v-for="t in topic.tags"
-                :key="t.id"
-                class="topic-tag-badge"
-              >
-                # {{ t.name }}
-              </span>
+            <!-- Reply Count -->
+            <div class="topic-row-replies">
+              {{ topic.posts_count || topic.reply_count || 0 }}
+            </div>
+
+            <!-- View Count -->
+            <div class="topic-row-views">
+              {{ formatViews(topic.views) }}
+            </div>
+
+            <!-- Last Activity Time -->
+            <div class="topic-row-activity">
+              {{ formatDate(topic.last_posted_at || topic.created_at) }}
             </div>
           </div>
+        </div>
 
-          <!-- Card Footer -->
-          <div class="topic-footer">
-            <div class="topic-stats">
-              <span class="stat-item">👁️ {{ topic.views || 0 }}</span>
-              <span class="stat-item">💬 {{ topic.posts_count || topic.reply_count || 0 }}</span>
-              <span class="stat-item">❤️ {{ topic.like_count || topic.op_like_count || 0 }}</span>
-            </div>
-            <span style="color: #818cf8; font-weight: 700;">查看详情 →</span>
+        <!-- Empty State -->
+        <el-empty v-else-if="!loading" description="未查找到符合条件的社区帖子" />
+
+        <!-- Scroll Loading Sentinel for Infinite Scroll -->
+        <div ref="sentinelRef" class="loading-sentinel">
+          <div v-if="loading" style="display: flex; align-items: center; justify-content: center; gap: 10px; color: #38bdf8; font-weight: 700;">
+            <el-icon class="is-loading" size="20"><Refresh /></el-icon>
+            <span>🔄 正在上拉加载第 {{ currentPage + 1 }} 页社区动态...</span>
+          </div>
+          <div v-else-if="!hasMore" class="end-notice">
+            🎉 已加载全部社区动态（共 {{ topics.length }} 篇）
           </div>
         </div>
-      </div>
-
-      <!-- Empty State -->
-      <el-empty v-else-if="!loading" description="未查找到符合条件的社区帖子" />
-
-      <!-- Scroll Loading Sentinel -->
-      <div ref="sentinelRef" class="loading-sentinel">
-        <div v-if="loading" style="display: flex; align-items: center; justify-content: center; gap: 10px; color: #818cf8; font-weight: 700;">
-          <el-icon class="is-loading" size="20"><Refresh /></el-icon>
-          <span>🔄 正在上拉加载第 {{ currentPage + 1 }} 页社区动态...</span>
-        </div>
-        <div v-else-if="!hasMore" class="end-notice">
-          🎉 已加载全部社区动态（共 {{ topics.length }} 篇）
-        </div>
-      </div>
-    </main>
+      </main>
+    </div>
 
     <!-- Scroll to Top Button -->
     <el-button
@@ -389,7 +514,7 @@ onUnmounted(() => {
       circle
       size="large"
       :icon="Top"
-      class="back-to-top-btn"
+      style="position: fixed; bottom: 40px; right: 40px; z-index: 999; box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4);"
       @click="scrollToTop()"
     />
 
@@ -397,17 +522,17 @@ onUnmounted(() => {
     <el-dialog v-model="showDetailModal" title="🌐 CocoLoop 社区动态详情" width="650px" center append-to-body destroy-on-close>
       <div v-if="activeTopic" style="padding: 10px 20px;">
         <!-- OP Poster -->
-        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px; background: rgba(99, 102, 241, 0.1); padding: 16px; border-radius: 14px; border: 1px solid rgba(99, 102, 241, 0.25);">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px; background: rgba(56, 189, 248, 0.1); padding: 16px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25);">
           <img
             :src="getAvatarUrl(getTopicOPUser(activeTopic)?.avatar_template)"
             :alt="getTopicOPUser(activeTopic)?.username"
-            style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid rgba(99, 102, 241, 0.5);"
+            style="width: 52px; height: 52px; border-radius: 50%; border: 2px solid rgba(56, 189, 248, 0.5);"
           />
           <div>
             <div style="font-size: 18px; font-weight: 800; color: #f8fafc;">
               {{ getTopicOPUser(activeTopic)?.name || getTopicOPUser(activeTopic)?.username || '匿名极客' }}
             </div>
-            <div style="font-size: 13px; color: #a5b4fc; margin-top: 2px;">
+            <div style="font-size: 13px; color: #38bdf8; margin-top: 2px;">
               @{{ getTopicOPUser(activeTopic)?.username }} · Trust Level {{ getTopicOPUser(activeTopic)?.trust_level }}
             </div>
           </div>
@@ -423,7 +548,7 @@ onUnmounted(() => {
           <span
             v-for="t in activeTopic.tags"
             :key="t.id"
-            style="background: rgba(99, 102, 241, 0.2); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.35); padding: 4px 12px; border-radius: 8px; font-size: 13px; font-weight: 700;"
+            style="background: rgba(56, 189, 248, 0.2); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.35); padding: 4px 12px; border-radius: 8px; font-size: 13px; font-weight: 700;"
           >
             # {{ t.name }}
           </span>
@@ -433,7 +558,7 @@ onUnmounted(() => {
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
           <div>
             <div style="font-size: 12px; color: #94a3b8;">👁️ 浏览量</div>
-            <div style="font-size: 18px; font-weight: 800; color: #38bdf8;">{{ activeTopic.views || 0 }}</div>
+            <div style="font-size: 18px; font-weight: 800; color: #f59e0b;">{{ formatViews(activeTopic.views) }}</div>
           </div>
           <div>
             <div style="font-size: 12px; color: #94a3b8;">💬 回复数</div>
