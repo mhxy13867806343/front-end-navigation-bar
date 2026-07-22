@@ -1329,6 +1329,71 @@
       "hasBody": false,
       "bodyPlaceholder": "",
       "skipAuth": true,
+    }
+  ],
+  "ALAPI名人名言": [
+    {
+      "name": "名人名言",
+      "desc": "获取名人名言与智慧语录，支持通过 typeid 筛选分类或随机获取。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/mingyan",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "format",
+          "label": "返回格式",
+          "description": "支持 json, text",
+          "type": "text",
+          "placeholder": "json",
+          "required": false,
+          "default": "json"
+        },
+        {
+          "name": "typeid",
+          "label": "名言类型",
+          "description": "名言类型 ID (可通过类型接口获取)",
+          "type": "text",
+          "placeholder": "名言类型 ID",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "名人名言类型",
+      "desc": "获取名人名言分类列表 (如爱情、道德、青春、愿望、理想等)。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/mingyan/type",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
       "responseType": "json"
     }
   ],

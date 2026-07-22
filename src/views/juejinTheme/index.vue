@@ -94,7 +94,7 @@
                   class="user-avatar"
                   style="cursor: pointer; transition: transform 0.2s ease;"
                   loading="lazy"
-                  @click="showUserDetailModal(u)"
+                  @click="handleAvatarClick(u)"
                 />
               </div>
             </div>
@@ -195,6 +195,11 @@ const selectedUser = ref<ThemeUser | null>(null)
 function showUserDetailModal(u: ThemeUser): void {
   selectedUser.value = u
   userModalVisible.value = true
+}
+
+function handleAvatarClick(u: ThemeUser): void {
+  showUserDetailModal(u)
+  openJuejinUser(u.user_id)
 }
 
 let requestSeq: number = 0

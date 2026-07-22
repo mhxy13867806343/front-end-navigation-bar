@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Refresh, CopyDocument, StarFilled, Delete } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { jsonHeaders, request } from '@/utils/request'
 import { resolveApiUrl } from '@/utils/resolveApiUrl'
@@ -258,6 +259,94 @@ const isObjectData = computed<boolean>(() => {
   return typeof parsedResponseBody.value === 'object' && parsedResponseBody.value !== null && !Array.isArray(parsedResponseBody.value)
 })
 
+const isMingyanData = computed<boolean>(() => {
+  const data = parsedResponseBody.value
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false
+  return data.content !== undefined && (data.author !== undefined || data.typeid !== undefined)
+})
+
+const isMingyanTypeData = computed<boolean>(() => {
+  const data = parsedResponseBody.value
+  if (!Array.isArray(data) || data.length === 0) return false
+  return data.every(item => item && item.label !== undefined && item.value !== undefined)
+})
+
+const favoriteQuotes = ref<any[]>(
+  JSON.parse(localStorage.getItem('favorite_mingyan_quotes') || '[]')
+)
+
+const handleRefreshQuote = (): void => {
+  sendRequest()
+  ElMessage.success('已刷新获取新的一句名言！')
+}
+
+const copyQuoteText = (quote: any): void => {
+  const text: string = `“${quote.content}” —— ${quote.author || '匿名'}`
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage.success('名言金句已成功复制到剪贴板！')
+    }).catch(() => {
+      fallbackCopy(text)
+    })
+  } else {
+    fallbackCopy(text)
+  }
+}
+
+function fallbackCopy(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  document.body.appendChild(textArea)
+  textArea.select()
+  try {
+    document.execCommand('copy')
+    ElMessage.success('名言金句已成功复制到剪贴板！')
+  } catch {
+    ElMessage.error('复制失败，请手动选择文本')
+  }
+  document.body.removeChild(textArea)
+}
+
+const isCurrentFavorite = computed<boolean>(() => {
+  const data = parsedResponseBody.value
+  if (!data || !data.content) return false
+  return favoriteQuotes.value.some(
+    (item: any) => item.content === data.content && item.author === data.author
+  )
+})
+
+const toggleFavorite = (quote: any): void => {
+  const idx: number = favoriteQuotes.value.findIndex(
+    (item: any) => item.content === quote.content && item.author === quote.author
+  )
+  if (idx >= 0) {
+    favoriteQuotes.value.splice(idx, 1)
+    ElMessage.info('已取消收藏')
+  } else {
+    favoriteQuotes.value.unshift({ ...quote })
+    ElMessage.success('已添加到金句收藏库！')
+  }
+  localStorage.setItem('favorite_mingyan_quotes', JSON.stringify(favoriteQuotes.value))
+}
+
+const confirmRemoveFavorite = (index: number, quote: any): void => {
+  ElMessageBox.confirm(
+    `确定要从金句收藏库中删除这句名言吗？\n\n“${quote.content}”`,
+    '确认删除提示',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    favoriteQuotes.value.splice(index, 1)
+    localStorage.setItem('favorite_mingyan_quotes', JSON.stringify(favoriteQuotes.value))
+    ElMessage.success('已从金句收藏库中删除该名言！')
+  }).catch(() => {
+    ElMessage.info('已取消删除操作')
+  })
+}
+
 const getObjectKeys = (obj: any): string[] => {
   if (!obj || typeof obj !== 'object') return []
   return Object.keys(obj)
@@ -357,7 +446,53 @@ const getObjectKeys = (obj: any): string[] => {
                 </div>
               </div>
 
-              <!-- 3. 图片直预览 -->
+              <!-- 3. 名人名言精选卡片 -->
+              <div v-else-if="isMingyanData" class="visual-mingyan-card" style="background: linear-gradient(135deg, rgba(30, 25, 58, 0.95), rgba(18, 14, 38, 0.98)); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 20px; padding: 32px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                  <span style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; font-size: 13px; font-weight: 600; padding: 4px 14px; border-radius: 14px;">🏷️ 名人名言精选</span>
+                  <el-button type="primary" plain circle :icon="Refresh" :loading="requestLoading" title="换一句" @click="handleRefreshQuote" />
+                </div>
+                <div style="font-size: 22px; line-height: 1.8; font-weight: 600; color: #f8fafc; margin-bottom: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+                  “{{ parsedResponseBody.content }}”
+                </div>
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 24px;">
+                  <span style="width: 24px; height: 2px; background: #a855f7;"></span>
+                  <span style="font-size: 16px; font-weight: 700; color: #e2e8f0;">—— {{ parsedResponseBody.author || '网络收集' }}</span>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <el-button type="primary" size="large" :icon="Refresh" :loading="requestLoading" @click="handleRefreshQuote">🔄 换一句 / 刷新</el-button>
+                  <el-button type="default" size="large" :icon="CopyDocument" @click="copyQuoteText(parsedResponseBody)">📋 一键复制</el-button>
+                  <el-button :type="isCurrentFavorite ? 'warning' : 'default'" size="large" :icon="StarFilled" @click="toggleFavorite(parsedResponseBody)">
+                    {{ isCurrentFavorite ? '已收藏' : '⭐ 收藏金句' }}
+                  </el-button>
+                </div>
+
+                <!-- 收藏列表展示 -->
+                <div v-if="favoriteQuotes.length > 0" style="margin-top: 32px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 24px;">
+                  <h3 style="font-size: 16px; color: #f1f5f9; margin-bottom: 16px;">⭐ 我的金句收藏库 ({{ favoriteQuotes.length }})</h3>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+                    <div v-for="(item, idx) in favoriteQuotes" :key="idx" style="background: rgba(22, 19, 43, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px;">
+                      <div style="font-size: 14px; color: #e2e8f0; margin-bottom: 10px; line-height: 1.5;">“{{ item.content }}”</div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.06);">
+                        <span style="font-size: 12px; color: #94a3b8;">—— {{ item.author || '匿名' }}</span>
+                        <div style="display: flex; gap: 4px;">
+                          <el-button size="small" circle :icon="CopyDocument" title="复制" @click="copyQuoteText(item)" />
+                          <el-button size="small" type="danger" plain circle :icon="Delete" title="删除收藏" @click="confirmRemoveFavorite(idx, item)" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. 名人名言类型卡片展示 -->
+              <div v-else-if="isMingyanTypeData" class="visual-mingyan-type-grid" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 20px; background: rgba(22, 19, 43, 0.8); border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+                <div v-for="cat in parsedResponseBody" :key="cat.value" style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                  🏷️ {{ cat.label }} (ID: {{ cat.value }})
+                </div>
+              </div>
+
+              <!-- 5. 图片直预览 -->
               <div v-else-if="isImageUrlData" class="visual-image-box">
                 <el-image :src="parsedResponseBody" fit="contain" :preview-src-list="[parsedResponseBody]" class="response-img" />
               </div>
