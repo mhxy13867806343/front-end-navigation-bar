@@ -12,6 +12,7 @@ export interface BilibiliTrendingItem {
   icon?: string
   hot_id?: number
   is_commercial?: string
+  iconError?: boolean
 }
 
 const router = useRouter()
@@ -20,13 +21,26 @@ const loading = ref<boolean>(false)
 const searchQuery = ref<string>('')
 const updateTime = ref<string>('')
 
+const formatBilibiliIcon = (url?: string): string => {
+  if (!url) return ''
+  let formatted = url.replace(/^http:/, 'https:')
+  if (formatted.includes('@')) {
+    formatted = formatted.split('@')[0]
+  }
+  return `${formatted}@48w_48h_1c.webp`
+}
+
+const handleImgError = (item: BilibiliTrendingItem): void => {
+  item.iconError = true
+}
+
 const getWordTypeBadge = (item: BilibiliTrendingItem) => {
   if (item.word_type === 4) return { text: '新', class: 'badge-new' }
   if (item.word_type === 5) return { text: '热', class: 'badge-hot' }
   if (item.word_type === 7) return { text: '直播', class: 'badge-live' }
   if (item.word_type === 9) return { text: '梗', class: 'badge-geng' }
   if (item.word_type === 12) return { text: '独家', class: 'badge-exclusive' }
-  return null
+  return { text: '热', class: 'badge-hot' }
 }
 
 const fetchBilibiliTrending = async (): Promise<void> => {
@@ -47,7 +61,6 @@ const fetchBilibiliTrending = async (): Promise<void> => {
     }
   } catch (err) {
     console.warn('Fetch bilibili trending failed, using fallback mock dataset:', err)
-    // Fallback Bilibili trending dataset matching screenshot
     list.value = [
       { position: 1, keyword: '北京WB 广州TTG', show_name: '广州TTG战胜北京WB', word_type: 8, hot_id: 262864 },
       { position: 2, keyword: '足协辟谣米利西奇辞职', show_name: '足协辟谣米利西奇辞职', word_type: 4, hot_id: 262875 },
@@ -140,7 +153,14 @@ onMounted(() => {
 
           <!-- Badge Pills (新 / 热 / 梗 / 独家 / 直播) -->
           <div class="badge-container">
-            <img v-if="item.icon" :src="item.icon" alt="icon" class="badge-icon-img" />
+            <img
+              v-if="item.icon && !item.iconError"
+              :src="formatBilibiliIcon(item.icon)"
+              alt="icon"
+              class="badge-icon-img"
+              referrerpolicy="no-referrer"
+              @error="handleImgError(item)"
+            />
             <span
               v-else-if="getWordTypeBadge(item)"
               class="type-badge"
