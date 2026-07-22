@@ -1110,6 +1110,31 @@ onMounted(async () => {
           </div>
         </div>
 
+        <!-- 顶部分页控制栏 (与底部分页保持同步) -->
+        <div class="doutu-pagination-bar" style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+          <el-button
+            type="primary"
+            plain
+            :disabled="doutuPage <= 1 || loadingDoutu"
+            @click="fetchDoutu(doutuPage - 1)"
+          >
+            ◀ 上一页
+          </el-button>
+
+          <span style="font-size: 14px; font-weight: 700; color: #c084fc;">
+            📄 第 {{ doutuPage }} 页
+          </span>
+
+          <el-button
+            type="primary"
+            plain
+            :disabled="doutuList.length === 0 || loadingDoutu"
+            @click="fetchDoutu(doutuPage + 1)"
+          >
+            下一页 ▶
+          </el-button>
+        </div>
+
         <!-- 表情包图片网格 (支持预览、复制链接、收藏，加载失败时自动隐藏操作按钮) -->
         <div v-if="doutuList.length > 0" class="doutu-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px;">
           <div v-for="(imgUrl, idx) in doutuList" :key="idx" class="doutu-card" style="background: rgba(22, 19, 43, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
