@@ -367,12 +367,60 @@ const handleTabChange = (name: any): void => {
 }
 
 // Doutu State
+const hotDoutuKeywords: string[] = ['搞笑', '熊猫头', '蘑菇头', '狗头', '流汗', '吃瓜', '吃惊']
+
 const doutuKeyword = ref<string>('搞笑')
 const doutuPage = ref<number>(1)
 const doutuList = ref<string[]>([])
 const loadingDoutu = ref<boolean>(false)
 const failedDoutuImages = ref<Record<string, boolean>>({})
 const showPageNumbersList = ref<boolean>(true)
+
+const doutuSearchHistory = ref<string[]>(
+  JSON.parse(localStorage.getItem('doutu_search_history') || '[]')
+)
+
+const addDoutuSearchHistory = (kw: string): void => {
+  const trimmed = kw.trim()
+  if (!trimmed) return
+  // 如果在热门搜索预设中，则不记录进搜索历史
+  if (hotDoutuKeywords.includes(trimmed)) return
+
+  const idx = doutuSearchHistory.value.indexOf(trimmed)
+  if (idx >= 0) {
+    doutuSearchHistory.value.splice(idx, 1)
+  }
+  doutuSearchHistory.value.unshift(trimmed)
+  // 最大保留 12 个历史记录
+  if (doutuSearchHistory.value.length > 12) {
+    doutuSearchHistory.value = doutuSearchHistory.value.slice(0, 12)
+  }
+  localStorage.setItem('doutu_search_history', JSON.stringify(doutuSearchHistory.value))
+}
+
+const confirmClearDoutuHistory = (): void => {
+  ElMessageBox.confirm(
+    '确定要清空所有的搜索历史记录吗？',
+    '确认清空提示',
+    {
+      confirmButtonText: '确定清空',
+      cancelButtonText: '取消',
+      type: 'warning',
+      lockScroll: false
+    }
+  ).then(() => {
+    doutuSearchHistory.value = []
+    localStorage.setItem('doutu_search_history', JSON.stringify([]))
+    ElMessage({ message: '已成功清空搜索历史记录！', type: 'success' })
+  }).catch(() => {
+    ElMessage({ message: '已取消操作', type: 'info' })
+  })
+}
+
+const removeDoutuHistoryItem = (index: number): void => {
+  doutuSearchHistory.value.splice(index, 1)
+  localStorage.setItem('doutu_search_history', JSON.stringify(doutuSearchHistory.value))
+}
 
 const upcomingDoutuPages = computed<number[]>(() => {
   const current = doutuPage.value
@@ -395,6 +443,9 @@ const fetchDoutu = async (page: number = 1): Promise<void> => {
   doutuPage.value = page
   loadingDoutu.value = true
   failedDoutuImages.value = {}
+  if (doutuKeyword.value) {
+    addDoutuSearchHistory(doutuKeyword.value)
+  }
   try {
     const res = await axios.get<AlapiResponse<string[]>>(buildAlapiUrl('/api/doutu'), {
       params: {
@@ -1108,7 +1159,7 @@ onMounted(async () => {
           <div class="category-tags" style="max-height: none; overflow: visible;">
             <span style="font-size: 13px; color: #94a3b8; align-self: center;">热门搜索：</span>
             <button
-              v-for="kw in ['搞笑', '熊猫头', '蘑菇头', '狗头', '流汗', '吃瓜', '吃惊']"
+              v-for="kw in hotDoutuKeywords"
               :key="kw"
               type="button"
               class="category-pill"
@@ -1117,6 +1168,37 @@ onMounted(async () => {
             >
               {{ kw }}
             </button>
+          </div>
+
+          <!-- 搜索历史记录 (最大 12 个，自动排除热门搜索预设，支持一键确认清空与小叉删除) -->
+          <div v-if="doutuSearchHistory.length > 0" class="category-tags" style="margin-top: 12px; max-height: none; overflow: visible; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 13px; color: #a855f7; font-weight: 600; align-self: center;">🕒 搜索历史：</span>
+            <button
+              v-for="(hKw, hIdx) in doutuSearchHistory"
+              :key="hIdx"
+              type="button"
+              class="category-pill"
+              :class="{ active: doutuKeyword === hKw }"
+              style="display: inline-flex; align-items: center; gap: 6px; padding-right: 8px;"
+              @click="doutuKeyword = hKw; fetchDoutu(1);"
+            >
+              <span>{{ hKw }}</span>
+              <span
+                style="font-size: 12px; opacity: 0.7; color: #ef4444; border-radius: 50%; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.15);"
+                title="删除该条历史"
+                @click.stop="removeDoutuHistoryItem(hIdx)"
+              >✕</span>
+            </button>
+
+            <el-button
+              size="small"
+              type="danger"
+              plain
+              style="margin-left: auto;"
+              @click="confirmClearDoutuHistory"
+            >
+              🗑️ 清空历史
+            </el-button>
           </div>
         </div>
 
