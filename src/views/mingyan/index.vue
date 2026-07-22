@@ -49,8 +49,18 @@ interface RiddleItem {
   type?: string
 }
 
+interface ShiciItem {
+  content: string
+  author: string
+  origin: string
+  category?: string
+  c1?: string
+  c2?: string
+  c3?: string
+}
+
 // Active Tab & 5s Cooldown State
-const activeTab = ref<'mingyan' | 'qinghua' | 'riddle'>('mingyan')
+const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici'>('mingyan')
 const switchCooldown = ref<number>(0)
 let cooldownTimer: number | null = null
 
@@ -99,6 +109,29 @@ const selectedRiddleType = ref<string>('')
 const currentRiddle = ref<RiddleItem | null>(null)
 const showRiddleAnswer = ref<boolean>(false)
 const loadingRiddle = ref<boolean>(false)
+
+// Shici State
+const currentShici = ref<ShiciItem | null>(null)
+const selectedShiciType = ref<string>('')
+const loadingShici = ref<boolean>(false)
+
+const shiciTypes = [
+  { label: '🌟 随机全部', value: '' },
+  { label: '抒情', value: 'shuqing' },
+  { label: '四季', value: 'siji' },
+  { label: '山水', value: 'shanshui' },
+  { label: '天气', value: 'tianqi' },
+  { label: '人物', value: 'renwu' },
+  { label: '生活', value: 'shenghuo' },
+  { label: '节日', value: 'jieri' },
+  { label: '动物', value: 'dongwu' },
+  { label: '植物', value: 'zhiwu' },
+  { label: '食物', value: 'shiwu' }
+]
+
+const favoriteShicis = ref<ShiciItem[]>(
+  JSON.parse(localStorage.getItem('favorite_shici_list') || '[]')
+)
 
 // Saved Favorite Quotes
 const favoriteQuotes = ref<MingyanQuoteItem[]>(
@@ -326,7 +359,81 @@ const handleTabChange = (name: any): void => {
   } else if (name === 'riddle') {
     void fetchRiddle()
     void fetchRiddleTypes()
+  } else if (name === 'shici') {
+    void fetchShici(selectedShiciType.value)
   }
+}
+
+const isCurrentShiciFavorite = computed<boolean>(() => {
+  if (!currentShici.value) return false
+  return favoriteShicis.value.some(
+    item => item.content === currentShici.value?.content && item.origin === currentShici.value?.origin
+  )
+})
+
+const fetchShici = async (type?: string): Promise<void> => {
+  loadingShici.value = true
+  try {
+    const params: Record<string, string> = { token: ALAPI_TOKEN, format: 'json' }
+    if (type) params.type = type
+    const res = await axios.get<AlapiResponse<ShiciItem>>(buildAlapiUrl('/api/shici'), { params })
+    if (res.data.code === 200 && res.data.data) {
+      currentShici.value = res.data.data
+    } else {
+      ElMessage({ message: res.data.message || '获取古诗词失败', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络连接失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingShici.value = false
+  }
+}
+
+const selectShiciType = (type: string): void => {
+  selectedShiciType.value = type
+  void fetchShici(type)
+}
+
+const copyShiciText = (item: ShiciItem): void => {
+  const text = `“${item.content}” —— 《${item.origin}》 · ${item.author}`
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage({ message: '古典诗词已成功复制到剪贴板！', type: 'success', grouping: true })
+    })
+  }
+}
+
+const toggleFavoriteShici = (item: ShiciItem): void => {
+  const idx = favoriteShicis.value.findIndex(
+    i => i.content === item.content && i.origin === item.origin
+  )
+  if (idx >= 0) {
+    favoriteShicis.value.splice(idx, 1)
+    ElMessage({ message: '已取消收藏该诗词', type: 'info', grouping: true })
+  } else {
+    favoriteShicis.value.unshift({ ...item })
+    ElMessage({ message: '已成功添加到古诗词收藏库！', type: 'success', grouping: true })
+  }
+  localStorage.setItem('favorite_shici_list', JSON.stringify(favoriteShicis.value))
+}
+
+const confirmRemoveFavoriteShici = (index: number, item: ShiciItem): void => {
+  ElMessageBox.confirm(
+    `确定要从收藏库中删除《${item.origin}》这首诗词吗？\n\n“${item.content.substring(0, 20)}${item.content.length > 20 ? '...' : ''}”`,
+    '确认删除提示',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      lockScroll: false
+    }
+  ).then(() => {
+    favoriteShicis.value.splice(index, 1)
+    localStorage.setItem('favorite_shici_list', JSON.stringify(favoriteShicis.value))
+    ElMessage({ message: '已成功删除该诗词！', type: 'success' })
+  }).catch(() => {
+    ElMessage({ message: '已取消删除操作', type: 'info' })
+  })
 }
 
 const fetchQinghua = async (): Promise<void> => {
@@ -516,6 +623,7 @@ onMounted(async () => {
           <el-tab-pane name="mingyan" label="📜 名人名言" />
           <el-tab-pane name="qinghua" label="❤️ 土味情话" />
           <el-tab-pane name="riddle" label="🧩 趣味谜语" />
+          <el-tab-pane name="shici" label="🏮 经典诗词" />
         </el-tabs>
         <div v-if="switchCooldown > 0" class="cooldown-notice-bar" style="margin-top: 8px; font-size: 13px; color: #eab308; background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.25); padding: 6px 14px; border-radius: 8px; font-weight: 500;">
           ⏳ Tab 切换频次限制中：请等待 {{ switchCooldown }} 秒后再进行下一次切换...
@@ -797,6 +905,87 @@ onMounted(async () => {
               <div class="item-footer" style="justify-content: flex-end; margin-top: 10px;">
                 <div class="item-actions">
                   <el-button size="small" type="danger" plain circle :icon="Delete" title="删除" @click="confirmRemoveFavoriteRiddle(idx, item)" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 4: 🏮 经典诗词 -->
+      <div v-else-if="activeTab === 'shici'" class="shici-container" v-loading="loadingShici">
+        <!-- 诗词类型筛选 -->
+        <div class="category-section" style="margin-bottom: 20px;">
+          <div class="category-header">
+            <span class="section-title">🏮 古诗词类型筛选</span>
+          </div>
+          <div class="category-tags" style="max-height: none; overflow: visible;">
+            <button
+              v-for="st in shiciTypes"
+              :key="st.value"
+              type="button"
+              class="category-pill"
+              :class="{ active: selectedShiciType === st.value }"
+              @click="selectShiciType(st.value)"
+            >
+              {{ st.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-quote-card shici-card" style="background: linear-gradient(135deg, rgba(30, 25, 45, 0.95), rgba(15, 10, 25, 0.98)); border-color: rgba(234, 179, 8, 0.25);">
+          <div class="quote-badge-bar">
+            <span class="type-tag-badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15; border-color: rgba(234, 179, 8, 0.3);">
+              🏮 {{ currentShici?.category || '中华经典古诗词' }}
+            </span>
+            <el-button type="warning" plain circle :icon="Refresh" :loading="loadingShici" title="换一首诗词" @click="fetchShici(selectedShiciType)" />
+          </div>
+
+          <div v-if="currentShici" style="margin-top: 16px;">
+            <div class="quote-body-text" style="font-size: 24px; color: #fef08a; line-height: 1.8;">
+              “{{ currentShici.content }}”
+            </div>
+
+            <div class="quote-author-line" style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 20px;">
+              <span style="width: 24px; height: 2px; background: #facc15;"></span>
+              <span style="font-size: 16px; font-weight: 700; color: #fef08a;">—— 《{{ currentShici.origin }}》 · {{ currentShici.author || '佚名' }}</span>
+            </div>
+          </div>
+
+          <div class="quote-actions-row" style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <el-button type="warning" size="large" :icon="Refresh" :loading="loadingShici" @click="fetchShici(selectedShiciType)">🔄 换一首诗词</el-button>
+            <el-button
+              v-if="currentShici"
+              type="default"
+              size="large"
+              :icon="CopyDocument"
+              @click="copyShiciText(currentShici)"
+            >
+              📋 复制诗词
+            </el-button>
+            <el-button
+              v-if="currentShici"
+              :type="isCurrentShiciFavorite ? 'warning' : 'default'"
+              size="large"
+              :icon="isCurrentShiciFavorite ? StarFilled : Star"
+              @click="toggleFavoriteShici(currentShici)"
+            >
+              {{ isCurrentShiciFavorite ? '已收藏' : '⭐ 收藏诗词' }}
+            </el-button>
+          </div>
+        </div>
+
+        <!-- 诗词收藏库 -->
+        <section v-if="favoriteShicis.length > 0" class="favorites-section" style="margin-top: 24px;">
+          <h2 class="history-section-title" style="color: #facc15;">⭐ 我的古诗词收藏库 ({{ favoriteShicis.length }})</h2>
+          <div class="history-quotes-grid">
+            <div v-for="(item, idx) in favoriteShicis" :key="idx" class="quote-item-card" style="border-color: rgba(234, 179, 8, 0.25);">
+              <div class="item-quote-content" style="color: #fef08a; font-weight: 600;">“{{ item.content }}”</div>
+              <div class="item-footer">
+                <span class="item-author" style="color: #fef08a;">—— 《{{ item.origin }}》 · {{ item.author }}</span>
+                <div class="item-actions">
+                  <el-button size="small" circle :icon="CopyDocument" title="复制" @click="copyShiciText(item)" />
+                  <el-button size="small" type="danger" plain circle :icon="Delete" title="删除" @click="confirmRemoveFavoriteShici(idx, item)" />
                 </div>
               </div>
             </div>

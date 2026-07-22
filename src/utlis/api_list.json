@@ -1521,6 +1521,49 @@
       "responseType": "json"
     }
   ],
+  "ALAPI古诗词": [
+    {
+      "name": "随机古诗词",
+      "desc": "获取中国古典诗词作品，支持抒情、四季、山水、节日等类型筛选。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/shici",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "format",
+          "label": "返回格式",
+          "description": "支持 json, text",
+          "type": "text",
+          "placeholder": "json",
+          "required": false,
+          "default": "json"
+        },
+        {
+          "name": "type",
+          "label": "诗词类型",
+          "description": "支持 shuqing, siji, shanshui, tianqi, renwu, shenghuo, jieri, dongwu, zhiwu, shiwu",
+          "type": "text",
+          "placeholder": "例如 shuqing / siji",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",
