@@ -40,7 +40,7 @@ const getWordTypeBadge = (item: BilibiliTrendingItem) => {
   if (item.word_type === 7) return { text: '直播', class: 'badge-live' }
   if (item.word_type === 9) return { text: '梗', class: 'badge-geng' }
   if (item.word_type === 12) return { text: '独家', class: 'badge-exclusive' }
-  return { text: '热', class: 'badge-hot' }
+  return null
 }
 
 const fetchBilibiliTrending = async (): Promise<void> => {
