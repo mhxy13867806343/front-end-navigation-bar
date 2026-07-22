@@ -512,7 +512,20 @@ const fetchEventHistory = async (): Promise<void> => {
   }
 }
 
+const isEventTextExpanded = ref<boolean>(false)
+
+const calcReadingTime = (text: string): string => {
+  if (!text) return '少于 1 分钟'
+  const len = text.length
+  if (len < 60) return '约 10 秒'
+  if (len < 120) return '约 20 秒'
+  if (len < 200) return '约 35 秒'
+  const mins = Math.ceil(len / 350)
+  return `约 ${mins} 分钟`
+}
+
 const openEventDetail = async (item: EventHistoryItem): Promise<void> => {
+  isEventTextExpanded.value = false
   activeEventDetail.value = item
   showEventDetailModal.value = true
   loadingEventDetail.value = true
@@ -1759,10 +1772,12 @@ onMounted(async () => {
             {{ activeWordDetail.explanation || activeWordDetail.more || '暂无更多详细解释' }}
           </div>
 
-          <!-- 字数统计与一键复制 -->
+          <!-- 字数统计、预计阅读时间与一键复制 -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
             <span style="font-size: 13px; font-weight: 700; color: #60a5fa; background: rgba(96, 165, 250, 0.15); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(96, 165, 250, 0.3);">
-              📝 释义字符长度：{{ (activeWordDetail.explanation || activeWordDetail.more || '').length }} 字
+              📝 字符长度：{{ (activeWordDetail.explanation || activeWordDetail.more || '').length }} 字
+              <span style="margin: 0 6px; opacity: 0.5;">|</span>
+              ⏱️ 预计阅读：{{ calcReadingTime(activeWordDetail.explanation || activeWordDetail.more || '') }}
             </span>
             <el-button
               type="primary"
@@ -1791,10 +1806,12 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- 字数统计与一键复制 -->
+          <!-- 字数统计、预计阅读时间与一键复制 -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
             <span style="font-size: 13px; font-weight: 700; color: #c084fc; background: rgba(192, 132, 252, 0.15); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(192, 132, 252, 0.3);">
               📝 原文字符长度：{{ nlpText.length }} 字
+              <span style="margin: 0 6px; opacity: 0.5;">|</span>
+              ⏱️ 预计阅读：{{ calcReadingTime(nlpText) }}
             </span>
             <el-button
               type="primary"
@@ -1828,14 +1845,32 @@ onMounted(async () => {
               <el-image :src="activeEventDetail.pic" fit="contain" style="max-height: 260px; border-radius: 10px;" />
             </div>
 
-            <div style="font-size: 14px; color: #cbd5e1; line-height: 1.8; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; max-height: 340px; overflow-y: auto; white-space: pre-wrap;">
+            <!-- 默认只展示前 3 行（高度 5.4em），超过 3 行展示展开/收起按钮，平滑 CSS 动画过渡 -->
+            <div
+              style="font-size: 14px; color: #cbd5e1; line-height: 1.8; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; white-space: pre-wrap; position: relative;"
+              :style="{ maxHeight: isEventTextExpanded ? '2500px' : '5.4em' }"
+            >
               {{ activeEventDetail.content || activeEventDetail.title }}
             </div>
 
-            <!-- 字数统计与一键复制全文 (精确显示字符长度) -->
+            <!-- 超过 3 行时显示 展开全文 / 收起内容 按钮 -->
+            <div v-if="(activeEventDetail.content || activeEventDetail.title || '').length > 80" style="margin-top: 8px; text-align: center;">
+              <el-button
+                type="warning"
+                link
+                style="font-weight: 700; font-size: 13px;"
+                @click="isEventTextExpanded = !isEventTextExpanded"
+              >
+                {{ isEventTextExpanded ? '收起内容 👆' : '展开查看更多 (3行以上) 👇' }}
+              </el-button>
+            </div>
+
+            <!-- 字数统计、预计阅读时间与一键复制全文 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
               <span style="font-size: 13px; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.15); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.3);">
                 📝 全文字符长度：{{ (activeEventDetail.content || activeEventDetail.title || '').length }} 字
+                <span style="margin: 0 6px; opacity: 0.5;">|</span>
+                ⏱️ 预计阅读：{{ calcReadingTime(activeEventDetail.content || activeEventDetail.title || '') }}
               </span>
               <el-button
                 type="primary"
