@@ -481,14 +481,8 @@ const activeEventDetail = ref<EventHistoryItem | null>(null)
 const loadingEventDetail = ref<boolean>(false)
 
 const handleEventDatePickerChange = (ts: number | null): void => {
-  if (ts) {
-    const d = new Date(ts)
-    eventMonth.value = String(d.getMonth() + 1)
-    eventDay.value = String(d.getDate())
-  } else {
-    eventMonth.value = ''
-    eventDay.value = ''
-  }
+  eventDatePickerTimestamp.value = ts
+  eventSearchKeyword.value = ''
   void fetchEventHistory()
 }
 
@@ -500,9 +494,10 @@ const fetchEventHistory = async (): Promise<void> => {
     if (eventSearchKeyword.value.trim()) {
       url = '/api/eventHistory/search'
       params.word = eventSearchKeyword.value.trim()
-    } else {
-      if (eventMonth.value) params.month = eventMonth.value
-      if (eventDay.value) params.day = eventDay.value
+    } else if (eventDatePickerTimestamp.value) {
+      const d = new Date(eventDatePickerTimestamp.value)
+      params.month = String(d.getMonth() + 1)
+      params.day = String(d.getDate())
     }
     const res = await axios.get<AlapiResponse<EventHistoryItem[]>>(buildAlapiUrl(url), { params })
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
@@ -1683,7 +1678,7 @@ onMounted(async () => {
             <!-- Naive UI DatePicker 日期选择器组件 -->
             <div style="width: 170px;">
               <n-date-picker
-                :value="eventDatePickerTimestamp"
+                v-model:value="eventDatePickerTimestamp"
                 type="date"
                 clearable
                 placeholder="选择历史日期"
