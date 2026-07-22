@@ -60,6 +60,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '📰',
     path: '/cnblogs',
     tag: 'IT 资讯'
+  },
+  {
+    id: 'github-cn',
+    name: 'GitHub 中文社区',
+    desc: '深度开源技术解读、热门趋势、排行榜 (按Star/Fork/更新时间)、严选周刊与开源项目图鉴。',
+    icon: '🐙',
+    path: '/github-cn',
+    tag: '开源社区'
   }
 ]
 

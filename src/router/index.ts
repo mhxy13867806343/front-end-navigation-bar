@@ -103,6 +103,11 @@ const routes = [
     component: () => import('../views/cnblogs/index.vue')
   },
   {
+    path: '/github-cn',
+    name: 'GithubCn',
+    component: () => import('../views/githubCn/index.vue')
+  },
+  {
     path: '/big-screen',
     name: 'BigScreen',
     component: BigScreen

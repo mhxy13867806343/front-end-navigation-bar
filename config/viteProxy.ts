@@ -123,5 +123,9 @@ export const serverProxy: ServerProxyMap = {
   '/api-cnblogs-main': createProxyEntry('/api-cnblogs-main', 'https://www.cnblogs.com', {
     Origin: 'https://www.cnblogs.com',
     Referer: 'https://www.cnblogs.com/'
+  }),
+  '/api-github-cn': createProxyEntry('/api-github-cn', 'https://github-cn.com', {
+    Origin: 'https://github-cn.com',
+    Referer: 'https://github-cn.com/'
   })
 }
