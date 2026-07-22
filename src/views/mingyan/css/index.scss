@@ -1,0 +1,284 @@
+@import '../../../style/mixins.scss';
+
+.mingyan-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top center, rgba(108, 92, 231, 0.15), transparent 60%),
+              #0f0c1b;
+  color: #f1f5f9;
+  padding-bottom: 60px;
+}
+
+/* Header Banner */
+.header-banner {
+  background: linear-gradient(135deg, rgba(30, 27, 56, 0.95), rgba(15, 12, 27, 0.98));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 32px 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a855f7, #6366f1, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Main Container */
+.main-container {
+  max-width: 1200px;
+  margin: 28px auto 0;
+  padding: 0 24px;
+}
+
+/* Category Filter Section (Step 1: 先 1 名人名言类型) */
+.category-section {
+  background: rgba(22, 19, 43, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  backdrop-filter: blur(12px);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge-count {
+    font-size: 12px;
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.12);
+    padding: 2px 10px;
+    border-radius: 12px;
+  }
+}
+
+.category-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 6px;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+  }
+}
+
+.category-pill {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+
+  &:hover {
+    border-color: rgba(168, 85, 247, 0.4);
+    background: rgba(168, 85, 247, 0.1);
+    color: #f1f5f9;
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    border-color: transparent;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+  }
+}
+
+/* Quote Showcase Card (Step 2: 再 2 名人名言内容) */
+.hero-quote-card {
+  background: linear-gradient(135deg, rgba(30, 25, 58, 0.95), rgba(18, 14, 38, 0.98));
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 24px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  margin-bottom: 36px;
+  transition: all 0.3s ease;
+
+  &::before {
+    content: '“';
+    position: absolute;
+    top: -20px;
+    left: 24px;
+    font-size: 140px;
+    font-family: Georgia, serif;
+    color: rgba(168, 85, 247, 0.08);
+    pointer-events: none;
+    line-height: 1;
+  }
+}
+
+.quote-badge-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.type-tag-badge {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2));
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 14px;
+}
+
+.quote-body-text {
+  font-size: 24px;
+  line-height: 1.8;
+  font-weight: 600;
+  color: #f8fafc;
+  margin-bottom: 24px;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.quote-author-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 32px;
+
+  .author-line {
+    width: 30px;
+    height: 2px;
+    background: #a855f7;
+  }
+
+  .author-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+}
+
+.quote-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .action-btn {
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+  }
+}
+
+/* History / Favorites List */
+.history-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-quotes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.quote-item-card {
+  background: rgba(22, 19, 43, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(168, 85, 247, 0.3);
+  }
+}
+
+.item-quote-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+
+.item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+
+  .item-author {
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .item-actions {
+    display: flex;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-quote-card {
+    padding: 24px;
+  }
+
+  .quote-body-text {
+    font-size: 18px;
+  }
+}

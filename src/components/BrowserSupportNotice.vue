@@ -219,6 +219,9 @@ onUnmounted((): void => {
       <el-button type="success" plain size="small" @click="goToWeather">
         🌦️ 天气预报
       </el-button>
+      <el-button type="warning" plain size="small" @click="goToMingyan">
+        📜 名人名言
+      </el-button>
     </div>
 
     <el-dialog

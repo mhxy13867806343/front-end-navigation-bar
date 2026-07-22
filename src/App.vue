@@ -90,7 +90,7 @@ import versionHistoryData from './ajson/version-history.json'
 
 const route = useRoute()
 const router = useRouter()
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some((p: string): boolean => {

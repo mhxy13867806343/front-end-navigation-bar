@@ -13,10 +13,12 @@
 - 🏠 **主页入口**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 - 🌦️ **天气预报可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
 - 💰 **黄金行情/接口可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC](https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC)
+- 📜 **名人名言与智慧语录**：[https://mhxy13867806343.github.io/front-end-navigation-bar/mingyan](https://mhxy13867806343.github.io/front-end-navigation-bar/mingyan)
 
 ## ✨ 功能特性
 
 - **AI 工具导航**：侧边栏分类 + 子分类导航，覆盖 AI 聊天、写作、绘画、编程、开发平台等数十个分类
+- **📜 名人名言与智慧语录**：联动 ALAPI 分类与语录接口（先 1 后 2 交互），提供主题类型筛选、换一句刷新、一键复制及金句收藏库
 - **🌦️ 实时天气可视化**：集成 ALAPI 天气数据，支持实况、7 天柱状图、40 天折线图 (ECharts) 及天气指数
 - **💰 统一接口可视化看板**：自动拉取接口数据，提供贵金属实时行情、品牌黄金价格、图片与表格可视化呈现
 - **📍 全国省市区级联组件**：内置 `ChinaRegionCascader` 高性能全国省/市/区县级联选择器

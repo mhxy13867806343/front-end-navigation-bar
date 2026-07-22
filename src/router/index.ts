@@ -85,6 +85,11 @@ const routes = [
     path: '/api-center/:category/:endpoint',
     name: 'ApiCenterDetail',
     component: () => import('../views/apiCenter/detail.vue')
+  },
+  {
+    path: '/mingyan',
+    name: 'Mingyan',
+    component: () => import('../views/mingyan/index.vue')
   }
 ]
 
