@@ -357,6 +357,41 @@ onMounted(() => {
           </button>
         </div>
       </div>
+
+      <!-- Top Pagination Bar (Location 1 Marked in User Screenshot) -->
+      <div class="cnblogs-top-pager-container">
+        <nav class="cnblogs-pager-bar cnblogs-pager-bar--top">
+          <button
+            type="button"
+            class="pager-btn pager-nav"
+            :disabled="currentPage <= 1 || loading"
+            @click="changePage(currentPage - 1)"
+          >
+            &lt; Prev
+          </button>
+
+          <button
+            v-for="(p, index) in visiblePageNumbers"
+            :key="`top-${index}`"
+            type="button"
+            class="pager-btn"
+            :class="{ active: p === currentPage, ellipsis: typeof p === 'string' }"
+            :disabled="typeof p === 'string' || loading"
+            @click="changePage(p)"
+          >
+            {{ p }}
+          </button>
+
+          <button
+            type="button"
+            class="pager-btn pager-nav"
+            :disabled="currentPage >= totalPages || loading"
+            @click="changePage(currentPage + 1)"
+          >
+            Next &gt;
+          </button>
+        </nav>
+      </div>
     </nav>
 
     <!-- News Article List -->

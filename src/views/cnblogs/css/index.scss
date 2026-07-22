@@ -454,7 +454,15 @@
   }
 }
 
-.pager-nav {
-  padding: 0 12px;
+.cnblogs-top-pager-container {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color, #e5e7eb);
+}
+
+.cnblogs-pager-bar--top {
+  margin-top: 0;
+  padding: 0;
+  border-top: none;
 }
 
