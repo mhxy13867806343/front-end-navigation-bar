@@ -1564,6 +1564,49 @@
       "responseType": "json"
     }
   ],
+  "ALAPI表情包搜索": [
+    {
+      "name": "表情包搜索",
+      "desc": "通过关键词搜索热趣表情包与斗图图片，支持分页查询。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/doutu",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "keyword",
+          "label": "搜索关键词",
+          "description": "例如 搞笑 / 熊猫头 / 蘑菇头",
+          "type": "text",
+          "placeholder": "请输入搜索关键词",
+          "required": true,
+          "default": "搞笑"
+        },
+        {
+          "name": "page",
+          "label": "页码",
+          "description": "默认第 1 页",
+          "type": "number",
+          "placeholder": "1",
+          "required": false,
+          "default": 1
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",

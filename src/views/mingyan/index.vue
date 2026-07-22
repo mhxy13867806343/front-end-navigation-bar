@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CopyDocument, Refresh, Star, StarFilled, Delete } from '@element-plus/icons-vue'
+import { CopyDocument, Refresh, Star, StarFilled, Delete, Search } from '@element-plus/icons-vue'
 import draggable from 'vuedraggable'
 import { useAutoRefresh } from '../../composables/useAutoRefresh'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
@@ -60,7 +60,7 @@ interface ShiciItem {
 }
 
 // Active Tab & 5s Cooldown State
-const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici'>('mingyan')
+const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici' | 'doutu'>('mingyan')
 const switchCooldown = ref<number>(0)
 let cooldownTimer: number | null = null
 
@@ -361,6 +361,90 @@ const handleTabChange = (name: any): void => {
     void fetchRiddleTypes()
   } else if (name === 'shici') {
     void fetchShici(selectedShiciType.value)
+  } else if (name === 'doutu') {
+    void fetchDoutu(1)
+  }
+}
+
+// Doutu State
+const doutuKeyword = ref<string>('搞笑')
+const doutuPage = ref<number>(1)
+const doutuList = ref<string[]>([])
+const loadingDoutu = ref<boolean>(false)
+const failedDoutuImages = ref<Record<string, boolean>>({})
+
+const handleDoutuImageError = (url: string): void => {
+  failedDoutuImages.value[url] = true
+}
+
+const favoriteDoutus = ref<string[]>(
+  JSON.parse(localStorage.getItem('favorite_doutu_list') || '[]')
+)
+
+const fetchDoutu = async (page: number = 1): Promise<void> => {
+  doutuPage.value = page
+  loadingDoutu.value = true
+  failedDoutuImages.value = {}
+  try {
+    const res = await axios.get<AlapiResponse<string[]>>(buildAlapiUrl('/api/doutu'), {
+      params: {
+        token: ALAPI_TOKEN,
+        keyword: doutuKeyword.value || '搞笑',
+        page: doutuPage.value
+      }
+    })
+    if (res.data.code === 200 && Array.isArray(res.data.data)) {
+      doutuList.value = res.data.data
+    } else {
+      ElMessage({ message: res.data.message || '搜索表情包失败，请换个关键词重试', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingDoutu.value = false
+  }
+}
+
+const isDoutuFavorite = (url: string): boolean => {
+  return favoriteDoutus.value.includes(url)
+}
+
+const toggleFavoriteDoutu = (url: string): void => {
+  const idx = favoriteDoutus.value.indexOf(url)
+  if (idx >= 0) {
+    favoriteDoutus.value.splice(idx, 1)
+    ElMessage({ message: '已从表情包收藏库移除', type: 'info', grouping: true })
+  } else {
+    favoriteDoutus.value.unshift(url)
+    ElMessage({ message: '已成功添加到表情包收藏库！', type: 'success', grouping: true })
+  }
+  localStorage.setItem('favorite_doutu_list', JSON.stringify(favoriteDoutus.value))
+}
+
+const confirmRemoveFavoriteDoutu = (index: number, url: string): void => {
+  ElMessageBox.confirm(
+    '确定要从收藏库中删除这张表情包吗？',
+    '确认删除提示',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      lockScroll: false
+    }
+  ).then(() => {
+    favoriteDoutus.value.splice(index, 1)
+    localStorage.setItem('favorite_doutu_list', JSON.stringify(favoriteDoutus.value))
+    ElMessage({ message: '已成功删除该表情包！', type: 'success' })
+  }).catch(() => {
+    ElMessage({ message: '已取消删除操作', type: 'info' })
+  })
+}
+
+const copyDoutuUrl = (url: string): void => {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => {
+      ElMessage({ message: '表情包图片 URL 已成功复制到剪贴板！', type: 'success', grouping: true })
+    })
   }
 }
 
@@ -624,6 +708,7 @@ onMounted(async () => {
           <el-tab-pane name="qinghua" label="❤️ 土味情话" />
           <el-tab-pane name="riddle" label="🧩 趣味谜语" />
           <el-tab-pane name="shici" label="🏮 经典诗词" />
+          <el-tab-pane name="doutu" label="🤪 搞笑表情包" />
         </el-tabs>
         <div v-if="switchCooldown > 0" class="cooldown-notice-bar" style="margin-top: 8px; font-size: 13px; color: #eab308; background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.25); padding: 6px 14px; border-radius: 8px; font-weight: 500;">
           ⏳ Tab 切换频次限制中：请等待 {{ switchCooldown }} 秒后再进行下一次切换...
@@ -987,6 +1072,114 @@ onMounted(async () => {
                   <el-button size="small" circle :icon="CopyDocument" title="复制" @click="copyShiciText(item)" />
                   <el-button size="small" type="danger" plain circle :icon="Delete" title="删除" @click="confirmRemoveFavoriteShici(idx, item)" />
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 5: 🤪 搞笑表情包 -->
+      <div v-else-if="activeTab === 'doutu'" class="doutu-container" v-loading="loadingDoutu">
+        <!-- 搜索与快捷关键词 -->
+        <div class="category-section" style="margin-bottom: 20px;">
+          <div class="category-header">
+            <span class="section-title">🤪 搜表情包 / 斗图图片</span>
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+            <el-input
+              v-model="doutuKeyword"
+              placeholder="输入表情包关键词，如 搞笑 / 熊猫头 / 蘑菇头"
+              size="large"
+              clearable
+              @keyup.enter="fetchDoutu(1)"
+            />
+            <el-button type="primary" size="large" :icon="Search" @click="fetchDoutu(1)">🔍 搜索表情包</el-button>
+          </div>
+          <div class="category-tags" style="max-height: none; overflow: visible;">
+            <span style="font-size: 13px; color: #94a3b8; align-self: center;">热门搜索：</span>
+            <button
+              v-for="kw in ['搞笑', '熊猫头', '蘑菇头', '狗头', '流汗', '吃瓜', '吃惊']"
+              :key="kw"
+              type="button"
+              class="category-pill"
+              :class="{ active: doutuKeyword === kw }"
+              @click="doutuKeyword = kw; fetchDoutu(1);"
+            >
+              {{ kw }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 表情包图片网格 (支持预览、复制链接、收藏，加载失败时自动隐藏操作按钮) -->
+        <div v-if="doutuList.length > 0" class="doutu-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px;">
+          <div v-for="(imgUrl, idx) in doutuList" :key="idx" class="doutu-card" style="background: rgba(22, 19, 43, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+            <el-image
+              :src="imgUrl"
+              fit="contain"
+              :preview-src-list="doutuList"
+              :initial-index="idx"
+              style="width: 100%; height: 140px; border-radius: 8px; cursor: pointer; background: rgba(0,0,0,0.2);"
+              loading="lazy"
+              @error="handleDoutuImageError(imgUrl)"
+            />
+            <div v-if="!failedDoutuImages[imgUrl]" style="display: flex; gap: 8px; margin-top: 10px; width: 100%; justify-content: center;">
+              <el-button size="small" circle :icon="CopyDocument" title="复制图片链接" @click="copyDoutuUrl(imgUrl)" />
+              <el-button
+                size="small"
+                :type="isDoutuFavorite(imgUrl) ? 'warning' : 'default'"
+                circle
+                :icon="isDoutuFavorite(imgUrl) ? StarFilled : Star"
+                title="收藏表情包"
+                @click="toggleFavoriteDoutu(imgUrl)"
+              />
+            </div>
+            <div v-else style="margin-top: 10px; font-size: 12px; color: #94a3b8; font-weight: 500; text-align: center;">
+              🚫 图片失效已隐藏
+            </div>
+          </div>
+        </div>
+        <el-empty v-else description="暂无表情包图片，请尝试其他关键词" />
+
+        <!-- 真正可点击的分页按钮组 (支持上一页/下一页/页码点击) -->
+        <div class="doutu-pagination-bar" style="margin-top: 28px; display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+          <el-button
+            type="primary"
+            plain
+            :disabled="doutuPage <= 1 || loadingDoutu"
+            @click="fetchDoutu(doutuPage - 1)"
+          >
+            ◀ 上一页
+          </el-button>
+
+          <span style="font-size: 14px; font-weight: 700; color: #c084fc;">
+            📄 第 {{ doutuPage }} 页
+          </span>
+
+          <el-button
+            type="primary"
+            plain
+            :disabled="doutuList.length === 0 || loadingDoutu"
+            @click="fetchDoutu(doutuPage + 1)"
+          >
+            下一页 ▶
+          </el-button>
+        </div>
+
+        <!-- 表情包收藏库 -->
+        <section v-if="favoriteDoutus.length > 0" class="favorites-section" style="margin-top: 32px;">
+          <h2 class="history-section-title" style="color: #c084fc;">⭐ 我的表情包收藏库 ({{ favoriteDoutus.length }})</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px;">
+            <div v-for="(favUrl, idx) in favoriteDoutus" :key="idx" class="quote-item-card" style="border-color: rgba(168, 85, 247, 0.25); padding: 10px; display: flex; flex-direction: column; align-items: center;">
+              <el-image
+                :src="favUrl"
+                fit="contain"
+                :preview-src-list="favoriteDoutus"
+                :initial-index="idx"
+                style="width: 100%; height: 110px; border-radius: 8px;"
+              />
+              <div style="display: flex; gap: 6px; margin-top: 8px;">
+                <el-button size="small" circle :icon="CopyDocument" title="复制链接" @click="copyDoutuUrl(favUrl)" />
+                <el-button size="small" type="danger" plain circle :icon="Delete" title="删除收藏" @click="confirmRemoveFavoriteDoutu(idx, favUrl)" />
               </div>
             </div>
           </div>
