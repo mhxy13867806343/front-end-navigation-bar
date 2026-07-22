@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CopyDocument, Refresh, Star, StarFilled, Delete, Search } from '@element-plus/icons-vue'
+import { NSelect } from 'naive-ui'
 import draggable from 'vuedraggable'
 import { useAutoRefresh } from '../../composables/useAutoRefresh'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
@@ -430,6 +431,28 @@ const upcomingDoutuPages = computed<number[]>(() => {
   }
   return pages
 })
+
+interface SelectOption {
+  label: string
+  value: number
+}
+
+const doutuPageSelectOptions = computed<SelectOption[]>(() => {
+  const current = doutuPage.value
+  const maxPage = Math.max(current + 10, 50)
+  const list: SelectOption[] = []
+  for (let i = 1; i <= maxPage; i++) {
+    list.push({
+      label: `第 ${i} 页`,
+      value: i
+    })
+  }
+  return list
+})
+
+const handlePageSelectChange = (val: number): void => {
+  void fetchDoutu(val)
+}
 
 const handleDoutuImageError = (url: string): void => {
   failedDoutuImages.value[url] = true
@@ -1202,8 +1225,8 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- 顶部分页控制栏 (包含可打击的数字页码 6,7,8,9,10 与 展开/隐藏控制按钮) -->
-        <div class="doutu-pagination-bar" style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+        <!-- 顶部分页控制栏 (包含下拉菜单 1-N 页直接跳转与可打击的数字页码) -->
+        <div class="doutu-pagination-bar" style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
           <el-button
             type="primary"
             plain
@@ -1216,6 +1239,17 @@ onMounted(async () => {
           <span style="font-size: 14px; font-weight: 700; color: #c084fc;">
             📄 第 {{ doutuPage }} 页
           </span>
+
+          <!-- 快速下拉跳页 Dropdown Select -->
+          <div style="width: 110px;">
+            <n-select
+              :value="doutuPage"
+              :options="doutuPageSelectOptions"
+              placeholder="选择页码"
+              size="small"
+              @update:value="handlePageSelectChange"
+            />
+          </div>
 
           <el-button
             type="primary"
@@ -1281,8 +1315,8 @@ onMounted(async () => {
         </div>
         <el-empty v-else description="暂无表情包图片，请尝试其他关键词" />
 
-        <!-- 底部分页控制栏 (包含可打击的数字页码 6,7,8,9,10 与 展开/隐藏控制按钮) -->
-        <div class="doutu-pagination-bar" style="margin-top: 28px; display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+        <!-- 底部分页控制栏 (包含下拉菜单 1-N 页直接跳转与可打击的数字页码) -->
+        <div class="doutu-pagination-bar" style="margin-top: 28px; display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
           <el-button
             type="primary"
             plain
@@ -1295,6 +1329,17 @@ onMounted(async () => {
           <span style="font-size: 14px; font-weight: 700; color: #c084fc;">
             📄 第 {{ doutuPage }} 页
           </span>
+
+          <!-- 快速下拉跳页 Dropdown Select -->
+          <div style="width: 110px;">
+            <n-select
+              :value="doutuPage"
+              :options="doutuPageSelectOptions"
+              placeholder="选择页码"
+              size="small"
+              @update:value="handlePageSelectChange"
+            />
+          </div>
 
           <el-button
             type="primary"
