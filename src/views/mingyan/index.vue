@@ -355,6 +355,91 @@ const copyQinghuaText = (text: string): void => {
   }
 }
 
+// Favorite Qinghuas
+const favoriteQinghuas = ref<QinghuaItem[]>(
+  JSON.parse(localStorage.getItem('favorite_qinghua_list') || '[]')
+)
+
+const isCurrentQinghuaFavorite = computed<boolean>(() => {
+  if (!currentQinghua.value) return false
+  return favoriteQinghuas.value.some(item => item.content === currentQinghua.value?.content)
+})
+
+const toggleFavoriteQinghua = (item: QinghuaItem): void => {
+  const idx = favoriteQinghuas.value.findIndex(i => i.content === item.content)
+  if (idx >= 0) {
+    favoriteQinghuas.value.splice(idx, 1)
+    ElMessage({ message: '已取消收藏该情话', type: 'info', grouping: true })
+  } else {
+    favoriteQinghuas.value.unshift({ ...item })
+    ElMessage({ message: '已成功添加到土味情话收藏库！', type: 'success', grouping: true })
+  }
+  localStorage.setItem('favorite_qinghua_list', JSON.stringify(favoriteQinghuas.value))
+}
+
+const confirmRemoveFavoriteQinghua = (index: number, item: QinghuaItem): void => {
+  ElMessageBox.confirm(
+    `确定要从收藏库中删除这句情话吗？\n\n“${item.content}”`,
+    '确认删除提示',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      lockScroll: false
+    }
+  ).then(() => {
+    favoriteQinghuas.value.splice(index, 1)
+    localStorage.setItem('favorite_qinghua_list', JSON.stringify(favoriteQinghuas.value))
+    ElMessage({ message: '已成功删除该情话！', type: 'success' })
+  }).catch(() => {
+    ElMessage({ message: '已取消删除操作', type: 'info' })
+  })
+}
+
+// Favorite Riddles
+const favoriteRiddles = ref<RiddleItem[]>(
+  JSON.parse(localStorage.getItem('favorite_riddle_list') || '[]')
+)
+
+const isCurrentRiddleFavorite = computed<boolean>(() => {
+  if (!currentRiddle.value) return false
+  const q = currentRiddle.value.title || currentRiddle.value.content
+  return favoriteRiddles.value.some(item => (item.title || item.content) === q)
+})
+
+const toggleFavoriteRiddle = (item: RiddleItem): void => {
+  const q = item.title || item.content
+  const idx = favoriteRiddles.value.findIndex(i => (i.title || i.content) === q)
+  if (idx >= 0) {
+    favoriteRiddles.value.splice(idx, 1)
+    ElMessage({ message: '已取消收藏该谜语', type: 'info', grouping: true })
+  } else {
+    favoriteRiddles.value.unshift({ ...item })
+    ElMessage({ message: '已成功添加到谜语收藏库！', type: 'success', grouping: true })
+  }
+  localStorage.setItem('favorite_riddle_list', JSON.stringify(favoriteRiddles.value))
+}
+
+const confirmRemoveFavoriteRiddle = (index: number, item: RiddleItem): void => {
+  const q = item.title || item.content
+  ElMessageBox.confirm(
+    `确定要从收藏库中删除这道谜语吗？\n\n“${q}”`,
+    '确认删除提示',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      lockScroll: false
+    }
+  ).then(() => {
+    favoriteRiddles.value.splice(index, 1)
+    localStorage.setItem('favorite_riddle_list', JSON.stringify(favoriteRiddles.value))
+    ElMessage({ message: '已成功删除该谜语！', type: 'success' })
+  }).catch(() => {
+    ElMessage({ message: '已取消删除操作', type: 'info' })
+  })
+}
+
 const fetchRiddleTypes = async (): Promise<void> => {
   try {
     const res = await axios.get<AlapiResponse<RiddleTypeItem[]>>(buildAlapiUrl('/api/riddle/type'), {
@@ -593,18 +678,45 @@ onMounted(async () => {
       </div>
 
       <!-- TAB 2: ❤️ 土味情话 -->
-      <div v-else-if="activeTab === 'qinghua'" class="hero-quote-card qinghua-card" v-loading="loadingQinghua" style="background: linear-gradient(135deg, rgba(40, 20, 45, 0.95), rgba(20, 10, 25, 0.98)); border-color: rgba(244, 63, 94, 0.25);">
-        <div class="quote-badge-bar">
-          <span class="type-tag-badge" style="background: rgba(244, 63, 94, 0.2); color: #fb7185; border-color: rgba(244, 63, 94, 0.3);">❤️ 浪漫土味情话</span>
-          <el-button type="danger" plain circle :icon="Refresh" :loading="loadingQinghua" title="换一句情话" @click="fetchQinghua" />
+      <div v-else-if="activeTab === 'qinghua'">
+        <div class="hero-quote-card qinghua-card" v-loading="loadingQinghua" style="background: linear-gradient(135deg, rgba(40, 20, 45, 0.95), rgba(20, 10, 25, 0.98)); border-color: rgba(244, 63, 94, 0.25);">
+          <div class="quote-badge-bar">
+            <span class="type-tag-badge" style="background: rgba(244, 63, 94, 0.2); color: #fb7185; border-color: rgba(244, 63, 94, 0.3);">❤️ 浪漫土味情话</span>
+            <el-button type="danger" plain circle :icon="Refresh" :loading="loadingQinghua" title="换一句情话" @click="fetchQinghua" />
+          </div>
+          <div v-if="currentQinghua" class="quote-body-text" style="font-size: 24px; color: #ffe4e6; line-height: 1.8; margin-top: 16px;">
+            “{{ currentQinghua.content }}”
+          </div>
+          <div class="quote-actions-row" style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <el-button type="danger" size="large" :icon="Refresh" :loading="loadingQinghua" @click="fetchQinghua">🔄 换一句情话</el-button>
+            <el-button type="default" size="large" :icon="CopyDocument" @click="copyQinghuaText(currentQinghua?.content || '')">📋 复制情话</el-button>
+            <el-button
+              v-if="currentQinghua"
+              :type="isCurrentQinghuaFavorite ? 'warning' : 'default'"
+              size="large"
+              :icon="isCurrentQinghuaFavorite ? StarFilled : Star"
+              @click="toggleFavoriteQinghua(currentQinghua)"
+            >
+              {{ isCurrentQinghuaFavorite ? '已收藏' : '⭐ 收藏情话' }}
+            </el-button>
+          </div>
         </div>
-        <div v-if="currentQinghua" class="quote-body-text" style="font-size: 24px; color: #ffe4e6; line-height: 1.8; margin-top: 16px;">
-          “{{ currentQinghua.content }}”
-        </div>
-        <div class="quote-actions-row" style="margin-top: 32px; display: flex; gap: 12px;">
-          <el-button type="danger" size="large" :icon="Refresh" :loading="loadingQinghua" @click="fetchQinghua">🔄 换一句情话</el-button>
-          <el-button type="default" size="large" :icon="CopyDocument" @click="copyQinghuaText(currentQinghua?.content || '')">📋 复制情话</el-button>
-        </div>
+
+        <!-- 土味情话收藏库 -->
+        <section v-if="favoriteQinghuas.length > 0" class="favorites-section" style="margin-top: 24px;">
+          <h2 class="history-section-title" style="color: #fb7185;">⭐ 我的情话收藏库 ({{ favoriteQinghuas.length }})</h2>
+          <div class="history-quotes-grid">
+            <div v-for="(item, idx) in favoriteQinghuas" :key="idx" class="quote-item-card" style="border-color: rgba(244, 63, 94, 0.2);">
+              <div class="item-quote-content">“{{ item.content }}”</div>
+              <div class="item-footer" style="justify-content: flex-end;">
+                <div class="item-actions">
+                  <el-button size="small" circle :icon="CopyDocument" title="复制" @click="copyQinghuaText(item.content)" />
+                  <el-button size="small" type="danger" plain circle :icon="Delete" title="删除" @click="confirmRemoveFavoriteQinghua(idx, item)" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <!-- TAB 3: 🧩 趣味谜语 -->
@@ -661,10 +773,35 @@ onMounted(async () => {
             </div>
           </div>
 
-          <div class="quote-actions-row" style="margin-top: 24px; display: flex; gap: 12px;">
+          <div class="quote-actions-row" style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
             <el-button type="primary" size="large" :icon="Refresh" :loading="loadingRiddle" @click="fetchRiddle(selectedRiddleType)">🔄 换一道谜语</el-button>
+            <el-button
+              v-if="currentRiddle"
+              :type="isCurrentRiddleFavorite ? 'warning' : 'default'"
+              size="large"
+              :icon="isCurrentRiddleFavorite ? StarFilled : Star"
+              @click="toggleFavoriteRiddle(currentRiddle)"
+            >
+              {{ isCurrentRiddleFavorite ? '已收藏' : '⭐ 收藏谜语' }}
+            </el-button>
           </div>
         </div>
+
+        <!-- 谜语收藏库 -->
+        <section v-if="favoriteRiddles.length > 0" class="favorites-section" style="margin-top: 24px;">
+          <h2 class="history-section-title" style="color: #60a5fa;">⭐ 我的谜语收藏库 ({{ favoriteRiddles.length }})</h2>
+          <div class="history-quotes-grid">
+            <div v-for="(item, idx) in favoriteRiddles" :key="idx" class="quote-item-card" style="border-color: rgba(59, 130, 246, 0.2);">
+              <div class="item-quote-content" style="color: #f8fafc; font-weight: 600;">❓ {{ item.title || item.content }}</div>
+              <div style="font-size: 13px; color: #4ade80; margin-top: 6px; font-weight: 600;">💡 答案：{{ item.answer || '暂无' }}</div>
+              <div class="item-footer" style="justify-content: flex-end; margin-top: 10px;">
+                <div class="item-actions">
+                  <el-button size="small" type="danger" plain circle :icon="Delete" title="删除" @click="confirmRemoveFavoriteRiddle(idx, item)" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
