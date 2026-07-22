@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CopyDocument, Refresh, Star, StarFilled, Delete, Search } from '@element-plus/icons-vue'
-import { NSelect } from 'naive-ui'
+import { NDatePicker, NSelect } from 'naive-ui'
 import draggable from 'vuedraggable'
 import { useAutoRefresh } from '../../composables/useAutoRefresh'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
@@ -472,12 +472,25 @@ interface EventHistoryItem {
 
 const eventMonth = ref<string>('')
 const eventDay = ref<string>('')
+const eventDatePickerTimestamp = ref<number | null>(Date.now())
 const eventSearchKeyword = ref<string>('')
 const eventHistoryList = ref<EventHistoryItem[]>([])
 const loadingEventHistory = ref<boolean>(false)
 const showEventDetailModal = ref<boolean>(false)
 const activeEventDetail = ref<EventHistoryItem | null>(null)
 const loadingEventDetail = ref<boolean>(false)
+
+const handleEventDatePickerChange = (ts: number | null): void => {
+  if (ts) {
+    const d = new Date(ts)
+    eventMonth.value = String(d.getMonth() + 1)
+    eventDay.value = String(d.getDate())
+  } else {
+    eventMonth.value = ''
+    eventDay.value = ''
+  }
+  void fetchEventHistory()
+}
 
 const fetchEventHistory = async (): Promise<void> => {
   loadingEventHistory.value = true
@@ -1667,8 +1680,17 @@ onMounted(async () => {
               style="flex: 1; min-width: 240px;"
               @keyup.enter="fetchEventHistory()"
             />
-            <el-input v-model="eventMonth" placeholder="月份(如 7)" size="large" style="width: 100px;" />
-            <el-input v-model="eventDay" placeholder="日期(如 22)" size="large" style="width: 100px;" />
+            <!-- Naive UI DatePicker 日期选择器组件 -->
+            <div style="width: 170px;">
+              <n-date-picker
+                :value="eventDatePickerTimestamp"
+                type="date"
+                clearable
+                placeholder="选择历史日期"
+                size="large"
+                @update:value="handleEventDatePickerChange"
+              />
+            </div>
             <el-button type="primary" size="large" :icon="Search" @click="fetchEventHistory()">🔍 查询历史事件</el-button>
           </div>
         </div>
