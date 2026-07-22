@@ -90,6 +90,9 @@ import versionHistoryData from './ajson/version-history.json'
 
 const route = useRoute()
 const router = useRouter()
+const goMingyan = (): void => {
+  void router.push('/mingyan')
+}
 const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
@@ -688,6 +691,11 @@ watch(isDarkMode, () => {
             <div class="popover-tool-item" @click="showWeatherDialog = true">
               <span class="tool-icon">🌦️</span>
               <span>天气预报</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
+            </div>
+            <div class="popover-tool-item" @click="goMingyan">
+              <span class="tool-icon">📜</span>
+              <span>名人名言</span>
               <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
             </div>
             <div class="popover-tool-item" @click="showBingDialog = true">

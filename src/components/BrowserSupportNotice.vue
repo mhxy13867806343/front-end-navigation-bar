@@ -7,6 +7,9 @@ const router = useRouter()
 const goToWeather = (): void => {
   router.push('/weather')
 }
+const goToMingyan = (): void => {
+  router.push('/mingyan')
+}
 import packageJson from '../../package.json'
 
 interface BrowserDownloadLink {
