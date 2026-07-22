@@ -1170,17 +1170,123 @@ interface OilPriceItem {
   o0: string
 }
 
+interface OilProvinceSuggestion {
+  value: string
+  aliases: string[]
+}
+
+const PROVINCE_ABBREVIATIONS: Record<string, string[]> = {
+  北京: ['京'],
+  天津: ['津'],
+  上海: ['沪'],
+  重庆: ['渝'],
+  河北: ['冀'],
+  山西: ['晋'],
+  辽宁: ['辽'],
+  吉林: ['吉'],
+  黑龙江: ['黑'],
+  江苏: ['苏'],
+  浙江: ['浙'],
+  安徽: ['皖'],
+  福建: ['闽'],
+  江西: ['赣'],
+  山东: ['鲁'],
+  河南: ['豫'],
+  湖北: ['鄂'],
+  湖南: ['湘'],
+  广东: ['粤'],
+  海南: ['琼'],
+  四川: ['川', '蜀'],
+  贵州: ['贵', '黔'],
+  云南: ['云', '滇'],
+  陕西: ['陕', '秦'],
+  甘肃: ['甘', '陇'],
+  青海: ['青'],
+  台湾: ['台'],
+  内蒙古: ['蒙'],
+  广西: ['桂'],
+  西藏: ['藏'],
+  宁夏: ['宁'],
+  新疆: ['新'],
+  香港: ['港'],
+  澳门: ['澳']
+}
+
+const simplifyProvinceName = (provinceName: string): string => {
+  return provinceName
+    .replace(/特别行政区$/u, '')
+    .replace(/维吾尔自治区$/u, '')
+    .replace(/壮族自治区$/u, '')
+    .replace(/回族自治区$/u, '')
+    .replace(/自治区$/u, '')
+    .replace(/省$/u, '')
+    .replace(/市$/u, '')
+    .trim()
+}
+
+const buildProvinceSearchTokens = (provinceName: string): string[] => {
+  const simplified: string = simplifyProvinceName(provinceName)
+  return Array.from(new Set([
+    provinceName,
+    simplified,
+    ...(PROVINCE_ABBREVIATIONS[simplified] || [])
+  ].filter(Boolean)))
+}
+
+const dedupeOilPriceItemsByProvince = (items: OilPriceItem[]): OilPriceItem[] => {
+  const provinceMap = new Map<string, OilPriceItem>()
+  items.forEach((item: OilPriceItem): void => {
+    const simplified: string = simplifyProvinceName(item.province || '')
+    if (!simplified || provinceMap.has(simplified)) return
+    provinceMap.set(simplified, {
+      ...item,
+      province: simplified
+    })
+  })
+  return Array.from(provinceMap.values())
+}
+
 const oilPriceList = ref<OilPriceItem[]>([])
 const oilProvinceFilter = ref<string>('')
 const loadingOil = ref<boolean>(false)
 const showOilDetailModal = ref<boolean>(false)
 const activeOilDetail = ref<OilPriceItem | null>(null)
 
+const oilProvinceSuggestions = computed<OilProvinceSuggestion[]>(() => {
+  return oilPriceList.value.map((item: OilPriceItem): OilProvinceSuggestion => ({
+    value: item.province,
+    aliases: buildProvinceSearchTokens(item.province)
+  }))
+})
+
 const filteredOilPriceList = computed<OilPriceItem[]>(() => {
   const kw = oilProvinceFilter.value.trim()
   if (!kw) return oilPriceList.value
-  return oilPriceList.value.filter(item => item.province.includes(kw))
+  return oilPriceList.value.filter((item: OilPriceItem): boolean => {
+    return buildProvinceSearchTokens(item.province).some((token: string): boolean => token.includes(kw))
+  })
 })
+
+const queryOilProvinceSuggestions = (
+  queryString: string,
+  callback: (items: OilProvinceSuggestion[]) => void
+): void => {
+  const keyword: string = queryString.trim()
+  if (!keyword) {
+    callback(oilProvinceSuggestions.value)
+    return
+  }
+
+  callback(
+    oilProvinceSuggestions.value.filter((item: OilProvinceSuggestion): boolean => {
+      return item.aliases.some((token: string): boolean => token.includes(keyword))
+    })
+  )
+}
+
+const handleOilProvinceSelect = (item: OilProvinceSuggestion): void => {
+  oilProvinceFilter.value = item.value
+}
 
 const fetchOilPrice = async (): Promise<void> => {
   loadingOil.value = true
@@ -1189,7 +1295,7 @@ const fetchOilPrice = async (): Promise<void> => {
       params: { token: ALAPI_TOKEN }
     })
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
-      oilPriceList.value = res.data.data
+      oilPriceList.value = dedupeOilPriceItemsByProvince(res.data.data)
     } else {
       ElMessage({ message: res.data.message || '获取油价信息失败', type: 'error' })
     }
@@ -2205,13 +2311,16 @@ onMounted(async () => {
             <span class="badge-count">{{ filteredOilPriceList.length }} / {{ oilPriceList.length }} 个省市</span>
           </div>
           <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-            <el-input
+            <el-autocomplete
               v-model="oilProvinceFilter"
-              placeholder="搜索省市名称过滤（如：广东、北京）"
+              :fetch-suggestions="queryOilProvinceSuggestions"
+              placeholder="输入省份过滤，如：浙江、浙、北京、京"
               clearable
               size="large"
               style="max-width: 320px;"
               :prefix-icon="Search"
+              trigger-on-focus
+              @select="handleOilProvinceSelect"
             />
             <el-button type="primary" @click="fetchOilPrice()" :icon="Refresh" style="font-weight: 600;">🔄 刷新油价</el-button>
           </div>
