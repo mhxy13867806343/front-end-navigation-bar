@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CopyDocument, Refresh, Star, StarFilled, Delete } from '@element-plus/icons-vue'
+import draggable from 'vuedraggable'
+import { useAutoRefresh } from '../../composables/useAutoRefresh'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
 
 const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || 'qgqofofvmxtoskffd37omkscobipmn'
@@ -54,8 +56,6 @@ const isCurrentFavorite = computed<boolean>(() => {
     (item: MingyanQuoteItem) => item.content === currentQuote.value?.content && item.author === currentQuote.value?.author
   )
 })
-
-import draggable from 'vuedraggable'
 
 const saveCategoriesOrder = (): void => {
   const order: number[] = categories.value.map((c: MingyanTypeItem) => c.value)
