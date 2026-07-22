@@ -68,6 +68,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '🐙',
     path: '/github-cn',
     tag: '开源社区'
+  },
+  {
+    id: 'bilibili-trending',
+    name: 'Bilibili 搜索热搜榜',
+    desc: '实时追踪 Bilibili 全网搜素热搜榜 Top 100，掌控热门热梗、电竞热点与独家爆款。',
+    icon: '📺',
+    path: '/bilibili-trending',
+    tag: 'B 站热搜'
   }
 ]
 

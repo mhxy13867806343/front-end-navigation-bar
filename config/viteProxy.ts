@@ -124,6 +124,10 @@ export const serverProxy: ServerProxyMap = {
     Origin: 'https://www.cnblogs.com',
     Referer: 'https://www.cnblogs.com/'
   }),
+  '/api-bilibili-trending': createProxyEntry('/api-bilibili-trending', 'https://app.bilibili.com', {
+    Origin: 'https://app.bilibili.com',
+    Referer: 'https://www.bilibili.com/'
+  }),
   '/api-github-cn-backend': createProxyEntry('/api-github-cn-backend', 'https://api.github-cn.com', {
     Origin: 'https://github-cn.com',
     Referer: 'https://github-cn.com/'

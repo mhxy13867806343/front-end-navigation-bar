@@ -108,6 +108,11 @@ const routes = [
     component: () => import('../views/githubCn/index.vue')
   },
   {
+    path: '/bilibili-trending',
+    name: 'BilibiliTrending',
+    component: () => import('../views/bilibiliTrending/index.vue')
+  },
+  {
     path: '/big-screen',
     name: 'BigScreen',
     component: BigScreen

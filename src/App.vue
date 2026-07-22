@@ -105,7 +105,10 @@ const goCnblogs = (): void => {
 const goGithubCn = (): void => {
   void router.push('/github-cn')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/three-showcase']
+const goBilibiliTrending = (): void => {
+  void router.push('/bilibili-trending')
+}
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/three-showcase']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some((p: string): boolean => {
