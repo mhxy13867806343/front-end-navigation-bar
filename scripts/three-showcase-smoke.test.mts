@@ -20,4 +20,5 @@ test('Three.js 数据目录包含基础示例与小游戏', async () => {
   assert.match(catalogSource, /id:\s*'particle-galaxy'/)
   assert.match(catalogSource, /id:\s*'orb-hunter'/)
   assert.match(catalogSource, /id:\s*'meteor-dodge'/)
+  assert.match(catalogSource, /id:\s*'mario-3d'/)
 })

@@ -208,6 +208,33 @@ export const labGames: ThreeLabGame[] = [
     ],
     controlHint: '方向键左右移动，尽量躲开下落的陨石。',
     scoreRule: '坚持时间越久分数越高，碰撞后本轮结束。'
+  },
+  {
+    id: 'mario-3d',
+    title: '超级马里奥 3D NES 版',
+    category: 'game',
+    difficulty: 'hard',
+    summary: '1:1 3D 复刻经典 NES 《超级马里奥兄弟 World 1-1》，包含 3D 马里奥移动跳跃、❓问号砖块顶金币/蘑菇、踩踏栗子球、水管与终点拔旗杆！',
+    tags: ['3D马里奥', '经典NES复刻', '碰撞检测', '物理跳跃', '关卡系统'],
+    coverType: 'gradient',
+    accent: '#e52521',
+    sceneType: '经典 3D 动作横版平台游戏',
+    heroLabel: 'NES Mario 3D',
+    knowledgePoints: ['Physics & Gravity', 'AABB Collision Box', '3D Low-Poly Character Mesh', 'Item Bounce Animation', 'Side-scrolling Camera lerp', 'NES HUD Score/Coin System'],
+    useCases: ['Web 3D 游戏开发实战', 'NES 经典 IP 3D 重制示范', 'Three.js 复杂场景碰撞与控制器'],
+    parameters: [
+      { key: 'moveSpeed', label: '移动速度', type: 'range', min: 0.08, max: 0.28, step: 0.02, value: 0.16 },
+      { key: 'jumpForce', label: '跳跃高度', type: 'range', min: 0.22, max: 0.48, step: 0.02, value: 0.32 },
+      { key: 'enemySpeed', label: '怪物速度', type: 'range', min: 0.02, max: 0.12, step: 0.01, value: 0.05 },
+      { key: 'superMushroom', label: '初始变大马里奥', type: 'toggle', value: false }
+    ],
+    codeBlocks: [
+      { title: '马里奥跳跃与物理更新', language: 'ts', content: `// 重力与Y轴位移更新\nvelocityY -= gravity\nmario.position.y += velocityY\nif (mario.position.y <= groundY) {\n  mario.position.y = groundY\n  isJumping = false\n}` },
+      { title: '❓问号砖块顶空碰撞与弹跳', language: 'ts', content: `// 马里奥头部碰撞问号砖块底部\nif (marioHeadY >= blockBottomY && marioXInBlock) {\n  block.bounceAnimation()\n  spawnCoinOrMushroom(block.position)\n  score += 200\n  coins += 1\n}` },
+      { title: '踩踏栗子球敌害判定', language: 'ts', content: `// 从上方踩下：踩扁栗子球\nif (velocityY < 0 && marioFeetY <= enemyTopY) {\n  enemy.squish()\n  velocityY = 0.24 // 踩起反弹\n  score += 100\n}` }
+    ],
+    controlHint: '键盘 A/D 或 ⬅️/➡️ 移动，Space/W/⬆️ 跳跃，Shift 键加速跑。支持屏幕虚拟按键！',
+    scoreRule: '顶❓砖块出金币 (+200)、踩踏栗子球 (+100)、吃蘑菇变大 (+1000)、触碰终点旗杆过关！掉入坑洞或碰怪扣生命。'
   }
 ]
 
@@ -224,6 +251,6 @@ export const exampleCategories: Array<{ key: ThreeExampleMeta['category']; label
 export const getExampleById = (id: string): ThreeExampleDetail | undefined => allExamples.find(item => item.id === id)
 export const getExamplesByCategory = (category: ThreeExampleMeta['category']): ThreeExampleDetail[] => allExamples.filter(item => item.category === category)
 export const getGameById = (id: string): ThreeLabGame | undefined => labGames.find(item => item.id === id)
-export const getFeaturedExamples = (): ThreeExampleMeta[] => ['basic-cube', 'particle-galaxy', 'wave-terrain', 'orb-hunter']
+export const getFeaturedExamples = (): ThreeExampleMeta[] => ['mario-3d', 'basic-cube', 'particle-galaxy', 'wave-terrain', 'orb-hunter']
   .map((id: string) => getExampleById(id))
   .filter((item): item is ThreeExampleDetail => Boolean(item))
