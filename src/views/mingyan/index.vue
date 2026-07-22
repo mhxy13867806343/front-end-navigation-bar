@@ -55,6 +55,19 @@ const isCurrentFavorite = computed<boolean>(() => {
   )
 })
 
+import draggable from 'vuedraggable'
+
+const saveCategoriesOrder = (): void => {
+  const order: number[] = categories.value.map((c: MingyanTypeItem) => c.value)
+  localStorage.setItem('mingyan_categories_order', JSON.stringify(order))
+  ElMessage({
+    message: '分类标签拖拽排序已自动保存',
+    type: 'success',
+    duration: 1500,
+    grouping: true
+  })
+}
+
 // Step 1: 先 1 - 获取名人名言类型列表
 const fetchCategories = async (): Promise<void> => {
   loadingCategory.value = true
@@ -63,7 +76,30 @@ const fetchCategories = async (): Promise<void> => {
       params: { token: ALAPI_TOKEN }
     })
     if (res.data.code === 200 && Array.isArray(res.data.data)) {
-      categories.value = res.data.data
+      const rawList = res.data.data
+      const savedOrderStr = localStorage.getItem('mingyan_categories_order')
+      if (savedOrderStr) {
+        try {
+          const savedOrder: number[] = JSON.parse(savedOrderStr)
+          if (Array.isArray(savedOrder) && savedOrder.length > 0) {
+            const map = new Map<number, MingyanTypeItem>()
+            rawList.forEach((item: MingyanTypeItem) => map.set(item.value, item))
+            const ordered: MingyanTypeItem[] = []
+            savedOrder.forEach((val: number) => {
+              if (map.has(val)) {
+                ordered.push(map.get(val)!)
+                map.delete(val)
+              }
+            })
+            map.forEach((item: MingyanTypeItem) => ordered.push(item))
+            categories.value = ordered
+            return
+          }
+        } catch {
+          // Fallback to raw list
+        }
+      }
+      categories.value = rawList
     }
   } catch (e) {
     console.error('获取名人名言类型失败', e)
@@ -239,28 +275,41 @@ onMounted(async () => {
       <!-- Step 1: 先 1 - 名人名言类型选择栏 -->
       <section class="category-section" v-loading="loadingCategory">
         <div class="category-header">
-          <span class="section-title">🏷️ 名言分类 (点击筛选类型)</span>
+          <span class="section-title">🏷️ 名言分类 (除了全部随机，其余分类按住可自由拖拽排序)</span>
           <span class="badge-count">{{ categories.length }} 个主题类型</span>
         </div>
         <div class="category-tags">
+          <!-- 固定的首选项：全部随机 -->
           <button
             type="button"
-            class="category-pill"
+            class="category-pill fixed-pill"
             :class="{ active: selectedTypeId === null }"
             @click="selectCategory(null)"
           >
             🌟 全部随机
           </button>
-          <button
-            v-for="cat in categories"
-            :key="cat.value"
-            type="button"
-            class="category-pill"
-            :class="{ active: selectedTypeId === cat.value }"
-            @click="selectCategory(cat.value)"
+
+          <!-- 可拖拽排序的其他分类列表 -->
+          <draggable
+            v-model="categories"
+            item-key="value"
+            class="draggable-category-container"
+            ghost-class="sortable-ghost"
+            drag-class="sortable-drag"
+            @end="saveCategoriesOrder"
           >
-            {{ cat.label }}
-          </button>
+            <template #item="{ element: cat }">
+              <button
+                type="button"
+                class="category-pill draggable-pill"
+                :class="{ active: selectedTypeId === cat.value }"
+                @click="selectCategory(cat.value)"
+              >
+                <span class="drag-handle" title="按住拖拽排序">⋮⋮</span>
+                {{ cat.label }}
+              </button>
+            </template>
+          </draggable>
         </div>
       </section>
 

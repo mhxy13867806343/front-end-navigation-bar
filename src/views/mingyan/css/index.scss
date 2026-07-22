@@ -88,6 +88,7 @@
 .category-tags {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
   max-height: 180px;
   overflow-y: auto;
@@ -102,6 +103,13 @@
   }
 }
 
+.draggable-category-container {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
 .category-pill {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
@@ -113,11 +121,37 @@
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  .drag-handle {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    cursor: grab;
+    transition: color 0.2s ease;
+  }
 
   &:hover {
     border-color: rgba(168, 85, 247, 0.4);
     background: rgba(168, 85, 247, 0.1);
     color: #f1f5f9;
+
+    .drag-handle {
+      color: #a855f7;
+    }
+  }
+
+  &.draggable-pill {
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+
+      .drag-handle {
+        cursor: grabbing;
+      }
+    }
   }
 
   &.active {
@@ -126,7 +160,23 @@
     color: #ffffff;
     font-weight: 700;
     box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+
+    .drag-handle {
+      color: rgba(255, 255, 255, 0.7);
+    }
   }
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+  border: 2px dashed #a855f7 !important;
+  background: rgba(168, 85, 247, 0.2) !important;
+}
+
+.sortable-drag {
+  transform: scale(1.08);
+  box-shadow: 0 8px 20px rgba(168, 85, 247, 0.5) !important;
+  z-index: 99;
 }
 
 /* Quote Showcase Card (Step 2: 再 2 名人名言内容) */
