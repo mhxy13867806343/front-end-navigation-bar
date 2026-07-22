@@ -266,7 +266,7 @@ export const mountThreeScene = ({ id, container, params, onTelemetry }: RuntimeO
       renderer.render(scene, camera)
     }
     animate()
-  } else {
+  } else if (id === 'meteor-dodge') {
     camera.position.set(0, 1.2, 7.2)
     baseGrid.visible = false
     const ship = new THREE.Mesh(track(new THREE.ConeGeometry(0.32, 1.1, 12)), track(new THREE.MeshStandardMaterial({ color: '#ffd166', emissive: '#46320c', emissiveIntensity: 0.8 })))
@@ -762,20 +762,20 @@ export const mountThreeScene = ({ id, container, params, onTelemetry }: RuntimeO
 
         // Limb Running Animation
         if (isMoving && !isJumping) {
-          mGroup.armL.rotation.z = Math.sin(animTime * 14) * 0.6
-          mGroup.armR.rotation.z = -Math.sin(animTime * 14) * 0.6
-          mGroup.legL.rotation.z = -Math.sin(animTime * 14) * 0.7
-          mGroup.legR.rotation.z = Math.sin(animTime * 14) * 0.7
+          armL.rotation.z = Math.sin(animTime * 14) * 0.6
+          armR.rotation.z = -Math.sin(animTime * 14) * 0.6
+          legL.rotation.z = -Math.sin(animTime * 14) * 0.7
+          legR.rotation.z = Math.sin(animTime * 14) * 0.7
         } else if (isJumping) {
-          mGroup.armL.rotation.z = -1.2
-          mGroup.armR.rotation.z = 1.2
-          mGroup.legL.rotation.z = 0.5
-          mGroup.legR.rotation.z = -0.5
+          armL.rotation.z = -1.2
+          armR.rotation.z = 1.2
+          legL.rotation.z = 0.5
+          legR.rotation.z = -0.5
         } else {
-          mGroup.armL.rotation.z = 0
-          mGroup.armR.rotation.z = 0
-          mGroup.legL.rotation.z = 0
-          mGroup.legR.rotation.z = 0
+          armL.rotation.z = 0
+          armR.rotation.z = 0
+          legL.rotation.z = 0
+          legR.rotation.z = 0
         }
       }
 
