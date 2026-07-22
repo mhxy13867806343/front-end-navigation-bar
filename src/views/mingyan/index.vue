@@ -61,7 +61,7 @@ interface ShiciItem {
 }
 
 // Active Tab & 5s Cooldown State
-const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici' | 'doutu'>('mingyan')
+const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici' | 'doutu' | 'word' | 'keyword_nlp' | 'event_history'>('mingyan')
 const switchCooldown = ref<number>(0)
 let cooldownTimer: number | null = null
 
@@ -364,6 +364,161 @@ const handleTabChange = (name: any): void => {
     void fetchShici(selectedShiciType.value)
   } else if (name === 'doutu') {
     void fetchDoutu(1)
+  } else if (name === 'word') {
+    void fetchWord()
+  } else if (name === 'keyword_nlp') {
+    void fetchNlpKeywords()
+  } else if (name === 'event_history') {
+    void fetchEventHistory()
+  }
+}
+
+// Xinhua Word Interfaces & State (新华字典)
+interface XinhuaWordItem {
+  word: string
+  old_word?: string
+  strokes?: number | string
+  pinyin?: string
+  radical?: string
+  explanation?: string
+  more?: string
+}
+
+const wordSearchQuery = ref<string>('爱')
+const wordList = ref<XinhuaWordItem[]>([])
+const loadingWord = ref<boolean>(false)
+const showWordDetailModal = ref<boolean>(false)
+const activeWordDetail = ref<XinhuaWordItem | null>(null)
+
+const fetchWord = async (w?: string): Promise<void> => {
+  if (w) wordSearchQuery.value = w
+  const query = wordSearchQuery.value.trim()
+  if (!query) {
+    ElMessage({ message: '请输入要查询的单字', type: 'warning' })
+    return
+  }
+  loadingWord.value = true
+  try {
+    const res = await axios.get<AlapiResponse<XinhuaWordItem[]>>(buildAlapiUrl('/api/word'), {
+      params: { token: ALAPI_TOKEN, word: query }
+    })
+    if (res.data.code === 200 && Array.isArray(res.data.data)) {
+      wordList.value = res.data.data
+    } else {
+      ElMessage({ message: res.data.message || '查询字典失败，请换个字重试', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingWord.value = false
+  }
+}
+
+const openWordDetail = (item: XinhuaWordItem): void => {
+  activeWordDetail.value = item
+  showWordDetailModal.value = true
+}
+
+// NLP Keyword Interfaces & State (关键词提取)
+interface NlpKeywordItem {
+  word: string
+  score?: number
+}
+
+const nlpText = ref<string>('人工智能与大数据正在深刻改变各行各业的发展与人们的日常生活。')
+const nlpNum = ref<number>(5)
+const nlpKeywordList = ref<NlpKeywordItem[]>([])
+const loadingNlp = ref<boolean>(false)
+const showNlpDetailModal = ref<boolean>(false)
+
+const fetchNlpKeywords = async (): Promise<void> => {
+  const text = nlpText.value.trim()
+  if (!text) {
+    ElMessage({ message: '请输入要提取关键词的文本句子', type: 'warning' })
+    return
+  }
+  loadingNlp.value = true
+  try {
+    const res = await axios.get<AlapiResponse<NlpKeywordItem[] | { keywords: NlpKeywordItem[] }>>(buildAlapiUrl('/api/nlp/keyword'), {
+      params: { token: ALAPI_TOKEN, text, num: nlpNum.value }
+    })
+    if (res.data.code === 200 && res.data.data) {
+      if (Array.isArray(res.data.data)) {
+        nlpKeywordList.value = res.data.data
+      } else if (res.data.data.keywords && Array.isArray(res.data.data.keywords)) {
+        nlpKeywordList.value = res.data.data.keywords
+      }
+    } else {
+      ElMessage({ message: res.data.message || '关键词提取失败', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingNlp.value = false
+  }
+}
+
+// Event History Interfaces & State (历史上的今天)
+interface EventHistoryItem {
+  id: string | number
+  title: string
+  year?: string | number
+  month?: string | number
+  day?: string | number
+  lsdb?: string
+  content?: string
+  pic?: string
+}
+
+const eventMonth = ref<string>('')
+const eventDay = ref<string>('')
+const eventSearchKeyword = ref<string>('')
+const eventHistoryList = ref<EventHistoryItem[]>([])
+const loadingEventHistory = ref<boolean>(false)
+const showEventDetailModal = ref<boolean>(false)
+const activeEventDetail = ref<EventHistoryItem | null>(null)
+const loadingEventDetail = ref<boolean>(false)
+
+const fetchEventHistory = async (): Promise<void> => {
+  loadingEventHistory.value = true
+  try {
+    let url = '/api/eventHistory'
+    const params: Record<string, string> = { token: ALAPI_TOKEN }
+    if (eventSearchKeyword.value.trim()) {
+      url = '/api/eventHistory/search'
+      params.word = eventSearchKeyword.value.trim()
+    } else {
+      if (eventMonth.value) params.month = eventMonth.value
+      if (eventDay.value) params.day = eventDay.value
+    }
+    const res = await axios.get<AlapiResponse<EventHistoryItem[]>>(buildAlapiUrl(url), { params })
+    if (res.data.code === 200 && Array.isArray(res.data.data)) {
+      eventHistoryList.value = res.data.data
+    } else {
+      ElMessage({ message: res.data.message || '获取历史上的今天失败', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingEventHistory.value = false
+  }
+}
+
+const openEventDetail = async (item: EventHistoryItem): Promise<void> => {
+  activeEventDetail.value = item
+  showEventDetailModal.value = true
+  loadingEventDetail.value = true
+  try {
+    const res = await axios.get<AlapiResponse<EventHistoryItem>>(buildAlapiUrl('/api/eventHistory/get'), {
+      params: { token: ALAPI_TOKEN, id: item.id }
+    })
+    if (res.data.code === 200 && res.data.data) {
+      activeEventDetail.value = { ...item, ...res.data.data }
+    }
+  } catch {
+    // keep basic item info
+  } finally {
+    loadingEventDetail.value = false
   }
 }
 
@@ -793,6 +948,9 @@ onMounted(async () => {
           <el-tab-pane name="riddle" label="🧩 趣味谜语" />
           <el-tab-pane name="shici" label="🏮 经典诗词" />
           <el-tab-pane name="doutu" label="🤪 搞笑表情包" />
+          <el-tab-pane name="word" label="📖 新华字典" />
+          <el-tab-pane name="keyword_nlp" label="🏷️ 关键词提取" />
+          <el-tab-pane name="event_history" label="📅 历史上的今天" />
         </el-tabs>
         <div v-if="switchCooldown > 0" class="cooldown-notice-bar" style="margin-top: 8px; font-size: 13px; color: #eab308; background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.25); padding: 6px 14px; border-radius: 8px; font-weight: 500;">
           ⏳ Tab 切换频次限制中：请等待 {{ switchCooldown }} 秒后再进行下一次切换...
@@ -1395,6 +1553,210 @@ onMounted(async () => {
           </div>
         </section>
       </div>
+
+      <!-- TAB 6: 📖 新华字典 -->
+      <div v-else-if="activeTab === 'word'" class="word-container" v-loading="loadingWord">
+        <div class="category-section" style="margin-bottom: 20px;">
+          <div class="category-header">
+            <span class="section-title">📖 新华字典在线检索</span>
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+            <el-input
+              v-model="wordSearchQuery"
+              placeholder="请输入单字，如 爱 / 华 / 龙"
+              size="large"
+              clearable
+              maxlength="2"
+              @keyup.enter="fetchWord()"
+            />
+            <el-button type="primary" size="large" :icon="Search" @click="fetchWord()">🔍 查询字典</el-button>
+          </div>
+          <div class="category-tags" style="max-height: none; overflow: visible;">
+            <span style="font-size: 13px; color: #94a3b8; align-self: center;">常用汉字：</span>
+            <button
+              v-for="w in ['爱', '德', '福', '龙', '华', '夏', '智', '慧']"
+              :key="w"
+              type="button"
+              class="category-pill"
+              :class="{ active: wordSearchQuery === w }"
+              @click="fetchWord(w)"
+            >
+              {{ w }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 汉字结果列表卡片 (点击按钮才展示详情弹窗) -->
+        <div v-if="wordList.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px;">
+          <div v-for="(item, idx) in wordList" :key="idx" class="hero-quote-card" style="background: rgba(22, 19, 43, 0.85); border-color: rgba(59, 130, 246, 0.3); padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 36px; font-weight: 900; color: #60a5fa; background: rgba(59, 130, 246, 0.15); width: 60px; height: 60px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                {{ item.word }}
+              </span>
+              <div style="text-align: right;">
+                <div style="font-size: 16px; font-weight: 700; color: #f8fafc;">拼音：{{ item.pinyin || '暂无' }}</div>
+                <div style="font-size: 13px; color: #94a3b8;">部首：{{ item.radical || '-' }} | 笔画：{{ item.strokes || '-' }}</div>
+              </div>
+            </div>
+            <div style="font-size: 14px; color: #cbd5e1; line-height: 1.6; margin-bottom: 16px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+              {{ item.explanation || item.more || '暂无释义' }}
+            </div>
+            <el-button type="primary" size="medium" style="width: 100%; font-weight: 600;" @click="openWordDetail(item)">
+              🔍 点击查看详细释义与全解 📖
+            </el-button>
+          </div>
+        </div>
+        <el-empty v-else description="未查找到该字，请换个字重试" />
+      </div>
+
+      <!-- TAB 7: 🏷️ 关键词提取 -->
+      <div v-else-if="activeTab === 'keyword_nlp'" class="nlp-container" v-loading="loadingNlp">
+        <div class="hero-quote-card" style="background: linear-gradient(135deg, rgba(30, 20, 45, 0.95), rgba(15, 10, 25, 0.98)); border-color: rgba(168, 85, 247, 0.3);">
+          <div class="quote-badge-bar">
+            <span class="type-tag-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">
+              🏷️ NLP 智能文本关键词提取
+            </span>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <el-input
+              v-model="nlpText"
+              type="textarea"
+              :rows="4"
+              placeholder="输入需要提取关键词的长句或段落..."
+              size="large"
+            />
+            <div style="display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap;">
+              <span style="color: #94a3b8; font-size: 14px;">提取数量：</span>
+              <el-input-number v-model="nlpNum" :min="1" :max="10" size="small" style="width: 110px;" />
+              <el-button type="primary" size="large" :icon="Search" @click="fetchNlpKeywords()">⚡ 立即提取关键词</el-button>
+            </div>
+          </div>
+
+          <!-- 提取到的关键词标签列 -->
+          <div v-if="nlpKeywordList.length > 0" style="margin-top: 24px; padding: 20px; background: rgba(15, 23, 42, 0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px;">🎯 提取到的关键词结果：</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+              <span
+                v-for="(kw, idx) in nlpKeywordList"
+                :key="idx"
+                style="background: rgba(168, 85, 247, 0.2); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.4); padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 14px;"
+              >
+                {{ kw.word }} <span v-if="kw.score" style="font-size: 11px; opacity: 0.7;">({{ kw.score.toFixed(2) }})</span>
+              </span>
+            </div>
+            <el-button type="warning" plain size="medium" @click="showNlpDetailModal = true">
+              🔍 查看关键词权重分析弹窗 📊
+            </el-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 8: 📅 历史上的今天 -->
+      <div v-else-if="activeTab === 'event_history'" class="event-container" v-loading="loadingEventHistory">
+        <div class="category-section" style="margin-bottom: 20px;">
+          <div class="category-header">
+            <span class="section-title">📅 历史上的今天大事件查询</span>
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+            <el-input
+              v-model="eventSearchKeyword"
+              placeholder="搜索历史事件关键词（可选），如 科技 / 战役 / 统一"
+              size="large"
+              clearable
+              style="flex: 1; min-width: 240px;"
+              @keyup.enter="fetchEventHistory()"
+            />
+            <el-input v-model="eventMonth" placeholder="月份(如 7)" size="large" style="width: 100px;" />
+            <el-input v-model="eventDay" placeholder="日期(如 22)" size="large" style="width: 100px;" />
+            <el-button type="primary" size="large" :icon="Search" @click="fetchEventHistory()">🔍 查询历史事件</el-button>
+          </div>
+        </div>
+
+        <!-- 历史事件网格列表 (严格遵守用户指令：点击按钮才弹窗展示详情) -->
+        <div v-if="eventHistoryList.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px;">
+          <div v-for="item in eventHistoryList" :key="item.id" class="hero-quote-card" style="background: rgba(22, 19, 43, 0.85); border-color: rgba(234, 179, 8, 0.25); padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <span style="font-size: 13px; font-weight: 700; color: #facc15; background: rgba(234, 179, 8, 0.15); padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(234, 179, 8, 0.3);">
+                  📅 {{ item.year || item.lsdb || '历史时刻' }} 年
+                </span>
+                <span v-if="item.month && item.day" style="font-size: 12px; color: #94a3b8;">{{ item.month }}月{{ item.day }}日</span>
+              </div>
+              <div style="font-size: 17px; font-weight: 700; color: #f8fafc; line-height: 1.5; margin-bottom: 16px;">
+                {{ item.title }}
+              </div>
+            </div>
+
+            <!-- 点击才在弹窗展示详情 -->
+            <el-button type="warning" size="medium" style="width: 100%; font-weight: 700;" @click="openEventDetail(item)">
+              📖 点击查看历史事件详情 🔍
+            </el-button>
+          </div>
+        </div>
+        <el-empty v-else description="暂无历史事件记录" />
+      </div>
+
+      <!-- 弹窗 1: 新华字典详细释义 Modal -->
+      <el-dialog v-model="showWordDetailModal" title="📖 新华字典 - 详细字义" width="600px" center append-to-body destroy-on-close>
+        <div v-if="activeWordDetail" style="padding: 10px 20px;">
+          <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px; background: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 14px; border: 1px solid rgba(59, 130, 246, 0.2);">
+            <span style="font-size: 48px; font-weight: 900; color: #60a5fa;">{{ activeWordDetail.word }}</span>
+            <div>
+              <div style="font-size: 18px; font-weight: 700; color: #f8fafc;">拼音：{{ activeWordDetail.pinyin || '暂无' }}</div>
+              <div style="font-size: 14px; color: #94a3b8; margin-top: 4px;">繁体：{{ activeWordDetail.old_word || activeWordDetail.word }} | 部首：{{ activeWordDetail.radical || '-' }} | 总笔画：{{ activeWordDetail.strokes || '-' }}</div>
+            </div>
+          </div>
+          <div style="font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px;">📚 详细释义说明：</div>
+          <div style="font-size: 14px; color: #cbd5e1; line-height: 1.8; white-space: pre-wrap; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
+            {{ activeWordDetail.explanation || activeWordDetail.more || '暂无更多详细解释' }}
+          </div>
+        </div>
+      </el-dialog>
+
+      <!-- 弹窗 2: NLP 关键词提取分析 Modal -->
+      <el-dialog v-model="showNlpDetailModal" title="🏷️ 关键词提取 - 权重分析详情" width="600px" center append-to-body destroy-on-close>
+        <div style="padding: 10px 20px;">
+          <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px;">原文内容：</div>
+          <div style="font-size: 14px; color: #e2e8f0; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 20px; line-height: 1.6;">
+            “{{ nlpText }}”
+          </div>
+          <div style="font-size: 15px; font-weight: 700; color: #c084fc; margin-bottom: 12px;">📊 提取到的核心词与权重列表：</div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div v-for="(kw, idx) in nlpKeywordList" :key="idx" style="display: flex; justify-content: space-between; align-items: center; background: rgba(168, 85, 247, 0.1); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(168, 85, 247, 0.2);">
+              <span style="font-size: 16px; font-weight: 700; color: #f8fafc;">#{{ idx + 1 }} {{ kw.word }}</span>
+              <span style="font-size: 13px; font-weight: 700; color: #c084fc;">权重得分: {{ kw.score ? kw.score.toFixed(4) : '高' }}</span>
+            </div>
+          </div>
+        </div>
+      </el-dialog>
+
+      <!-- 弹窗 3: 历史上的今天事件详情 Modal -->
+      <el-dialog v-model="showEventDetailModal" title="📅 历史上的今天 - 事件详情" width="680px" center append-to-body destroy-on-close>
+        <div v-loading="loadingEventDetail" style="padding: 10px 20px;">
+          <template v-if="activeEventDetail">
+            <div style="font-size: 20px; font-weight: 900; color: #f8fafc; line-height: 1.5; margin-bottom: 14px;">
+              {{ activeEventDetail.title }}
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+              <span style="font-size: 13px; font-weight: 700; color: #facc15; background: rgba(234, 179, 8, 0.15); padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(234, 179, 8, 0.3);">
+                📅 {{ activeEventDetail.year || activeEventDetail.lsdb }} 年
+              </span>
+              <span v-if="activeEventDetail.month && activeEventDetail.day" style="font-size: 13px; color: #94a3b8;">
+                {{ activeEventDetail.month }}月{{ activeEventDetail.day }}日
+              </span>
+            </div>
+
+            <div v-if="activeEventDetail.pic" style="margin-bottom: 16px; text-align: center;">
+              <el-image :src="activeEventDetail.pic" fit="contain" style="max-height: 260px; border-radius: 10px;" />
+            </div>
+
+            <div style="font-size: 14px; color: #cbd5e1; line-height: 1.8; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; max-height: 340px; overflow-y: auto; white-space: pre-wrap;">
+              {{ activeEventDetail.content || activeEventDetail.title }}
+            </div>
+          </template>
+        </div>
+      </el-dialog>
     </main>
   </div>
 </template>

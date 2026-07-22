@@ -1607,6 +1607,158 @@
       "responseType": "json"
     }
   ],
+  "ALAPI新华字典": [
+    {
+      "name": "新华字典查询",
+      "desc": "查询汉字拼音、笔画、部首、详细释义与说明。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/word",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "word",
+          "label": "要查询的字",
+          "description": "例如 爱",
+          "type": "text",
+          "placeholder": "请输入单字",
+          "required": true,
+          "default": "爱"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "ALAPI关键词提取": [
+    {
+      "name": "NLP关键词提取",
+      "desc": "提取长句或文本段落中的的核心关键词。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/nlp/keyword",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "text",
+          "label": "要提取的句子",
+          "description": "文本段落内容",
+          "type": "text",
+          "placeholder": "输入长句文本",
+          "required": true,
+          "default": "人工智能正在深刻改变科技与生活的方方面面"
+        },
+        {
+          "name": "num",
+          "label": "关键词数量",
+          "description": "默认 3 个",
+          "type": "number",
+          "placeholder": "3",
+          "required": false,
+          "default": 3
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "ALAPI历史上的今天": [
+    {
+      "name": "历史上的今天列表",
+      "desc": "获取历史上的今天重大事件列表。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/eventHistory",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "month",
+          "label": "月份",
+          "description": "默认本月",
+          "type": "text",
+          "placeholder": "如 7",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "day",
+          "label": "日期",
+          "description": "默认当天",
+          "type": "text",
+          "placeholder": "如 22",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "历史上的今天详情",
+      "desc": "通过事件 ID 查询历史事件详细内容。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/eventHistory/get",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "id",
+          "label": "事件Id",
+          "description": "历史上的今天事件ID",
+          "type": "text",
+          "placeholder": "事件ID",
+          "required": true,
+          "default": ""
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",
