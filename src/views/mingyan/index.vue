@@ -530,6 +530,36 @@ const openEventDetail = async (item: EventHistoryItem): Promise<void> => {
   }
 }
 
+const copyCustomText = (text: string, successMsg: string = '文本已成功复制到剪贴板！'): void => {
+  if (!text) return
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage({ message: successMsg, type: 'success', grouping: true, duration: 2000 })
+    }).catch(() => {
+      fallbackCopyCustom(text, successMsg)
+    })
+  } else {
+    fallbackCopyCustom(text, successMsg)
+  }
+}
+
+function fallbackCopyCustom(text: string, successMsg: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  document.body.appendChild(textArea)
+  textArea.select()
+  try {
+    document.execCommand('copy')
+    ElMessage({ message: successMsg, type: 'success', grouping: true, duration: 2000 })
+  } catch {
+    ElMessage({ message: '复制失败，请手动选中文本复制', type: 'error' })
+  } finally {
+    if (document.body.contains(textArea)) {
+      document.body.removeChild(textArea)
+    }
+  }
+}
+
 // Doutu State
 const hotDoutuKeywords: string[] = ['搞笑', '熊猫头', '蘑菇头', '狗头', '流汗', '吃瓜', '吃惊']
 
@@ -1728,6 +1758,21 @@ onMounted(async () => {
           <div style="font-size: 14px; color: #cbd5e1; line-height: 1.8; white-space: pre-wrap; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
             {{ activeWordDetail.explanation || activeWordDetail.more || '暂无更多详细解释' }}
           </div>
+
+          <!-- 字数统计与一键复制 -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
+            <span style="font-size: 13px; font-weight: 700; color: #60a5fa; background: rgba(96, 165, 250, 0.15); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(96, 165, 250, 0.3);">
+              📝 释义字符长度：{{ (activeWordDetail.explanation || activeWordDetail.more || '').length }} 字
+            </span>
+            <el-button
+              type="primary"
+              :icon="CopyDocument"
+              style="font-weight: 700;"
+              @click="copyCustomText(`【${activeWordDetail.word}】拼音：${activeWordDetail.pinyin || ''}\n释义：${activeWordDetail.explanation || activeWordDetail.more || ''}`, '字典释义已成功复制！')"
+            >
+              📋 复制字义全解
+            </el-button>
+          </div>
         </div>
       </el-dialog>
 
@@ -1744,6 +1789,21 @@ onMounted(async () => {
               <span style="font-size: 16px; font-weight: 700; color: #f8fafc;">#{{ idx + 1 }} {{ kw.word }}</span>
               <span style="font-size: 13px; font-weight: 700; color: #c084fc;">权重得分: {{ kw.score ? kw.score.toFixed(4) : '高' }}</span>
             </div>
+          </div>
+
+          <!-- 字数统计与一键复制 -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
+            <span style="font-size: 13px; font-weight: 700; color: #c084fc; background: rgba(192, 132, 252, 0.15); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(192, 132, 252, 0.3);">
+              📝 原文字符长度：{{ nlpText.length }} 字
+            </span>
+            <el-button
+              type="primary"
+              :icon="CopyDocument"
+              style="font-weight: 700;"
+              @click="copyCustomText(`原文：${nlpText}\n\n提取关键词：${nlpKeywordList.map(k => k.word + (k.score ? '(' + k.score.toFixed(2) + ')' : '')).join(', ')}`, '关键词与原文已成功复制！')"
+            >
+              📋 复制关键词与原文
+            </el-button>
           </div>
         </div>
       </el-dialog>
@@ -1770,6 +1830,21 @@ onMounted(async () => {
 
             <div style="font-size: 14px; color: #cbd5e1; line-height: 1.8; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; max-height: 340px; overflow-y: auto; white-space: pre-wrap;">
               {{ activeEventDetail.content || activeEventDetail.title }}
+            </div>
+
+            <!-- 字数统计与一键复制全文 (精确显示字符长度) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 10px;">
+              <span style="font-size: 13px; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.15); padding: 6px 14px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.3);">
+                📝 全文字符长度：{{ (activeEventDetail.content || activeEventDetail.title || '').length }} 字
+              </span>
+              <el-button
+                type="primary"
+                :icon="CopyDocument"
+                style="font-weight: 700;"
+                @click="copyCustomText(`【${activeEventDetail.year || activeEventDetail.lsdb || ''}年${activeEventDetail.month ? activeEventDetail.month + '月' : ''}${activeEventDetail.day ? activeEventDetail.day + '日' : ''}】${activeEventDetail.title}\n\n${activeEventDetail.content || ''}`, '历史事件全文已成功复制到剪贴板！')"
+              >
+                📋 一键复制事件全文
+              </el-button>
             </div>
           </template>
         </div>
