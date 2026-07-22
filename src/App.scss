@@ -731,18 +731,29 @@
 .route-view-layer {
   position: fixed;
   inset: 0;
-  z-index: 3000;
+  z-index: 900;
   background: #0a0d14;
   overflow-y: auto;
 }
 .route-view-bar {
   position: sticky;
   top: 0;
-  z-index: 3001;
+  z-index: 901;
   display: flex;
   align-items: center;
   padding: 8px 16px;
   background: #2f5b88;
+}
+
+/* Ensure Element Plus Messages, Overlays & Message-Boxes are ALWAYS above route-view-layer */
+.el-message {
+  z-index: 99999 !important;
+}
+.el-overlay {
+  z-index: 99990 !important;
+}
+.el-message-box__wrapper {
+  z-index: 99995 !important;
 }
 
 .route-browser-notice {

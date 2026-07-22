@@ -88,13 +88,24 @@ const fetchQuote = async (typeid?: number | null, showSuccessToast: boolean = fa
     if (res.data.code === 200 && res.data.data) {
       currentQuote.value = res.data.data
       if (showSuccessToast) {
-        ElMessage.success('已刷新获取新的一句名言！')
+        ElMessage({
+          message: '已刷新获取新的一句名言！',
+          type: 'success',
+          grouping: true,
+          duration: 2000
+        })
       }
     } else {
-      ElMessage.error(res.data.message || '获取名言失败，请重试')
+      ElMessage({
+        message: res.data.message || '获取名言失败，请重试',
+        type: 'error'
+      })
     }
   } catch (e) {
-    ElMessage.error('网络请求失败，请稍后刷新')
+    ElMessage({
+      message: '网络请求失败，请稍后刷新',
+      type: 'error'
+    })
   } finally {
     loadingQuote.value = false
   }
@@ -113,7 +124,12 @@ const copyQuoteText = (quote: MingyanQuoteItem): void => {
   const text: string = `“${quote.content}” —— ${quote.author || '匿名'}`
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => {
-      ElMessage.success('名言金句已成功复制到剪贴板！')
+      ElMessage({
+        message: '名言金句已成功复制到剪贴板！',
+        type: 'success',
+        grouping: true,
+        duration: 2000
+      })
     }).catch(() => {
       fallbackCopy(text)
     })
@@ -129,9 +145,17 @@ function fallbackCopy(text: string) {
   textArea.select()
   try {
     document.execCommand('copy')
-    ElMessage.success('名言金句已成功复制到剪贴板！')
+    ElMessage({
+      message: '名言金句已成功复制到剪贴板！',
+      type: 'success',
+      grouping: true,
+      duration: 2000
+    })
   } catch (err) {
-    ElMessage.error('复制失败，请手动选中文本复制')
+    ElMessage({
+      message: '复制失败，请手动选中文本复制',
+      type: 'error'
+    })
   }
   document.body.removeChild(textArea)
 }
@@ -142,29 +166,44 @@ const toggleFavorite = (quote: MingyanQuoteItem): void => {
   )
   if (idx >= 0) {
     favoriteQuotes.value.splice(idx, 1)
-    ElMessage.info('已取消收藏')
+    ElMessage({
+      message: '已从金句收藏库中取消收藏',
+      type: 'info',
+      grouping: true
+    })
   } else {
     favoriteQuotes.value.unshift({ ...quote, typeid: selectedTypeId.value || quote.typeid })
-    ElMessage.success('已添加到金句收藏库！')
+    ElMessage({
+      message: '已成功添加到金句收藏库！',
+      type: 'success',
+      grouping: true
+    })
   }
   localStorage.setItem('favorite_mingyan_quotes', JSON.stringify(favoriteQuotes.value))
 }
 
 const confirmRemoveFavorite = (index: number, quote: MingyanQuoteItem): void => {
   ElMessageBox.confirm(
-    `确定要从收藏库中删除“${quote.content.substring(0, 18)}${quote.content.length > 18 ? '...' : ''}”这句名言吗？`,
+    `确定要从您的金句收藏库中删除这句名言吗？\n\n“${quote.content.substring(0, 20)}${quote.content.length > 20 ? '...' : ''}”`,
     '确认删除提示',
     {
       confirmButtonText: '确定删除',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
+      lockScroll: false
     }
   ).then(() => {
     favoriteQuotes.value.splice(index, 1)
     localStorage.setItem('favorite_mingyan_quotes', JSON.stringify(favoriteQuotes.value))
-    ElMessage.success('已从金句收藏库中删除该名言！')
+    ElMessage({
+      message: '已从金句收藏库中成功删除该名言！',
+      type: 'success'
+    })
   }).catch(() => {
-    ElMessage.info('已取消删除操作')
+    ElMessage({
+      message: '已取消删除操作',
+      type: 'info'
+    })
   })
 }
 
