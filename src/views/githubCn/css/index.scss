@@ -113,6 +113,28 @@
   }
 }
 
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qq-mailme-link {
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+  img {
+    display: block;
+    height: 22px;
+  }
+
+  &:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+  }
+}
+
 .back-btn {
   padding: 6px 14px;
   border-radius: 8px;

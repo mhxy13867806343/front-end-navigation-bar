@@ -407,6 +407,15 @@ watch(() => route.query, () => {
         </nav>
 
         <div class="nav-actions">
+          <a
+            target="_blank"
+            href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=uYGPgI6IiYiOgPnIyJfa1tQ"
+            style="text-decoration:none;"
+            class="qq-mailme-link"
+            title="QQ 邮我 - 联系作者"
+          >
+            <img src="http://rescdn.qqmail.com/zh_CN/htmledition/images/function/qm_open/ico_mailme_21.png" alt="QQ 邮我" />
+          </a>
           <button type="button" class="back-btn" @click="router.push('/toolbox')">
             ← 工具箱
           </button>

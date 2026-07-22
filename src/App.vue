@@ -851,6 +851,15 @@ watch(isDarkMode, () => {
               📧
             </a>
 
+            <a
+              target="_blank"
+              href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=uYGPgI6IiYiOgPnIyJfa1tQ"
+              style="text-decoration:none; display: inline-flex; align-items: center;"
+              title="QQ 邮我 - 邮箱联系"
+            >
+              <img src="http://rescdn.qqmail.com/zh_CN/htmledition/images/function/qm_open/ico_mailme_21.png" alt="QQ Mailme" style="height: 20px; display: block;" />
+            </a>
+
             <button class="dropdown-trigger gold-price-btn" @click="openGoldPriceToolbox">
               🪙 第三方页面集
             </button>
