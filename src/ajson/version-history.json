@@ -1,9 +1,59 @@
 {
-  "generatedAt": "2026-07-22T11:08:55.039Z",
+  "generatedAt": "2026-07-22T11:58:52.062Z",
   "groups": [
     {
       "date": "2026-07-22",
       "items": [
+        {
+          "hash": "b0ff092e4959be8eab50caeafc2e972c0b752539",
+          "shortHash": "b0ff092",
+          "date": "2026-07-22",
+          "time": "19:48",
+          "type": "问题修复",
+          "title": "bind activeCategory and selectedTag click handlers to trigger real API category and tag filtering in cocoloop feed (/cocoloop)",
+          "scope": "",
+          "message": "fix: bind activeCategory and selectedTag click handlers to trigger real API category and tag filtering in cocoloop feed (/cocoloop)"
+        },
+        {
+          "hash": "1ec77f7059c1987f5c173a33472d321a72f84924",
+          "shortHash": "1ec77f7",
+          "date": "2026-07-22",
+          "time": "19:37",
+          "type": "功能更新",
+          "title": "refactor CocoLoop page with 1:1 Discourse community UI, left sidebar menu, banner, avatar stack, and infinite scroll (/cocoloop)",
+          "scope": "",
+          "message": "feat: refactor CocoLoop page with 1:1 Discourse community UI, left sidebar menu, banner, avatar stack, and infinite scroll (/cocoloop)"
+        },
+        {
+          "hash": "70a03d219e132a27fb555b76e83b0a58ecea14c1",
+          "shortHash": "70a03d2",
+          "date": "2026-07-22",
+          "time": "19:34",
+          "type": "功能更新",
+          "title": "add CocoLoop community latest feed page with infinite scroll loading, tag filtering, detail modal, and proxy setup (/cocoloop)",
+          "scope": "",
+          "message": "feat: add CocoLoop community latest feed page with infinite scroll loading, tag filtering, detail modal, and proxy setup (/cocoloop)"
+        },
+        {
+          "hash": "0a6c1ca5e9c490118441c9efa570ac01ac07261d",
+          "shortHash": "0a6c1ca",
+          "date": "2026-07-22",
+          "time": "19:18",
+          "type": "样式调整",
+          "title": "add cursor: pointer and hover effects for view detail buttons and clickable list items in bigScreen",
+          "scope": "",
+          "message": "style: add cursor: pointer and hover effects for view detail buttons and clickable list items in bigScreen"
+        },
+        {
+          "hash": "88df5d48bda48a586c0581175cb47fcdd026ccf1",
+          "shortHash": "88df5d4",
+          "date": "2026-07-22",
+          "time": "19:14",
+          "type": "问题修复",
+          "title": "add cursor pointer and hover effect to all 查看详情 action buttons on big screen",
+          "scope": "",
+          "message": "fix: add cursor pointer and hover effect to all 查看详情 action buttons on big screen"
+        },
         {
           "hash": "7f09a06533760cc09185ce40cd9bf4dacf323284",
           "shortHash": "7f09a06",
@@ -253,56 +303,6 @@
           "title": "resolve z-index layer conflict on route-view-layer to ensure ElMessage toasts and ElMessageBox confirm dialogs are ALWAYS visible",
           "scope": "",
           "message": "fix: resolve z-index layer conflict on route-view-layer to ensure ElMessage toasts and ElMessageBox confirm dialogs are ALWAYS visible"
-        },
-        {
-          "hash": "a2e3f984f98c2c442f7af4dbc0c1941d2fba6419",
-          "shortHash": "a2e3f98",
-          "date": "2026-07-22",
-          "time": "10:13",
-          "type": "功能更新",
-          "title": "add ALAPI名人名言 category to api_list.json, build visual mingyan cards in apiCenter detail view and direct avatar jump to juejin.cn/user/1310273588955581",
-          "scope": "",
-          "message": "feat: add ALAPI名人名言 category to api_list.json, build visual mingyan cards in apiCenter detail view and direct avatar jump to juejin.cn/user/1310273588955581"
-        },
-        {
-          "hash": "ce93d706aef8346299375da91554ede087c5d514",
-          "shortHash": "ce93d70",
-          "date": "2026-07-22",
-          "time": "09:45",
-          "type": "问题修复",
-          "title": "upgrade author avatar click to explicit ElDialog with user link 1310273588955581 and add loading state to refresh button in mingyan",
-          "scope": "",
-          "message": "fix: upgrade author avatar click to explicit ElDialog with user link 1310273588955581 and add loading state to refresh button in mingyan"
-        },
-        {
-          "hash": "a3c75e8e51674308e7f13bbeecc40292f0e43254",
-          "shortHash": "a3c75e8",
-          "date": "2026-07-22",
-          "time": "09:40",
-          "type": "问题修复",
-          "title": "add ElMessageBox confirm modal for mingyan deletion, explicit copy/refresh toasts and user profile popover navigation to juejin.cn/user/1310273588955581",
-          "scope": "",
-          "message": "fix: add ElMessageBox confirm modal for mingyan deletion, explicit copy/refresh toasts and user profile popover navigation to juejin.cn/user/1310273588955581"
-        },
-        {
-          "hash": "fa7ea3f41278c83a6a4c38cadea70a07f158c589",
-          "shortHash": "fa7ea3f",
-          "date": "2026-07-22",
-          "time": "09:25",
-          "type": "问题修复",
-          "title": "declare goToMingyan and goMingyan navigation handlers in BrowserSupportNotice.vue and App.vue",
-          "scope": "",
-          "message": "fix: declare goToMingyan and goMingyan navigation handlers in BrowserSupportNotice.vue and App.vue"
-        },
-        {
-          "hash": "6a41dc2a459ac4fd15b0834c444923baa92bc88c",
-          "shortHash": "6a41dc2",
-          "date": "2026-07-22",
-          "time": "09:07",
-          "type": "功能更新",
-          "title": "add famous quotes interactive page /mingyan with ALAPI category filter, quote cards and local favorites",
-          "scope": "",
-          "message": "feat: add famous quotes interactive page /mingyan with ALAPI category filter, quote cards and local favorites"
         }
       ]
     }

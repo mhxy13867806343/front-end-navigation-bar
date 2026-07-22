@@ -1,0 +1,199 @@
+.three-showcase-home {
+  min-height: calc(100dvh - 46px);
+  padding: 36px;
+  background:
+    radial-gradient(circle at top, rgba(89, 213, 255, 0.16), transparent 32%),
+    linear-gradient(180deg, #030712 0%, #050b1d 52%, #050814 100%);
+  color: #eef4ff;
+}
+
+.three-showcase-hero,
+.three-showcase-featured,
+.three-showcase-filter,
+.three-showcase-steps {
+  max-width: 1280px;
+  margin: 0 auto 24px;
+}
+
+.three-showcase-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 24px;
+  padding: 34px;
+  border-radius: 34px;
+  border: 1px solid rgba(96, 136, 255, 0.18);
+  background: rgba(5, 10, 24, 0.88);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.32);
+}
+
+.three-showcase-hero__eyebrow,
+.section-title p {
+  margin: 0 0 12px;
+  color: #7beaff;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.three-showcase-hero h1,
+.section-title h2 {
+  margin: 0;
+  line-height: 1.05;
+}
+
+.three-showcase-hero h1 {
+  max-width: 720px;
+  font-size: 58px;
+}
+
+.three-showcase-hero__desc {
+  max-width: 760px;
+  margin: 20px 0 0;
+  color: rgba(219, 230, 255, 0.78);
+  line-height: 1.85;
+}
+
+.three-showcase-hero__actions,
+.detail-hero__actions,
+.lab-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.primary-btn,
+.ghost-btn {
+  padding: 12px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.primary-btn {
+  border: 1px solid rgba(86, 212, 255, 0.26);
+  background: linear-gradient(135deg, #3d7fff, #59d5ff);
+  color: #021224;
+  font-weight: 700;
+}
+
+.ghost-btn {
+  border: 1px solid rgba(109, 142, 255, 0.24);
+  background: rgba(14, 20, 42, 0.92);
+  color: #eef4ff;
+}
+
+.three-showcase-hero__highlights {
+  display: grid;
+  gap: 14px;
+}
+
+.highlight-card {
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 14, 30, 0.88);
+}
+
+.highlight-card strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.highlight-card p {
+  margin: 0;
+  color: rgba(221, 231, 255, 0.74);
+  line-height: 1.7;
+}
+
+.highlight-card--cyan { box-shadow: inset 0 0 0 1px rgba(88, 213, 255, 0.12); }
+.highlight-card--violet { box-shadow: inset 0 0 0 1px rgba(184, 131, 255, 0.12); }
+.highlight-card--gold { box-shadow: inset 0 0 0 1px rgba(255, 203, 107, 0.12); }
+
+.section-title {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.section-title h2 {
+  font-size: 30px;
+}
+
+.featured-grid,
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.category-tabs button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 142, 255, 0.18);
+  background: rgba(10, 14, 26, 0.88);
+  color: #dae8ff;
+  cursor: pointer;
+}
+
+.category-tabs button.active {
+  border-color: rgba(88, 213, 255, 0.48);
+  color: #7ceeff;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.step-card {
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(105, 136, 255, 0.16);
+  background: rgba(8, 12, 30, 0.92);
+}
+
+.step-card span {
+  color: #72f5ff;
+  font-weight: 700;
+}
+
+.step-card strong {
+  display: block;
+  margin: 14px 0 10px;
+  font-size: 18px;
+}
+
+.step-card p {
+  margin: 0;
+  color: rgba(216, 228, 255, 0.72);
+  line-height: 1.7;
+}
+
+@media (max-width: 1180px) {
+  .three-showcase-home { padding: 22px; }
+  .three-showcase-hero { grid-template-columns: 1fr; }
+  .featured-grid,
+  .example-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .three-showcase-hero h1 { font-size: 42px; }
+}
+
+@media (max-width: 720px) {
+  .three-showcase-home { padding: 16px; }
+  .featured-grid,
+  .example-grid,
+  .steps-grid { grid-template-columns: 1fr; }
+  .three-showcase-hero h1 { font-size: 34px; }
+}

@@ -44,6 +44,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '📊',
     path: '/big-screen',
     tag: 'Big Screen'
+  },
+  {
+    id: 'three-showcase',
+    name: 'Three.js 示例中心',
+    desc: '集中展示从基础到高级的 Three.js 示例代码、参数调节、互动实验和轻量小游戏。',
+    icon: '🪐',
+    path: '/three-showcase',
+    tag: 'Three.js'
   }
 ]
 

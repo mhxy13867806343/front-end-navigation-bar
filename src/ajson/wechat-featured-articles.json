@@ -1,7 +1,15 @@
 [
   {
-    "date": "微信公众号精选 · 2026-06",
+    "date": "微信公众号精选 · 2026-07",
     "items": [
+      {
+        "slug": "threejs-showcase-guide",
+        "title": "Three.js 3D 示例中心全攻略：从基础几何体到交互场景与 3D 小游戏实战",
+        "link": "https://mp.weixin.qq.com/s/J62wvjNYy79h5dFDRo1Vcw",
+        "desc": "文章系统性介绍了 Three.js 3D 可视化示例中心的架构设计与实现：包含基础几何体、光影环轨、粒子星河、波浪地形、霓虹门廊、能量球收集与陨石闪避 3D 小游戏，详细拆解了 WebGL 渲染管线、OrbitControls、参数实时映射与 Dispose 内存销毁回收最佳实践。",
+        "source": "3D 前端前沿实验室 · 2026-07-22 20:10",
+        "tags": ["Three.js", "WebGL", "3D可视化", "前端实战", "交互小游戏"]
+      },
       {
         "slug": "frontend-utils",
         "title": "写了几年前端，这 10 个小函数从没被我抛弃过",

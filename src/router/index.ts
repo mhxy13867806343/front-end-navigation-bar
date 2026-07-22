@@ -101,6 +101,21 @@ const routes = [
     path: '/big-screen',
     name: 'BigScreen',
     component: BigScreen
+  },
+  {
+    path: '/three-showcase',
+    name: 'ThreeShowcase',
+    component: () => import('../views/threeShowcase/index.vue')
+  },
+  {
+    path: '/three-showcase/example/:id',
+    name: 'ThreeShowcaseExample',
+    component: () => import('../views/threeShowcase/example.vue')
+  },
+  {
+    path: '/three-showcase/lab',
+    name: 'ThreeShowcaseLab',
+    component: () => import('../views/threeShowcase/lab.vue')
   }
 ]
 

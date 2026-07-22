@@ -11,7 +11,8 @@
     "test:mcp": "node --test scripts/validate-mcp-navigation.test.mts",
     "test:navigation": "node --test scripts/navigation-sources.test.mts",
     "test:developer-toolbox": "node --test scripts/developer-toolbox.test.mts",
-    "test:games": "node --test scripts/classic-games.test.mts"
+    "test:games": "node --test scripts/classic-games.test.mts",
+    "test:three-showcase": "node --test scripts/three-showcase-smoke.test.mts"
   },
   "dependencies": {
     "autofit.js": "^3.2.8",
@@ -25,6 +26,7 @@
     "jquery": "^3.7.1",
     "naive-ui": "^2.44.1",
     "pinyin-pro": "^3.28.1",
+    "three": "^0.180.0",
     "v-scale-screen": "^2.3.0",
     "vue": "^3.5.39",
     "vue-advanced-cropper": "^2.8.9",
