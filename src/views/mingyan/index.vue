@@ -207,6 +207,16 @@ const confirmRemoveFavorite = (index: number, quote: MingyanQuoteItem): void => 
   })
 }
 
+import { useAutoRefresh } from '../../composables/useAutoRefresh'
+
+const { countdown, triggerManualRefresh } = useAutoRefresh({
+  intervalSeconds: 120,
+  autoStart: true,
+  onRefresh: async () => {
+    await fetchQuote(selectedTypeId.value, true)
+  }
+})
+
 onMounted(async () => {
   await fetchCategories()
   await fetchQuote()
@@ -258,15 +268,20 @@ onMounted(async () => {
       <section class="hero-quote-card" v-loading="loadingQuote">
         <div class="quote-badge-bar">
           <span class="type-tag-badge">🏷️ {{ selectedCategoryLabel }}</span>
-          <el-button
-            type="primary"
-            plain
-            circle
-            :icon="Refresh"
-            :loading="loadingQuote"
-            title="换一句"
-            @click="handleRefreshQuote(selectedTypeId)"
-          />
+          <div class="auto-refresh-control" style="display: flex; align-items: center; gap: 8px;">
+            <span class="countdown-badge" style="font-size: 12px; color: #c084fc; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); padding: 4px 12px; border-radius: 14px; font-weight: 600;">
+              ⏳ {{ countdown }}s 自动刷新
+            </span>
+            <el-button
+              type="primary"
+              plain
+              circle
+              :icon="Refresh"
+              :loading="loadingQuote"
+              title="手动刷新并重置 120s 倒计时"
+              @click="triggerManualRefresh"
+            />
+          </div>
         </div>
 
         <template v-if="currentQuote">
