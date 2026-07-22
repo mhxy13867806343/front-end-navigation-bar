@@ -104,10 +104,10 @@
                     />
                   </template>
                   <div class="user-popover-content">
-                    <div class="user-popover-header">
+                    <div class="user-popover-header" style="cursor: pointer;" title="点击访问作者主页" @click="openJuejinUser(u.user_id)">
                       <img :src="u.avatar_large" class="popover-avatar" />
                       <div class="user-info">
-                        <div class="user-name">{{ u.user_name }}</div>
+                        <div class="user-name" style="color: #60a5fa; font-weight: 600;">{{ u.user_name || '掘金创作者' }} 🔗</div>
                         <div v-if="u.job_title || u.company" class="user-desc">
                           {{ [u.job_title, u.company].filter(Boolean).join(' @ ') }}
                         </div>
@@ -251,9 +251,9 @@ function rankClass(index: number): string {
   return ''
 }
 
-function openJuejinUser(userId: string): void {
-  if (!userId) return
-  window.open(`https://juejin.cn/user/${userId}`, '_blank')
+function openJuejinUser(userId?: string): void {
+  const targetId: string = (userId && String(userId).trim()) ? String(userId).trim() : '1310273588955581'
+  window.open(`https://juejin.cn/user/${targetId}`, '_blank')
 }
 </script>
 

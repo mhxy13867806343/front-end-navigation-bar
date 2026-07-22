@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { CopyDocument, Refresh, Star, StarFilled, Delete } from '@element-plus/icons-vue'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
 
@@ -73,7 +73,7 @@ const fetchCategories = async (): Promise<void> => {
 }
 
 // Step 2: 再 2 - 获取指定类型或随机名言内容
-const fetchQuote = async (typeid?: number | null): Promise<void> => {
+const fetchQuote = async (typeid?: number | null, showSuccessToast: boolean = false): Promise<void> => {
   loadingQuote.value = true
   try {
     const params: Record<string, string | number> = {
@@ -87,6 +87,9 @@ const fetchQuote = async (typeid?: number | null): Promise<void> => {
     const res = await axios.get<AlapiResponse<MingyanQuoteItem>>(buildAlapiUrl('/api/mingyan'), { params })
     if (res.data.code === 200 && res.data.data) {
       currentQuote.value = res.data.data
+      if (showSuccessToast) {
+        ElMessage.success('已刷新获取新的一句名言！')
+      }
     } else {
       ElMessage.error(res.data.message || '获取名言失败，请重试')
     }
@@ -102,11 +105,35 @@ const selectCategory = (typeid: number | null): void => {
   void fetchQuote(typeid)
 }
 
+const handleRefreshQuote = (typeid?: number | null): void => {
+  void fetchQuote(typeid, true)
+}
+
 const copyQuoteText = (quote: MingyanQuoteItem): void => {
   const text: string = `“${quote.content}” —— ${quote.author || '匿名'}`
-  void navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success('名言金句已复制到剪贴板')
-  })
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage.success('名言金句已成功复制到剪贴板！')
+    }).catch(() => {
+      fallbackCopy(text)
+    })
+  } else {
+    fallbackCopy(text)
+  }
+}
+
+function fallbackCopy(text: string) {
+  const textArea = document.createElement('textarea')
+  textArea.value = text
+  document.body.appendChild(textArea)
+  textArea.select()
+  try {
+    document.execCommand('copy')
+    ElMessage.success('名言金句已成功复制到剪贴板！')
+  } catch (err) {
+    ElMessage.error('复制失败，请手动选中文本复制')
+  }
+  document.body.removeChild(textArea)
 }
 
 const toggleFavorite = (quote: MingyanQuoteItem): void => {
@@ -118,15 +145,27 @@ const toggleFavorite = (quote: MingyanQuoteItem): void => {
     ElMessage.info('已取消收藏')
   } else {
     favoriteQuotes.value.unshift({ ...quote, typeid: selectedTypeId.value || quote.typeid })
-    ElMessage.success('已添加到金句收藏')
+    ElMessage.success('已添加到金句收藏库！')
   }
   localStorage.setItem('favorite_mingyan_quotes', JSON.stringify(favoriteQuotes.value))
 }
 
-const removeFavorite = (index: number): void => {
-  favoriteQuotes.value.splice(index, 1)
-  localStorage.setItem('favorite_mingyan_quotes', JSON.stringify(favoriteQuotes.value))
-  ElMessage.info('已移除收藏')
+const confirmRemoveFavorite = (index: number, quote: MingyanQuoteItem): void => {
+  ElMessageBox.confirm(
+    `确定要从收藏库中删除“${quote.content.substring(0, 18)}${quote.content.length > 18 ? '...' : ''}”这句名言吗？`,
+    '确认删除提示',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    favoriteQuotes.value.splice(index, 1)
+    localStorage.setItem('favorite_mingyan_quotes', JSON.stringify(favoriteQuotes.value))
+    ElMessage.success('已从金句收藏库中删除该名言！')
+  }).catch(() => {
+    ElMessage.info('已取消删除操作')
+  })
 }
 
 onMounted(async () => {
@@ -186,7 +225,7 @@ onMounted(async () => {
             circle
             :icon="Refresh"
             title="换一句"
-            @click="fetchQuote(selectedTypeId)"
+            @click="handleRefreshQuote(selectedTypeId)"
           />
         </div>
 
@@ -205,7 +244,7 @@ onMounted(async () => {
               size="large"
               class="action-btn"
               :icon="Refresh"
-              @click="fetchQuote(selectedTypeId)"
+              @click="handleRefreshQuote(selectedTypeId)"
             >
               🔄 换一句 / 刷新
             </el-button>
@@ -222,7 +261,7 @@ onMounted(async () => {
               :type="isCurrentFavorite ? 'warning' : 'default'"
               size="large"
               class="action-btn"
-              :icon="isCurrentFavorite ? StarFilled : Star"
+              :icon="StarFilled"
               @click="toggleFavorite(currentQuote)"
             >
               {{ isCurrentFavorite ? '已收藏' : '⭐ 收藏金句' }}
@@ -258,7 +297,7 @@ onMounted(async () => {
                   circle
                   :icon="Delete"
                   title="删除收藏"
-                  @click="removeFavorite(idx)"
+                  @click="confirmRemoveFavorite(idx, item)"
                 />
               </div>
             </div>
