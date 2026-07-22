@@ -372,6 +372,16 @@ const doutuPage = ref<number>(1)
 const doutuList = ref<string[]>([])
 const loadingDoutu = ref<boolean>(false)
 const failedDoutuImages = ref<Record<string, boolean>>({})
+const showPageNumbersList = ref<boolean>(true)
+
+const upcomingDoutuPages = computed<number[]>(() => {
+  const current = doutuPage.value
+  const pages: number[] = []
+  for (let i = 0; i <= 5; i++) {
+    pages.push(current + i)
+  }
+  return pages
+})
 
 const handleDoutuImageError = (url: string): void => {
   failedDoutuImages.value[url] = true
@@ -1110,8 +1120,8 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- 顶部分页控制栏 (与底部分页保持同步) -->
-        <div class="doutu-pagination-bar" style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+        <!-- 顶部分页控制栏 (包含可打击的数字页码 6,7,8,9,10 与 展开/隐藏控制按钮) -->
+        <div class="doutu-pagination-bar" style="margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
           <el-button
             type="primary"
             plain
@@ -1133,6 +1143,30 @@ onMounted(async () => {
           >
             下一页 ▶
           </el-button>
+
+          <el-button
+            size="small"
+            type="info"
+            plain
+            style="margin-left: 8px;"
+            @click="showPageNumbersList = !showPageNumbersList"
+          >
+            {{ showPageNumbersList ? '🙈 隐藏页码' : '🔢 展开页码' }}
+          </el-button>
+
+          <div v-if="showPageNumbersList" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <button
+              v-for="pNum in upcomingDoutuPages"
+              :key="pNum"
+              type="button"
+              class="category-pill"
+              :class="{ active: doutuPage === pNum }"
+              style="padding: 4px 12px; font-size: 13px; font-weight: 700; border-radius: 12px;"
+              @click="fetchDoutu(pNum)"
+            >
+              {{ pNum }}
+            </button>
+          </div>
         </div>
 
         <!-- 表情包图片网格 (支持预览、复制链接、收藏，加载失败时自动隐藏操作按钮) -->
@@ -1165,8 +1199,8 @@ onMounted(async () => {
         </div>
         <el-empty v-else description="暂无表情包图片，请尝试其他关键词" />
 
-        <!-- 真正可点击的分页按钮组 (支持上一页/下一页/页码点击) -->
-        <div class="doutu-pagination-bar" style="margin-top: 28px; display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
+        <!-- 底部分页控制栏 (包含可打击的数字页码 6,7,8,9,10 与 展开/隐藏控制按钮) -->
+        <div class="doutu-pagination-bar" style="margin-top: 28px; display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; background: rgba(22, 19, 43, 0.6); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);">
           <el-button
             type="primary"
             plain
@@ -1188,6 +1222,30 @@ onMounted(async () => {
           >
             下一页 ▶
           </el-button>
+
+          <el-button
+            size="small"
+            type="info"
+            plain
+            style="margin-left: 8px;"
+            @click="showPageNumbersList = !showPageNumbersList"
+          >
+            {{ showPageNumbersList ? '🙈 隐藏页码' : '🔢 展开页码' }}
+          </el-button>
+
+          <div v-if="showPageNumbersList" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <button
+              v-for="pNum in upcomingDoutuPages"
+              :key="pNum"
+              type="button"
+              class="category-pill"
+              :class="{ active: doutuPage === pNum }"
+              style="padding: 4px 12px; font-size: 13px; font-weight: 700; border-radius: 12px;"
+              @click="fetchDoutu(pNum)"
+            >
+              {{ pNum }}
+            </button>
+          </div>
         </div>
 
         <!-- 表情包收藏库 -->
