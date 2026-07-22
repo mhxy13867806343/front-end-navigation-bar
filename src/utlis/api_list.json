@@ -1398,6 +1398,129 @@
       "responseType": "json"
     }
   ],
+  "ALAPI土味情话": [
+    {
+      "name": "土味情话",
+      "desc": "随机获取浪漫搞笑土味情话。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/qinghua",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "format",
+          "label": "返回格式",
+          "description": "支持 json, text",
+          "type": "text",
+          "placeholder": "json",
+          "required": false,
+          "default": "json"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "ALAPI谜语大全": [
+    {
+      "name": "随机谜语",
+      "desc": "随机获取一道谜语题目与对应答案。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/riddle/random",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "谜语类型",
+      "desc": "获取所有谜语分类类型列表。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/riddle/type",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    },
+    {
+      "name": "谜语列表",
+      "desc": "分页查询指定类型的谜语题目与答案。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/riddle",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "type",
+          "label": "谜语类型",
+          "description": "例如 chengyumiyu, zhiliwenda, shiwumiyu",
+          "type": "text",
+          "placeholder": "谜语类型编码",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "page",
+          "label": "页码",
+          "description": "默认第 1 页",
+          "type": "number",
+          "placeholder": "1",
+          "required": false,
+          "default": 1
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",
