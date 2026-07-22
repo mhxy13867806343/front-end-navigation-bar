@@ -1329,6 +1329,7 @@
       "hasBody": false,
       "bodyPlaceholder": "",
       "skipAuth": true,
+      "responseType": "json"
     }
   ],
   "ALAPI名人名言": [
