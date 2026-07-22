@@ -11,6 +11,8 @@ type DiggType = 'today' | 'yesterday' | 'week' | 'month'
 const router = useRouter()
 const activeTab = ref<PrimaryTab>('latest')
 const activeDiggType = ref<DiggType>('today')
+const currentPage = ref<number>(1)
+const totalPages = ref<number>(100)
 const newsList = ref<CnblogsNewsItem[]>([])
 const loading = ref<boolean>(false)
 const searchQuery = ref<string>('')
@@ -18,11 +20,20 @@ const selectedTag = ref<string | null>(null)
 const activeNewsDetail = ref<CnblogsNewsItem | null>(null)
 const detailModalVisible = ref<boolean>(false)
 
-const parseCnblogsHtml = (htmlText: string): CnblogsNewsItem[] => {
+const parseCnblogsHtml = (htmlText: string): { items: CnblogsNewsItem[]; maxPage?: number } => {
   const parser = new DOMParser()
   const doc = parser.parseFromString(htmlText, 'text/html')
   const blocks = doc.querySelectorAll('.news_block')
   const items: CnblogsNewsItem[] = []
+
+  let maxPage: number | undefined = undefined
+  const pagerLinks = doc.querySelectorAll('.pager a, #pager a, .p_1, .p_2, .p_3')
+  pagerLinks.forEach(link => {
+    const num = parseInt(link.textContent || '', 10)
+    if (!isNaN(num) && num > (maxPage || 0)) {
+      maxPage = num
+    }
+  })
 
   blocks.forEach((block) => {
     const id = block.id.replace('entry_', '') || String(Math.floor(Math.random() * 900000 + 100000))
@@ -77,27 +88,37 @@ const parseCnblogsHtml = (htmlText: string): CnblogsNewsItem[] => {
     })
   })
 
-  return items
+  return { items, maxPage }
 }
 
 const fetchNewsData = async (): Promise<void> => {
   loading.value = true
   try {
     let targetPath = '/api-cnblogs/'
-    if (activeTab.value === 'recommend') {
-      targetPath = '/api-cnblogs/n/recommend'
+    const page = currentPage.value
+
+    if (activeTab.value === 'latest') {
+      targetPath = page === 1 ? '/api-cnblogs/' : `/api-cnblogs/n/page/${page}/`
+    } else if (activeTab.value === 'recommend') {
+      targetPath = page === 1 ? '/api-cnblogs/n/recommend' : `/api-cnblogs/n/recommend?page=${page}`
     } else if (activeTab.value === 'digg') {
-      targetPath = `/api-cnblogs/n/digg?type=${activeDiggType.value}`
+      targetPath = page === 1 
+        ? `/api-cnblogs/n/digg?type=${activeDiggType.value}`
+        : `/api-cnblogs/n/digg?type=${activeDiggType.value}&page=${page}`
     }
 
     const apiUrl = resolveApiUrl(targetPath)
     const res = await fetch(apiUrl)
     if (!res.ok) throw new Error(`HTTP error ${res.status}`)
     const htmlText = await res.text()
-    const parsed = parseCnblogsHtml(htmlText)
+    const { items, maxPage } = parseCnblogsHtml(htmlText)
 
-    if (parsed.length > 0) {
-      newsList.value = parsed
+    if (maxPage && maxPage > 1) {
+      totalPages.value = maxPage
+    }
+
+    if (items.length > 0) {
+      newsList.value = items
     } else {
       newsList.value = fallbackCnblogsNews
     }
@@ -111,15 +132,62 @@ const fetchNewsData = async (): Promise<void> => {
 
 const handleTabChange = (tab: PrimaryTab): void => {
   activeTab.value = tab
+  currentPage.value = 1
   selectedTag.value = null
   void fetchNewsData()
 }
 
 const handleDiggTypeChange = (type: DiggType): void => {
   activeDiggType.value = type
+  currentPage.value = 1
   selectedTag.value = null
   void fetchNewsData()
 }
+
+const changePage = (page: number | string): void => {
+  if (typeof page === 'string') return
+  if (page < 1 || page > totalPages.value || page === currentPage.value) return
+  currentPage.value = page
+  void fetchNewsData()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const visiblePageNumbers = computed<Array<number | string>>(() => {
+  const current = currentPage.value
+  const total = totalPages.value
+  const pages: Array<number | string> = []
+
+  if (total <= 9) {
+    for (let i = 1; i <= total; i++) pages.push(i)
+    return pages
+  }
+
+  pages.push(1)
+
+  let start = Math.max(2, current - 3)
+  let end = Math.min(total - 1, current + 3)
+
+  if (current <= 5) {
+    end = 8
+  } else if (current >= total - 4) {
+    start = total - 7
+  }
+
+  if (start > 2) {
+    pages.push('...')
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+
+  if (end < total - 1) {
+    pages.push('...')
+  }
+
+  pages.push(total)
+  return pages
+})
 
 const handleRefresh = (): void => {
   void fetchNewsData()
@@ -195,7 +263,7 @@ onMounted(() => {
           :class="{ active: activeTab === 'latest' }"
           @click="handleTabChange('latest')"
         >
-          <span>🆕 最新发布</span>
+          <span>最新发布</span>
         </button>
         <button
           type="button"
@@ -203,7 +271,7 @@ onMounted(() => {
           :class="{ active: activeTab === 'recommend' }"
           @click="handleTabChange('recommend')"
         >
-          <span>👍 推荐新闻</span>
+          <span>推荐新闻</span>
         </button>
         <button
           type="button"
@@ -211,14 +279,13 @@ onMounted(() => {
           :class="{ active: activeTab === 'digg' }"
           @click="handleTabChange('digg')"
         >
-          <span>🔥 热门新闻</span>
+          <span>热门新闻</span>
         </button>
       </div>
 
       <!-- Sub-Tabs for Digg / 热门新闻 (matching screenshot) -->
       <transition name="fade">
         <div v-if="activeTab === 'digg'" class="digg-subtabs">
-          <span class="subtabs-label">热门时间跨度：</span>
           <button
             type="button"
             class="subtab-item"
@@ -296,7 +363,7 @@ onMounted(() => {
     <section class="news-list-container">
       <div v-if="loading" class="loading-state">
         <div class="spinner"></div>
-        <p>正在拉取博客园实时科技新闻...</p>
+        <p>正在拉取第 {{ currentPage }} 页科技新闻...</p>
       </div>
 
       <div v-else-if="filteredNewsList.length === 0" class="empty-state">
@@ -334,6 +401,39 @@ onMounted(() => {
             </footer>
           </div>
         </article>
+
+        <!-- Cnblogs Retro/Modern Pagination Bar (Matching Screenshot) -->
+        <nav class="cnblogs-pager-bar">
+          <button
+            type="button"
+            class="pager-btn pager-nav"
+            :disabled="currentPage <= 1 || loading"
+            @click="changePage(currentPage - 1)"
+          >
+            &lt; Prev
+          </button>
+
+          <button
+            v-for="(p, index) in visiblePageNumbers"
+            :key="index"
+            type="button"
+            class="pager-btn"
+            :class="{ active: p === currentPage, ellipsis: typeof p === 'string' }"
+            :disabled="typeof p === 'string' || loading"
+            @click="changePage(p)"
+          >
+            {{ p }}
+          </button>
+
+          <button
+            type="button"
+            class="pager-btn pager-nav"
+            :disabled="currentPage >= totalPages || loading"
+            @click="changePage(currentPage + 1)"
+          >
+            Next &gt;
+          </button>
+        </nav>
       </div>
     </section>
 

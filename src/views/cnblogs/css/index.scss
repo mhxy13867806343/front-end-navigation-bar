@@ -400,3 +400,61 @@
     background: #1a6cf0;
   }
 }
+
+/* Cnblogs Pager Bar (Matching Screenshot) */
+.cnblogs-pager-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 28px;
+  padding: 20px 0;
+  border-top: 1px dashed var(--border-color, #e5e7eb);
+}
+
+.pager-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid #79a6db;
+  background: #ffffff;
+  color: #2b7fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #2b7fff;
+    background: rgba(43, 127, 255, 0.1);
+  }
+
+  &.active {
+    background: #1d6edc;
+    border-color: #1d6edc;
+    color: #ffffff;
+  }
+
+  &.ellipsis {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    cursor: default;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.pager-nav {
+  padding: 0 12px;
+}
+
