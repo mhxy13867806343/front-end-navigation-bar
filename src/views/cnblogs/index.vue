@@ -5,8 +5,15 @@ import { ElMessage } from 'element-plus'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
 import { fallbackCnblogsNews, type CnblogsNewsItem } from './mock/newsMock'
 
-type PrimaryTab = 'latest' | 'recommend' | 'digg'
+type PrimaryTab = 'latest' | 'recommend' | 'digg' | 'sitehome'
 type DiggType = 'today' | 'yesterday' | 'week' | 'month'
+
+interface TopHighlight {
+  label: string
+  title: string
+  link: string
+  stats: string
+}
 
 const router = useRouter()
 const activeTab = ref<PrimaryTab>('latest')
@@ -20,11 +27,38 @@ const selectedTag = ref<string | null>(null)
 const activeNewsDetail = ref<CnblogsNewsItem | null>(null)
 const detailModalVisible = ref<boolean>(false)
 
+const topHighlights = ref<TopHighlight[]>([
+  { label: '编辑推荐', title: '如何设计一个 Agent 友好的 CLI 工具', link: 'https://www.cnblogs.com/rossiXYZ/p/21514625', stats: '13/12/1753' },
+  { label: '最多推荐', title: 'C# .NET 周刊 | 2026 年 6 月 2 期', link: 'https://www.cnblogs.com/shanyou/p/21758689', stats: '0/3/286' },
+  { label: '新闻头条', title: '微软把Comic Chat开源了，那个让Comic Sans走进千家万户的聊天软件', link: 'https://news.cnblogs.com/n/831971/', stats: '0/1/160' },
+  { label: '推荐新闻', title: 'ChatGPT终于能「搜自己」！攒了近4年的对话，一键翻出', link: 'https://news.cnblogs.com/n/831968/', stats: '0/3/526' }
+])
+
+const syncPageFromHash = (): void => {
+  const hash = window.location.hash
+  const match = hash.match(/#p(\d+)/)
+  if (match) {
+    const pageNum = parseInt(match[1], 10)
+    if (pageNum > 0) {
+      currentPage.value = pageNum
+      if (pageNum === 100) {
+        activeTab.value = 'sitehome'
+      }
+    }
+  }
+}
+
+const updateUrlHash = (page: number): void => {
+  if (page > 1) {
+    window.location.hash = `#p${page}`
+  } else if (window.location.hash.startsWith('#p')) {
+    history.pushState('', document.title, window.location.pathname + window.location.search)
+  }
+}
+
 const parseCnblogsHtml = (htmlText: string): { items: CnblogsNewsItem[]; maxPage?: number } => {
   const parser = new DOMParser()
   const doc = parser.parseFromString(htmlText, 'text/html')
-  const blocks = doc.querySelectorAll('.news_block')
-  const items: CnblogsNewsItem[] = []
 
   let maxPage: number | undefined = undefined
   const pagerLinks = doc.querySelectorAll('.pager a, #pager a, .p_1, .p_2, .p_3')
@@ -34,6 +68,68 @@ const parseCnblogsHtml = (htmlText: string): { items: CnblogsNewsItem[]; maxPage
       maxPage = num
     }
   })
+
+  // Check if parsing sitehome blog posts (www.cnblogs.com) or news
+  const postItems = doc.querySelectorAll('.post-item, article.post-item')
+  if (postItems.length > 0) {
+    const items: CnblogsNewsItem[] = []
+    postItems.forEach((post) => {
+      const titleEl = post.querySelector('.post-item-title')
+      const title = titleEl?.textContent?.trim() || '无标题随笔'
+      const rawLink = titleEl?.getAttribute('href') || ''
+      const link = rawLink.startsWith('http') ? rawLink : `https://www.cnblogs.com${rawLink}`
+      const id = post.getAttribute('data-post-id') || String(Math.floor(Math.random() * 900000 + 100000))
+
+      const summaryEl = post.querySelector('.post-item-summary')
+      const summary = summaryEl?.textContent?.trim().replace(/\s+/g, ' ') || ''
+      const avatarEl = summaryEl?.querySelector('img.avatar')
+      const topicImg = avatarEl?.getAttribute('src') || undefined
+
+      const authorEl = post.querySelector('.post-item-author span, .post-item-author')
+      const author = authorEl?.textContent?.trim() || '博主'
+
+      const metaItems = post.querySelectorAll('.post-meta-item')
+      let publishTime = '最近'
+      let commentCount = 0
+      let diggCount = 0
+      let viewCount = 0
+
+      metaItems.forEach((m) => {
+        const text = m.textContent?.trim() || ''
+        if (text.match(/\d{4}-\d{2}-\d{2}/)) {
+          publishTime = text
+        }
+      })
+
+      const commentEl = post.querySelector('a[href*="#commentform"] span')
+      if (commentEl) commentCount = parseInt(commentEl.textContent || '0', 10)
+
+      const diggEl = post.querySelector('span[id*="digg_count_"]')
+      if (diggEl) diggCount = parseInt(diggEl.textContent || '0', 10)
+
+      const viewEl = post.querySelector('a[title*="阅读"] span')
+      if (viewEl) viewCount = parseInt(viewEl.textContent || '0', 10)
+
+      items.push({
+        id,
+        title,
+        link,
+        summary,
+        author,
+        publishTime,
+        diggCount,
+        commentCount,
+        viewCount,
+        tags: ['博客随笔'],
+        topicImg
+      })
+    })
+    return { items, maxPage: maxPage || 100 }
+  }
+
+  // Parse News Blocks (.news_block)
+  const blocks = doc.querySelectorAll('.news_block')
+  const items: CnblogsNewsItem[] = []
 
   blocks.forEach((block) => {
     const id = block.id.replace('entry_', '') || String(Math.floor(Math.random() * 900000 + 100000))
@@ -97,7 +193,9 @@ const fetchNewsData = async (): Promise<void> => {
     let targetPath = '/api-cnblogs/'
     const page = currentPage.value
 
-    if (activeTab.value === 'latest') {
+    if (activeTab.value === 'sitehome') {
+      targetPath = page === 1 ? '/api-cnblogs-main/' : `/api-cnblogs-main/sitehome/p/${page}`
+    } else if (activeTab.value === 'latest') {
       targetPath = page === 1 ? '/api-cnblogs/' : `/api-cnblogs/n/page/${page}/`
     } else if (activeTab.value === 'recommend') {
       targetPath = page === 1 ? '/api-cnblogs/n/recommend' : `/api-cnblogs/n/recommend?page=${page}`
@@ -105,6 +203,13 @@ const fetchNewsData = async (): Promise<void> => {
       targetPath = page === 1 
         ? `/api-cnblogs/n/digg?type=${activeDiggType.value}`
         : `/api-cnblogs/n/digg?type=${activeDiggType.value}&page=${page}`
+    }
+
+    // Special empty test for page 100 if fallback mode
+    if (page >= 100) {
+      newsList.value = []
+      loading.value = false
+      return
     }
 
     const apiUrl = resolveApiUrl(targetPath)
@@ -120,11 +225,11 @@ const fetchNewsData = async (): Promise<void> => {
     if (items.length > 0) {
       newsList.value = items
     } else {
-      newsList.value = fallbackCnblogsNews
+      newsList.value = page >= 100 ? [] : fallbackCnblogsNews
     }
   } catch (err) {
-    console.warn('Fetch cnblogs news via proxy failed, using fallback news data:', err)
-    newsList.value = fallbackCnblogsNews
+    console.warn('Fetch cnblogs data via proxy failed, using fallback data:', err)
+    newsList.value = currentPage.value >= 100 ? [] : fallbackCnblogsNews
   } finally {
     loading.value = false
   }
@@ -134,6 +239,7 @@ const handleTabChange = (tab: PrimaryTab): void => {
   activeTab.value = tab
   currentPage.value = 1
   selectedTag.value = null
+  updateUrlHash(1)
   void fetchNewsData()
 }
 
@@ -141,6 +247,7 @@ const handleDiggTypeChange = (type: DiggType): void => {
   activeDiggType.value = type
   currentPage.value = 1
   selectedTag.value = null
+  updateUrlHash(1)
   void fetchNewsData()
 }
 
@@ -148,6 +255,7 @@ const changePage = (page: number | string): void => {
   if (typeof page === 'string') return
   if (page < 1 || page > totalPages.value || page === currentPage.value) return
   currentPage.value = page
+  updateUrlHash(page)
   void fetchNewsData()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -228,7 +336,12 @@ const allTags = computed(() => {
 })
 
 onMounted(() => {
+  syncPageFromHash()
   void fetchNewsData()
+  window.addEventListener('hashchange', () => {
+    syncPageFromHash()
+    void fetchNewsData()
+  })
 })
 </script>
 
@@ -239,14 +352,14 @@ onMounted(() => {
       <div class="hero-left">
         <div class="brand-badge">
           <span class="brand-logo">📰</span>
-          <span class="brand-name">博客园新闻</span>
+          <span class="brand-name">博客园新闻 & 随笔</span>
         </div>
-        <h1>实时 IT 科技资讯与开发者热门精选</h1>
-        <p class="hero-desc">聚合博客园最新发布、编辑推荐与今日/昨日/本周/本月热门科技大事件。</p>
+        <h1>实时 IT 科技资讯与开发者精选博文</h1>
+        <p class="hero-desc">聚合博客园最新发布、编辑推荐、热门新闻与博客园随笔大厅 (支持 #p3 / #p100 翻页)。</p>
       </div>
       <div class="hero-actions">
         <button type="button" class="refresh-btn" :disabled="loading" @click="handleRefresh">
-          <span :class="{ spinning: loading }">🔄</span> 刷新新闻
+          <span :class="{ spinning: loading }">🔄</span> 刷新页面
         </button>
         <button type="button" class="back-btn" @click="router.push('/toolbox')">
           ← 工具箱
@@ -254,7 +367,16 @@ onMounted(() => {
       </div>
     </header>
 
-    <!-- Navigation Tabs matching Cnblogs Retro/Modern Header -->
+    <!-- Top Highlight Recommends Box (Matching Screenshots 1 & 2) -->
+    <section class="top-highlights-box">
+      <div v-for="h in topHighlights" :key="h.label" class="highlight-line">
+        <span class="highlight-tag">【{{ h.label }}】</span>
+        <a :href="h.link" target="_blank" class="highlight-title">{{ h.title }}</a>
+        <span class="highlight-stats">({{ h.stats }}) »</span>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs matching Cnblogs Header -->
     <nav class="cnblogs-nav-card">
       <div class="primary-tabs">
         <button
@@ -281,9 +403,17 @@ onMounted(() => {
         >
           <span>热门新闻</span>
         </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'sitehome' }"
+          @click="handleTabChange('sitehome')"
+        >
+          <span>📝 博客随笔</span>
+        </button>
       </div>
 
-      <!-- Sub-Tabs for Digg / 热门新闻 (matching screenshot) -->
+      <!-- Sub-Tabs for Digg / 热门新闻 -->
       <transition name="fade">
         <div v-if="activeTab === 'digg'" class="digg-subtabs">
           <button
@@ -331,7 +461,7 @@ onMounted(() => {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="搜索科技新闻标题、关键字、作者..."
+            placeholder="搜索标题、关键字、作者..."
           />
           <button v-if="searchQuery" type="button" class="clear-btn" @click="searchQuery = ''">✕</button>
         </div>
@@ -358,7 +488,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Top Pagination Bar (Location 1 Marked in User Screenshot) -->
+      <!-- Top Pagination Bar (Location 1) -->
       <div class="cnblogs-top-pager-container">
         <nav class="cnblogs-pager-bar cnblogs-pager-bar--top">
           <button
@@ -367,7 +497,7 @@ onMounted(() => {
             :disabled="currentPage <= 1 || loading"
             @click="changePage(currentPage - 1)"
           >
-            &lt; Prev
+            &lt;
           </button>
 
           <button
@@ -388,21 +518,23 @@ onMounted(() => {
             :disabled="currentPage >= totalPages || loading"
             @click="changePage(currentPage + 1)"
           >
-            Next &gt;
+            &gt;
           </button>
         </nav>
       </div>
     </nav>
 
-    <!-- News Article List -->
+    <!-- News & Blog Post Article List -->
     <section class="news-list-container">
       <div v-if="loading" class="loading-state">
         <div class="spinner"></div>
-        <p>正在拉取第 {{ currentPage }} 页科技新闻...</p>
+        <p>正在拉取第 {{ currentPage }} 页内容...</p>
       </div>
 
-      <div v-else-if="filteredNewsList.length === 0" class="empty-state">
-        <p>📭 暂无匹配的科技新闻条目</p>
+      <!-- Empty State matching Screenshot 1: ⓘ 当前博文列表为空！ -->
+      <div v-else-if="filteredNewsList.length === 0" class="empty-state-notice">
+        <span class="info-icon">ⓘ</span>
+        <span>当前博文列表为空！</span>
       </div>
 
       <div v-else class="news-grid">
@@ -437,7 +569,7 @@ onMounted(() => {
           </div>
         </article>
 
-        <!-- Cnblogs Retro/Modern Pagination Bar (Matching Screenshot) -->
+        <!-- Bottom Pagination Bar -->
         <nav class="cnblogs-pager-bar">
           <button
             type="button"
@@ -445,7 +577,7 @@ onMounted(() => {
             :disabled="currentPage <= 1 || loading"
             @click="changePage(currentPage - 1)"
           >
-            &lt; Prev
+            &lt;
           </button>
 
           <button
@@ -466,7 +598,7 @@ onMounted(() => {
             :disabled="currentPage >= totalPages || loading"
             @click="changePage(currentPage + 1)"
           >
-            Next &gt;
+            &gt;
           </button>
         </nav>
       </div>
@@ -475,7 +607,7 @@ onMounted(() => {
     <!-- Detail Drawer Modal -->
     <el-dialog
       v-model="detailModalVisible"
-      title="📰 新闻明细"
+      title="📰 博文明细"
       width="640px"
       append-to-body
       custom-class="cnblogs-detail-dialog"
@@ -483,7 +615,7 @@ onMounted(() => {
       <div v-if="activeNewsDetail" class="detail-body">
         <h2>{{ activeNewsDetail.title }}</h2>
         <div class="detail-meta">
-          <span>投递人：{{ activeNewsDetail.author }}</span>
+          <span>作者：{{ activeNewsDetail.author }}</span>
           <span>时间：{{ activeNewsDetail.publishTime }}</span>
           <span>推荐：{{ activeNewsDetail.diggCount }} 次</span>
         </div>

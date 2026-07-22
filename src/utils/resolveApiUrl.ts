@@ -35,7 +35,8 @@ const PROXY_MAP: Record<string, string> = {
   '/api-hall-of-fame': 'https://ai-bot.cn/ai-hall-of-fame/',
   '/api-home': 'https://ai-bot.cn',
   '/api-cocoloop': 'https://www.cocoloop.cn',
-  '/api-cnblogs': 'https://news.cnblogs.com'
+  '/api-cnblogs': 'https://news.cnblogs.com',
+  '/api-cnblogs-main': 'https://www.cnblogs.com'
 }
 
 /**
