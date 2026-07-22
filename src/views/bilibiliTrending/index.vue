@@ -34,6 +34,8 @@ const handleImgError = (item: BilibiliTrendingItem): void => {
   item.iconError = true
 }
 
+const hasValidIcon = (item: BilibiliTrendingItem): boolean => Boolean(item.icon && !item.iconError)
+
 const getWordTypeBadge = (item: BilibiliTrendingItem) => {
   if (item.word_type === 4) return { text: '新', class: 'badge-new' }
   if (item.word_type === 5) return { text: '热', class: 'badge-hot' }
@@ -154,7 +156,7 @@ onMounted(() => {
           <!-- Badge Pills (新 / 热 / 梗 / 独家 / 直播) -->
           <div class="badge-container">
             <img
-              v-if="item.icon && !item.iconError"
+              v-if="hasValidIcon(item)"
               :src="formatBilibiliIcon(item.icon)"
               alt="icon"
               class="badge-icon-img"
@@ -171,7 +173,7 @@ onMounted(() => {
           </div>
 
           <!-- Right Arrow '>' -->
-          <div class="arrow-icon">&gt;</div>
+          <div v-if="hasValidIcon(item)" class="arrow-icon">&gt;</div>
         </div>
       </div>
     </div>

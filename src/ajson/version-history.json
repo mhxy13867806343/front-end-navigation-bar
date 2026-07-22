@@ -1,9 +1,149 @@
 {
-  "generatedAt": "2026-07-22T12:34:43.497Z",
+  "generatedAt": "2026-07-22T14:37:51.111Z",
   "groups": [
     {
       "date": "2026-07-22",
       "items": [
+        {
+          "hash": "554b2b0f82a1aca0c368492a685da8f937164be1",
+          "shortHash": "554b2b0",
+          "date": "2026-07-22",
+          "time": "22:34",
+          "type": "问题修复",
+          "title": "only show badge when word_type is not 8 (plain)",
+          "scope": "bilibili-trending",
+          "message": "fix(bilibili-trending): only show badge when word_type is not 8 (plain)"
+        },
+        {
+          "hash": "373cbb9dc09c78222224c7e0b5f1e6063b6b5986",
+          "shortHash": "373cbb9",
+          "date": "2026-07-22",
+          "time": "22:32",
+          "type": "问题修复",
+          "title": "fix CDN icon loading with referrerpolicy, https upgrade, and fallback text badge",
+          "scope": "bilibili-trending",
+          "message": "fix(bilibili-trending): fix CDN icon loading with referrerpolicy, https upgrade, and fallback text badge"
+        },
+        {
+          "hash": "81b56d5f1a0395fdb2c55d56610d30773ddf9b40",
+          "shortHash": "81b56d5",
+          "date": "2026-07-22",
+          "time": "22:28",
+          "type": "功能更新",
+          "title": "add Bilibili search trending ranking page (/bilibili-trending) with 1:1 dark theme UI",
+          "scope": "",
+          "message": "feat: add Bilibili search trending ranking page (/bilibili-trending) with 1:1 dark theme UI"
+        },
+        {
+          "hash": "a2f0237f10aa1145a8714e78c1734c7949094807",
+          "shortHash": "a2f0237",
+          "date": "2026-07-22",
+          "time": "22:20",
+          "type": "功能更新",
+          "title": "add QQ Mailme badge link to header navbar and GitHub CN page",
+          "scope": "",
+          "message": "feat: add QQ Mailme badge link to header navbar and GitHub CN page"
+        },
+        {
+          "hash": "595c13ab8592ef393aed7e6d1c183b7b8b915f38",
+          "shortHash": "595c13a",
+          "date": "2026-07-22",
+          "time": "22:12",
+          "type": "问题修复",
+          "title": "resolve proxy prefix collision 404 error, add /api-github-cn-backend endpoint, and integrate Naive UI load-more button",
+          "scope": "github-cn",
+          "message": "fix(github-cn): resolve proxy prefix collision 404 error, add /api-github-cn-backend endpoint, and integrate Naive UI load-more button"
+        },
+        {
+          "hash": "dde8277047f547cda43df5d2784a8067177fee62",
+          "shortHash": "dde8277",
+          "date": "2026-07-22",
+          "time": "21:51",
+          "type": "问题修复",
+          "title": "add live API fetch on filter change, fix dropdown item switching for sub-resource tabs, and highlight active item",
+          "scope": "github-cn",
+          "message": "fix(github-cn): add live API fetch on filter change, fix dropdown item switching for sub-resource tabs, and highlight active item"
+        },
+        {
+          "hash": "9bcfd99d63ed3a6e1fe74b345fe6517c60b3d5d3",
+          "shortHash": "9bcfd99",
+          "date": "2026-07-22",
+          "time": "21:35",
+          "type": "功能更新",
+          "title": "add GitHub CN page (/github-cn) with trends, ranking, weekly, collections, active filter, and dark theme UI",
+          "scope": "",
+          "message": "feat: add GitHub CN page (/github-cn) with trends, ranking, weekly, collections, active filter, and dark theme UI"
+        },
+        {
+          "hash": "d8b627bb703f9452bf22cd47fa648c7eec724535",
+          "shortHash": "d8b627b",
+          "date": "2026-07-22",
+          "time": "21:15",
+          "type": "功能更新",
+          "title": "add sitehome blog posts feed with #p3 / #p100 URL hash routing, top highlights banner, and empty state notice",
+          "scope": "cnblogs",
+          "message": "feat(cnblogs): add sitehome blog posts feed with #p3 / #p100 URL hash routing, top highlights banner, and empty state notice"
+        },
+        {
+          "hash": "35d0bd6b36f696e9ebcf0d12bd8f169f0748022d",
+          "shortHash": "35d0bd6",
+          "date": "2026-07-22",
+          "time": "21:09",
+          "type": "功能更新",
+          "title": "place top pagination bar in location 1 under filter tags and above news list",
+          "scope": "cnblogs",
+          "message": "feat(cnblogs): place top pagination bar in location 1 under filter tags and above news list"
+        },
+        {
+          "hash": "e1a75725ba6d6826c3d38291f32a9ae47a48685c",
+          "shortHash": "e1a7572",
+          "date": "2026-07-22",
+          "time": "21:04",
+          "type": "功能更新",
+          "title": "add page pagination bar and exact URL request mappings for /n/page/X/, /n/recommend?page=X, and /n/digg?type=X&page=X",
+          "scope": "cnblogs",
+          "message": "feat(cnblogs): add page pagination bar and exact URL request mappings for /n/page/X/, /n/recommend?page=X, and /n/digg?type=X&page=X"
+        },
+        {
+          "hash": "7ca9b20436ff6544a2b975d29aa05bc5b9d309f5",
+          "shortHash": "7ca9b20",
+          "date": "2026-07-22",
+          "time": "21:00",
+          "type": "功能更新",
+          "title": "add Cnblogs News page (/cnblogs) with latest, recommend, and hot (today/yesterday/week/month) tabs, proxy endpoint, search filter, and detail drawer",
+          "scope": "",
+          "message": "feat: add Cnblogs News page (/cnblogs) with latest, recommend, and hot (today/yesterday/week/month) tabs, proxy endpoint, search filter, and detail drawer"
+        },
+        {
+          "hash": "56cd8374789f3148d5dbf7c0c77d099934668cf1",
+          "shortHash": "56cd837",
+          "date": "2026-07-22",
+          "time": "20:44",
+          "type": "问题修复",
+          "title": "re-align grid panels into 3 equal-height columns to completely remove vertical empty gaps",
+          "scope": "big-screen",
+          "message": "fix(big-screen): re-align grid panels into 3 equal-height columns to completely remove vertical empty gaps"
+        },
+        {
+          "hash": "e458c5862312c17e6c6af4c00b09383e20284d25",
+          "shortHash": "e458c58",
+          "date": "2026-07-22",
+          "time": "20:42",
+          "type": "问题修复",
+          "title": "place China City Map Panel in center column as main centerpiece and add offline GeoJSON fallback for network resilience",
+          "scope": "big-screen",
+          "message": "fix(big-screen): place China City Map Panel in center column as main centerpiece and add offline GeoJSON fallback for network resilience"
+        },
+        {
+          "hash": "de0313f46620acadda55e736284988dd5bf2ce35",
+          "shortHash": "de0313f",
+          "date": "2026-07-22",
+          "time": "20:36",
+          "type": "问题修复",
+          "title": "fix armL/armR/legL/legR rotation reference error in mario-3d animation loop",
+          "scope": "three-showcase",
+          "message": "fix(three-showcase): fix armL/armR/legL/legR rotation reference error in mario-3d animation loop"
+        },
         {
           "hash": "7812ed112df4e8915371b15f005f1388319b6717",
           "shortHash": "7812ed1",
@@ -163,146 +303,6 @@
           "title": "resolve DatePicker date change not updating Event History data by extracting month and day directly from timestamp",
           "scope": "",
           "message": "fix: resolve DatePicker date change not updating Event History data by extracting month and day directly from timestamp"
-        },
-        {
-          "hash": "d98a871df8500ebcea3f53f94a04f6dcf24c1e51",
-          "shortHash": "d98a871",
-          "date": "2026-07-22",
-          "time": "12:18",
-          "type": "功能更新",
-          "title": "replace text inputs in Event History with Naive UI NDatePicker component",
-          "scope": "",
-          "message": "feat: replace text inputs in Event History with Naive UI NDatePicker component"
-        },
-        {
-          "hash": "a2505d203da4588f1003acdb0cf3c75ee13a491b",
-          "shortHash": "a2505d2",
-          "date": "2026-07-22",
-          "time": "12:14",
-          "type": "功能更新",
-          "title": "add Xinhua Word, NLP Keyword, and Event History tabs to mingyan page with click-to-open detail modals",
-          "scope": "",
-          "message": "feat: add Xinhua Word, NLP Keyword, and Event History tabs to mingyan page with click-to-open detail modals"
-        },
-        {
-          "hash": "ef14fa6494221aaf8e374a40539371c7a9a861a9",
-          "shortHash": "ef14fa6",
-          "date": "2026-07-22",
-          "time": "12:04",
-          "type": "功能更新",
-          "title": "add Naive UI NSelect page jumper dropdown menu to Doutu pagination bars",
-          "scope": "",
-          "message": "feat: add Naive UI NSelect page jumper dropdown menu to Doutu pagination bars"
-        },
-        {
-          "hash": "a1e3ccab8baf1829abdfc729a976a62ad161f396",
-          "shortHash": "a1e3cca",
-          "date": "2026-07-22",
-          "time": "11:59",
-          "type": "功能更新",
-          "title": "add Doutu search history (max 12, hot keyword filtering, confirmation modal on clear)",
-          "scope": "",
-          "message": "feat: add Doutu search history (max 12, hot keyword filtering, confirmation modal on clear)"
-        },
-        {
-          "hash": "3003191a85cdb1ea351c69d1a971c307bfc97ee0",
-          "shortHash": "3003191",
-          "date": "2026-07-22",
-          "time": "11:58",
-          "type": "功能更新",
-          "title": "add dynamic page number buttons (5,6,7,8,9,10) with show/hide toggle for Doutu pagination",
-          "scope": "",
-          "message": "feat: add dynamic page number buttons (5,6,7,8,9,10) with show/hide toggle for Doutu pagination"
-        },
-        {
-          "hash": "23de0f1d28de6ea84e9ed83c82dd926944c87340",
-          "shortHash": "23de0f1",
-          "date": "2026-07-22",
-          "time": "11:56",
-          "type": "功能更新",
-          "title": "add top pagination control bar above doutu image grid for convenient page navigation",
-          "scope": "",
-          "message": "feat: add top pagination control bar above doutu image grid for convenient page navigation"
-        },
-        {
-          "hash": "a65303a159dcfb77749ae134df7bf1475bdb3bbe",
-          "shortHash": "a65303a",
-          "date": "2026-07-22",
-          "time": "11:53",
-          "type": "功能更新",
-          "title": "add Doutu Meme Search API with interactive pagination, favorite controls and broken image auto-hiding buttons",
-          "scope": "",
-          "message": "feat: add Doutu Meme Search API with interactive pagination, favorite controls and broken image auto-hiding buttons"
-        },
-        {
-          "hash": "d351bf9b42e7d290a7fb26fc4b621c0020795d57",
-          "shortHash": "d351bf9",
-          "date": "2026-07-22",
-          "time": "11:25",
-          "type": "功能更新",
-          "title": "add Shici classical poetry API to mingyan page as 4th Tab with type filtering, favorite, and confirm delete dialogs",
-          "scope": "",
-          "message": "feat: add Shici classical poetry API to mingyan page as 4th Tab with type filtering, favorite, and confirm delete dialogs"
-        },
-        {
-          "hash": "7e986f38aa491ed9b99458a24582abc9ae0c75e6",
-          "shortHash": "7e986f3",
-          "date": "2026-07-22",
-          "time": "11:16",
-          "type": "功能更新",
-          "title": "add favorite and confirm delete dialogs for qinghua and riddle tabs",
-          "scope": "",
-          "message": "feat: add favorite and confirm delete dialogs for qinghua and riddle tabs"
-        },
-        {
-          "hash": "266ba9d64fd966af4bc957530072e0663909da15",
-          "shortHash": "266ba9d",
-          "date": "2026-07-22",
-          "time": "11:13",
-          "type": "功能更新",
-          "title": "add qinghua & riddle APIs with 5s tab switch cooldown throttle on mingyan page",
-          "scope": "",
-          "message": "feat: add qinghua & riddle APIs with 5s tab switch cooldown throttle on mingyan page"
-        },
-        {
-          "hash": "0280ed5c9f4875d46e5fbdc95fc474ccc5ff5d70",
-          "shortHash": "0280ed5",
-          "date": "2026-07-22",
-          "time": "11:02",
-          "type": "问题修复",
-          "title": "move all import statements to the very top of script setup in mingyan/index.vue to fix ReferenceError",
-          "scope": "",
-          "message": "fix: move all import statements to the very top of script setup in mingyan/index.vue to fix ReferenceError"
-        },
-        {
-          "hash": "5e26e6ff5c45c3a09c9a5fa8bfb1317f0563e151",
-          "shortHash": "5e26e6f",
-          "date": "2026-07-22",
-          "time": "10:57",
-          "type": "功能更新",
-          "title": "default to 2 rows of category tags with pure CSS max-height smooth animation expand/collapse",
-          "scope": "",
-          "message": "feat: default to 2 rows of category tags with pure CSS max-height smooth animation expand/collapse"
-        },
-        {
-          "hash": "8bc74dfc587a4bb71dfbbc854da4752bc49ab324",
-          "shortHash": "8bc74df",
-          "date": "2026-07-22",
-          "time": "10:52",
-          "type": "功能更新",
-          "title": "make famous quote category pills drag-and-drop sortable with persistence except fixed 全部随机",
-          "scope": "",
-          "message": "feat: make famous quote category pills drag-and-drop sortable with persistence except fixed 全部随机"
-        },
-        {
-          "hash": "66dbae1dd5c99ecea216164e71da28b654b10a78",
-          "shortHash": "66dbae1",
-          "date": "2026-07-22",
-          "time": "10:35",
-          "type": "功能更新",
-          "title": "create reusable useAutoRefresh composable and apply 120s auto refresh countdown to mingyan page",
-          "scope": "",
-          "message": "feat: create reusable useAutoRefresh composable and apply 120s auto refresh countdown to mingyan page"
         }
       ]
     }
