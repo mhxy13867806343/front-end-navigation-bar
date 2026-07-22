@@ -171,6 +171,13 @@ onBeforeUnmount((): void => {
   background: rgba(70, 95, 193, 0.1);
   color: #afc0ff;
   font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: rgba(70, 95, 193, 0.25);
+    color: #dce4ff;
+  }
 }
 
 .china-map-panel__canvas {

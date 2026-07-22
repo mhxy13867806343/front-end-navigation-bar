@@ -71,7 +71,8 @@
 .screen-header,
 .big-screen-toolbar,
 .metric-grid,
-.screen-layout {
+.screen-layout,
+.screen-bottom-row {
   position: relative;
   z-index: 1;
 }
@@ -235,6 +236,14 @@
   align-items: start;
 }
 
+.screen-bottom-row {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
 .screen-column,
 .screen-column--center {
   display: grid;
@@ -280,6 +289,13 @@
   background: rgba(70, 95, 193, 0.1);
   color: #afc0ff;
   font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: rgba(70, 95, 193, 0.25);
+    color: #dce4ff;
+  }
 }
 
 .chart-panel__canvas {
@@ -454,6 +470,10 @@
   .screen-layout {
     grid-template-columns: 320px minmax(0, 1fr) 300px;
   }
+
+  .screen-bottom-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .big-screen-page--compact {
@@ -490,6 +510,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .screen-bottom-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .chart-panel__canvas {
     height: 180px;
   }
@@ -515,6 +539,7 @@
 
   .big-screen-page--compact .screen-layout,
   .big-screen-page--compact .dual-panel-row,
+  .big-screen-page--compact .screen-bottom-row,
   .big-screen-page--compact .detail-drawer__metrics {
     grid-template-columns: 1fr;
   }

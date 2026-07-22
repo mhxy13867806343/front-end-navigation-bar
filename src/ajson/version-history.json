@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-22T10:46:53.543Z",
+  "generatedAt": "2026-07-22T11:08:55.039Z",
   "groups": [
     {
       "date": "2026-07-22",
       "items": [
+        {
+          "hash": "7f09a06533760cc09185ce40cd9bf4dacf323284",
+          "shortHash": "7f09a06",
+          "date": "2026-07-22",
+          "time": "18:54",
+          "type": "功能更新",
+          "title": "add success toast with timestamp on mock data refresh button click",
+          "scope": "",
+          "message": "feat: add success toast with timestamp on mock data refresh button click"
+        },
         {
           "hash": "5566921ce4b62502d4c7b4c2ee41292b8635bace",
           "shortHash": "5566921",
@@ -293,16 +303,6 @@
           "title": "add famous quotes interactive page /mingyan with ALAPI category filter, quote cards and local favorites",
           "scope": "",
           "message": "feat: add famous quotes interactive page /mingyan with ALAPI category filter, quote cards and local favorites"
-        },
-        {
-          "hash": "fabed6b56fe9ffb0f7ff7bdf6a290d0374d34b51",
-          "shortHash": "fabed6b",
-          "date": "2026-07-22",
-          "time": "01:11",
-          "type": "文档更新",
-          "title": "add Python, Rust, Codex, TRAE, Devin, Antigravity, ChatGPT, Gemini, JetBrains, Godot tools to developer ecosystem links and bat scripts",
-          "scope": "",
-          "message": "docs: add Python, Rust, Codex, TRAE, Devin, Antigravity, ChatGPT, Gemini, JetBrains, Godot tools to developer ecosystem links and bat scripts"
         }
       ]
     }
