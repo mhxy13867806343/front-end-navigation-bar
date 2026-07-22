@@ -1759,6 +1759,92 @@
       "responseType": "json"
     }
   ],
+  "ALAPI二维码生成": [
+    {
+      "name": "二维码生成",
+      "desc": "将文本或网址转化为二维码图片。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/qr",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "content",
+          "label": "二维码内容",
+          "description": "要生成二维码的文本或链接",
+          "type": "text",
+          "placeholder": "输入文本或网址",
+          "required": true,
+          "default": "https://github.com/mhxy13867806343"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "ALAPI中文转拼音": [
+    {
+      "name": "中文转拼音",
+      "desc": "将中文汉字转换为带有音标的注音拼音。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/pinyin",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "word",
+          "label": "中文字符",
+          "description": "要转换的中文字符",
+          "type": "text",
+          "placeholder": "输入中文字符串",
+          "required": true,
+          "default": "自强不息，厚德载物"
+        },
+        {
+          "name": "tone",
+          "label": "包含音标",
+          "description": "0或1",
+          "type": "number",
+          "placeholder": "0",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "abbr",
+          "label": "首字母模式",
+          "description": "0或1",
+          "type": "number",
+          "placeholder": "0",
+          "required": false,
+          "default": 0
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",

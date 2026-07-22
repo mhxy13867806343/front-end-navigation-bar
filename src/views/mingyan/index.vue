@@ -61,7 +61,7 @@ interface ShiciItem {
 }
 
 // Active Tab & 5s Cooldown State
-const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici' | 'doutu' | 'word' | 'keyword_nlp' | 'event_history'>('mingyan')
+const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici' | 'doutu' | 'word' | 'keyword_nlp' | 'event_history' | 'qrcode' | 'pinyin'>('mingyan')
 const switchCooldown = ref<number>(0)
 let cooldownTimer: number | null = null
 
@@ -370,6 +370,10 @@ const handleTabChange = (name: any): void => {
     void fetchNlpKeywords()
   } else if (name === 'event_history') {
     void fetchEventHistory()
+  } else if (name === 'qrcode') {
+    // QR tab: no auto-fetch, user manually generates
+  } else if (name === 'pinyin') {
+    void fetchPinyin()
   }
 }
 
@@ -966,6 +970,142 @@ const selectRiddleType = (type: string): void => {
   void fetchRiddle(type)
 }
 
+// ========== TAB 9: 📱 二维码生成 ==========
+interface QrCodeResponse {
+  image: string // base64 or url
+}
+
+const qrContent = ref<string>('https://github.com/mhxy13867806343')
+const qrResultImage = ref<string>('')
+const loadingQr = ref<boolean>(false)
+const showQrDetailModal = ref<boolean>(false)
+
+const fetchQrCode = async (): Promise<void> => {
+  const content = qrContent.value.trim()
+  if (!content) {
+    ElMessage({ message: '请输入要生成二维码的文本或链接', type: 'warning' })
+    return
+  }
+  loadingQr.value = true
+  qrResultImage.value = ''
+  try {
+    const res = await axios.get<AlapiResponse<QrCodeResponse>>(buildAlapiUrl('/api/qr'), {
+      params: { token: ALAPI_TOKEN, content }
+    })
+    if (res.data.code === 200 && res.data.data) {
+      const img = res.data.data.image || res.data.data
+      if (typeof img === 'string') {
+        // 如果返回的是 base64 字符串，自动加前缀
+        qrResultImage.value = img.startsWith('data:') ? img : `data:image/png;base64,${img}`
+      }
+    } else {
+      ElMessage({ message: res.data.message || '生成二维码失败，请重试', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingQr.value = false
+  }
+}
+
+const downloadQrImage = (): void => {
+  if (!qrResultImage.value) return
+  const link = document.createElement('a')
+  link.href = qrResultImage.value
+  link.download = `qrcode_${Date.now()}.png`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  ElMessage({ message: '二维码图片已开始下载！', type: 'success', grouping: true })
+}
+
+const copyQrBase64 = (): void => {
+  if (!qrResultImage.value) return
+  copyCustomText(qrResultImage.value, '二维码 Base64 数据已复制到剪贴板！')
+}
+
+// ========== TAB 10: 🔤 中文转拼音 ==========
+interface PinyinResponse {
+  pinyin?: string
+  word?: string
+}
+
+const pinyinWord = ref<string>('自强不息，厚德载物')
+const pinyinTone = ref<number>(1)
+const pinyinAbbr = ref<number>(0)
+const pinyinResult = ref<string>('')
+const pinyinOriginalWord = ref<string>('')
+const loadingPinyin = ref<boolean>(false)
+const showPinyinDetailModal = ref<boolean>(false)
+
+const pinyinHistory = ref<Array<{ word: string; pinyin: string; tone: number; abbr: number }>>(
+  JSON.parse(localStorage.getItem('pinyin_convert_history') || '[]')
+)
+
+const fetchPinyin = async (): Promise<void> => {
+  const word = pinyinWord.value.trim()
+  if (!word) {
+    ElMessage({ message: '请输入要转换的中文字符', type: 'warning' })
+    return
+  }
+  loadingPinyin.value = true
+  pinyinResult.value = ''
+  try {
+    const res = await axios.get<AlapiResponse<PinyinResponse>>(buildAlapiUrl('/api/pinyin'), {
+      params: { token: ALAPI_TOKEN, word, tone: pinyinTone.value, abbr: pinyinAbbr.value }
+    })
+    if (res.data.code === 200 && res.data.data) {
+      const data = res.data.data
+      pinyinResult.value = data.pinyin || (typeof data === 'string' ? data : '')
+      pinyinOriginalWord.value = word
+
+      // 添加到转换历史（最大保留 15 条）
+      const existIdx = pinyinHistory.value.findIndex(h => h.word === word && h.tone === pinyinTone.value && h.abbr === pinyinAbbr.value)
+      if (existIdx >= 0) pinyinHistory.value.splice(existIdx, 1)
+      pinyinHistory.value.unshift({ word, pinyin: pinyinResult.value, tone: pinyinTone.value, abbr: pinyinAbbr.value })
+      if (pinyinHistory.value.length > 15) pinyinHistory.value = pinyinHistory.value.slice(0, 15)
+      localStorage.setItem('pinyin_convert_history', JSON.stringify(pinyinHistory.value))
+    } else {
+      ElMessage({ message: res.data.message || '拼音转换失败', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingPinyin.value = false
+  }
+}
+
+const removePinyinHistoryItem = (index: number): void => {
+  pinyinHistory.value.splice(index, 1)
+  localStorage.setItem('pinyin_convert_history', JSON.stringify(pinyinHistory.value))
+}
+
+const confirmClearPinyinHistory = (): void => {
+  ElMessageBox.confirm(
+    '确定要清空所有的拼音转换历史记录吗？',
+    '确认清空提示',
+    {
+      confirmButtonText: '确定清空',
+      cancelButtonText: '取消',
+      type: 'warning',
+      lockScroll: false
+    }
+  ).then(() => {
+    pinyinHistory.value = []
+    localStorage.setItem('pinyin_convert_history', JSON.stringify([]))
+    ElMessage({ message: '已成功清空拼音转换历史记录！', type: 'success' })
+  }).catch(() => {
+    ElMessage({ message: '已取消操作', type: 'info' })
+  })
+}
+
+const usePinyinHistoryItem = (item: { word: string; tone: number; abbr: number }): void => {
+  pinyinWord.value = item.word
+  pinyinTone.value = item.tone
+  pinyinAbbr.value = item.abbr
+  void fetchPinyin()
+}
+
 onMounted(async () => {
   await fetchCategories()
   await fetchQuote()
@@ -1002,6 +1142,8 @@ onMounted(async () => {
           <el-tab-pane name="word" label="📖 新华字典" />
           <el-tab-pane name="keyword_nlp" label="🏷️ 关键词提取" />
           <el-tab-pane name="event_history" label="📅 历史上的今天" />
+          <el-tab-pane name="qrcode" label="📱 二维码生成" />
+          <el-tab-pane name="pinyin" label="🔤 中文转拼音" />
         </el-tabs>
         <div v-if="switchCooldown > 0" class="cooldown-notice-bar" style="margin-top: 8px; font-size: 13px; color: #eab308; background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.25); padding: 6px 14px; border-radius: 8px; font-weight: 500;">
           ⏳ Tab 切换频次限制中：请等待 {{ switchCooldown }} 秒后再进行下一次切换...
@@ -1757,6 +1899,139 @@ onMounted(async () => {
         <el-empty v-else description="暂无历史事件记录" />
       </div>
 
+      <!-- TAB 9: 📱 二维码生成 -->
+      <div v-else-if="activeTab === 'qrcode'" class="qr-container" v-loading="loadingQr">
+        <div class="hero-quote-card" style="background: linear-gradient(135deg, rgba(20, 30, 48, 0.95), rgba(10, 15, 25, 0.98)); border-color: rgba(52, 211, 153, 0.3);">
+          <div class="quote-badge-bar">
+            <span class="type-tag-badge" style="background: rgba(52, 211, 153, 0.2); color: #34d399; border-color: rgba(52, 211, 153, 0.3);">
+              📱 二维码在线生成器
+            </span>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <el-input
+              v-model="qrContent"
+              type="textarea"
+              :rows="3"
+              placeholder="输入要生成二维码的文本或网址链接..."
+              size="large"
+            />
+            <div style="display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap;">
+              <el-button type="success" size="large" @click="fetchQrCode()" style="font-weight: 700;">
+                ⚡ 立即生成二维码
+              </el-button>
+              <span style="font-size: 13px; color: #94a3b8;">输入内容长度：{{ qrContent.length }} 字符</span>
+            </div>
+          </div>
+
+          <!-- 二维码结果展示 -->
+          <div v-if="qrResultImage" style="margin-top: 24px; padding: 24px; background: rgba(15, 23, 42, 0.6); border-radius: 16px; border: 1px solid rgba(52, 211, 153, 0.2); text-align: center;">
+            <div style="font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 16px;">✅ 二维码生成成功：</div>
+            <div style="display: inline-block; background: #ffffff; padding: 16px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+              <img :src="qrResultImage" alt="QR Code" style="max-width: 220px; max-height: 220px; display: block;" />
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+              <el-button type="success" @click="downloadQrImage()" style="font-weight: 700;">⬇️ 下载二维码图片</el-button>
+              <el-button type="primary" :icon="CopyDocument" @click="copyQrBase64()" style="font-weight: 700;">📋 复制 Base64</el-button>
+              <el-button type="info" @click="copyCustomText(qrContent, '二维码原始内容已复制！')" style="font-weight: 700;">📝 复制原始内容</el-button>
+              <el-button type="warning" @click="showQrDetailModal = true" style="font-weight: 700;">🔍 查看详细信息</el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 10: 🔤 中文转拼音 -->
+      <div v-else-if="activeTab === 'pinyin'" class="pinyin-container" v-loading="loadingPinyin">
+        <div class="hero-quote-card" style="background: linear-gradient(135deg, rgba(25, 20, 48, 0.95), rgba(12, 10, 28, 0.98)); border-color: rgba(251, 146, 60, 0.3);">
+          <div class="quote-badge-bar">
+            <span class="type-tag-badge" style="background: rgba(251, 146, 60, 0.2); color: #fb923c; border-color: rgba(251, 146, 60, 0.3);">
+              🔤 中文汉字转注音拼音
+            </span>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <el-input
+              v-model="pinyinWord"
+              type="textarea"
+              :rows="3"
+              placeholder="输入中文汉字或句子（如：自强不息，厚德载物）"
+              size="large"
+              @keyup.enter.ctrl="fetchPinyin()"
+            />
+            <div style="display: flex; gap: 16px; align-items: center; margin-top: 14px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 14px; color: #94a3b8;">🎵 音标：</span>
+                <el-switch v-model="pinyinTone" :active-value="1" :inactive-value="0" active-text="带音标" inactive-text="无音标" />
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 14px; color: #94a3b8;">🔡 首字母：</span>
+                <el-switch v-model="pinyinAbbr" :active-value="1" :inactive-value="0" active-text="首字母" inactive-text="完整" />
+              </div>
+              <el-button type="warning" size="large" @click="fetchPinyin()" style="font-weight: 700;">
+                ⚡ 立即转换拼音
+              </el-button>
+            </div>
+          </div>
+
+          <!-- 拼音结果展示 -->
+          <div v-if="pinyinResult" style="margin-top: 24px; padding: 24px; background: rgba(15, 23, 42, 0.6); border-radius: 16px; border: 1px solid rgba(251, 146, 60, 0.2);">
+            <div style="font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px;">📝 原文：</div>
+            <div style="font-size: 22px; font-weight: 900; color: #fb923c; line-height: 1.6; margin-bottom: 16px; letter-spacing: 2px;">
+              {{ pinyinOriginalWord }}
+            </div>
+            <div style="font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px;">🔤 拼音结果：</div>
+            <div style="font-size: 20px; font-weight: 700; color: #fbbf24; line-height: 1.8; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; letter-spacing: 1px; word-break: break-all;">
+              {{ pinyinResult }}
+            </div>
+
+            <div class="modal-action-bar">
+              <span class="modal-char-tag" style="color: #fb923c; background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3);">
+                📝 原文字符长度：{{ pinyinOriginalWord.length }} 字
+                <span class="tag-divider">|</span>
+                🔤 拼音长度：{{ pinyinResult.length }} 字符
+              </span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <el-button type="primary" :icon="CopyDocument" style="font-weight: 700;" @click="copyCustomText(`${pinyinOriginalWord}\n拼音：${pinyinResult}`, '中文与拼音已成功复制！')">
+                  📋 复制全部
+                </el-button>
+                <el-button type="warning" @click="showPinyinDetailModal = true" style="font-weight: 700;">🔍 查看详情</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 拼音转换历史记录 -->
+        <div v-if="pinyinHistory.length > 0" style="margin-top: 28px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h3 class="history-section-title" style="margin-bottom: 0;">📋 转换历史记录 ({{ pinyinHistory.length }})</h3>
+            <el-button type="danger" size="small" @click="confirmClearPinyinHistory()" style="font-weight: 600;">🗑️ 清空历史</el-button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;">
+            <div
+              v-for="(item, idx) in pinyinHistory"
+              :key="idx"
+              class="quote-item-card"
+              style="cursor: pointer;"
+              @click="usePinyinHistoryItem(item)"
+            >
+              <div>
+                <div style="font-size: 16px; font-weight: 700; color: #fb923c; margin-bottom: 6px;">{{ item.word }}</div>
+                <div style="font-size: 14px; color: #fbbf24; line-height: 1.6; opacity: 0.85;">{{ item.pinyin }}</div>
+              </div>
+              <div class="item-footer">
+                <span class="item-author">
+                  {{ item.tone ? '带音标' : '无音标' }} · {{ item.abbr ? '首字母' : '完整' }}
+                </span>
+                <div class="item-actions">
+                  <el-button size="small" :icon="CopyDocument" circle @click.stop="copyCustomText(`${item.word}\n拼音：${item.pinyin}`, '历史记录已复制！')" />
+                  <el-button size="small" :icon="Delete" circle type="danger" @click.stop="removePinyinHistoryItem(idx)" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 弹窗 1: 新华字典详细释义 Modal -->
       <el-dialog v-model="showWordDetailModal" title="📖 新华字典 - 详细字义" width="600px" center append-to-body destroy-on-close>
         <div v-if="activeWordDetail" style="padding: 10px 20px;">
@@ -1879,6 +2154,74 @@ onMounted(async () => {
               </el-button>
             </div>
           </template>
+        </div>
+      </el-dialog>
+
+      <!-- 弹窗 4: 二维码详情 Modal -->
+      <el-dialog v-model="showQrDetailModal" title="📱 二维码生成 - 详细信息" width="600px" center append-to-body destroy-on-close>
+        <div style="padding: 10px 20px;">
+          <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px;">原始内容：</div>
+          <div style="font-size: 14px; color: #e2e8f0; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 20px; line-height: 1.6; word-break: break-all;">
+            {{ qrContent }}
+          </div>
+          <div v-if="qrResultImage" style="text-align: center; margin-bottom: 20px;">
+            <div style="display: inline-block; background: #ffffff; padding: 16px; border-radius: 12px;">
+              <img :src="qrResultImage" alt="QR Code" style="max-width: 200px; max-height: 200px;" />
+            </div>
+          </div>
+
+          <div class="modal-action-bar">
+            <span class="modal-char-tag" style="color: #34d399; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3);">
+              📝 内容长度：{{ qrContent.length }} 字符
+              <span class="tag-divider">|</span>
+              ⏱️ 预计阅读：{{ calcReadingTime(qrContent) }}
+            </span>
+            <div style="display: flex; gap: 8px;">
+              <el-button type="success" @click="downloadQrImage()" style="font-weight: 700;">⬇️ 下载</el-button>
+              <el-button type="primary" :icon="CopyDocument" @click="copyCustomText(qrContent, '内容已复制！')" style="font-weight: 700;">📋 复制内容</el-button>
+            </div>
+          </div>
+        </div>
+      </el-dialog>
+
+      <!-- 弹窗 5: 拼音转换详情 Modal -->
+      <el-dialog v-model="showPinyinDetailModal" title="🔤 中文转拼音 - 转换详情" width="600px" center append-to-body destroy-on-close>
+        <div style="padding: 10px 20px;">
+          <div style="font-size: 14px; color: #94a3b8; margin-bottom: 8px;">📝 原文：</div>
+          <div style="font-size: 22px; font-weight: 900; color: #fb923c; line-height: 1.5; margin-bottom: 16px; background: rgba(0,0,0,0.2); padding: 14px; border-radius: 10px; letter-spacing: 2px;">
+            {{ pinyinOriginalWord }}
+          </div>
+          <div style="font-size: 14px; color: #94a3b8; margin-bottom: 8px;">🔤 拼音：</div>
+          <div style="font-size: 20px; font-weight: 700; color: #fbbf24; line-height: 1.8; background: rgba(0,0,0,0.3); padding: 14px; border-radius: 10px; letter-spacing: 1px; word-break: break-all;">
+            {{ pinyinResult }}
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;">
+            <span style="font-size: 13px; font-weight: 600; color: #94a3b8; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 8px;">
+              🎵 {{ pinyinTone ? '带音标' : '无音标' }}
+            </span>
+            <span style="font-size: 13px; font-weight: 600; color: #94a3b8; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 8px;">
+              🔡 {{ pinyinAbbr ? '首字母模式' : '完整拼音' }}
+            </span>
+          </div>
+
+          <div class="modal-action-bar">
+            <span class="modal-char-tag" style="color: #fb923c; background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3);">
+              📝 原文：{{ pinyinOriginalWord.length }} 字
+              <span class="tag-divider">|</span>
+              🔤 拼音：{{ pinyinResult.length }} 字符
+              <span class="tag-divider">|</span>
+              ⏱️ 预计阅读：{{ calcReadingTime(pinyinOriginalWord) }}
+            </span>
+            <el-button
+              type="primary"
+              :icon="CopyDocument"
+              style="font-weight: 700;"
+              @click="copyCustomText(`原文：${pinyinOriginalWord}\n拼音：${pinyinResult}`, '中文与拼音已成功复制到剪贴板！')"
+            >
+              📋 复制全部
+            </el-button>
+          </div>
         </div>
       </el-dialog>
     </main>
