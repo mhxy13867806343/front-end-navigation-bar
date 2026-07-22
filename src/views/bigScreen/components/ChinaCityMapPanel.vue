@@ -2,12 +2,15 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
-import type { BigScreenCityItem } from '../types'
+import { fallbackChinaGeoJson } from '../mock/chinaGeoJson'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   cities: BigScreenCityItem[]
   detailId: string
-}>()
+  height?: string
+}>(), {
+  height: '340px'
+})
 
 const emit = defineEmits<{
   open: [detailId: string]
@@ -35,16 +38,18 @@ const option = computed<EChartsOption>(() => ({
   geo: {
     map: 'china-big-screen',
     roam: false,
-    zoom: 1.08,
-    top: 18,
+    zoom: 1.15,
+    top: 24,
     itemStyle: {
-      areaColor: '#0b1f44',
-      borderColor: '#2d6dff',
-      borderWidth: 1
+      areaColor: '#0c224a',
+      borderColor: '#357bff',
+      borderWidth: 1.2,
+      shadowColor: 'rgba(21, 62, 140, 0.6)',
+      shadowBlur: 14
     },
     emphasis: {
       itemStyle: {
-        areaColor: '#14326b'
+        areaColor: '#194595'
       }
     }
   },
@@ -73,10 +78,20 @@ const option = computed<EChartsOption>(() => ({
 
 const ensureMap = async (): Promise<void> => {
   if (mapLoaded.value) return
-  const response = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
-  const geoJson = await response.json()
-  echarts.registerMap('china-big-screen', geoJson as never)
-  mapLoaded.value = true
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3500)
+    const response = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json', { signal: controller.signal })
+    clearTimeout(timeoutId)
+    if (!response.ok) throw new Error('Fetch map failed')
+    const geoJson = await response.json()
+    echarts.registerMap('china-big-screen', geoJson as never)
+    mapLoaded.value = true
+  } catch (err) {
+    console.warn('Network China map fetch failed, using fallback GeoJSON map:', err)
+    echarts.registerMap('china-big-screen', fallbackChinaGeoJson as never)
+    mapLoaded.value = true
+  }
 }
 
 const renderChart = async (): Promise<void> => {
@@ -131,7 +146,7 @@ onBeforeUnmount((): void => {
       </div>
       <button type="button" class="china-map-panel__action" @click="handleOpen">查看详情</button>
     </div>
-    <div ref="chartRef" class="china-map-panel__canvas"></div>
+    <div ref="chartRef" class="china-map-panel__canvas" :style="{ height: height }"></div>
   </section>
 </template>
 

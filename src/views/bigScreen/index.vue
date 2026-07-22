@@ -593,11 +593,11 @@ const weeklyAreaOption = computed<EChartsOption>(() => ({
         <section class="screen-layout">
           <div class="screen-column">
             <ChartPanel title="区域活跃排行" subtitle="点击省份继续下钻区域明细" :option="barOption" detail-id="panel-region" @open="openDetail" @drill="handleChartDrill" />
-            <ChinaCityMapPanel :cities="dashboard.cityFocus" detail-id="panel-city" @open="openDetail" @drill="handleChartDrill" />
             <ChartPanel title="重点城市热度" subtitle="点击城市查看城市级业务负载" :option="cityOption" detail-id="panel-city" @open="openDetail" @drill="handleChartDrill" />
           </div>
 
           <div class="screen-column screen-column--center">
+            <ChinaCityMapPanel :cities="dashboard.cityFocus" height="360px" detail-id="panel-city" @open="openDetail" @drill="handleChartDrill" />
             <ChartPanel title="24 小时交易趋势" subtitle="点击任一时段下钻时段明细" :option="lineOption" detail-id="panel-trend" @open="openDetail" @drill="handleChartDrill" />
             <div class="dual-panel-row">
               <ChartPanel title="渠道构成" subtitle="点击扇区查看渠道明细" :option="pieOption" detail-id="panel-channel" @open="openDetail" @drill="handleChartDrill" />
