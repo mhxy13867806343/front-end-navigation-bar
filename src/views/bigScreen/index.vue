@@ -594,14 +594,19 @@ const weeklyAreaOption = computed<EChartsOption>(() => ({
           <div class="screen-column">
             <ChartPanel title="区域活跃排行" subtitle="点击省份继续下钻区域明细" :option="barOption" detail-id="panel-region" @open="openDetail" @drill="handleChartDrill" />
             <ChartPanel title="重点城市热度" subtitle="点击城市查看城市级业务负载" :option="cityOption" detail-id="panel-city" @open="openDetail" @drill="handleChartDrill" />
+            <ChartPanel title="3D 区域负载矩阵" subtitle="省份 × 时段的三维负载分布，可继续下钻" :option="threeDOption" detail-id="panel-3d" @open="openDetail" @drill="handleChartDrill" />
           </div>
 
           <div class="screen-column screen-column--center">
-            <ChinaCityMapPanel :cities="dashboard.cityFocus" height="360px" detail-id="panel-city" @open="openDetail" @drill="handleChartDrill" />
+            <ChinaCityMapPanel :cities="dashboard.cityFocus" height="340px" detail-id="panel-city" @open="openDetail" @drill="handleChartDrill" />
             <ChartPanel title="24 小时交易趋势" subtitle="点击任一时段下钻时段明细" :option="lineOption" detail-id="panel-trend" @open="openDetail" @drill="handleChartDrill" />
             <div class="dual-panel-row">
               <ChartPanel title="渠道构成" subtitle="点击扇区查看渠道明细" :option="pieOption" detail-id="panel-channel" @open="openDetail" @drill="handleChartDrill" />
               <ChartPanel title="风险波动" subtitle="点击柱体查看时段风险承压" :option="riskOption" detail-id="panel-alert" @open="openDetail" @drill="handleChartDrill" />
+            </div>
+            <div class="dual-panel-row">
+              <ChartPanel title="作战能力雷达" subtitle="多维能力画像，点击维度继续下钻" :option="radarOption" detail-id="panel-radar" @open="openDetail" @drill="handleChartDrill" />
+              <ChartPanel title="周维度堆叠趋势" subtitle="订单与风险处置双维曲线，支持按周下钻" :option="weeklyAreaOption" detail-id="panel-weekly" @open="openDetail" @drill="handleChartDrill" />
             </div>
           </div>
 
@@ -642,12 +647,6 @@ const weeklyAreaOption = computed<EChartsOption>(() => ({
               </button>
             </StatusPanel>
           </div>
-        </section>
-
-        <section class="screen-bottom-row">
-          <ChartPanel title="3D 区域负载矩阵" subtitle="省份 × 时段的三维负载分布，可继续下钻" :option="threeDOption" detail-id="panel-3d" @open="openDetail" @drill="handleChartDrill" />
-          <ChartPanel title="作战能力雷达" subtitle="多维能力画像，点击维度继续下钻" :option="radarOption" detail-id="panel-radar" @open="openDetail" @drill="handleChartDrill" />
-          <ChartPanel title="周维度堆叠趋势" subtitle="订单与风险处置双维曲线，支持按周下钻" :option="weeklyAreaOption" detail-id="panel-weekly" @open="openDetail" @drill="handleChartDrill" />
         </section>
 
         <DetailDrawer v-model="drawerVisible" :detail="activeDetail" />
