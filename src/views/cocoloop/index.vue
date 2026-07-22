@@ -51,28 +51,35 @@ interface CocoTopic {
 }
 
 interface CocoTopicListResponse {
-  users: CocoUser[]
-  topic_list: {
-    topics: CocoTopic[]
-    top_tags: CocoTag[]
+  users?: CocoUser[]
+  topic_list?: {
+    topics?: CocoTopic[]
+    top_tags?: CocoTag[]
     more_topics_url?: string
     per_page?: number
   }
 }
 
-// Sidebar Categories List (Matching CocoLoop Website)
-const sidebarCategories = [
-  { name: '技术交流', icon: '🌚', slug: 'tech' },
-  { name: 'OpenClaw交流', icon: '🐙', slug: 'openclaw' },
-  { name: 'Molili社区', icon: '🔻', slug: 'molili' },
-  { name: 'Skill技能', icon: '💜', slug: 'skill' },
-  { name: '龙虾赚钱副业', icon: '🐥', slug: 'money' },
-  { name: 'Github精品资源', icon: '😼', slug: 'github' },
-  { name: 'AI大百科', icon: '🧸', slug: 'wiki' },
-  { name: '翻车事件', icon: '🦈', slug: 'crash' },
-  { name: '综合交流大区', icon: '🐳', slug: 'general' },
-  { name: 'AI机器人讨论', icon: '🅰️', slug: 'bot' },
-  { name: 'Hermes Agent', icon: '🦀', slug: 'hermes' }
+interface CategoryMeta {
+  id: number
+  name: string
+  icon: string
+  slug: string
+}
+
+// Sidebar Categories List (Matching CocoLoop Website Exact Slugs & IDs)
+const sidebarCategories: CategoryMeta[] = [
+  { id: 4, name: '技术交流', icon: '🌚', slug: 'general' },
+  { id: 2, name: 'OpenClaw交流', icon: '🐙', slug: 'openclaw' },
+  { id: 5, name: 'Molili社区', icon: '🔻', slug: 'molili' },
+  { id: 6, name: 'Skill技能', icon: '💜', slug: 'skill' },
+  { id: 7, name: '龙虾赚钱副业', icon: '🐥', slug: 'showcase' },
+  { id: 8, name: 'Github精品资源', icon: '😼', slug: 'github' },
+  { id: 9, name: 'AI大百科', icon: '🧸', slug: 'wiki' },
+  { id: 10, name: '翻车事件', icon: '🦈', slug: 'crash' },
+  { id: 11, name: '综合交流大区', icon: '🐳', slug: 'general-chat' },
+  { id: 12, name: 'AI机器人讨论', icon: '🅰️', slug: 'bot' },
+  { id: 13, name: 'Hermes Agent', icon: '🦀', slug: 'hermes' }
 ]
 
 // State
@@ -85,7 +92,7 @@ const hasMore = ref<boolean>(true)
 const searchKeyword = ref<string>('')
 const selectedTab = ref<'latest' | 'hot' | 'category'>('latest')
 const selectedTag = ref<string>('')
-const activeCategory = ref<string>('')
+const activeCategory = ref<CategoryMeta | null>(null)
 const isSidebarCollapsed = ref<boolean>(false)
 
 // Detail Modal State
@@ -154,6 +161,10 @@ function getTopicPosters(topic: CocoTopic): CocoUser[] {
 const filteredTopics = computed<CocoTopic[]>(() => {
   let list = [...topics.value]
 
+  if (activeCategory.value) {
+    list = list.filter(t => t.category_id === activeCategory.value?.id)
+  }
+
   if (selectedTag.value) {
     list = list.filter(t => t.tags && t.tags.some(tag => tag.name === selectedTag.value || tag.slug === selectedTag.value))
   }
@@ -176,7 +187,15 @@ const fetchPageData = async (page: number): Promise<void> => {
   loading.value = true
 
   try {
-    const apiUrl = resolveApiUrl(`/api-cocoloop/latest.json?no_definitions=true&page=${page}`)
+    let rawPath = `/api-cocoloop/latest.json?no_definitions=true&page=${page}`
+
+    if (activeCategory.value) {
+      rawPath = `/api-cocoloop/c/${activeCategory.value.slug}/${activeCategory.value.id}.json?no_definitions=true&page=${page}`
+    } else if (selectedTag.value) {
+      rawPath = `/api-cocoloop/tag/${encodeURIComponent(selectedTag.value)}.json?no_definitions=true&page=${page}`
+    }
+
+    const apiUrl = resolveApiUrl(rawPath)
     const res = await axios.get<CocoTopicListResponse>(apiUrl)
 
     if (res.data && res.data.topic_list && Array.isArray(res.data.topic_list.topics)) {
@@ -210,6 +229,33 @@ const fetchPageData = async (page: number): Promise<void> => {
     ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
   } finally {
     loading.value = false
+  }
+}
+
+// Category Selection Handler
+const selectCategory = (cat: CategoryMeta | null): void => {
+  activeCategory.value = cat
+  selectedTag.value = ''
+  topics.value = []
+  currentPage.value = 1
+  hasMore.value = true
+  void fetchPageData(1)
+  if (cat) {
+    ElMessage({ message: `已切换至分类：${cat.icon} ${cat.name}`, type: 'success', grouping: true })
+  } else {
+    ElMessage({ message: '已加载全部分类话题', type: 'info', grouping: true })
+  }
+}
+
+// Tag Selection Handler
+const selectTag = (tagName: string): void => {
+  selectedTag.value = tagName
+  topics.value = []
+  currentPage.value = 1
+  hasMore.value = true
+  void fetchPageData(1)
+  if (tagName) {
+    ElMessage({ message: `已按标签筛选：# ${tagName}`, type: 'success', grouping: true })
   }
 }
 
@@ -296,7 +342,7 @@ onUnmounted(() => {
         >
           ☰
         </button>
-        <a href="javascript:;" class="brand-logo" @click="router.push('/dyform')">
+        <a href="javascript:;" class="brand-logo" @click="selectCategory(null)">
           <span class="brand-icon">🔄</span>
           <span>CocoLoop</span>
         </a>
@@ -331,7 +377,11 @@ onUnmounted(() => {
       <!-- Left Sidebar Menu -->
       <aside class="cocoloop-sidebar" :class="{ collapsed: isSidebarCollapsed }">
         <div class="sidebar-group">
-          <div class="sidebar-item active">
+          <div
+            class="sidebar-item"
+            :class="{ active: !activeCategory }"
+            @click="selectCategory(null)"
+          >
             <span class="item-icon">💬</span>
             <span>话题</span>
           </div>
@@ -346,10 +396,10 @@ onUnmounted(() => {
           <div class="sidebar-title">类别</div>
           <div
             v-for="cat in sidebarCategories"
-            :key="cat.slug"
+            :key="cat.id"
             class="sidebar-item"
-            :class="{ active: activeCategory === cat.slug }"
-            @click="activeCategory = activeCategory === cat.slug ? '' : cat.slug"
+            :class="{ active: activeCategory?.id === cat.id }"
+            @click="selectCategory(activeCategory?.id === cat.id ? null : cat)"
           >
             <span class="item-icon">{{ cat.icon }}</span>
             <span>{{ cat.name }}</span>
@@ -388,12 +438,35 @@ onUnmounted(() => {
         <!-- Feed Control Subbar -->
         <section class="feed-control-bar">
           <div class="feed-tabs">
-            <button type="button" class="filter-dropdown-btn" @click="selectedTag = ''">
-              类别 ❯
-            </button>
-            <button type="button" class="filter-dropdown-btn" @click="selectedTag = ''">
-              标签 ❯
-            </button>
+            <!-- Category Dropdown -->
+            <el-dropdown trigger="click" @command="(cat: CategoryMeta | null) => selectCategory(cat)">
+              <button type="button" class="filter-dropdown-btn">
+                {{ activeCategory ? activeCategory.name : '类别' }} ❯
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item :command="null">🌐 全部分类</el-dropdown-item>
+                  <el-dropdown-item v-for="cat in sidebarCategories" :key="cat.id" :command="cat">
+                    {{ cat.icon }} {{ cat.name }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+
+            <!-- Tag Dropdown -->
+            <el-dropdown trigger="click" @command="(tag: string) => selectTag(tag)">
+              <button type="button" class="filter-dropdown-btn">
+                {{ selectedTag ? '#' + selectedTag : '标签' }} ❯
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu style="max-height: 280px; overflow-y: auto;">
+                  <el-dropdown-item command="">🔥 全部标签</el-dropdown-item>
+                  <el-dropdown-item v-for="t in topTags" :key="t.id" :command="t.name">
+                    # {{ t.name }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
 
             <span
               class="tab-link"
@@ -413,7 +486,7 @@ onUnmounted(() => {
 
           <div style="display: flex; align-items: center; gap: 10px;">
             <el-tag type="info" effect="dark" size="small" style="font-weight: 600;">
-              已加载 {{ topics.length }} 篇帖子 (第 {{ currentPage }} 页)
+              {{ activeCategory ? activeCategory.name : '全部分类' }} · 已加载 {{ filteredTopics.length }} 篇 (第 {{ currentPage }} 页)
             </el-tag>
             <el-button type="primary" size="small" :icon="Refresh" style="font-weight: 700;" @click="refreshData()">
               刷新
