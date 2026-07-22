@@ -111,5 +111,9 @@ export const serverProxy: ServerProxyMap = {
   }),
   '/api-helloworld': createProxyEntry('/api-helloworld', 'https://www.helloworld.net', {
     Referer: 'https://www.helloworld.net/'
+  }),
+  '/api-cocoloop': createProxyEntry('/api-cocoloop', 'https://www.cocoloop.cn', {
+    Origin: 'https://www.cocoloop.cn',
+    Referer: 'https://www.cocoloop.cn/'
   })
 }

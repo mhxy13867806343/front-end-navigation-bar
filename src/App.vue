@@ -96,7 +96,10 @@ const goBigScreen = (): void => {
 const goMingyan = (): void => {
   void router.push('/mingyan')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan']
+const goCocoloop = (): void => {
+  void router.push('/cocoloop')
+}
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some((p: string): boolean => {
@@ -705,6 +708,11 @@ watch(isDarkMode, () => {
             <div class="popover-tool-item" @click="goMingyan">
               <span class="tool-icon">📜</span>
               <span>名人名言</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
+            </div>
+            <div class="popover-tool-item" @click="goCocoloop">
+              <span class="tool-icon">🌌</span>
+              <span>CocoLoop 社区</span>
               <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
             </div>
             <div class="popover-tool-item" @click="goBigScreen">

@@ -93,6 +93,11 @@ const routes = [
     component: () => import('../views/mingyan/index.vue')
   },
   {
+    path: '/cocoloop',
+    name: 'Cocoloop',
+    component: () => import('../views/cocoloop/index.vue')
+  },
+  {
     path: '/big-screen',
     name: 'BigScreen',
     component: BigScreen
