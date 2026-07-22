@@ -224,6 +224,7 @@ onMounted(async () => {
             plain
             circle
             :icon="Refresh"
+            :loading="loadingQuote"
             title="换一句"
             @click="handleRefreshQuote(selectedTypeId)"
           />
@@ -244,6 +245,7 @@ onMounted(async () => {
               size="large"
               class="action-btn"
               :icon="Refresh"
+              :loading="loadingQuote"
               @click="handleRefreshQuote(selectedTypeId)"
             >
               🔄 换一句 / 刷新

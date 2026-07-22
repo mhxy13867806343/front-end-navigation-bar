@@ -86,53 +86,57 @@
               </div>
               <!-- 参与用户头像 -->
               <div v-if="item.recentUsers.length" class="recent-users">
-                <el-popover
+                <img
                   v-for="u in item.recentUsers"
                   :key="u.user_id"
-                  placement="top"
-                  :width="220"
-                  trigger="click"
-                  effect="dark"
-                  popper-style="border-radius: 12px; padding: 14px; background: #1e1e38; border: 1px solid rgba(255,255,255,0.15);"
-                >
-                  <template #reference>
-                    <img
-                      :src="u.avatar_large"
-                      :title="u.user_name"
-                      class="user-avatar"
-                      loading="lazy"
-                    />
-                  </template>
-                  <div class="user-popover-content">
-                    <div class="user-popover-header" style="cursor: pointer;" title="点击访问作者主页" @click="openJuejinUser(u.user_id)">
-                      <img :src="u.avatar_large" class="popover-avatar" />
-                      <div class="user-info">
-                        <div class="user-name" style="color: #60a5fa; font-weight: 600;">{{ u.user_name || '掘金创作者' }} 🔗</div>
-                        <div v-if="u.job_title || u.company" class="user-desc">
-                          {{ [u.job_title, u.company].filter(Boolean).join(' @ ') }}
-                        </div>
-                        <div v-if="u.level" class="user-level-tag">
-                          掘金 Lv.{{ u.level }}
-                        </div>
-                      </div>
-                    </div>
-                    <div class="user-popover-actions">
-                      <el-button
-                        type="primary"
-                        size="small"
-                        style="width: 100%; font-weight: 500;"
-                        @click="openJuejinUser(u.user_id)"
-                      >
-                        访问个人主页 🔗
-                      </el-button>
-                    </div>
-                  </div>
-                </el-popover>
+                  :src="u.avatar_large"
+                  :title="`点击查看 ${u.user_name || '创作者'} 详情与个人主页`"
+                  class="user-avatar"
+                  style="cursor: pointer; transition: transform 0.2s ease;"
+                  loading="lazy"
+                  @click="showUserDetailModal(u)"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- 创作者详情弹窗 (Author Detail Dialog) -->
+      <el-dialog
+        v-model="userModalVisible"
+        title="👤 掘金创作者个人详情"
+        width="min(420px, 90vw)"
+        align-center
+        append-to-body
+        destroy-on-close
+      >
+        <div v-if="selectedUser" class="modal-user-card" style="text-align: center; padding: 10px 0;">
+          <img :src="selectedUser.avatar_large" style="width: 84px; height: 84px; border-radius: 50%; border: 3px solid #60a5fa; margin-bottom: 12px; object-fit: cover;" />
+          <h3 style="margin: 0 0 6px 0; font-size: 20px; color: #f1f5f9; font-weight: 700;">{{ selectedUser.user_name || '掘金创作者' }}</h3>
+          <p v-if="selectedUser.job_title || selectedUser.company" style="margin: 0 0 10px 0; color: #94a3b8; font-size: 13px;">
+            {{ [selectedUser.job_title, selectedUser.company].filter(Boolean).join(' @ ') }}
+          </p>
+          <div style="margin-bottom: 18px;">
+            <span style="background: rgba(96, 165, 250, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); padding: 4px 14px; border-radius: 14px; font-size: 12px; font-weight: 600;">
+              掘金等级 Lv.{{ selectedUser.level || 1 }}
+            </span>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 22px; font-size: 12px; color: #cbd5e1; word-break: break-all;">
+            🔗 个人主页: https://juejin.cn/user/{{ selectedUser.user_id || '1310273588955581' }}
+          </div>
+
+          <el-button
+            type="primary"
+            size="large"
+            style="width: 100%; font-weight: 700; border-radius: 10px;"
+            @click="openJuejinUser(selectedUser.user_id)"
+          >
+            🚀 跳转前往掘金个人主页
+          </el-button>
+        </div>
+      </el-dialog>
 
       <!-- 加载更多 -->
       <div class="load-more">
@@ -169,12 +173,29 @@ import type {
 } from '@/vue-pages-text-fn-abc/juejinTheme'
 import type { JuejinListResponse } from '@/vue-pages-text-fn-abc/vue-interface'
 
+interface ThemeUser {
+  user_id: string
+  user_name: string
+  avatar_large: string
+  job_title?: string
+  company?: string
+  level?: number
+}
+
 const keyword = ref<string>('')
 const themes = ref<ThemeItem[]>([])
 const cursor = ref<string>('0')
 const hasMore = ref<boolean>(true)
 const loading = ref<boolean>(false)
 const error = ref<string>('')
+
+const userModalVisible = ref<boolean>(false)
+const selectedUser = ref<ThemeUser | null>(null)
+
+function showUserDetailModal(u: ThemeUser): void {
+  selectedUser.value = u
+  userModalVisible.value = true
+}
 
 let requestSeq: number = 0
 
