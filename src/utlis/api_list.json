@@ -1845,6 +1845,65 @@
       "responseType": "json"
     }
   ],
+  "ALAPI汉服新闻": [
+    {
+      "name": "汉服新闻",
+      "desc": "获取最新汉服相关新闻资讯，支持分页。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/new/hanfu",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        },
+        {
+          "name": "page",
+          "label": "分页",
+          "description": "页码",
+          "type": "number",
+          "placeholder": "1",
+          "required": false,
+          "default": 1
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
+  "ALAPI油价查询": [
+    {
+      "name": "油价查询",
+      "desc": "查询全国各省市最新汽油、柴油价格。",
+      "baseUrl": "/api-alapi",
+      "path": "/api/oil",
+      "method": "GET",
+      "params": [
+        {
+          "name": "token",
+          "label": "token秘钥",
+          "description": "",
+          "type": "text",
+          "placeholder": "token秘钥",
+          "required": true,
+          "default": "{{VITE_ALAPI_TOKEN}}"
+        }
+      ],
+      "pathParams": [],
+      "hasBody": false,
+      "bodyPlaceholder": "",
+      "skipAuth": true,
+      "responseType": "json"
+    }
+  ],
   "BEJSON免费接口": [
     {
       "name": "淘宝关键词建议",

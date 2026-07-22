@@ -61,7 +61,7 @@ interface ShiciItem {
 }
 
 // Active Tab & 5s Cooldown State
-const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici' | 'doutu' | 'word' | 'keyword_nlp' | 'event_history' | 'qrcode' | 'pinyin'>('mingyan')
+const activeTab = ref<'mingyan' | 'qinghua' | 'riddle' | 'shici' | 'doutu' | 'word' | 'keyword_nlp' | 'event_history' | 'qrcode' | 'pinyin' | 'hanfu_news' | 'oil_price'>('mingyan')
 const switchCooldown = ref<number>(0)
 let cooldownTimer: number | null = null
 
@@ -374,6 +374,10 @@ const handleTabChange = (name: any): void => {
     // QR tab: no auto-fetch, user manually generates
   } else if (name === 'pinyin') {
     void fetchPinyin()
+  } else if (name === 'hanfu_news') {
+    void fetchHanfuNews(1)
+  } else if (name === 'oil_price') {
+    void fetchOilPrice()
   }
 }
 
@@ -1106,6 +1110,105 @@ const usePinyinHistoryItem = (item: { word: string; tone: number; abbr: number }
   void fetchPinyin()
 }
 
+// ========== TAB 11: 👘 汉服新闻 ==========
+interface HanfuNewsItem {
+  title: string
+  desc: string
+  ctime: string
+  pic_url?: string
+  url: string
+}
+
+const hanfuNewsList = ref<HanfuNewsItem[]>([])
+const hanfuPage = ref<number>(1)
+const loadingHanfu = ref<boolean>(false)
+const showHanfuDetailModal = ref<boolean>(false)
+const activeHanfuDetail = ref<HanfuNewsItem | null>(null)
+const isHanfuDescExpanded = ref<boolean>(false)
+
+const fetchHanfuNews = async (page: number = 1): Promise<void> => {
+  hanfuPage.value = page
+  loadingHanfu.value = true
+  try {
+    const res = await axios.get<AlapiResponse<HanfuNewsItem[]>>(buildAlapiUrl('/api/new/hanfu'), {
+      params: { token: ALAPI_TOKEN, page }
+    })
+    if (res.data.code === 200 && Array.isArray(res.data.data)) {
+      hanfuNewsList.value = res.data.data
+    } else {
+      ElMessage({ message: res.data.message || '获取汉服新闻失败', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingHanfu.value = false
+  }
+}
+
+const openHanfuDetail = (item: HanfuNewsItem): void => {
+  activeHanfuDetail.value = item
+  isHanfuDescExpanded.value = false
+  showHanfuDetailModal.value = true
+}
+
+const hanfuUpcomingPages = computed<number[]>(() => {
+  const current = hanfuPage.value
+  const pages: number[] = []
+  for (let i = 0; i <= 5; i++) {
+    pages.push(current + i)
+  }
+  return pages
+})
+
+// ========== TAB 12: ⛽ 油价查询 ==========
+interface OilPriceItem {
+  province: string
+  o89: string
+  o92: string
+  o95: string
+  o98: string
+  o0: string
+}
+
+const oilPriceList = ref<OilPriceItem[]>([])
+const oilProvinceFilter = ref<string>('')
+const loadingOil = ref<boolean>(false)
+const showOilDetailModal = ref<boolean>(false)
+const activeOilDetail = ref<OilPriceItem | null>(null)
+
+const filteredOilPriceList = computed<OilPriceItem[]>(() => {
+  const kw = oilProvinceFilter.value.trim()
+  if (!kw) return oilPriceList.value
+  return oilPriceList.value.filter(item => item.province.includes(kw))
+})
+
+const fetchOilPrice = async (): Promise<void> => {
+  loadingOil.value = true
+  try {
+    const res = await axios.get<AlapiResponse<OilPriceItem[]>>(buildAlapiUrl('/api/oil'), {
+      params: { token: ALAPI_TOKEN }
+    })
+    if (res.data.code === 200 && Array.isArray(res.data.data)) {
+      oilPriceList.value = res.data.data
+    } else {
+      ElMessage({ message: res.data.message || '获取油价信息失败', type: 'error' })
+    }
+  } catch {
+    ElMessage({ message: '网络请求失败，请稍后刷新', type: 'error' })
+  } finally {
+    loadingOil.value = false
+  }
+}
+
+const openOilDetail = (item: OilPriceItem): void => {
+  activeOilDetail.value = item
+  showOilDetailModal.value = true
+}
+
+const openExternalUrl = (url: string): void => {
+  window.open(url, '_blank')
+}
+
 onMounted(async () => {
   await fetchCategories()
   await fetchQuote()
@@ -1144,6 +1247,8 @@ onMounted(async () => {
           <el-tab-pane name="event_history" label="📅 历史上的今天" />
           <el-tab-pane name="qrcode" label="📱 二维码生成" />
           <el-tab-pane name="pinyin" label="🔤 中文转拼音" />
+          <el-tab-pane name="hanfu_news" label="👘 汉服新闻" />
+          <el-tab-pane name="oil_price" label="⛽ 油价查询" />
         </el-tabs>
         <div v-if="switchCooldown > 0" class="cooldown-notice-bar" style="margin-top: 8px; font-size: 13px; color: #eab308; background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.25); padding: 6px 14px; border-radius: 8px; font-weight: 500;">
           ⏳ Tab 切换频次限制中：请等待 {{ switchCooldown }} 秒后再进行下一次切换...
@@ -2032,6 +2137,127 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!-- TAB 11: 👘 汉服新闻 -->
+      <div v-else-if="activeTab === 'hanfu_news'" class="hanfu-container" v-loading="loadingHanfu">
+        <div class="category-section" style="margin-bottom: 20px;">
+          <div class="category-header">
+            <span class="section-title">👘 汉服新闻资讯</span>
+            <span class="badge-count">第 {{ hanfuPage }} 页</span>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <el-button type="primary" @click="fetchHanfuNews(hanfuPage)" :icon="Refresh" style="font-weight: 600;">🔄 刷新当前页</el-button>
+            <el-button v-if="hanfuPage > 1" @click="fetchHanfuNews(hanfuPage - 1)" style="font-weight: 600;">⬅️ 上一页</el-button>
+            <el-button type="success" @click="fetchHanfuNews(hanfuPage + 1)" style="font-weight: 600;">下一页 ➡️</el-button>
+            <span
+              v-for="p in hanfuUpcomingPages"
+              :key="p"
+              class="category-pill"
+              :class="{ active: p === hanfuPage }"
+              style="cursor: pointer;"
+              @click="fetchHanfuNews(p)"
+            >
+              {{ p }}
+            </span>
+          </div>
+        </div>
+
+        <!-- 汉服新闻卡片网格 -->
+        <div v-if="hanfuNewsList.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px;">
+          <div
+            v-for="(item, idx) in hanfuNewsList"
+            :key="idx"
+            class="hero-quote-card"
+            style="background: rgba(22, 19, 43, 0.85); border-color: rgba(236, 72, 153, 0.25); padding: 0; overflow: hidden; display: flex; flex-direction: column;"
+          >
+            <!-- 封面图 -->
+            <div v-if="item.pic_url" style="width: 100%; height: 180px; overflow: hidden; flex-shrink: 0;">
+              <img :src="item.pic_url" :alt="item.title" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="font-size: 17px; font-weight: 800; color: #f8fafc; line-height: 1.5; margin-bottom: 10px;">
+                  {{ item.title }}
+                </div>
+                <div style="font-size: 13px; color: #94a3b8; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 12px;">
+                  {{ item.desc || '暂无描述' }}
+                </div>
+                <div style="font-size: 12px; color: #64748b;">📅 {{ item.ctime }}</div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 14px;">
+                <el-button type="warning" size="small" style="font-weight: 700; flex: 1;" @click="openHanfuDetail(item)">
+                  🔍 查看详情
+                </el-button>
+                <el-button type="primary" size="small" style="font-weight: 700; flex: 1;" @click="openExternalUrl(item.url)">
+                  🔗 访问原文
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <el-empty v-else description="暂无汉服新闻数据" />
+      </div>
+
+      <!-- TAB 12: ⛽ 油价查询 -->
+      <div v-else-if="activeTab === 'oil_price'" class="oil-container" v-loading="loadingOil">
+        <div class="category-section" style="margin-bottom: 20px;">
+          <div class="category-header">
+            <span class="section-title">⛽ 全国各省市最新油价</span>
+            <span class="badge-count">{{ filteredOilPriceList.length }} / {{ oilPriceList.length }} 个省市</span>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <el-input
+              v-model="oilProvinceFilter"
+              placeholder="搜索省市名称过滤（如：广东、北京）"
+              clearable
+              size="large"
+              style="max-width: 320px;"
+              :prefix-icon="Search"
+            />
+            <el-button type="primary" @click="fetchOilPrice()" :icon="Refresh" style="font-weight: 600;">🔄 刷新油价</el-button>
+          </div>
+        </div>
+
+        <!-- 油价表格 -->
+        <div v-if="filteredOilPriceList.length > 0" style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0; background: rgba(22, 19, 43, 0.8); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+            <thead>
+              <tr style="background: linear-gradient(135deg, rgba(30, 25, 58, 0.95), rgba(20, 15, 40, 0.98));">
+                <th style="padding: 14px 18px; text-align: left; font-size: 14px; font-weight: 700; color: #c084fc; border-bottom: 1px solid rgba(255,255,255,0.08);">🏠 省市</th>
+                <th style="padding: 14px 18px; text-align: center; font-size: 14px; font-weight: 700; color: #60a5fa; border-bottom: 1px solid rgba(255,255,255,0.08);">89号</th>
+                <th style="padding: 14px 18px; text-align: center; font-size: 14px; font-weight: 700; color: #34d399; border-bottom: 1px solid rgba(255,255,255,0.08);">92号</th>
+                <th style="padding: 14px 18px; text-align: center; font-size: 14px; font-weight: 700; color: #fbbf24; border-bottom: 1px solid rgba(255,255,255,0.08);">95号</th>
+                <th style="padding: 14px 18px; text-align: center; font-size: 14px; font-weight: 700; color: #f87171; border-bottom: 1px solid rgba(255,255,255,0.08);">98号</th>
+                <th style="padding: 14px 18px; text-align: center; font-size: 14px; font-weight: 700; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.08);">0号柴油</th>
+                <th style="padding: 14px 18px; text-align: center; font-size: 14px; font-weight: 700; color: #e2e8f0; border-bottom: 1px solid rgba(255,255,255,0.08);">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, idx) in filteredOilPriceList"
+                :key="idx"
+                style="transition: background 0.2s ease; cursor: pointer;"
+                :style="{ background: idx % 2 === 0 ? 'rgba(15, 12, 27, 0.4)' : 'transparent' }"
+                @mouseenter="($event.currentTarget as HTMLElement).style.background = 'rgba(168, 85, 247, 0.1)'"
+                @mouseleave="($event.currentTarget as HTMLElement).style.background = idx % 2 === 0 ? 'rgba(15, 12, 27, 0.4)' : 'transparent'"
+              >
+                <td style="padding: 12px 18px; font-size: 15px; font-weight: 700; color: #f8fafc; border-bottom: 1px solid rgba(255,255,255,0.04);">
+                  {{ item.province }}
+                </td>
+                <td style="padding: 12px 18px; text-align: center; font-size: 14px; font-weight: 600; color: #60a5fa; border-bottom: 1px solid rgba(255,255,255,0.04);">¥{{ item.o89 }}</td>
+                <td style="padding: 12px 18px; text-align: center; font-size: 14px; font-weight: 600; color: #34d399; border-bottom: 1px solid rgba(255,255,255,0.04);">¥{{ item.o92 }}</td>
+                <td style="padding: 12px 18px; text-align: center; font-size: 14px; font-weight: 600; color: #fbbf24; border-bottom: 1px solid rgba(255,255,255,0.04);">¥{{ item.o95 }}</td>
+                <td style="padding: 12px 18px; text-align: center; font-size: 14px; font-weight: 600; color: #f87171; border-bottom: 1px solid rgba(255,255,255,0.04);">¥{{ item.o98 }}</td>
+                <td style="padding: 12px 18px; text-align: center; font-size: 14px; font-weight: 600; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.04);">¥{{ item.o0 }}</td>
+                <td style="padding: 12px 18px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04);">
+                  <el-button size="small" type="warning" @click="openOilDetail(item)" style="font-weight: 700;">🔍 详情</el-button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <el-empty v-else description="暂无油价数据，请点击刷新" />
+      </div>
+
       <!-- 弹窗 1: 新华字典详细释义 Modal -->
       <el-dialog v-model="showWordDetailModal" title="📖 新华字典 - 详细字义" width="600px" center append-to-body destroy-on-close>
         <div v-if="activeWordDetail" style="padding: 10px 20px;">
@@ -2220,6 +2446,100 @@ onMounted(async () => {
               @click="copyCustomText(`原文：${pinyinOriginalWord}\n拼音：${pinyinResult}`, '中文与拼音已成功复制到剪贴板！')"
             >
               📋 复制全部
+            </el-button>
+          </div>
+        </div>
+      </el-dialog>
+
+      <!-- 弹窗 6: 汉服新闻详情 Modal -->
+      <el-dialog v-model="showHanfuDetailModal" title="👘 汉服新闻 - 详情" width="680px" center append-to-body destroy-on-close>
+        <div v-if="activeHanfuDetail" style="padding: 10px 20px;">
+          <div v-if="activeHanfuDetail.pic_url" style="margin-bottom: 16px; text-align: center;">
+            <el-image :src="activeHanfuDetail.pic_url" fit="contain" style="max-height: 280px; border-radius: 12px;" />
+          </div>
+          <div style="font-size: 20px; font-weight: 900; color: #f8fafc; line-height: 1.5; margin-bottom: 14px;">
+            {{ activeHanfuDetail.title }}
+          </div>
+          <div style="font-size: 13px; color: #64748b; margin-bottom: 16px;">📅 {{ activeHanfuDetail.ctime }}</div>
+
+          <!-- 描述文本默认3行折叠 -->
+          <div class="text-collapse-box" :class="{ expanded: isHanfuDescExpanded }">
+            {{ activeHanfuDetail.desc || '暂无描述' }}
+          </div>
+          <div v-if="(activeHanfuDetail.desc || '').length > 80" style="margin-top: 8px; text-align: center;">
+            <el-button
+              type="warning"
+              link
+              style="font-weight: 700; font-size: 13px;"
+              @click="isHanfuDescExpanded = !isHanfuDescExpanded"
+            >
+              {{ isHanfuDescExpanded ? '收起内容 👆' : '展开查看更多 👇' }}
+            </el-button>
+          </div>
+
+          <div class="modal-action-bar">
+            <span class="modal-char-tag" style="color: #ec4899; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.3);">
+              📝 字符长度：{{ (activeHanfuDetail.desc || '').length }} 字
+              <span class="tag-divider">|</span>
+              ⏱️ 预计阅读：{{ calcReadingTime(activeHanfuDetail.desc || '') }}
+            </span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <el-button
+                type="primary"
+                :icon="CopyDocument"
+                style="font-weight: 700;"
+                @click="copyCustomText(`【${activeHanfuDetail.title}】\n${activeHanfuDetail.desc || ''}\n\n原文链接：${activeHanfuDetail.url}`, '汉服新闻已复制！')"
+              >
+                📋 复制全文
+              </el-button>
+              <el-button type="success" style="font-weight: 700;" @click="openExternalUrl(activeHanfuDetail.url)">
+                🔗 访问原文
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </el-dialog>
+
+      <!-- 弹窗 7: 油价详情 Modal -->
+      <el-dialog v-model="showOilDetailModal" title="⛽ 油价详情" width="500px" center append-to-body destroy-on-close>
+        <div v-if="activeOilDetail" style="padding: 10px 20px;">
+          <div style="font-size: 24px; font-weight: 900; color: #f8fafc; text-align: center; margin-bottom: 20px;">
+            🏠 {{ activeOilDetail.province }}
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+            <div style="background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.3); padding: 16px; border-radius: 14px; text-align: center;">
+              <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px;">89号汽油</div>
+              <div style="font-size: 24px; font-weight: 900; color: #60a5fa;">¥{{ activeOilDetail.o89 }}</div>
+            </div>
+            <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); padding: 16px; border-radius: 14px; text-align: center;">
+              <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px;">92号汽油</div>
+              <div style="font-size: 24px; font-weight: 900; color: #34d399;">¥{{ activeOilDetail.o92 }}</div>
+            </div>
+            <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); padding: 16px; border-radius: 14px; text-align: center;">
+              <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px;">95号汽油</div>
+              <div style="font-size: 24px; font-weight: 900; color: #fbbf24;">¥{{ activeOilDetail.o95 }}</div>
+            </div>
+            <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); padding: 16px; border-radius: 14px; text-align: center;">
+              <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px;">98号汽油</div>
+              <div style="font-size: 24px; font-weight: 900; color: #f87171;">¥{{ activeOilDetail.o98 }}</div>
+            </div>
+          </div>
+          <div style="background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); padding: 16px; border-radius: 14px; text-align: center; margin-top: 14px;">
+            <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px;">0号柴油</div>
+            <div style="font-size: 24px; font-weight: 900; color: #cbd5e1;">¥{{ activeOilDetail.o0 }}</div>
+          </div>
+
+          <div class="modal-action-bar">
+            <span class="modal-char-tag" style="color: #fbbf24; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3);">
+              ⛽ {{ activeOilDetail.province }} 油价概览
+            </span>
+            <el-button
+              type="primary"
+              :icon="CopyDocument"
+              style="font-weight: 700;"
+              @click="copyCustomText(`【${activeOilDetail.province}油价】\n89号：¥${activeOilDetail.o89}\n92号：¥${activeOilDetail.o92}\n95号：¥${activeOilDetail.o95}\n98号：¥${activeOilDetail.o98}\n0号柴油：¥${activeOilDetail.o0}`, '油价信息已复制！')"
+            >
+              📋 复制油价信息
             </el-button>
           </div>
         </div>
