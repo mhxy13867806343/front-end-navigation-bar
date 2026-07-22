@@ -90,16 +90,50 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  max-height: 180px;
-  overflow-y: auto;
+  max-height: 84px; /* 默认仅展示前 2 行 */
+  overflow: hidden;
   padding-right: 6px;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &::-webkit-scrollbar {
-    width: 4px;
+  &.expanded {
+    max-height: 500px; /* 动画平滑展开全量分类 */
   }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
+}
+
+.expand-toggle-btn {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(168, 85, 247, 0.25);
+    color: #ffffff;
+  }
+}
+
+.expand-footer-bar {
+  text-align: center;
+  padding-top: 10px;
+  margin-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  user-select: none;
+
+  .expand-text {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  &:hover .expand-text {
+    color: #c084fc;
   }
 }
 

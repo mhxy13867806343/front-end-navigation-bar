@@ -243,7 +243,11 @@ const confirmRemoveFavorite = (index: number, quote: MingyanQuoteItem): void => 
   })
 }
 
-import { useAutoRefresh } from '../../composables/useAutoRefresh'
+const isCategoryExpanded = ref<boolean>(false)
+
+const toggleCategoryExpand = (): void => {
+  isCategoryExpanded.value = !isCategoryExpanded.value
+}
 
 const { countdown, triggerManualRefresh } = useAutoRefresh({
   intervalSeconds: 120,
@@ -276,9 +280,18 @@ onMounted(async () => {
       <section class="category-section" v-loading="loadingCategory">
         <div class="category-header">
           <span class="section-title">🏷️ 名言分类 (除了全部随机，其余分类按住可自由拖拽排序)</span>
-          <span class="badge-count">{{ categories.length }} 个主题类型</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="badge-count">{{ categories.length }} 个主题类型</span>
+            <button
+              type="button"
+              class="expand-toggle-btn"
+              @click="toggleCategoryExpand"
+            >
+              {{ isCategoryExpanded ? '收起分类 🔼' : '展开更多 🔽' }}
+            </button>
+          </div>
         </div>
-        <div class="category-tags">
+        <div class="category-tags" :class="{ expanded: isCategoryExpanded }">
           <!-- 固定的首选项：全部随机 -->
           <button
             type="button"
@@ -310,6 +323,12 @@ onMounted(async () => {
               </button>
             </template>
           </draggable>
+        </div>
+
+        <div class="expand-footer-bar" @click="toggleCategoryExpand">
+          <span class="expand-text">
+            {{ isCategoryExpanded ? '点击收起分类 🔼' : '点击查看更多分类 🔽' }}
+          </span>
         </div>
       </section>
 
