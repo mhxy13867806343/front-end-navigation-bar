@@ -281,7 +281,8 @@
 }
 
 .chart-panel__action,
-.status-panel__more {
+.status-panel__more,
+.china-map-panel__action {
   align-self: flex-start;
   padding: 8px 12px;
   border-radius: 999px;
@@ -290,11 +291,13 @@
   color: #afc0ff;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(70, 95, 193, 0.25);
-    color: #dce4ff;
+    background: rgba(70, 95, 193, 0.35);
+    border-color: rgba(111, 145, 255, 0.5);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(111, 145, 255, 0.3);
   }
 }
 
@@ -322,6 +325,13 @@
   background: rgba(11, 20, 40, 0.82);
   color: inherit;
   text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(22, 38, 74, 0.9);
+    border-color: rgba(117, 143, 255, 0.35);
+  }
 }
 
 .list-item strong {

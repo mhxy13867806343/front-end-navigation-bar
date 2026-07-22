@@ -127,6 +127,15 @@ onBeforeUnmount((): void => {
   background: rgba(70, 95, 193, 0.1);
   color: #afc0ff;
   font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(70, 95, 193, 0.35);
+    border-color: rgba(111, 145, 255, 0.5);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(111, 145, 255, 0.3);
+  }
 }
 
 .chart-panel__canvas {

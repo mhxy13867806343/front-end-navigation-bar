@@ -172,11 +172,13 @@ onBeforeUnmount((): void => {
   color: #afc0ff;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(70, 95, 193, 0.25);
-    color: #dce4ff;
+    background: rgba(70, 95, 193, 0.35);
+    border-color: rgba(111, 145, 255, 0.5);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(111, 145, 255, 0.3);
   }
 }
 
