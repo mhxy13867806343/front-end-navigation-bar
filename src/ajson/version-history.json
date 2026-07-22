@@ -1,328 +1,308 @@
 {
-  "generatedAt": "2026-07-21T16:38:34.784Z",
+  "generatedAt": "2026-07-22T05:24:20.831Z",
   "groups": [
     {
-      "date": "2026-07-21",
+      "date": "2026-07-22",
       "items": [
         {
-          "hash": "a4c0bda556f681eacf0a16603d889392646e8f8d",
-          "shortHash": "a4c0bda",
-          "date": "2026-07-21",
-          "time": "22:20",
+          "hash": "af89323f06ff4b08208d2d64e49b7ea472ced453",
+          "shortHash": "af89323",
+          "date": "2026-07-22",
+          "time": "13:14",
           "type": "功能更新",
-          "title": "add ALAPI abbr endpoint",
-          "scope": "toolbox",
-          "message": "feat(toolbox): add ALAPI abbr endpoint"
+          "title": "add Hanfu News (Tab 11) and Oil Price Query (Tab 12) to mingyan culture suite",
+          "scope": "",
+          "message": "feat: add Hanfu News (Tab 11) and Oil Price Query (Tab 12) to mingyan culture suite"
         },
         {
-          "hash": "67635b2b40c230cdcbe25ca13eccea9a56d869d7",
-          "shortHash": "67635b2",
-          "date": "2026-07-21",
-          "time": "22:08",
+          "hash": "ebb806e49be57db0054242561985009d35bdd1ae",
+          "shortHash": "ebb806e",
+          "date": "2026-07-22",
+          "time": "12:59",
           "type": "功能更新",
-          "title": "redesign forecast charts and sync region selection",
-          "scope": "weather",
-          "message": "feat(weather): redesign forecast charts and sync region selection"
+          "title": "add QR code generator (Tab 9) and Chinese-to-Pinyin converter (Tab 10) to mingyan culture suite",
+          "scope": "",
+          "message": "feat: add QR code generator (Tab 9) and Chinese-to-Pinyin converter (Tab 10) to mingyan culture suite"
         },
         {
-          "hash": "49ed534df0cfc314922e109b9229eb235d25b84f",
-          "shortHash": "49ed534",
-          "date": "2026-07-21",
-          "time": "17:25",
+          "hash": "3b7d597b5bec1ee690d0857e82aa09e5fc4de66c",
+          "shortHash": "3b7d597",
+          "date": "2026-07-22",
+          "time": "12:32",
+          "type": "代码重构",
+          "title": "extract reusable modal action bar, char tag, and text collapse SCSS utilities and update markdown documentation",
+          "scope": "",
+          "message": "refactor: extract reusable modal action bar, char tag, and text collapse SCSS utilities and update markdown documentation"
+        },
+        {
+          "hash": "978baa7f978ebd0247ce33011d5709bfc550148f",
+          "shortHash": "978baa7",
+          "date": "2026-07-22",
+          "time": "12:24",
+          "type": "功能更新",
+          "title": "add reading time estimation and 3-line smooth CSS collapse/expand animation for event detail modal",
+          "scope": "",
+          "message": "feat: add reading time estimation and 3-line smooth CSS collapse/expand animation for event detail modal"
+        },
+        {
+          "hash": "eb301fd5e04a82327fecb9226f1099b88571fe03",
+          "shortHash": "eb301fd",
+          "date": "2026-07-22",
+          "time": "12:21",
+          "type": "功能更新",
+          "title": "add character length count tag and one-click copy button to detail dialog modals",
+          "scope": "",
+          "message": "feat: add character length count tag and one-click copy button to detail dialog modals"
+        },
+        {
+          "hash": "8c1ed96b65735e18625d27e3fb68751aafca197a",
+          "shortHash": "8c1ed96",
+          "date": "2026-07-22",
+          "time": "12:20",
           "type": "问题修复",
-          "title": "restrict top bar to dyform route, remove weather header back button, fix region cascader markRaw, and enable 7/40 day chart resize on tab switch",
+          "title": "resolve DatePicker date change not updating Event History data by extracting month and day directly from timestamp",
           "scope": "",
-          "message": "fix: restrict top bar to dyform route, remove weather header back button, fix region cascader markRaw, and enable 7/40 day chart resize on tab switch"
+          "message": "fix: resolve DatePicker date change not updating Event History data by extracting month and day directly from timestamp"
         },
         {
-          "hash": "1214fdb6796a4ff24da15508c5b2368d012042eb",
-          "shortHash": "1214fdb",
-          "date": "2026-07-21",
-          "time": "17:18",
-          "type": "样式调整",
-          "title": "convert CSS files to SCSS, fix duplicate style closing tags and improve ECharts/top-bar visibility",
-          "scope": "",
-          "message": "style: convert CSS files to SCSS, fix duplicate style closing tags and improve ECharts/top-bar visibility"
-        },
-        {
-          "hash": "f71878a6196b29beb9b6b2ba5e57e756f2508378",
-          "shortHash": "f71878a",
-          "date": "2026-07-21",
-          "time": "17:08",
+          "hash": "d98a871df8500ebcea3f53f94a04f6dcf24c1e51",
+          "shortHash": "d98a871",
+          "date": "2026-07-22",
+          "time": "12:18",
           "type": "功能更新",
-          "title": "add weather page with ECharts, extract region cascader component, add juejin theme user popover and refactor Vue styles/composables",
+          "title": "replace text inputs in Event History with Naive UI NDatePicker component",
           "scope": "",
-          "message": "feat: add weather page with ECharts, extract region cascader component, add juejin theme user popover and refactor Vue styles/composables"
-        }
-      ]
-    },
-    {
-      "date": "2026-07-18",
-      "items": [
+          "message": "feat: replace text inputs in Event History with Naive UI NDatePicker component"
+        },
         {
-          "hash": "9c0207771330f36b0bf872afd72124bc21a2455b",
-          "shortHash": "9c02077",
-          "date": "2026-07-18",
-          "time": "12:25",
+          "hash": "a2505d203da4588f1003acdb0cf3c75ee13a491b",
+          "shortHash": "a2505d2",
+          "date": "2026-07-22",
+          "time": "12:14",
           "type": "功能更新",
-          "title": "add toolbox routes and improve alapi playlists",
+          "title": "add Xinhua Word, NLP Keyword, and Event History tabs to mingyan page with click-to-open detail modals",
           "scope": "",
-          "message": "feat: add toolbox routes and improve alapi playlists"
-        }
-      ]
-    },
-    {
-      "date": "2026-07-17",
-      "items": [
-        {
-          "hash": "22adb622a368fd9afa86122172a38a943ccb7ad3",
-          "shortHash": "22adb62",
-          "date": "2026-07-17",
-          "time": "16:37",
-          "type": "工程维护",
-          "title": "final update before maintenance stop",
-          "scope": "",
-          "message": "chore: final update before maintenance stop"
+          "message": "feat: add Xinhua Word, NLP Keyword, and Event History tabs to mingyan page with click-to-open detail modals"
         },
         {
-          "hash": "32d358f769fc2b02cd652246bfd08805f7184dac",
-          "shortHash": "32d358f",
-          "date": "2026-07-17",
-          "time": "01:05",
-          "type": "问题修复",
-          "title": "sync alapi playlist deletion state",
-          "scope": "",
-          "message": "fix: sync alapi playlist deletion state"
-        },
-        {
-          "hash": "9cfcdf459fad0194797d9812269b1bb0d3efc7ae",
-          "shortHash": "9cfcdf4",
-          "date": "2026-07-17",
-          "time": "00:39",
-          "type": "问题修复",
-          "title": "adapt alapi player labels to content",
-          "scope": "",
-          "message": "fix: adapt alapi player labels to content"
-        },
-        {
-          "hash": "32681343dd08b4fd0db4df1dbb82b645f8477d39",
-          "shortHash": "3268134",
-          "date": "2026-07-17",
-          "time": "00:23",
+          "hash": "ef14fa6494221aaf8e374a40539371c7a9a861a9",
+          "shortHash": "ef14fa6",
+          "date": "2026-07-22",
+          "time": "12:04",
           "type": "功能更新",
-          "title": "manage alapi playlist groups",
+          "title": "add Naive UI NSelect page jumper dropdown menu to Doutu pagination bars",
           "scope": "",
-          "message": "feat: manage alapi playlist groups"
-        }
-      ]
-    },
-    {
-      "date": "2026-07-16",
-      "items": [
-        {
-          "hash": "bf9b507e120591d16804c00b8717292a2adf29fd",
-          "shortHash": "bf9b507",
-          "date": "2026-07-16",
-          "time": "22:40",
-          "type": "问题修复",
-          "title": "align alapi search type dropdown",
-          "scope": "",
-          "message": "fix: align alapi search type dropdown"
+          "message": "feat: add Naive UI NSelect page jumper dropdown menu to Doutu pagination bars"
         },
         {
-          "hash": "4cda46fb314c5c7afb8b55eaf5fb9fcded84fbf9",
-          "shortHash": "4cda46f",
-          "date": "2026-07-16",
-          "time": "22:27",
-          "type": "问题修复",
-          "title": "improve alapi player playback navigation",
-          "scope": "",
-          "message": "fix: improve alapi player playback navigation"
-        },
-        {
-          "hash": "a92e01fc00fcf1499f1fc0e6e185c99696a1ebd8",
-          "shortHash": "a92e01f",
-          "date": "2026-07-16",
-          "time": "22:11",
-          "type": "问题修复",
-          "title": "refine music player ui and version dialog",
-          "scope": "",
-          "message": "fix: refine music player ui and version dialog"
-        },
-        {
-          "hash": "32c55e0167148dbd1e2c6eb021b94baf42de61f6",
-          "shortHash": "32c55e0",
-          "date": "2026-07-16",
-          "time": "21:27",
+          "hash": "a1e3ccab8baf1829abdfc729a976a62ad161f396",
+          "shortHash": "a1e3cca",
+          "date": "2026-07-22",
+          "time": "11:59",
           "type": "功能更新",
-          "title": "enhance alapi music playlist controls",
+          "title": "add Doutu search history (max 12, hot keyword filtering, confirmation modal on clear)",
           "scope": "",
-          "message": "feat: enhance alapi music playlist controls"
+          "message": "feat: add Doutu search history (max 12, hot keyword filtering, confirmation modal on clear)"
         },
         {
-          "hash": "d4aa0919e8c58c0fe8d1d6a831e4905316940855",
-          "shortHash": "d4aa091",
-          "date": "2026-07-16",
-          "time": "17:44",
-          "type": "功能更新",
-          "title": "refine music player playlist layout",
-          "scope": "",
-          "message": "feat: refine music player playlist layout"
-        },
-        {
-          "hash": "f347055eba44160a0f94c552af514a99b8a2bb3d",
-          "shortHash": "f347055",
-          "date": "2026-07-16",
-          "time": "16:45",
-          "type": "功能更新",
-          "title": "improve music playlist controls",
-          "scope": "",
-          "message": "feat: improve music playlist controls"
-        },
-        {
-          "hash": "c225586a0212e4e20404e762b22e4ee64cc4f376",
-          "shortHash": "c225586",
-          "date": "2026-07-16",
-          "time": "15:53",
-          "type": "功能更新",
-          "title": "show music playlist panel",
-          "scope": "",
-          "message": "feat: show music playlist panel"
-        },
-        {
-          "hash": "a1acd0ee5995fcb8c77921ce0742ed5624d7acdd",
-          "shortHash": "a1acd0e",
-          "date": "2026-07-16",
-          "time": "09:58",
-          "type": "功能更新",
-          "title": "persist music playback state",
-          "scope": "",
-          "message": "feat: persist music playback state"
-        },
-        {
-          "hash": "1d94e13c1a6998680b98fce85380bf96e34d2edb",
-          "shortHash": "1d94e13",
-          "date": "2026-07-16",
-          "time": "09:12",
-          "type": "功能更新",
-          "title": "add scrollable music lyrics panel",
-          "scope": "",
-          "message": "feat: add scrollable music lyrics panel"
-        },
-        {
-          "hash": "a63c4622abfbc0f8013c8fa9aae1a95a7af01ddb",
-          "shortHash": "a63c462",
-          "date": "2026-07-16",
-          "time": "01:20",
-          "type": "功能更新",
-          "title": "enhance alapi music player history",
-          "scope": "",
-          "message": "feat: enhance alapi music player history"
-        },
-        {
-          "hash": "e05fd74643209cd7e93772f9da9ca4512f41d623",
-          "shortHash": "e05fd74",
-          "date": "2026-07-16",
-          "time": "01:07",
-          "type": "功能更新",
-          "title": "add alapi bottom music player",
-          "scope": "",
-          "message": "feat: add alapi bottom music player"
-        },
-        {
-          "hash": "2cbccb4a856429205de1fb482fe6cc1fcbde05b1",
-          "shortHash": "2cbccb4",
-          "date": "2026-07-16",
-          "time": "00:40",
-          "type": "功能更新",
-          "title": "add version history dialog",
-          "scope": "",
-          "message": "feat: add version history dialog"
-        }
-      ]
-    },
-    {
-      "date": "2026-07-15",
-      "items": [
-        {
-          "hash": "dd8660bcd00b3c982cccbb415f7bd6e96affb9d0",
-          "shortHash": "dd8660b",
-          "date": "2026-07-15",
-          "time": "22:43",
-          "type": "功能更新",
-          "title": "add repository link to drawer",
-          "scope": "",
-          "message": "feat: add repository link to drawer"
-        },
-        {
-          "hash": "5c24508adbb418c577495a4f7de043dce4e7f40c",
-          "shortHash": "5c24508",
-          "date": "2026-07-15",
-          "time": "22:34",
-          "type": "功能更新",
-          "title": "add wechat featured detail page",
-          "scope": "",
-          "message": "feat: add wechat featured detail page"
-        },
-        {
-          "hash": "6423f7c924d0453cc4367beea2ad3c0a4e570167",
-          "shortHash": "6423f7c",
-          "date": "2026-07-15",
-          "time": "22:25",
-          "type": "功能更新",
-          "title": "add wechat featured articles",
-          "scope": "",
-          "message": "feat: add wechat featured articles"
-        },
-        {
-          "hash": "27fbe09912fc97400ae7ce607890a63178bf2a85",
-          "shortHash": "27fbe09",
-          "date": "2026-07-15",
+          "hash": "3003191a85cdb1ea351c69d1a971c307bfc97ee0",
+          "shortHash": "3003191",
+          "date": "2026-07-22",
           "time": "11:58",
+          "type": "功能更新",
+          "title": "add dynamic page number buttons (5,6,7,8,9,10) with show/hide toggle for Doutu pagination",
+          "scope": "",
+          "message": "feat: add dynamic page number buttons (5,6,7,8,9,10) with show/hide toggle for Doutu pagination"
+        },
+        {
+          "hash": "23de0f1d28de6ea84e9ed83c82dd926944c87340",
+          "shortHash": "23de0f1",
+          "date": "2026-07-22",
+          "time": "11:56",
+          "type": "功能更新",
+          "title": "add top pagination control bar above doutu image grid for convenient page navigation",
+          "scope": "",
+          "message": "feat: add top pagination control bar above doutu image grid for convenient page navigation"
+        },
+        {
+          "hash": "a65303a159dcfb77749ae134df7bf1475bdb3bbe",
+          "shortHash": "a65303a",
+          "date": "2026-07-22",
+          "time": "11:53",
+          "type": "功能更新",
+          "title": "add Doutu Meme Search API with interactive pagination, favorite controls and broken image auto-hiding buttons",
+          "scope": "",
+          "message": "feat: add Doutu Meme Search API with interactive pagination, favorite controls and broken image auto-hiding buttons"
+        },
+        {
+          "hash": "d351bf9b42e7d290a7fb26fc4b621c0020795d57",
+          "shortHash": "d351bf9",
+          "date": "2026-07-22",
+          "time": "11:25",
+          "type": "功能更新",
+          "title": "add Shici classical poetry API to mingyan page as 4th Tab with type filtering, favorite, and confirm delete dialogs",
+          "scope": "",
+          "message": "feat: add Shici classical poetry API to mingyan page as 4th Tab with type filtering, favorite, and confirm delete dialogs"
+        },
+        {
+          "hash": "7e986f38aa491ed9b99458a24582abc9ae0c75e6",
+          "shortHash": "7e986f3",
+          "date": "2026-07-22",
+          "time": "11:16",
+          "type": "功能更新",
+          "title": "add favorite and confirm delete dialogs for qinghua and riddle tabs",
+          "scope": "",
+          "message": "feat: add favorite and confirm delete dialogs for qinghua and riddle tabs"
+        },
+        {
+          "hash": "266ba9d64fd966af4bc957530072e0663909da15",
+          "shortHash": "266ba9d",
+          "date": "2026-07-22",
+          "time": "11:13",
+          "type": "功能更新",
+          "title": "add qinghua & riddle APIs with 5s tab switch cooldown throttle on mingyan page",
+          "scope": "",
+          "message": "feat: add qinghua & riddle APIs with 5s tab switch cooldown throttle on mingyan page"
+        },
+        {
+          "hash": "0280ed5c9f4875d46e5fbdc95fc474ccc5ff5d70",
+          "shortHash": "0280ed5",
+          "date": "2026-07-22",
+          "time": "11:02",
           "type": "问题修复",
-          "title": "align pages deploy node version",
+          "title": "move all import statements to the very top of script setup in mingyan/index.vue to fix ReferenceError",
           "scope": "",
-          "message": "fix: align pages deploy node version"
+          "message": "fix: move all import statements to the very top of script setup in mingyan/index.vue to fix ReferenceError"
         },
         {
-          "hash": "5a0fb8f7ad02475f51ef3624edc7509200f167d5",
-          "shortHash": "5a0fb8f",
-          "date": "2026-07-15",
-          "time": "11:49",
+          "hash": "5e26e6ff5c45c3a09c9a5fa8bfb1317f0563e151",
+          "shortHash": "5e26e6f",
+          "date": "2026-07-22",
+          "time": "10:57",
           "type": "功能更新",
-          "title": "add drawer resources and dev tools",
+          "title": "default to 2 rows of category tags with pure CSS max-height smooth animation expand/collapse",
           "scope": "",
-          "message": "feat: add drawer resources and dev tools"
+          "message": "feat: default to 2 rows of category tags with pure CSS max-height smooth animation expand/collapse"
         },
         {
-          "hash": "df42214fb436525ef215fd3721a158754d6cd0b8",
-          "shortHash": "df42214",
-          "date": "2026-07-15",
-          "time": "11:37",
+          "hash": "8bc74dfc587a4bb71dfbbc854da4752bc49ab324",
+          "shortHash": "8bc74df",
+          "date": "2026-07-22",
+          "time": "10:52",
+          "type": "功能更新",
+          "title": "make famous quote category pills drag-and-drop sortable with persistence except fixed 全部随机",
+          "scope": "",
+          "message": "feat: make famous quote category pills drag-and-drop sortable with persistence except fixed 全部随机"
+        },
+        {
+          "hash": "66dbae1dd5c99ecea216164e71da28b654b10a78",
+          "shortHash": "66dbae1",
+          "date": "2026-07-22",
+          "time": "10:35",
+          "type": "功能更新",
+          "title": "create reusable useAutoRefresh composable and apply 120s auto refresh countdown to mingyan page",
+          "scope": "",
+          "message": "feat: create reusable useAutoRefresh composable and apply 120s auto refresh countdown to mingyan page"
+        },
+        {
+          "hash": "6183a26432ade876a88b633199d8053e58af2f42",
+          "shortHash": "6183a26",
+          "date": "2026-07-22",
+          "time": "10:19",
           "type": "问题修复",
-          "title": "keep home search controls sticky",
+          "title": "remove trailing comma in api_list.json line 1332 to resolve Vite 500 server error",
           "scope": "",
-          "message": "fix: keep home search controls sticky"
+          "message": "fix: remove trailing comma in api_list.json line 1332 to resolve Vite 500 server error"
         },
         {
-          "hash": "e0c0c7a78c23718c18526cfdd746e739bca763df",
-          "shortHash": "e0c0c7a",
-          "date": "2026-07-15",
-          "time": "11:27",
-          "type": "功能更新",
-          "title": "show package versions in browser dialog",
+          "hash": "fdc1a04b4675423099857c6947deaeb7b6585af1",
+          "shortHash": "fdc1a04",
+          "date": "2026-07-22",
+          "time": "10:16",
+          "type": "问题修复",
+          "title": "resolve z-index layer conflict on route-view-layer to ensure ElMessage toasts and ElMessageBox confirm dialogs are ALWAYS visible",
           "scope": "",
-          "message": "feat: show package versions in browser dialog"
+          "message": "fix: resolve z-index layer conflict on route-view-layer to ensure ElMessage toasts and ElMessageBox confirm dialogs are ALWAYS visible"
         },
         {
-          "hash": "882550ccd3ab96bedef5bf35cc450feee53d5e0b",
-          "shortHash": "882550c",
-          "date": "2026-07-15",
-          "time": "11:24",
+          "hash": "a2e3f984f98c2c442f7af4dbc0c1941d2fba6419",
+          "shortHash": "a2e3f98",
+          "date": "2026-07-22",
+          "time": "10:13",
           "type": "功能更新",
-          "title": "show browser check in element dialog",
+          "title": "add ALAPI名人名言 category to api_list.json, build visual mingyan cards in apiCenter detail view and direct avatar jump to juejin.cn/user/1310273588955581",
           "scope": "",
-          "message": "feat: show browser check in element dialog"
+          "message": "feat: add ALAPI名人名言 category to api_list.json, build visual mingyan cards in apiCenter detail view and direct avatar jump to juejin.cn/user/1310273588955581"
+        },
+        {
+          "hash": "ce93d706aef8346299375da91554ede087c5d514",
+          "shortHash": "ce93d70",
+          "date": "2026-07-22",
+          "time": "09:45",
+          "type": "问题修复",
+          "title": "upgrade author avatar click to explicit ElDialog with user link 1310273588955581 and add loading state to refresh button in mingyan",
+          "scope": "",
+          "message": "fix: upgrade author avatar click to explicit ElDialog with user link 1310273588955581 and add loading state to refresh button in mingyan"
+        },
+        {
+          "hash": "a3c75e8e51674308e7f13bbeecc40292f0e43254",
+          "shortHash": "a3c75e8",
+          "date": "2026-07-22",
+          "time": "09:40",
+          "type": "问题修复",
+          "title": "add ElMessageBox confirm modal for mingyan deletion, explicit copy/refresh toasts and user profile popover navigation to juejin.cn/user/1310273588955581",
+          "scope": "",
+          "message": "fix: add ElMessageBox confirm modal for mingyan deletion, explicit copy/refresh toasts and user profile popover navigation to juejin.cn/user/1310273588955581"
+        },
+        {
+          "hash": "fa7ea3f41278c83a6a4c38cadea70a07f158c589",
+          "shortHash": "fa7ea3f",
+          "date": "2026-07-22",
+          "time": "09:25",
+          "type": "问题修复",
+          "title": "declare goToMingyan and goMingyan navigation handlers in BrowserSupportNotice.vue and App.vue",
+          "scope": "",
+          "message": "fix: declare goToMingyan and goMingyan navigation handlers in BrowserSupportNotice.vue and App.vue"
+        },
+        {
+          "hash": "6a41dc2a459ac4fd15b0834c444923baa92bc88c",
+          "shortHash": "6a41dc2",
+          "date": "2026-07-22",
+          "time": "09:07",
+          "type": "功能更新",
+          "title": "add famous quotes interactive page /mingyan with ALAPI category filter, quote cards and local favorites",
+          "scope": "",
+          "message": "feat: add famous quotes interactive page /mingyan with ALAPI category filter, quote cards and local favorites"
+        },
+        {
+          "hash": "fabed6b56fe9ffb0f7ff7bdf6a290d0374d34b51",
+          "shortHash": "fabed6b",
+          "date": "2026-07-22",
+          "time": "01:11",
+          "type": "文档更新",
+          "title": "add Python, Rust, Codex, TRAE, Devin, Antigravity, ChatGPT, Gemini, JetBrains, Godot tools to developer ecosystem links and bat scripts",
+          "scope": "",
+          "message": "docs: add Python, Rust, Codex, TRAE, Devin, Antigravity, ChatGPT, Gemini, JetBrains, Godot tools to developer ecosystem links and bat scripts"
+        },
+        {
+          "hash": "ee5dda609cf6fcaf92c95244f704f4c77a2fba02",
+          "shortHash": "ee5dda6",
+          "date": "2026-07-22",
+          "time": "01:08",
+          "type": "文档更新",
+          "title": "add developer links markdown, txt, and bat script for batch opening developer resources and Vue/UniApp stack info",
+          "scope": "",
+          "message": "docs: add developer links markdown, txt, and bat script for batch opening developer resources and Vue/UniApp stack info"
+        },
+        {
+          "hash": "1e2e1ca94620413ab7e6aee7fe9526fe19341485",
+          "shortHash": "1e2e1ca",
+          "date": "2026-07-22",
+          "time": "01:03",
+          "type": "问题修复",
+          "title": "add default ALAPI token fallback for production builds and create doc/ directory with troubleshooting records",
+          "scope": "",
+          "message": "fix: add default ALAPI token fallback for production builds and create doc/ directory with troubleshooting records"
         }
       ]
     }
