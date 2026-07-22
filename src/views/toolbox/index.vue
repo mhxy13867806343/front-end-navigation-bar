@@ -52,6 +52,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '🪐',
     path: '/three-showcase',
     tag: 'Three.js'
+  },
+  {
+    id: 'cnblogs',
+    name: '博客园新闻',
+    desc: '实时关注博客园最新发布、推荐新闻与热门榜单 (今日/昨日/本周/本月)。',
+    icon: '📰',
+    path: '/cnblogs',
+    tag: 'IT 资讯'
   }
 ]
 

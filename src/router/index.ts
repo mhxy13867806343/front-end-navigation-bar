@@ -98,6 +98,11 @@ const routes = [
     component: () => import('../views/cocoloop/index.vue')
   },
   {
+    path: '/cnblogs',
+    name: 'Cnblogs',
+    component: () => import('../views/cnblogs/index.vue')
+  },
+  {
     path: '/big-screen',
     name: 'BigScreen',
     component: BigScreen

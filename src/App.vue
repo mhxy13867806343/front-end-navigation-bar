@@ -99,7 +99,10 @@ const goMingyan = (): void => {
 const goCocoloop = (): void => {
   void router.push('/cocoloop')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/three-showcase']
+const goCnblogs = (): void => {
+  void router.push('/cnblogs')
+}
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/three-showcase']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some((p: string): boolean => {
@@ -714,6 +717,11 @@ watch(isDarkMode, () => {
             <div class="popover-tool-item" @click="goCocoloop">
               <span class="tool-icon">🌌</span>
               <span>CocoLoop 社区</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
+            </div>
+            <div class="popover-tool-item" @click="goCnblogs">
+              <span class="tool-icon">📰</span>
+              <span>博客园新闻</span>
               <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
             </div>
             <div class="popover-tool-item" @click="goBigScreen">

@@ -115,5 +115,9 @@ export const serverProxy: ServerProxyMap = {
   '/api-cocoloop': createProxyEntry('/api-cocoloop', 'https://www.cocoloop.cn', {
     Origin: 'https://www.cocoloop.cn',
     Referer: 'https://www.cocoloop.cn/'
+  }),
+  '/api-cnblogs': createProxyEntry('/api-cnblogs', 'https://news.cnblogs.com', {
+    Origin: 'https://news.cnblogs.com',
+    Referer: 'https://news.cnblogs.com/'
   })
 }
