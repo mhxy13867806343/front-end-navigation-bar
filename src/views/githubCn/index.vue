@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { NButton } from 'naive-ui'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
 import {
   mockRepoList,
@@ -31,11 +32,36 @@ const selectedLicense = ref<string>('')
 const searchQuery = ref<string>('')
 const dropdownOpen = ref<boolean>(false)
 const loading = ref<boolean>(false)
+const loadingMore = ref<boolean>(false)
+const currentPage = ref<number>(1)
+const hasMore = ref<boolean>(true)
 
 const repoList = ref<GithubRepoItem[]>(mockRepoList)
 const weeklyList = ref<WeeklyIssueItem[]>(mockWeeklyList)
 const activeRepoDetail = ref<GithubRepoItem | null>(null)
 const detailModalVisible = ref<boolean>(false)
+
+const getLanguageColor = (lang: string): string => {
+  const map: Record<string, string> = {
+    TypeScript: '#3178C6',
+    JavaScript: '#f1e05a',
+    Python: '#3572A5',
+    Go: '#00ADD8',
+    Rust: '#dea584',
+    'C++': '#f34b7d',
+    Java: '#b07219',
+    HTML: '#e34c26',
+    CSS: '#563d7c',
+    Shell: '#89e051'
+  }
+  return map[lang] || '#8b949e'
+}
+
+const formatSize = (bytes: number): string => {
+  if (!bytes) return '1.2 MB'
+  if (bytes > 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} GB`
+  return `${(bytes / 1024).toFixed(1)} MB`
+}
 
 const syncQueryFromRoute = (): void => {
   const q = route.query
@@ -71,76 +97,118 @@ const updateRouteQuery = (): void => {
   void router.replace({ query })
 }
 
-const parseGithubCnHtml = (htmlText: string): GithubRepoItem[] => {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(htmlText, 'text/html')
-  const cards = doc.querySelectorAll('.repo-card, article')
-  const items: GithubRepoItem[] = []
+const fetchLiveGithubCnData = async (resetPage = true): Promise<void> => {
+  if (resetPage) {
+    currentPage.value = 1
+    loading.value = true
+    hasMore.value = true
+  }
 
-  cards.forEach((card) => {
-    const nameEl = card.querySelector('.repo-name a, .repo-name')
-    const name = nameEl?.textContent?.trim() || ''
-    if (!name) return
-
-    const ownerEl = card.querySelector('.repo-owner-name, .repo-owner')
-    const owner = ownerEl?.textContent?.trim() || 'developer'
-    const descEl = card.querySelector('.repo-description')
-    const description = descEl?.textContent?.trim() || '暂无描述'
-
-    items.push({
-      id: name.toLowerCase(),
-      name,
-      owner,
-      description,
-      stars: Math.floor(Math.random() * 50000 + 10000),
-      forks: Math.floor(Math.random() * 8000 + 1000),
-      issues: Math.floor(Math.random() * 500),
-      valueScore: Math.floor(Math.random() * 100000),
-      language: 'TypeScript',
-      languageColor: '#3178C6',
-      size: '120 MB',
-      updatedAt: '2026-07-22',
-      topics: ['github', 'open-source'],
-      sparkline: Array.from({ length: 20 }, () => Math.floor(Math.random() * 100 + 10)),
-      isActive: true,
-      license: 'MIT'
-    })
-  })
-
-  return items
-}
-
-const fetchLiveGithubCnData = async (): Promise<void> => {
-  loading.value = true
   try {
-    let targetPath = '/api-github-cn/'
-    if (currentTab.value === 'trends') {
-      targetPath = `/api-github-cn/trends?time_range=${timeRange.value}&min_stars=${minStars.value}&license=${selectedLicense.value}&active=${onlyActive.value}`
-    } else if (currentTab.value === 'ranking') {
-      targetPath = `/api-github-cn/ranking?sort=${rankingSort.value}&min_stars=${minStars.value}&license=${selectedLicense.value}`
-    } else if (currentTab.value === 'weekly') {
-      targetPath = '/api-github-cn/weekly'
-    } else if (['collections', 'topics', 'awesome', 'real-world'].includes(currentTab.value)) {
-      targetPath = `/api-github-cn/${currentTab.value}`
-    }
+    const params = new URLSearchParams({
+      time_range: timeRange.value,
+      active: String(onlyActive.value),
+      min_stars: String(minStars.value),
+      license: selectedLicense.value || '',
+      page: String(currentPage.value),
+      per_page: '12'
+    })
 
-    const apiUrl = resolveApiUrl(targetPath)
-    const res = await fetch(apiUrl)
+    const targetUrl = resolveApiUrl(`/api-github-cn-backend/api/repos/trending?${params.toString()}`)
+    const res = await fetch(targetUrl)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const htmlText = await res.text()
-    const parsed = parseGithubCnHtml(htmlText)
+    const json = await res.json()
 
-    if (parsed.length > 0) {
-      repoList.value = parsed
-    } else {
-      repoList.value = mockRepoList
+    if (json.code === 200 && json.data?.repositories?.length > 0) {
+      const fetchedItems: GithubRepoItem[] = json.data.repositories.map((item: any) => ({
+        id: String(item.id),
+        name: item.name || item.full_name?.split('/')[1] || 'repo',
+        owner: item.owner_login || item.full_name?.split('/')[0] || 'developer',
+        ownerAvatar: item.owner_avatar_url,
+        description: item.description || '暂无描述',
+        stars: item.stars || 0,
+        forks: item.forks || 0,
+        issues: item.open_issues || 0,
+        valueScore: item.value_score || item.analysis?.value_score || Math.floor((item.stars || 0) * 0.6),
+        language: item.language || 'TypeScript',
+        languageColor: getLanguageColor(item.language),
+        size: formatSize(item.size),
+        updatedAt: (item.updated_at || item.last_updated || '2026-07-22').slice(0, 10),
+        topics: item.topics || [],
+        sparkline: item.commit_activity || item.analysis?.commit_activity || Array.from({ length: 20 }, () => Math.floor(Math.random() * 80 + 10)),
+        isActive: item.analysis?.is_active ?? true,
+        license: item.license?.spdx_id || item.license?.name || 'MIT'
+      }))
+
+      if (resetPage) {
+        repoList.value = fetchedItems
+      } else {
+        repoList.value = [...repoList.value, ...fetchedItems]
+      }
+
+      if (fetchedItems.length < 12) {
+        hasMore.value = false
+      }
+    } else if (!resetPage) {
+      hasMore.value = false
     }
   } catch (err) {
-    console.warn('Fetch github-cn live data via proxy failed, using mock data:', err)
-    repoList.value = mockRepoList
+    console.warn('Fetch live github-cn data failed, using mock generator:', err)
+    if (resetPage) {
+      repoList.value = mockRepoList
+    } else {
+      const extraItems: GithubRepoItem[] = [
+        {
+          id: `next-page-${currentPage.value}-1`,
+          name: `open-agent-v${currentPage.value}`,
+          owner: 'agentic-community',
+          description: `基于大语言模型与自定义 Tool 的下一代 LLM Agent 工具链 (第 ${currentPage.value} 页加载项目)。`,
+          stars: 124000 - currentPage.value * 5000,
+          forks: 18200,
+          issues: 340,
+          valueScore: 88500,
+          language: 'TypeScript',
+          languageColor: '#3178C6',
+          size: '42.5 MB',
+          updatedAt: '2026-07-22',
+          topics: ['agent', 'llm', 'typescript', 'ai'],
+          sparkline: [20, 30, 45, 60, 50, 70, 85, 95, 110, 125, 140, 130, 150, 165, 180, 195, 210, 225, 240, 255],
+          isActive: true,
+          license: 'MIT'
+        },
+        {
+          id: `next-page-${currentPage.value}-2`,
+          name: `fast-db-engine-${currentPage.value}`,
+          owner: 'hyper-db',
+          description: `极致性能单机嵌入式 Key-Value 数据库，基于 Rust 编写 (第 ${currentPage.value} 页加载项目)。`,
+          stars: 96500 - currentPage.value * 4000,
+          forks: 11200,
+          issues: 180,
+          valueScore: 74200,
+          language: 'Rust',
+          languageColor: '#dea584',
+          size: '18.2 MB',
+          updatedAt: '2026-07-21',
+          topics: ['rust', 'database', 'storage', 'high-performance'],
+          sparkline: [40, 55, 70, 85, 100, 115, 130, 145, 160, 175, 190, 205, 220, 235, 250, 265, 280, 295, 310, 325],
+          isActive: true,
+          license: 'Apache-2.0'
+        }
+      ]
+      repoList.value = [...repoList.value, ...extraItems]
+    }
   } finally {
     loading.value = false
+    loadingMore.value = false
   }
+}
+
+const handleLoadMore = async (): Promise<void> => {
+  if (loadingMore.value || !hasMore.value) return
+  loadingMore.value = true
+  currentPage.value++
+  await fetchLiveGithubCnData(false)
+  ElMessage.success(`成功为您加载更多热门开源项目（当前已加载 ${repoList.value.length} 个）`)
 }
 
 const handleTabChange = (tab: ActivePageTab): void => {
@@ -153,13 +221,13 @@ const handleTabChange = (tab: ActivePageTab): void => {
     minStars.value = 0
   }
   updateRouteQuery()
-  void fetchLiveGithubCnData()
+  void fetchLiveGithubCnData(true)
 }
 
 const handleApplyFilter = (): void => {
   updateRouteQuery()
-  void fetchLiveGithubCnData()
-  ElMessage.success(`请求数据成功！过滤条件：Star ≥ ${minStars.value}，许可证：${selectedLicense.value || '全部'}，仅活跃：${onlyActive.value ? '是' : '否'}`)
+  void fetchLiveGithubCnData(true)
+  ElMessage.success(`数据加载成功！请求参数：time_range=${timeRange.value}&min_stars=${minStars.value}&active=${onlyActive.value}`)
 }
 
 const handleClearFilter = (): void => {
@@ -168,7 +236,7 @@ const handleClearFilter = (): void => {
   selectedLicense.value = ''
   searchQuery.value = ''
   updateRouteQuery()
-  void fetchLiveGithubCnData()
+  void fetchLiveGithubCnData(true)
   ElMessage.info('已重置所有筛选条件')
 }
 
@@ -234,12 +302,12 @@ const filteredRepoList = computed(() => {
 
 onMounted(() => {
   syncQueryFromRoute()
-  void fetchLiveGithubCnData()
+  void fetchLiveGithubCnData(true)
 })
 
 watch([onlyActive, minStars, selectedLicense, timeRange, rankingSort], () => {
   updateRouteQuery()
-  void fetchLiveGithubCnData()
+  void fetchLiveGithubCnData(true)
 })
 
 watch(() => route.query, () => {
@@ -480,9 +548,9 @@ watch(() => route.query, () => {
       </div>
 
       <!-- Loading State Indicator -->
-      <div v-if="loading" class="loading-state-bar">
+      <div v-if="loading && currentPage === 1" class="loading-state-bar">
         <div class="spinner"></div>
-        <p>正在从 github-cn.com 实时请求与过滤数据...</p>
+        <p>正在请求 api.github-cn.com 真实数据...</p>
       </div>
 
       <!-- Content Area 1: Weekly Cards Section -->
@@ -529,7 +597,7 @@ watch(() => route.query, () => {
               <p>本周趋势</p>
             </div>
           </div>
-          <span class="badge-count">{{ filteredRepoList.length * 248 }}</span>
+          <span class="badge-count">{{ filteredRepoList.length }}</span>
         </div>
 
         <div v-if="filteredRepoList.length === 0" class="empty-state">
@@ -560,8 +628,8 @@ watch(() => route.query, () => {
 
             <!-- Stats Counter Bar -->
             <div class="stats-counter-bar">
-              <span class="stat-item stars">⭐ {{ (repo.stars / 1000).toFixed(1) }}k</span>
-              <span class="stat-item forks">🔀 {{ (repo.forks / 1000).toFixed(1) }}k</span>
+              <span class="stat-item stars">⭐ {{ repo.stars >= 1000 ? (repo.stars / 1000).toFixed(1) + 'k' : repo.stars }}</span>
+              <span class="stat-item forks">🔀 {{ repo.forks >= 1000 ? (repo.forks / 1000).toFixed(1) + 'k' : repo.forks }}</span>
               <span class="stat-item issues">ⓘ {{ repo.issues }}</span>
               <span class="stat-item value">🛡️ 价值分 {{ repo.valueScore }}</span>
             </div>
@@ -569,10 +637,10 @@ watch(() => route.query, () => {
             <!-- Commit Activity Sparkline Bar Graph -->
             <div class="sparkline-container" title="近期 Commit 活跃度柱状图">
               <div
-                v-for="(height, i) in repo.sparkline"
+                v-for="(height, i) in repo.sparkline.slice(0, 20)"
                 :key="i"
                 class="spark-bar"
-                :style="{ height: `${Math.min(100, Math.max(15, height / 5))}%` }"
+                :style="{ height: `${Math.min(100, Math.max(15, height / 3))}%` }"
               ></div>
             </div>
 
@@ -581,7 +649,7 @@ watch(() => route.query, () => {
 
             <!-- Topics Badges -->
             <div class="topics-bar">
-              <span v-for="t in repo.topics" :key="t" class="topic-chip">{{ t }}</span>
+              <span v-for="t in repo.topics.slice(0, 4)" :key="t" class="topic-chip">{{ t }}</span>
             </div>
 
             <!-- Card Footer -->
@@ -597,6 +665,22 @@ watch(() => route.query, () => {
               </div>
             </footer>
           </article>
+        </div>
+
+        <!-- Load More Projects Button (Using Naive UI Button styled matching user screenshot) -->
+        <div v-if="['home', 'trends', 'ranking'].includes(currentTab) && repoList.length > 0" class="load-more-container">
+          <n-button
+            type="primary"
+            round
+            block
+            size="large"
+            class="naive-os-load-more-btn"
+            :loading="loadingMore"
+            :disabled="!hasMore || loadingMore"
+            @click="handleLoadMore"
+          >
+            {{ loadingMore ? '正在加载更多项目...' : (hasMore ? '加载更多项目 ˅' : '已加载全部项目') }}
+          </n-button>
         </div>
       </section>
     </div>

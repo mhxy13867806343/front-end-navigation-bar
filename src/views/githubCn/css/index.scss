@@ -749,3 +749,32 @@ input:checked + .switch-slider {
   to { transform: rotate(360deg); }
 }
 
+.load-more-container {
+  margin: 36px 0 48px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.naive-os-load-more-btn {
+  width: 100%;
+  max-width: 680px;
+  height: 48px !important;
+  border-radius: 9999px !important;
+  background: #0d1117 !important;
+  border: 1px solid #30363d !important;
+  color: #f0f6fc !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background: #161b22 !important;
+    border-color: #58a6ff !important;
+    color: #58a6ff !important;
+    box-shadow: 0 6px 20px rgba(88, 166, 255, 0.2);
+  }
+}
+
+

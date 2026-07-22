@@ -124,11 +124,11 @@ export const serverProxy: ServerProxyMap = {
     Origin: 'https://www.cnblogs.com',
     Referer: 'https://www.cnblogs.com/'
   }),
-  '/api-github-cn': createProxyEntry('/api-github-cn', 'https://github-cn.com', {
+  '/api-github-cn-backend': createProxyEntry('/api-github-cn-backend', 'https://api.github-cn.com', {
     Origin: 'https://github-cn.com',
     Referer: 'https://github-cn.com/'
   }),
-  '/api-github-cn-api': createProxyEntry('/api-github-cn-api', 'https://api.github-cn.com', {
+  '/api-github-cn': createProxyEntry('/api-github-cn', 'https://github-cn.com', {
     Origin: 'https://github-cn.com',
     Referer: 'https://github-cn.com/'
   })
