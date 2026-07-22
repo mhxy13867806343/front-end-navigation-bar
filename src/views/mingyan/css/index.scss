@@ -366,3 +366,65 @@
     font-size: 18px;
   }
 }
+
+/* Reusable Modal & Detail Utilities */
+.modal-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modal-char-tag {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+
+  &.tag-blue {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+  }
+
+  &.tag-purple {
+    color: #c084fc;
+    background: rgba(192, 132, 252, 0.15);
+    border: 1px solid rgba(192, 132, 252, 0.3);
+  }
+
+  &.tag-sky {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+  }
+
+  .tag-divider {
+    margin: 0 6px;
+    opacity: 0.5;
+  }
+}
+
+.text-collapse-box {
+  font-size: 14px;
+  color: #cbd5e1;
+  line-height: 1.8;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: 12px;
+  transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  white-space: pre-wrap;
+  position: relative;
+  max-height: 5.4em;
+
+  &.expanded {
+    max-height: 2500px;
+  }
+}
