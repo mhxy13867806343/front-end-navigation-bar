@@ -36,6 +36,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '🧩',
     path: '/api-center',
     tag: 'API Center'
+  },
+  {
+    id: 'big-screen',
+    name: '可视化大屏',
+    desc: '使用大屏模板、自适应缩放与 mock 数据构建驾驶舱式可视化页面，支持点击查看模块详情。',
+    icon: '📊',
+    path: '/big-screen',
+    tag: 'Big Screen'
   }
 ]
 

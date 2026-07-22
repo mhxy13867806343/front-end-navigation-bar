@@ -80,7 +80,7 @@ import {
 } from '@/vue-pages-text-fn-abc/formOptions'
 
 import { useRoute, useRouter } from 'vue-router'
-import { Loading } from '@element-plus/icons-vue'
+import { Loading, Timer } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
 import type { CityInfo, CityLetterMap, CascaderNode, CurrentWeather, WeatherForecast } from './types/app'
@@ -90,6 +90,9 @@ import versionHistoryData from './ajson/version-history.json'
 
 const route = useRoute()
 const router = useRouter()
+const goBigScreen = (): void => {
+  void router.push('/big-screen')
+}
 const goMingyan = (): void => {
   void router.push('/mingyan')
 }
@@ -103,6 +106,7 @@ const isFlashRoute = computed<boolean>(() => {
     return false
   })
 })
+const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
 
@@ -595,6 +599,11 @@ watch(isDarkMode, () => {
     :class="{ 'dark': isDarkMode, 'has-custom-bg': hasCustomBg }"
     :style="hasCustomBg ? { backgroundImage: `url(${customBackgroundUrl})` } : {}"
   >
+    <div v-if="isBigScreenRoute" class="big-screen-route-layer">
+      <router-view />
+    </div>
+
+    <template v-else>
     <!-- 左侧导航栏 -->
     <nav class="sidebar" :class="{ 'collapsed': !isSidebarOpen }">
       <button class="logo logo-button" type="button" title="返回首页" @click="goHome">HooksVue</button>
@@ -696,6 +705,11 @@ watch(isDarkMode, () => {
             <div class="popover-tool-item" @click="goMingyan">
               <span class="tool-icon">📜</span>
               <span>名人名言</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
+            </div>
+            <div class="popover-tool-item" @click="goBigScreen">
+              <span class="tool-icon">📊</span>
+              <span>可视化大屏</span>
               <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
             </div>
             <div class="popover-tool-item" @click="showBingDialog = true">
@@ -2574,6 +2588,7 @@ watch(isDarkMode, () => {
 
     <!-- 全局返回顶部 -->
     <el-backtop :right="40" :bottom="120" />
+    </template>
   </div>
 </template>
 

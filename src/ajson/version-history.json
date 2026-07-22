@@ -1,9 +1,29 @@
 {
-  "generatedAt": "2026-07-22T05:24:20.831Z",
+  "generatedAt": "2026-07-22T10:46:53.543Z",
   "groups": [
     {
       "date": "2026-07-22",
       "items": [
+        {
+          "hash": "5566921ce4b62502d4c7b4c2ee41292b8635bace",
+          "shortHash": "5566921",
+          "date": "2026-07-22",
+          "time": "13:26",
+          "type": "工程维护",
+          "title": "update version history | (2**16)-1=65535 | 2026-07-22",
+          "scope": "",
+          "message": "chore: update version history | (2**16)-1=65535 | 2026-07-22"
+        },
+        {
+          "hash": "c49f3b217e062db4cb185e1d969c3c208a2d5a26",
+          "shortHash": "c49f3b2",
+          "date": "2026-07-22",
+          "time": "13:25",
+          "type": "问题修复",
+          "title": "support province autocomplete for oil prices | (2**16)-1=65535 | 2026-07-22",
+          "scope": "",
+          "message": "fix: support province autocomplete for oil prices | (2**16)-1=65535 | 2026-07-22"
+        },
         {
           "hash": "af89323f06ff4b08208d2d64e49b7ea472ced453",
           "shortHash": "af89323",
@@ -283,26 +303,6 @@
           "title": "add Python, Rust, Codex, TRAE, Devin, Antigravity, ChatGPT, Gemini, JetBrains, Godot tools to developer ecosystem links and bat scripts",
           "scope": "",
           "message": "docs: add Python, Rust, Codex, TRAE, Devin, Antigravity, ChatGPT, Gemini, JetBrains, Godot tools to developer ecosystem links and bat scripts"
-        },
-        {
-          "hash": "ee5dda609cf6fcaf92c95244f704f4c77a2fba02",
-          "shortHash": "ee5dda6",
-          "date": "2026-07-22",
-          "time": "01:08",
-          "type": "文档更新",
-          "title": "add developer links markdown, txt, and bat script for batch opening developer resources and Vue/UniApp stack info",
-          "scope": "",
-          "message": "docs: add developer links markdown, txt, and bat script for batch opening developer resources and Vue/UniApp stack info"
-        },
-        {
-          "hash": "1e2e1ca94620413ab7e6aee7fe9526fe19341485",
-          "shortHash": "1e2e1ca",
-          "date": "2026-07-22",
-          "time": "01:03",
-          "type": "问题修复",
-          "title": "add default ALAPI token fallback for production builds and create doc/ directory with troubleshooting records",
-          "scope": "",
-          "message": "fix: add default ALAPI token fallback for production builds and create doc/ directory with troubleshooting records"
         }
       ]
     }

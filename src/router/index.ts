@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteLocationNormalized } from 'vue-router'
+import BigScreen from '../views/bigScreen/index.vue'
 
 const routes = [
   {
@@ -90,6 +91,11 @@ const routes = [
     path: '/mingyan',
     name: 'Mingyan',
     component: () => import('../views/mingyan/index.vue')
+  },
+  {
+    path: '/big-screen',
+    name: 'BigScreen',
+    component: BigScreen
   }
 ]
 
