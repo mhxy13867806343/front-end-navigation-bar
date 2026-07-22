@@ -4,11 +4,18 @@ import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import '../style/style.scss'
 import router from '../router'
+import Particles from "@tsparticles/vue3";
+import { loadSlim } from "@tsparticles/slim";
 
 export function mountApp() {
   const app = createApp(App)
 
   app.use(ElementPlus)
   app.use(router)
+  app.use(Particles, {
+    init: async engine => {
+      await loadSlim(engine);
+    },
+  });
   app.mount('#app')
 }

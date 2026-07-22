@@ -11,6 +11,7 @@ import ApiToolbox from './components/ApiToolbox.vue'
 import BrowserSupportNotice from './components/BrowserSupportNotice.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
 import RefreshCountdownButton from './components/RefreshCountdownButton.vue'
+import { NBackTop } from 'naive-ui'
 
 const {
   isProd,
@@ -108,7 +109,7 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/three-showcase']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some((p: string): boolean => {
@@ -122,6 +123,7 @@ const isFlashRoute = computed<boolean>(() => {
 const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
+const isHeaderActionsOpen = ref(false)
 
 interface DrawerCloudLink {
   name: string
@@ -213,6 +215,10 @@ const drawerAiDevTools: DrawerAiDevTool[] = [
 const projectRepositoryUrl: string = 'https://github.com/mhxy13867806343/front-end-navigation-bar'
 const projectRepositoryName: string = 'mhxy13867806343/front-end-navigation-bar'
 const VERSION_HISTORY_SEEN_KEY: string = 'front_end_navigation_version_history_seen'
+const ALAPI_PLAYER_STORAGE_KEY: string = 'alapi_bottom_music_player_state'
+const ALAPI_PLAYER_SHOW_EVENT: string = 'alapi-player:show'
+const ALAPI_PLAYER_HIDE_EVENT: string = 'alapi-player:hide'
+const ALAPI_PLAYER_VISIBILITY_CHANGE_EVENT: string = 'alapi-player:visibility-change'
 const TERMINAL_CATEGORY_ID = 26
 const terminalPreviewLines: string[] = [
   'Last login: Wed Jul 15 11:00:06 on ttys002',
@@ -226,6 +232,7 @@ const showVersionHistoryDialog = ref<boolean>(false)
 const versionHistoryActiveTab = ref<string>('feature')
 const versionFeatureActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
 const versionCodeActiveDates = ref<string[]>(versionHistory.groups.slice(0, 2).map((group: VersionHistoryGroup): string => group.date))
+const isAlapiPlayerVisible = ref<boolean>(true)
 const versionHistoryGroups = computed<VersionHistoryGroup[]>((): VersionHistoryGroup[] => versionHistory.groups)
 const syncRouteCategory = (): void => {
   if (route.path === '/terminal') {
@@ -265,6 +272,38 @@ const openVersionHistoryDialog = (): void => {
   showVersionHistoryDialog.value = true
 }
 
+const readAlapiPlayerVisible = (): boolean => {
+  const rawState: string | null = localStorage.getItem(ALAPI_PLAYER_STORAGE_KEY)
+  if (!rawState) return true
+
+  try {
+    const parsedState: { isHidden?: boolean } = JSON.parse(rawState) as { isHidden?: boolean }
+    return !parsedState.isHidden
+  } catch (error: unknown) {
+    console.warn('音乐播放器显示状态读取失败:', error)
+    return true
+  }
+}
+
+const syncAlapiPlayerVisible = (): void => {
+  isAlapiPlayerVisible.value = readAlapiPlayerVisible()
+}
+
+const handleAlapiPlayerVisibilityChange = (event: Event): void => {
+  const detail: { visible?: boolean } | undefined = (event as CustomEvent<{ visible?: boolean }>).detail
+  if (typeof detail?.visible === 'boolean') {
+    isAlapiPlayerVisible.value = detail.visible
+    return
+  }
+  syncAlapiPlayerVisible()
+}
+
+const toggleAlapiPlayerVisibility = (value: string | number | boolean): void => {
+  const shouldShow: boolean = Boolean(value)
+  isAlapiPlayerVisible.value = shouldShow
+  window.dispatchEvent(new CustomEvent(shouldShow ? ALAPI_PLAYER_SHOW_EVENT : ALAPI_PLAYER_HIDE_EVENT))
+}
+
 function handleVersionHistoryClose(): void {
   localStorage.setItem(VERSION_HISTORY_SEEN_KEY, '1')
 }
@@ -275,9 +314,15 @@ const openCommitOnGithub = (hash: string): void => {
 
 onMounted((): void => {
   syncRouteCategory()
+  syncAlapiPlayerVisible()
+  window.addEventListener(ALAPI_PLAYER_VISIBILITY_CHANGE_EVENT, handleAlapiPlayerVisibilityChange)
   if (localStorage.getItem(VERSION_HISTORY_SEEN_KEY) !== '1') {
     showVersionHistoryDialog.value = true
   }
+})
+
+onUnmounted((): void => {
+  window.removeEventListener(ALAPI_PLAYER_VISIBILITY_CHANGE_EVENT, handleAlapiPlayerVisibilityChange)
 })
 
 watch(() => route.path, syncRouteCategory)
@@ -614,6 +659,15 @@ watch(isDarkMode, () => {
   >
     <div v-if="isBigScreenRoute" class="big-screen-route-layer">
       <router-view />
+      <n-back-top
+        to=".big-screen-route-layer"
+        listen-to=".big-screen-shell"
+        :right="40"
+        :bottom="120"
+        :visibility-height="80"
+      >
+        <div class="route-back-top">↑</div>
+      </n-back-top>
     </div>
 
     <template v-else>
@@ -763,7 +817,7 @@ watch(isDarkMode, () => {
       <div class="glow-bg"></div>
       <div v-if="isDyFormRoute" class="sticky-command-center">
         <BrowserSupportNotice />
-        <div class="header-actions">
+        <div class="header-actions" :class="{ 'actions-open': isHeaderActionsOpen }">
           <div class="nav-horizontal">
             <!-- 菜单折叠按钮 -->
             <div class="sidebar-toggle-btn" @click="toggleSidebar" title="收起/展开侧边栏">
@@ -848,7 +902,18 @@ watch(isDarkMode, () => {
             </div>
           </div>
 
-          <div class="header-right-actions">
+          <button
+            type="button"
+            class="header-actions-toggle"
+            :class="{ active: isHeaderActionsOpen }"
+            :aria-expanded="isHeaderActionsOpen"
+            title="展开快捷操作"
+            @click="isHeaderActionsOpen = !isHeaderActionsOpen"
+          >
+            ›
+          </button>
+
+          <div class="header-right-actions" :aria-hidden="!isHeaderActionsOpen">
             <AnalogClock class="clock-component" />
             <a href="mailto:869710179@qq.com" class="email-icon" title="联系我" style="font-size: 20px; display: inline-flex; align-items: center;">
               📧
@@ -2451,6 +2516,19 @@ watch(isDarkMode, () => {
                 @change="toggleTheme"
               />
             </div>
+            <div class="setting-item music-player-setting">
+              <div class="setting-copy">
+                <span>音乐播放器</span>
+                <em>{{ isAlapiPlayerVisible ? '当前显示' : '当前隐藏' }}</em>
+              </div>
+              <el-switch
+                v-model="isAlapiPlayerVisible"
+                inline-prompt
+                active-text="显示"
+                inactive-text="隐藏"
+                @change="toggleAlapiPlayerVisibility"
+              />
+            </div>
           </div>
         </div>
 
@@ -2619,12 +2697,23 @@ watch(isDarkMode, () => {
         <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
       </div>
       <router-view />
+      <n-back-top
+        to=".route-view-layer"
+        listen-to=".route-view-layer"
+        :right="40"
+        :bottom="120"
+        :visibility-height="80"
+      >
+        <div class="route-back-top">↑</div>
+      </n-back-top>
     </div>
 
     <AlapiBottomMusicPlayer />
 
     <!-- 全局返回顶部 -->
-    <el-backtop :right="40" :bottom="120" />
+    <n-back-top :right="240" :bottom="30" :visibility-height="80">
+      <div class="route-back-top">↑</div>
+    </n-back-top>
     </template>
   </div>
 </template>

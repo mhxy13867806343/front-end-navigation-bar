@@ -95,8 +95,6 @@
         <div v-else class="state-block">暂无热榜数据</div>
       </main>
     </div>
-
-    <el-backtop target=".route-view-layer" :right="40" :bottom="40" :visibility-height="200" />
   </section>
 </template>
 

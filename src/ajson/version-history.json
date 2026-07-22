@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-22T14:37:51.111Z",
+  "generatedAt": "2026-07-22T18:05:26.433Z",
   "groups": [
     {
       "date": "2026-07-22",
       "items": [
+        {
+          "hash": "754b859e08291df98e43c81a491a56444f36e3d8",
+          "shortHash": "754b859",
+          "date": "2026-07-22",
+          "time": "22:38",
+          "type": "问题修复",
+          "title": "hide arrow when icon is missing",
+          "scope": "bilibili-trending",
+          "message": "fix(bilibili-trending): hide arrow when icon is missing"
+        },
         {
           "hash": "554b2b0f82a1aca0c368492a685da8f937164be1",
           "shortHash": "554b2b0",
@@ -293,16 +303,6 @@
           "title": "add character length count tag and one-click copy button to detail dialog modals",
           "scope": "",
           "message": "feat: add character length count tag and one-click copy button to detail dialog modals"
-        },
-        {
-          "hash": "8c1ed96b65735e18625d27e3fb68751aafca197a",
-          "shortHash": "8c1ed96",
-          "date": "2026-07-22",
-          "time": "12:20",
-          "type": "问题修复",
-          "title": "resolve DatePicker date change not updating Event History data by extracting month and day directly from timestamp",
-          "scope": "",
-          "message": "fix: resolve DatePicker date change not updating Event History data by extracting month and day directly from timestamp"
         }
       ]
     }

@@ -15,6 +15,7 @@
     "test:three-showcase": "node --test scripts/three-showcase-smoke.test.mts"
   },
   "dependencies": {
+    "@tsparticles/vue3": "^4.3.2",
     "autofit.js": "^3.2.8",
     "axios": "^1.6.2",
     "clipboard-copy": "^4.0.1",
@@ -27,6 +28,7 @@
     "naive-ui": "^2.44.1",
     "pinyin-pro": "^3.28.1",
     "three": "^0.180.0",
+    "tsparticles": "^4.3.2",
     "v-scale-screen": "^2.3.0",
     "vue": "^3.5.39",
     "vue-advanced-cropper": "^2.8.9",

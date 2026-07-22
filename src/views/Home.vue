@@ -1,5 +1,6 @@
-`<template>
+` <template>
   <div class="home">
+    <div id="dynamic-background"></div>
     <h1>Welcome to HooksVue</h1>
     <p>这是一个功能丰富的Vue3应用</p>
   </div>

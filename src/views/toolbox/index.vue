@@ -71,11 +71,19 @@ const toolboxItems: ToolboxItem[] = [
   },
   {
     id: 'bilibili-trending',
-    name: 'Bilibili 搜索热搜榜',
-    desc: '实时追踪 Bilibili 全网搜素热搜榜 Top 100，掌控热门热梗、电竞热点与独家爆款。',
+    name: 'Bilibili 热门与热搜',
+    desc: '接入 Bilibili 热门页 Network 接口，查看综合热门、每周必看、入站必刷、排行榜、音乐榜与搜索热搜。',
     icon: '📺',
     path: '/bilibili-trending',
-    tag: 'B 站热搜'
+    tag: 'B 站热门'
+  },
+  {
+    id: 'bilibili-live',
+    name: '直播',
+    desc: '进入直播页后点击 Bibi 直播，再获取并展示 Bilibili 推荐、人气与最新开播直播间数据。',
+    icon: '📡',
+    path: '/bilibili-live',
+    tag: 'Bibi 直播'
   }
 ]
 

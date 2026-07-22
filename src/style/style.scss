@@ -229,6 +229,7 @@ body {
   margin-bottom: 0;
   position: relative;
   z-index: 99;
+  min-height: 52px;
 }
 
 .header-icons {
@@ -1343,6 +1344,10 @@ body {
   align-items: center;
   gap: 16px;
   flex: 1;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding-right: 54px;
 }
 
 .sidebar-toggle-btn {
@@ -1426,9 +1431,85 @@ body {
 }
 
 .header-right-actions {
+  position: absolute;
+  top: 50%;
+  right: 56px;
+  z-index: 4;
   display: flex;
   align-items: center;
   gap: 12px;
+  max-width: calc(100% - 72px);
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(110%, -50%);
+  transition:
+    opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.header-actions.actions-open .header-right-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+  animation: headerActionsSlideIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.header-actions-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+  color: var(--text-color);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateY(-50%) rotate(180deg);
+  transition:
+    transform 0.24s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.header-actions-toggle:hover,
+.header-actions-toggle.active {
+  color: #fff;
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+}
+
+.header-actions-toggle.active {
+  transform: translateY(-50%) rotate(0deg);
+}
+
+@keyframes headerActionsSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(110%, -50%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
 }
 
 /* 适配大长双列菜单 */
@@ -1720,11 +1801,35 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 10px 14px;
   background: var(--hover-bg);
   border: 1px solid var(--border-color);
   border-radius: 10px;
   font-size: 13px;
+}
+
+.setting-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.setting-copy span {
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.setting-copy em {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.2;
+}
+
+.music-player-setting .el-switch {
+  flex: 0 0 auto;
 }
 
 /* 抽屉内可折叠项样式 */

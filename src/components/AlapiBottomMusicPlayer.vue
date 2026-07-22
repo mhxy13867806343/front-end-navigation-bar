@@ -1,10 +1,12 @@
 <template>
   <section
+    v-if="!isHidden"
     ref="playerRootRef"
     class="alapi-player"
     :class="{ collapsed: isCollapsed, dragging: isPlayerDragging }"
     :style="playerRootStyle"
     aria-label="ALAPI 底部音乐播放器"
+    @contextmenu.prevent.stop="openPlayerContextMenu"
     @pointerdown="startPlayerDrag"
   >
     <button class="alapi-player-toggle" type="button" @click="toggleCollapsed">
@@ -393,6 +395,24 @@
       </button>
     </div>
 
+    <div
+      v-if="isPlayerContextMenuVisible"
+      class="alapi-player-context-menu"
+      :style="playerContextMenuStyle"
+      @click.stop
+      @contextmenu.prevent.stop
+      @pointerdown.stop
+    >
+      <button type="button" class="alapi-player-context-item" @click="toggleCollapsedFromMenu">
+        <span class="alapi-player-context-icon">🎵</span>
+        {{ isCollapsed ? '展开音乐' : '收起音乐' }}
+      </button>
+      <button type="button" class="alapi-player-context-item" @click="hidePlayerFromMenu">
+        <span class="alapi-player-context-icon">×</span>
+        隐藏播放器
+      </button>
+    </div>
+
     <el-dialog v-model="isBatchDialogVisible" title="批量添加歌曲" class="alapi-player-dialog" width="560px" :z-index="PLAYER_DIALOG_Z_INDEX">
       <div class="alapi-player-dialog-hint">
         默认不选中，勾选后会添加到播放列表顶部；已存在的歌曲会自动跳过。
@@ -636,6 +656,7 @@ interface PlayerStorageState {
   currentIndex?: number
   volume?: number
   isCollapsed?: boolean
+  isHidden?: boolean
   currentSeconds?: number
   durationSeconds?: number
   progress?: number
@@ -670,6 +691,11 @@ const MUSIC_LYRIC_PATH: string = '/api-alapi/api/music/lyric'
 const MUSIC_HOT_COMMENT_PATH: string = '/api-alapi/api/music/comment/hot'
 const MUSIC_PLAYLIST_PATH: string = '/api-alapi/api/music/playlist'
 const PLAYER_STORAGE_KEY: string = 'alapi_bottom_music_player_state'
+const PLAYER_SHOW_EVENT: string = 'alapi-player:show'
+const PLAYER_HIDE_EVENT: string = 'alapi-player:hide'
+const PLAYER_VISIBILITY_CHANGE_EVENT: string = 'alapi-player:visibility-change'
+const PLAYER_CONTEXT_MENU_WIDTH: number = 220
+const PLAYER_CONTEXT_MENU_HEIGHT: number = 112
 const DEFAULT_KEYWORD: string = '慢慢懂'
 const SEARCH_LIMIT: number = 10
 const SEARCH_TYPE: string = '1'
@@ -791,6 +817,7 @@ const playerTheme: Ref<PlayerTheme> = ref<PlayerTheme>({ ...DEFAULT_PLAYER_THEME
 const isPlaying: Ref<boolean> = ref<boolean>(false)
 const isSearching: Ref<boolean> = ref<boolean>(false)
 const isCollapsed: Ref<boolean> = ref<boolean>(false)
+const isHidden: Ref<boolean> = ref<boolean>(false)
 const statusText: Ref<string> = ref<string>('输入关键词，按 Enter 搜索歌曲')
 const progress: Ref<number> = ref<number>(0)
 const volume: Ref<number> = ref<number>(70)
@@ -803,6 +830,8 @@ const playlistPanelRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const playerRootRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null)
 const playerPosition: Ref<PlayerPosition | null> = ref<PlayerPosition | null>(null)
 const isPlayerDragging: Ref<boolean> = ref<boolean>(false)
+const isPlayerContextMenuVisible: Ref<boolean> = ref<boolean>(false)
+const playerContextMenuPosition: Ref<PlayerPosition> = ref<PlayerPosition>({ left: 0, top: 0 })
 const hotComments: Ref<string[]> = ref<string[]>([])
 const playlistImportId: Ref<string> = ref<string>('440342015')
 const playlistImportSongs: Ref<PlayerSong[]> = ref<PlayerSong[]>([])
@@ -873,6 +902,10 @@ const playerRootStyle: ComputedRef<Record<string, string>> = computed<Record<str
   }
   return style
 })
+const playerContextMenuStyle: ComputedRef<Record<string, string>> = computed<Record<string, string>>(() => ({
+  left: `${playerContextMenuPosition.value.left}px`,
+  top: `${playerContextMenuPosition.value.top}px`
+}))
 
 function createPlaylistGroup(index: number): PlayerListGroup {
   return {
@@ -906,6 +939,7 @@ function isInteractiveDragTarget(target: EventTarget | null): boolean {
 
 function startPlayerDrag(event: PointerEvent): void {
   if (event.button !== 0 || isInteractiveDragTarget(event.target)) return
+  closePlayerContextMenu()
   const root: HTMLElement | null = playerRootRef.value
   if (!root) return
 
@@ -1939,6 +1973,62 @@ function handleBeforeUnload(): void {
   saveState()
 }
 
+function closePlayerContextMenu(): void {
+  isPlayerContextMenuVisible.value = false
+}
+
+function openPlayerContextMenu(event: MouseEvent): void {
+  event.preventDefault()
+  event.stopPropagation()
+  const margin: number = 8
+  playerContextMenuPosition.value = {
+    left: Math.min(Math.max(event.clientX, margin), window.innerWidth - PLAYER_CONTEXT_MENU_WIDTH - margin),
+    top: Math.min(Math.max(event.clientY, margin), window.innerHeight - PLAYER_CONTEXT_MENU_HEIGHT - margin)
+  }
+  isPlayerContextMenuVisible.value = true
+}
+
+function handlePlayerContextMenuKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    closePlayerContextMenu()
+  }
+}
+
+function emitPlayerVisibilityChange(): void {
+  window.dispatchEvent(new CustomEvent(PLAYER_VISIBILITY_CHANGE_EVENT, {
+    detail: {
+      visible: !isHidden.value
+    }
+  }))
+}
+
+function hidePlayer(): void {
+  stopPlayerDrag()
+  closePlayerContextMenu()
+  isHidden.value = true
+  saveState()
+  emitPlayerVisibilityChange()
+  ElMessage.info('音乐播放器已隐藏，可在控制中心或 DyForm 右侧重新打开')
+}
+
+function showPlayer(): void {
+  closePlayerContextMenu()
+  isHidden.value = false
+  isCollapsed.value = false
+  saveState()
+  refreshPlayerPositionBounds()
+  emitPlayerVisibilityChange()
+}
+
+function toggleCollapsedFromMenu(): void {
+  closePlayerContextMenu()
+  toggleCollapsed()
+}
+
+function hidePlayerFromMenu(): void {
+  hidePlayer()
+}
+
 function toggleCollapsed(): void {
   isCollapsed.value = !isCollapsed.value
   refreshPlayerPositionBounds()
@@ -1981,6 +2071,7 @@ function saveState(): void {
     currentIndex: currentIndex.value,
     volume: volume.value,
     isCollapsed: isCollapsed.value,
+    isHidden: isHidden.value,
     currentSeconds: savedCurrentSeconds,
     durationSeconds: durationSeconds.value,
     progress: progress.value,
@@ -2041,6 +2132,7 @@ function loadState(): void {
     currentIndex.value = Math.min(Math.max(parsedState.currentIndex ?? 0, 0), Math.max(playlist.value.length - 1, 0))
     volume.value = parsedState.volume ?? 70
     isCollapsed.value = parsedState.isCollapsed ?? false
+    isHidden.value = parsedState.isHidden ?? false
     currentSeconds.value = parsedState.currentSeconds ?? 0
     durationSeconds.value = parsedState.durationSeconds ?? 0
     progress.value = parsedState.progress ?? 0
@@ -2069,12 +2161,17 @@ onMounted((): void => {
   audio.addEventListener('error', handleAudioError)
   window.addEventListener('beforeunload', handleBeforeUnload)
   window.addEventListener('resize', refreshPlayerPositionBounds)
+  window.addEventListener('click', closePlayerContextMenu)
+  window.addEventListener('keydown', handlePlayerContextMenuKeydown)
+  window.addEventListener(PLAYER_SHOW_EVENT, showPlayer)
+  window.addEventListener(PLAYER_HIDE_EVENT, hidePlayer)
 
   if (playlist.value.length) {
     void restoreCurrentSong()
   } else {
     void searchSongs(1)
   }
+  emitPlayerVisibilityChange()
   refreshPlayerPositionBounds()
 })
 
@@ -2103,6 +2200,10 @@ onUnmounted((): void => {
   audio.removeEventListener('error', handleAudioError)
   window.removeEventListener('beforeunload', handleBeforeUnload)
   window.removeEventListener('resize', refreshPlayerPositionBounds)
+  window.removeEventListener('click', closePlayerContextMenu)
+  window.removeEventListener('keydown', handlePlayerContextMenuKeydown)
+  window.removeEventListener(PLAYER_SHOW_EVENT, showPlayer)
+  window.removeEventListener(PLAYER_HIDE_EVENT, hidePlayer)
 })
 </script>
 

@@ -13,6 +13,52 @@
   cursor: grabbing;
 }
 
+.alapi-player-context-menu {
+  position: fixed;
+  z-index: 5400;
+  width: 220px;
+  padding: 8px;
+  background: rgba(18, 18, 22, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  animation: alapi-context-menu-in 0.14s ease forwards;
+}
+
+.alapi-player-context-item {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  color: #f3f4ff;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.alapi-player-context-item:hover {
+  color: #ff63a5;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.alapi-player-context-icon {
+  width: 22px;
+  display: inline-flex;
+  justify-content: center;
+  color: #d8dcff;
+  font-size: 19px;
+  line-height: 1;
+}
+
 .alapi-player-panel,
 .alapi-player-mini {
   border: 1px solid rgba(120, 130, 255, 0.35);
@@ -1338,6 +1384,18 @@
 
   50% {
     transform: scale(1.04);
+  }
+}
+
+@keyframes alapi-context-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

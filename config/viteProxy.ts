@@ -128,6 +128,16 @@ export const serverProxy: ServerProxyMap = {
     Origin: 'https://app.bilibili.com',
     Referer: 'https://www.bilibili.com/'
   }),
+  '/api-bilibili-web': createProxyEntry('/api-bilibili-web', 'https://api.bilibili.com', {
+    Origin: 'https://www.bilibili.com',
+    Referer: 'https://www.bilibili.com/v/popular/all',
+    Cookie: 'buvid3=6F4E9A2B-6B1B-4E7A-A86E-7A28F4A2A111; b_nut=1784560000; b_lsid=111111_1784560000'
+  }),
+  '/api-bilibili-live': createProxyEntry('/api-bilibili-live', 'https://api.live.bilibili.com', {
+    Origin: 'https://live.bilibili.com',
+    Referer: 'https://live.bilibili.com/all?visit_id=3kmu9dutzvc0',
+    Cookie: 'buvid3=6F4E9A2B-6B1B-4E7A-A86E-7A28F4A2A111; b_nut=1784560000; b_lsid=111111_1784560000'
+  }),
   '/api-github-cn-backend': createProxyEntry('/api-github-cn-backend', 'https://api.github-cn.com', {
     Origin: 'https://github-cn.com',
     Referer: 'https://github-cn.com/'
