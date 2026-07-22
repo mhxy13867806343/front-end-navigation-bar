@@ -93,14 +93,23 @@
 }
 
 .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 10px 16px;
   color: #c9d1d9;
   font-size: 14px;
   cursor: pointer;
+  transition: all 0.15s ease;
 
-  &:hover {
+  .item-icon {
+    font-size: 16px;
+  }
+
+  &:hover, &.active {
     background: #21262d;
-    color: #58a6ff;
+    color: #388bfd;
+    font-weight: 600;
   }
 }
 
@@ -713,3 +722,30 @@ input:checked + .switch-slider {
 
   &:hover { background: #2ea44f; }
 }
+
+.loading-state-bar {
+  padding: 40px 0;
+  text-align: center;
+  color: #8b949e;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 12px;
+  border: 3px solid #30363d;
+  border-top-color: #58a6ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinning {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

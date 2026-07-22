@@ -127,5 +127,9 @@ export const serverProxy: ServerProxyMap = {
   '/api-github-cn': createProxyEntry('/api-github-cn', 'https://github-cn.com', {
     Origin: 'https://github-cn.com',
     Referer: 'https://github-cn.com/'
+  }),
+  '/api-github-cn-api': createProxyEntry('/api-github-cn-api', 'https://api.github-cn.com', {
+    Origin: 'https://github-cn.com',
+    Referer: 'https://github-cn.com/'
   })
 }

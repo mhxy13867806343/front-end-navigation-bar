@@ -28,13 +28,14 @@ export interface WeeklyIssueItem {
   link: string
 }
 
-export interface CollectionItem {
+export interface ResourceItem {
   id: string
   title: string
   desc: string
   icon: string
   count: number
   tags: string[]
+  link?: string
 }
 
 export const mockRepoList: GithubRepoItem[] = [
@@ -247,8 +248,34 @@ export const mockWeeklyList: WeeklyIssueItem[] = [
   }
 ]
 
-export const mockCollections: CollectionItem[] = [
+// 精选专题 (collections)
+export const mockCollections: ResourceItem[] = [
   { id: 'ai-tools', title: '大模型与 AI 工具链', desc: '包含 LLM 框架、Agentic RL 与具身智能精选库。', icon: '🤖', count: 128, tags: ['AI', 'LLM', 'Agent'] },
   { id: 'frontend-dev', title: '现代前端工程化', desc: '涵盖 Vue 3, React, Vite, Webpack 与 CSS 渐进渲染库。', icon: '⚡', count: 240, tags: ['Vue', 'React', 'TypeScript'] },
-  { id: 'backend-go', title: 'Go & Rust 高性能后端', desc: '微服务、高并发中间件、分布式数据库。', icon: '🦀', count: 185, tags: ['Go', 'Rust', 'Backend'] }
+  { id: 'backend-go', title: 'Go & Rust 高性能后端', desc: '微服务、高并发中间件、分布式数据库。', icon: '🦀', count: 185, tags: ['Go', 'Rust', 'Backend'] },
+  { id: 'devtools', title: '开发者效率神器', desc: '终端 CLI、格式化工具、Git 增强工具合集。', icon: '🛠️', count: 310, tags: ['CLI', 'Git', 'Tools'] }
+]
+
+// 热门话题 (topics)
+export const mockTopics: ResourceItem[] = [
+  { id: 'topic-agent', title: '#AI-Agent 智能体框架', desc: '当前 GitHub 最火热的自主智能体与多模型协同框架讨论。', icon: '🏷️', count: 950, tags: ['Agent', 'AutoGPT', 'LangChain'] },
+  { id: 'topic-vue3', title: '#Vue3-Vapor 蒸汽模式', desc: 'Vue 3.6+ 无虚拟 DOM 渲染技术与性能讨论。', icon: '🏷️', count: 620, tags: ['Vue3', 'Vapor', 'Performance'] },
+  { id: 'topic-rust', title: '#Rust-Async 异步系统', desc: 'Rust 1.88 异步闭包与系统级高并发架构交流。', icon: '🏷️', count: 810, tags: ['Rust', 'Tokio', 'Async'] },
+  { id: 'topic-webgl', title: '#ThreeJS-3D 网页渲染', desc: 'Three.js, WebGL 与 3D 互动体验热烈探索。', icon: '🏷️', count: 430, tags: ['ThreeJS', '3D', 'WebGL'] }
+]
+
+// 资源精选 (awesome)
+export const mockAwesome: ResourceItem[] = [
+  { id: 'awesome-python', title: 'Awesome Python 精选榜', desc: '最好的 Python 库、框架、工具和学习资源列表。', icon: '⭐', count: 1520, tags: ['Python', 'Awesome', 'Curated'] },
+  { id: 'awesome-vue', title: 'Awesome Vue 极客指南', desc: 'Vue 生态最全面的官方/第三方优质插件与资源索引。', icon: '⭐', count: 1140, tags: ['Vue', 'Plugins', 'Awesome'] },
+  { id: 'awesome-chatgpt', title: 'Awesome ChatGPT Prompts', desc: '全球开发者精选的高效 Prompt 提示词与系统指令库。', icon: '⭐', count: 2300, tags: ['ChatGPT', 'Prompts', 'AI'] },
+  { id: 'awesome-go', title: 'Awesome Go 开源精选', desc: 'Go 语言生态中经过生产环境检验的顶级框架与工具包。', icon: '⭐', count: 1890, tags: ['Go', 'Golang', 'Awesome'] }
+]
+
+// 实战指南 (real-world)
+export const mockRealworld: ResourceItem[] = [
+  { id: 'real-nextjs', title: 'RealWorld Next.js 15 全栈架构', desc: '包含 Auth、Prisma、Tailwind 与 Server Action 的企业级范例。', icon: '🎯', count: 86, tags: ['Next.js', 'React', 'Fullstack'] },
+  { id: 'real-fastapi', title: 'RealWorld FastAPI 异步后端', desc: '生产级 API 接口设计、SQLAlchemy 2.0 与 JWT 认证实践。', icon: '🎯', count: 72, tags: ['FastAPI', 'Python', 'API'] },
+  { id: 'real-tauri', title: 'RealWorld Tauri 跨平台桌面端', desc: 'Vue 3 + Rust 构建安全极轻量的桌面应用程序。', icon: '🎯', count: 64, tags: ['Tauri', 'Rust', 'Desktop'] },
+  { id: 'real-flutter', title: 'RealWorld Flutter 跨平台移动端', desc: 'Clean Architecture 架构下的 iOS & Android 实战模版。', icon: '🎯', count: 90, tags: ['Flutter', 'Dart', 'Mobile'] }
 ]
