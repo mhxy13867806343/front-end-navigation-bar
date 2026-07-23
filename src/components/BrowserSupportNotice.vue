@@ -10,12 +10,20 @@ const goToWeather = (): void => {
 const goToMingyan = (): void => {
   router.push('/mingyan')
 }
+const goToWebComponents = (): void => {
+  router.push('/web-components')
+}
+const goToOatUi = (): void => {
+  router.push('/oat-ui')
+}
 const goToPage = (path: string): void => {
   router.push(path)
 }
 const handleCommand = (command: string): void => {
   if (command === 'openDialog') {
     dialogVisible.value = true
+  } else if (command.startsWith('http://') || command.startsWith('https://')) {
+    window.open(command, '_blank')
   } else {
     router.push(command)
   }
@@ -287,6 +295,23 @@ onUnmounted((): void => {
           <el-dropdown-menu>
             <el-dropdown-item command="/permission">🔐 权限控制中心</el-dropdown-item>
             <el-dropdown-item command="/logs">📜 实时系统日志</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
+      <!-- Web 组件与库 下拉菜单 (Element Plus Dropdown) -->
+      <el-dropdown @command="handleCommand" trigger="click">
+        <el-button type="primary" plain size="small">
+          🧩 Web组件与库 ▾
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="/web-components">🧩 Web Components 核心与进阶</el-dropdown-item>
+            <el-dropdown-item command="/oat-ui">🌾 Oat UI 全套 26 个组件实例</el-dropdown-item>
+            <el-dropdown-item divided command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
+            <el-dropdown-item command="https://www.ruanyifeng.com/blog/2019/08/web_components.html">📰 阮一峰 Web Components 教程</el-dropdown-item>
+            <el-dropdown-item command="https://oat.ink/usage/">🌾 Oat UI 官方 Usage 文档</el-dropdown-item>
+            <el-dropdown-item command="https://oat.ink/demo/">🧪 Oat UI Kitchensink Live Demo</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>

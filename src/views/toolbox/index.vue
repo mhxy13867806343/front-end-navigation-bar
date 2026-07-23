@@ -22,6 +22,14 @@ const toolboxItems: ToolboxItem[] = [
     tag: 'Terminal'
   },
   {
+    id: 'web-components',
+    name: 'Web Components 核心与进阶',
+    desc: '基于 MDN 与 阮一峰 Web Components 教程构建的原生通用 Web 组件库与交互式全景演练场，支持 Vue / React / 原生。',
+    icon: '🧩',
+    path: '/web-components',
+    tag: 'Web Components'
+  },
+  {
     id: 'runcode',
     name: '在线运行代码',
     desc: '类似 Qzxdp RunCode 的在线代码工作台，支持编辑、输入、输出和前端本地运行。',

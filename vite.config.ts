@@ -7,7 +7,13 @@ import { serverProxy } from './config/viteProxy.ts'
 export default defineConfig({
        base: '/front-end-navigation-bar/',
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag.startsWith('wc-') || tag.startsWith('ot-')
+        }
+      }
+    }),
     AutoImport({
       imports: ['vue'],
       dts: 'src/auto-imports.d.ts',

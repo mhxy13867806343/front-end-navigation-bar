@@ -27,7 +27,17 @@
         <div class="feature-logo">{{ item.logo }}</div>
         <div class="feature-name">{{ item.name }}</div>
         <div class="feature-desc">{{ item.desc }}</div>
-        <div v-if="item.external" class="feature-tag">新标签页打开</div>
+        <div class="feature-card-actions">
+          <div v-if="item.external" class="feature-tag">新标签页打开</div>
+          <button
+            type="button"
+            class="feature-copy-btn"
+            title="点击复制当前链接地址"
+            @click.prevent.stop="copyItemLink(item)"
+          >
+            📋 复制链接
+          </button>
+        </div>
       </div>
     </div>
 
@@ -48,6 +58,8 @@
 <script setup lang="ts">
 import { ref, computed, shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
+import { copyToClipboard } from '@/utils/clipboard'
+import { ElMessage } from 'element-plus'
 import { getComponentByType } from '@/utils/componentMapper'
 import type { Component } from 'vue'
 
@@ -81,6 +93,22 @@ const items: FeatureItem[] = [
     logo: '✈️',
     category: 'games',
     link: '1942.html',
+    external: true
+  },
+  {
+    name: '哆啦A梦·大雄救援',
+    desc: '1986 FC《哆啦A梦》横版冒险复刻，竹蜻蜓飞行+空气炮',
+    logo: '🐱',
+    category: 'games',
+    link: 'doraemon.html',
+    external: true
+  },
+  {
+    name: '黄金太阳·封印篇',
+    desc: '南晶科技 FC《黄金太阳》复刻，回合制元素战斗+精神力+精灵召唤',
+    logo: '☀️',
+    category: 'games',
+    link: 'goldsun.html',
     external: true
   },
   { name: '推箱子', desc: '经典推箱子游戏，支持多个关卡', logo: '🎲', category: 'games', type: 'game' },
@@ -126,6 +154,24 @@ function handleClick(item: FeatureItem): void {
   if (item.link) {
     router.push(item.link)
   }
+}
+
+function copyItemLink(item: FeatureItem): void {
+  let targetUrl = window.location.href
+  if (item.link) {
+    if (item.link.startsWith('http://') || item.link.startsWith('https://')) {
+      targetUrl = item.link
+    } else {
+      const cleanPath = item.link.replace(/^\/+/, '')
+      targetUrl = window.location.origin + import.meta.env.BASE_URL + cleanPath
+    }
+  } else {
+    const url = new URL(window.location.href)
+    url.searchParams.set('item', item.name)
+    targetUrl = url.toString()
+  }
+
+  void copyToClipboard(targetUrl, `「${item.name}」链接已成功复制到剪贴板！`)
 }
 
 function goBack(): void {

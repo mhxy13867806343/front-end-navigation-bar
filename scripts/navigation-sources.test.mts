@@ -49,6 +49,37 @@ test('RunCode has a direct route and toolbox hub entry', () => {
   assert.match(toolboxSource, /\/runcode/)
 })
 
+test('Web Components has a direct route, navbar dropdown button, and component registry', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const wcSource = readFileSync(new URL('../src/views/webComponents/index.vue', import.meta.url), 'utf8')
+  const registrySource = readFileSync(new URL('../src/components/webComponents/index.ts', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /path:\s*'\/web-components'/)
+  assert.match(routerSource, /views\/webComponents\/index\.vue/)
+  assert.match(appSource, /routeViewPaths:[\s\S]*?\/web-components/)
+  assert.match(noticeSource, /command="\/web-components"/)
+  assert.match(wcSource, /customElements\.define/)
+  assert.match(registrySource, /registerWebComponents/)
+})
+
+test('Oat UI has a direct route, navbar dropdown button, and 26 components showcase', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const oatSource = readFileSync(new URL('../src/views/oatUi/index.vue', import.meta.url), 'utf8')
+  const oatRegistry = readFileSync(new URL('../src/components/oatUi/index.ts', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /path:\s*'\/oat-ui'/)
+  assert.match(routerSource, /views\/oatUi\/index\.vue/)
+  assert.match(appSource, /routeViewPaths:[\s\S]*?\/oat-ui/)
+  assert.match(noticeSource, /command="\/oat-ui"/)
+  assert.match(oatSource, /ot-dropdown/)
+  assert.match(oatSource, /ot-tag-input/)
+  assert.match(oatRegistry, /registerOatUiComponents/)
+})
+
 test('RunCode page includes editor input output and run controls', () => {
   const runCodeSource = readFileSync(new URL('../src/views/runcode/index.vue', import.meta.url), 'utf8')
 
@@ -60,16 +91,55 @@ test('RunCode page includes editor input output and run controls', () => {
   assert.match(runCodeSource, /outputText/)
 })
 
-test('Home page exposes floating QQ contact next to the email contact', () => {
+test('Home page does not render floating QQ and email contact buttons', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const styleSource = readFileSync(new URL('../src/style/style.scss', import.meta.url), 'utf8')
 
   assert.match(appSource, /mqqwpa:\/\/im\/chat\?chat_type=wpa&uin=869710179&version=1&src_type=web/)
-  assert.match(appSource, /class="floating-contact-bar"/)
-  assert.match(appSource, /class="floating-contact-icon floating-qq-icon"/)
-  assert.match(appSource, /class="floating-contact-icon floating-email-icon"/)
-  assert.match(styleSource, /\.floating-contact-bar\s*\{[\s\S]*?right:\s*24px/)
-  assert.match(styleSource, /\.floating-contact-icon\s*\{[\s\S]*?width:\s*44px/)
+  assert.doesNotMatch(appSource, /class="floating-contact-bar"/)
+  assert.doesNotMatch(appSource, /class="floating-contact-icon floating-qq-icon"/)
+  assert.doesNotMatch(appSource, /class="floating-contact-icon floating-email-icon"/)
+  assert.doesNotMatch(styleSource, /\.floating-contact-bar\s*\{/)
+  assert.doesNotMatch(styleSource, /\.floating-contact-icon\s*\{/)
+})
+
+test('Juejin theme avatar opens detail modal before external navigation', () => {
+  const pageSource = readFileSync(new URL('../src/views/juejinTheme/index.vue', import.meta.url), 'utf8')
+  const mapperSource = readFileSync(new URL('../src/vue-pages-text-fn-abc/juejinTheme.ts', import.meta.url), 'utf8')
+
+  assert.match(pageSource, /@click\.prevent\.stop="handleAvatarClick\(u\)"/)
+  assert.match(pageSource, /function handleAvatarClick\(u: ThemeRecentUser\): void \{\s*showUserDetailModal\(u\)\s*\}/)
+  assert.match(pageSource, /selectedUserFields/)
+  assert.match(pageSource, /全部资料/)
+  assert.doesNotMatch(mapperSource, /recentUsers:\s*\(raw\.recent_users\s*\|\|\s*\)\.slice/)
+})
+
+test('LOLM page renders official news categories and expanded fields', () => {
+  const pageSource = readFileSync(new URL('../src/views/lolm/index.vue', import.meta.url), 'utf8')
+  const styleSource = readFileSync(new URL('../src/views/lolm/css/index.scss', import.meta.url), 'utf8')
+  const apiSource = readFileSync(new URL('../src/utils/lolmApi.ts', import.meta.url), 'utf8')
+
+  assert.match(apiSource, /LOLM_NEWS_PATH\s*=\s*'\/api-lolm-news\/cmc\/cross'/)
+  assert.match(apiSource, /serviceId:\s*'166'/)
+  assert.match(apiSource, /source:\s*'web_pc'/)
+  assert.match(pageSource, /activeNewsIndex\s*=\s*ref<number>\(2\)/)
+  assert.match(pageSource, /name:\s*'新闻'[\s\S]*?tags:\s*'113538'/)
+  assert.match(pageSource, /name:\s*'版本'[\s\S]*?tags:\s*'119437'/)
+  assert.match(pageSource, /name:\s*'公告'[\s\S]*?tags:\s*'113539'/)
+  assert.match(pageSource, /name:\s*'社区'[\s\S]*?tags:\s*'113542,113541'/)
+  assert.match(pageSource, /name:\s*'赛事'[\s\S]*?tags:\s*'117878,117877,17483,118344'/)
+  assert.match(pageSource, /limit:\s*officialNewsPageSize/)
+  assert.match(pageSource, /<el-select[\s\S]*?v-model="officialNewsPage"[\s\S]*?filterable[\s\S]*?@change="changeOfficialNewsPage"/)
+  assert.match(pageSource, /officialNewsPageOptions\s*=\s*computed<number\[\]>/)
+  assert.match(pageSource, /class="hero-card-grid"/)
+  assert.match(pageSource, /selectedHero/)
+  assert.match(pageSource, /开始吧/)
+  assert.match(pageSource, /buildHeroDetailUrl\(hero: HeroRankItem\)[\s\S]*?detail\.html\?heroid=/)
+  assert.match(pageSource, /copyHeroDetailLink/)
+  assert.match(styleSource, /\.hero-card-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/)
+  assert.match(styleSource, /\.oat-btn\s*\{/)
+  assert.match(pageSource, /展开全部字段/)
+  assert.match(pageSource, /getNewsRawFields\(news\.raw\)/)
 })
 
 test('Production mobile visits are routed to an H5 desktop-link copy page', () => {

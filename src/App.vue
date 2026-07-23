@@ -2,7 +2,6 @@
 import { useAppLogic } from './App.ts'
 
 // Import components used directly in the template
-import AnalogClock from './components/AnalogClock.vue'
 import AiArticlesList from './components/AiArticlesList.vue'
 import AiAppStore from './components/AiAppStore.vue'
 import AiNewsTimeline from './components/AiNewsTimeline.vue'
@@ -113,20 +112,10 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/feature', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
-const isFlashRoute = computed<boolean>(() => {
-  const path = route.path
-  return routeViewPaths.some((p: string): boolean => {
-    if (path === p || path.endsWith(p)) return true
-    if (p === '/h5' && (path.startsWith('/h5/') || path.includes('/h5/'))) return true
-    if (p === '/api-center' && (path.startsWith('/api-center/') || path.includes('/api-center/'))) return true
-    if (p === '/three-showcase' && (path.startsWith('/three-showcase/') || path.includes('/three-showcase/'))) return true
-    if (p === '/xiaomi-shop' && (path.startsWith('/xiaomi-shop/') || path.includes('/xiaomi-shop'))) return true
-    return false
-  })
-})
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/feature', '/web-components', '/oat-ui', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
 const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
+const isFlashRoute = computed<boolean>(() => !isDyFormRoute.value && !isBigScreenRoute.value)
 const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
 const isHeaderActionsOpen = ref(false)
 
@@ -374,6 +363,8 @@ const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
 const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
 const goJuejinTheme = (): Promise<void | Error> => router.push('/juejin-theme')
 const goToolbox = (): Promise<void | Error> => router.push('/toolbox')
+const CONTACT_EMAIL = '869710179@qq.com'
+const QQ_MAILME_URL = 'http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=uYGPgI6IiYiOgPnIyJfa1tQ'
 const openGoldPriceToolbox = async (): Promise<void | Error> => {
   isNewsActive.value = false
   isAppStoreActive.value = false
@@ -388,6 +379,40 @@ const openGoldPriceToolbox = async (): Promise<void | Error> => {
 const backFromFlash = (): Promise<void | Error> => router.push('/')
 const openQqContact = (): void => {
   window.location.href = 'mqqwpa://im/chat?chat_type=wpa&uin=869710179&version=1&src_type=web'
+}
+const openMailContact = (): void => {
+  window.location.href = `mailto:${CONTACT_EMAIL}`
+}
+const openQqMailme = (): void => {
+  window.open(QQ_MAILME_URL, '_blank', 'noopener,noreferrer')
+}
+const handleQuickActionCommand = async (command: string): Promise<void> => {
+  switch (command) {
+    case 'qq':
+      openQqContact()
+      break
+    case 'email':
+      openMailContact()
+      break
+    case 'qq-mailme':
+      openQqMailme()
+      break
+    case 'third-party':
+      await openGoldPriceToolbox()
+      break
+    case 'like-history':
+      openLikeHistory()
+      break
+    case 'control-center':
+      showDrawer.value = true
+      break
+    case 'feature':
+      await router.push('/feature')
+      break
+    case 'xiaomi-shop':
+      await router.push('/xiaomi-shop')
+      break
+  }
 }
 
 const activeMenuIndex = computed<string>(() => {
@@ -947,47 +972,29 @@ watch(isDarkMode, () => {
           </button>
 
           <div class="header-right-actions" :aria-hidden="!isHeaderActionsOpen">
-            <AnalogClock class="clock-component" />
-            <a href="mailto:869710179@qq.com" class="email-icon" title="联系我" style="font-size: 20px; display: inline-flex; align-items: center;">
-              📧
-            </a>
-
-            <a
-              target="_blank"
-              href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=uYGPgI6IiYiOgPnIyJfa1tQ"
-              style="text-decoration:none; display: inline-flex; align-items: center;"
-              title="QQ 邮我 - 邮箱联系"
-            >
-              <img src="http://rescdn.qqmail.com/zh_CN/htmledition/images/function/qm_open/ico_mailme_21.png" alt="QQ Mailme" style="height: 20px; display: block;" />
-            </a>
-
-            <button class="dropdown-trigger gold-price-btn" @click="openGoldPriceToolbox">
-              🪙 第三方页面集
-            </button>
-
-            <button class="dropdown-trigger like-history-btn" @click="openLikeHistory">
-              ❤️ 历史爱心
-            </button>
-
-            <!-- 打开右侧抽屉按钮 -->
-            <button class="dropdown-trigger drawer-trigger-btn" @click="showDrawer = true" style="background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold;">
-              💼 控制中心
-            </button>
-
-            <!-- 功能页面入口 -->
-            <button class="dropdown-trigger feature-page-btn" @click="router.push('/feature')" style="background: #7c3aed; color: white; border-color: #7c3aed; font-weight: bold;">
-              🧩 功能页面
-            </button>
-
-            <!-- 小米商城入口 -->
-            <button class="dropdown-trigger xiaomi-shop-btn" @click="router.push('/xiaomi-shop')" style="background: #ff6700; color: white; border-color: #ff6700; font-weight: bold;">
-              🧡 小米商城
-            </button>
+            <el-dropdown trigger="click" placement="bottom-end" @command="handleQuickActionCommand">
+              <button class="dropdown-trigger quick-actions-trigger" type="button">
+                快捷入口
+                <span class="arrow">▼</span>
+              </button>
+              <template #dropdown>
+                <el-dropdown-menu class="quick-actions-menu">
+                  <el-dropdown-item command="qq">QQ 联系</el-dropdown-item>
+                  <el-dropdown-item command="email">邮箱联系</el-dropdown-item>
+                  <el-dropdown-item command="qq-mailme">QQ 邮我</el-dropdown-item>
+                  <el-dropdown-item divided command="third-party">第三方页面集</el-dropdown-item>
+                  <el-dropdown-item command="like-history">历史爱心</el-dropdown-item>
+                  <el-dropdown-item command="control-center">控制中心</el-dropdown-item>
+                  <el-dropdown-item command="feature">功能页面</el-dropdown-item>
+                  <el-dropdown-item command="xiaomi-shop">小米商城</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </div>
         </div>
 
         <div
-          v-if="!isArticlesListActive && !isAppStoreActive && !isNewsActive && activeItem !== 24 && activeItem !== 25"
+          v-if="isDyFormRoute && !isArticlesListActive && !isAppStoreActive && !isNewsActive && activeItem !== 24 && activeItem !== 25"
           class="aggregator-search-container"
         >
           <!-- 分类 Tab 栏 -->
@@ -1079,6 +1086,9 @@ watch(isDarkMode, () => {
       <div v-else-if="activeItem === 25" class="api-toolbox-view-wrapper">
         <ComponentShowcase v-model:active-library="activeLibrary" />
       </div>
+      <template v-else-if="isFlashRoute">
+        <!-- 独立路由激活，避免在 main-content 内重叠渲染 router-view 或主页网格 -->
+      </template>
       <template v-else>
         <!-- 布局网络列选择器与当前分类指示 -->
         <div class="grid-controls-row">
@@ -2642,20 +2652,6 @@ watch(isDarkMode, () => {
       </el-tabs>
     </el-dialog>
 
-    <!-- 悬浮联系入口 -->
-    <div class="floating-contact-bar" aria-label="联系入口">
-      <button
-        type="button"
-        class="floating-contact-icon floating-qq-icon"
-        title="QQ 联系"
-        @click="openQqContact"
-      >
-        QQ
-      </button>
-      <a href="mailto:869710179@qq.com" class="floating-contact-icon floating-email-icon" title="邮箱联系">
-        📧
-      </a>
-    </div>
     <!-- 历史爱心记录弹窗 -->
     <el-dialog
       v-model="showLikeHistory"
@@ -2928,6 +2924,23 @@ watch(isDarkMode, () => {
             <div class="info-item">
               <span>版本号</span>
               <span class="info-value">0.1</span>
+            </div>
+            <div class="drawer-contact-actions" aria-label="联系入口">
+              <button
+                type="button"
+                class="drawer-contact-action drawer-contact-qq"
+                title="QQ 联系"
+                @click="openQqContact"
+              >
+                QQ
+              </button>
+              <a
+                :href="`mailto:${CONTACT_EMAIL}`"
+                class="drawer-contact-action drawer-contact-email"
+                title="邮箱联系"
+              >
+                📧
+              </a>
             </div>
           </div>
         </div>

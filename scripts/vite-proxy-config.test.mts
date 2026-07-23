@@ -13,6 +13,7 @@ test('Vite proxy config is generated from shared defaults', async () => {
   const { serverProxy } = await import('../config/viteProxy.ts')
   const newsProxy: ProxyOptions = getProxyEntry(serverProxy, '/api-news')
   const juejinProxy: ProxyOptions = getProxyEntry(serverProxy, '/api-juejin')
+  const lolmNewsProxy: ProxyOptions = getProxyEntry(serverProxy, '/api-lolm-news')
 
   assert.equal(newsProxy.target, 'https://ai-bot.cn/daily-ai-news/')
   assert.equal(newsProxy.changeOrigin, true)
@@ -23,4 +24,10 @@ test('Vite proxy config is generated from shared defaults', async () => {
   assert.equal(juejinProxy.headers?.Referer, 'https://juejin.cn/')
   assert.match(String(juejinProxy.headers?.['User-Agent']), /Mozilla\/5\.0/)
   assert.equal(juejinProxy.rewrite?.('/api-juejin/recommend'), '/recommend')
+
+  assert.equal(lolmNewsProxy.target, 'https://apps.game.qq.com')
+  assert.equal(lolmNewsProxy.headers?.Origin, 'https://lolm.qq.com')
+  assert.equal(lolmNewsProxy.headers?.Referer, 'https://lolm.qq.com/v2/news.html')
+  assert.equal(lolmNewsProxy.rewrite?.('/api-lolm-news/cmc/cross'), '/cmc/cross')
+  assert.ok(Object.keys(serverProxy).indexOf('/api-lolm-news') < Object.keys(serverProxy).indexOf('/api-lolm'))
 })

@@ -1277,52 +1277,6 @@ body {
   }
 }
 
-.floating-contact-bar {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  z-index: 1000;
-}
-
-.floating-contact-icon {
-  width: 44px;
-  height: 44px;
-  background: var(--bg-secondary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--card-hover-shadow);
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.floating-contact-icon:hover {
-  transform: scale(1.1) translateY(-2px);
-  color: var(--primary-color);
-  border-color: var(--primary-hover);
-}
-
-.floating-qq-icon {
-  color: #f5f7ff;
-  font-size: 13px;
-  font-weight: 900;
-  background: rgba(108, 114, 247, 0.18);
-  border-color: rgba(108, 114, 247, 0.52);
-}
-
-.floating-email-icon {
-  color: inherit;
-}
-
 /* 折叠/展开动画过渡 */
 .sidebar {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
@@ -1441,6 +1395,7 @@ body {
   max-width: calc(100% - 72px);
   padding: 6px 8px;
   border-radius: 999px;
+  overflow: visible;
   background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
@@ -1498,6 +1453,25 @@ body {
 
 .header-actions-toggle.active {
   transform: translateY(-50%) rotate(0deg);
+}
+
+.quick-actions-trigger {
+  min-width: 104px;
+  justify-content: center;
+  border-color: color-mix(in srgb, var(--primary-color) 54%, var(--border-color));
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.quick-actions-trigger:hover,
+.quick-actions-trigger:focus-visible {
+  color: #ffffff;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.quick-actions-menu {
+  min-width: 150px;
 }
 
 @keyframes headerActionsSlideIn {
@@ -1897,6 +1871,48 @@ body {
 .info-item .info-value {
   color: var(--text-color);
   font-weight: 500;
+}
+
+.drawer-contact-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 4px 0 2px;
+}
+
+.drawer-contact-action {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: var(--hover-bg);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.drawer-contact-action:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.drawer-contact-qq {
+  color: #f5f7ff;
+  font-size: 13px;
+  font-weight: 900;
+  background: rgba(108, 114, 247, 0.18);
+  border-color: rgba(108, 114, 247, 0.52);
+}
+
+.drawer-contact-email {
+  font-size: 20px;
 }
 
 .github-link {

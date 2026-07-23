@@ -33,9 +33,42 @@ export interface ThemeRecentUser {
   user_id: string
   user_name: string
   avatar_large: string
+  account_amount?: number
+  annual_info?: unknown[]
+  annual_list_type?: number
+  article_collect_count_daily?: number
+  become_author_days?: number
+  collection_set_article_count?: number
+  description?: string
+  digg_article_count?: number
+  digg_shortmsg_count?: number
+  extraMap?: Record<string, unknown>
+  favorable_author?: number
+  followee_count?: number
+  follower_count?: number
+  got_digg_count?: number
+  got_view_count?: number
+  identity?: number
+  is_logout?: number
+  is_select_annual?: boolean
+  is_vip?: boolean
+  isfollowed?: boolean
   level?: number
   job_title?: string
   company?: string
+  major?: {
+    major_id?: string
+    parent_id?: string
+    name?: string
+  }
+  post_article_count?: number
+  post_shortmsg_count?: number
+  power?: number
+  recommend_article_count_daily?: number
+  select_annual_rank?: number
+  select_event_count?: number
+  select_online_course_count?: number
+  [key: string]: unknown
 }
 
 /** data 数组中每一项的完整结构 */
@@ -81,7 +114,7 @@ export function mapTheme(raw: ThemeRaw): ThemeItem {
     userCount: t.user_cnt || 0,
     isLottery: !!t.is_lottery,
     isRec: !!t.is_rec,
-    recentUsers: (raw.recent_users || []).slice(0, 5)
+    recentUsers: raw.recent_users || []
   }
 }
 
