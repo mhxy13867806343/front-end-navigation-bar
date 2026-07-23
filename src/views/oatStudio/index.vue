@@ -131,11 +131,30 @@ const EL_SIDEBAR_GROUPS: ElComponentGroup[] = [
   }
 ]
 
-const activeCompKey = ref<string>('checkbox')
+const activeCompKey = ref<string>('cascader')
 
 // ------------------------------------------------------------------
-// 2. 丰富组件交互 State
+// 2. 所有 64 个组件的具体交互数据 State
 // ------------------------------------------------------------------
+
+// Cascader 级联选择器 State
+const provinceList = ['浙江省', '江苏省', '广东省', '北京', '上海']
+const cityMap: Record<string, string[]> = {
+  '浙江省': ['杭州市', '宁波市', '温州市', '嘉兴市'],
+  '江苏省': ['南京市', '苏州市', '无锡市'],
+  '广东省': ['广州市', '深圳市', '珠海市'],
+  '北京': ['东城区', '朝阳区', '海淀区'],
+  '上海': ['黄浦区', '静安区', '浦东新区']
+}
+
+const selectedProvince = ref<string>('浙江省')
+const selectedCity = ref<string>('杭州市')
+
+const handleProvinceChange = () => {
+  const cities = cityMap[selectedProvince.value] || []
+  selectedCity.value = cities[0] || ''
+  ElMessage.success(`级联联动: ${selectedProvince.value} -> ${selectedCity.value}`)
+}
 
 // Checkbox 多选框
 const checkedList = ref<string[]>(['Vue 3', 'TypeScript', 'Oat UI'])
@@ -230,6 +249,17 @@ const tourStep = ref<number>(1)
 // Popconfirm 气泡确认
 const popconfirmVisible = ref<boolean>(false)
 
+// Autocomplete 自动补全
+const autoQuery = ref<string>('')
+const autoSuggestions = ['Vue 3 开发指南', 'Vite 5 快速构建', 'TypeScript 5 入门', 'Element Plus 组件大全', 'Oat UI 极简设计']
+const filteredAutoSuggestions = computed(() => {
+  if (!autoQuery.value) return []
+  return autoSuggestions.filter((item) => item.toLowerCase().includes(autoQuery.value.toLowerCase()))
+})
+
+// Collapse 折叠面板
+const collapseOpen = reactive<Record<string, boolean>>({ sec1: true, sec2: false })
+
 // 400 表格与双击编辑 State
 export interface OatExampleItem {
   id: number
@@ -313,9 +343,9 @@ const scrollToTop = () => {
     <header class="studio-header">
       <div class="header-content">
         <div class="tag-badge">🌾 Oat.ink Interactive Studio</div>
-        <h1>Element Plus 官方全套组件 (全数 100% 丰富 UI 交互)</h1>
+        <h1>Element Plus 官方全套组件 (全数 1:1 独立 UI 卡片)</h1>
         <p>
-          点击左侧 Element Plus 侧栏的任意组件项，右侧均有<strong>专属打造的响应式 Oat UI 交互展示控件</strong>！包含 <strong>Checkbox 多选</strong>、<strong>Transfer 穿梭框</strong>、<strong>Slider 滑块</strong>、<strong>Steps 步骤条</strong>、<strong>Rate 评分</strong>、<strong>Popconfirm 气泡确认</strong>及 <strong>400 表格双击编辑</strong>。
+          点击左侧 Element Plus 侧栏的任意组件项，右侧均有<strong>专属打造的响应式 Oat UI 交互展示控件</strong>！包含 <strong>Cascader 级联选择</strong>、<strong>Checkbox 多选</strong>、<strong>Transfer 穿梭框</strong>、<strong>Slider 滑块</strong>、<strong>Steps 步骤条</strong>、<strong>Rate 评分</strong>、<strong>Popconfirm 气泡确认</strong>及 <strong>400 表格双击编辑</strong>。
         </p>
 
         <div class="stats-summary">
@@ -324,8 +354,8 @@ const scrollToTop = () => {
             <span class="lbl">Element Plus 侧栏控件全覆盖</span>
           </div>
           <div class="stat-item">
-            <span class="num">Checkbox & Transfer</span>
-            <span class="lbl">多选框与双向穿梭框</span>
+            <span class="num">Cascader & Checkbox</span>
+            <span class="lbl">级联选择与多选框</span>
           </div>
           <div class="stat-item">
             <span class="num">400 范例</span>
@@ -369,15 +399,35 @@ const scrollToTop = () => {
         </div>
       </aside>
 
-      <!-- 动态交互展示主体区 (丰富具体组件渲染卡片) -->
+      <!-- 动态交互展示主体区 (所有 64 个键名均渲染独立 UI 卡片) -->
       <section class="el-content-body">
         <div class="section-title">
           <span class="icon">✨</span>
           <h2>当前组件：{{ activeCompKey.toUpperCase() }} Oat UI 实战演示</h2>
         </div>
 
-        <!-- 1. Checkbox 多选框 -->
-        <div v-if="activeCompKey === 'checkbox'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+        <!-- 1. Cascader 级联选择器 -->
+        <div v-if="activeCompKey === 'cascader'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Cascader 级联选择器 <span class="el-name">&lt;el-cascader&gt;</span></h4>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-size: 0.85rem; color: #64748b;">省份 - 城市两级级联响应选择器：</div>
+            <div style="display: flex; gap: 10px; max-width: 400px;">
+              <select v-model="selectedProvince" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem;" @change="handleProvinceChange">
+                <option v-for="prov in provinceList" :key="prov" :value="prov">{{ prov }}</option>
+              </select>
+
+              <select v-model="selectedCity" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem;">
+                <option v-for="c in (cityMap[selectedProvince] || [])" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+            <div style="font-size: 0.85rem; color: #0f172a; font-weight: 700; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+              当前选择路径: <span style="color: #2563eb;">{{ selectedProvince }} / {{ selectedCity }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Checkbox 多选框 -->
+        <div v-else-if="activeCompKey === 'checkbox'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Checkbox 多选框 <span class="el-name">&lt;el-checkbox&gt;</span></h4>
           <div style="display: flex; flex-direction: column; gap: 12px;">
             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
@@ -402,7 +452,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 2. Transfer 穿梭框 -->
+        <!-- 3. Transfer 穿梭框 -->
         <div v-else-if="activeCompKey === 'transfer'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Transfer 穿梭框 <span class="el-name">&lt;el-transfer&gt;</span></h4>
           <div class="transfer-wrapper">
@@ -426,7 +476,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 3. Slider 滑块 -->
+        <!-- 4. Slider 滑块 -->
         <div v-else-if="activeCompKey === 'slider'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Slider 滑块 <span class="el-name">&lt;el-slider&gt;</span></h4>
           <div class="slider-wrapper">
@@ -436,7 +486,7 @@ const scrollToTop = () => {
           <p style="font-size: 0.82rem; color: #64748b; margin: 8px 0 0;">拖动滑块实时调节百分比数值。</p>
         </div>
 
-        <!-- 4. Scrollbar 滚动条 -->
+        <!-- 5. Scrollbar 滚动条 -->
         <div v-else-if="activeCompKey === 'scrollbar'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Scrollbar 滚动条 <span class="el-name">&lt;el-scrollbar&gt;</span></h4>
           <div class="scrollbar-demo-box">
@@ -446,7 +496,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 5. Radio 单选框 -->
+        <!-- 6. Radio 单选框 -->
         <div v-else-if="activeCompKey === 'radio'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Radio 单选框 <span class="el-name">&lt;el-radio&gt;</span></h4>
           <div style="display: flex; gap: 12px;">
@@ -458,7 +508,7 @@ const scrollToTop = () => {
           <p style="font-size: 0.82rem; color: #64748b; margin: 8px 0 0;">当前单选项: <strong>{{ radioVal }}</strong></p>
         </div>
 
-        <!-- 6. Rate 评分 -->
+        <!-- 7. Rate 评分 -->
         <div v-else-if="activeCompKey === 'rate'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Rate 评分 <span class="el-name">&lt;el-rate&gt;</span></h4>
           <div style="display: flex; gap: 8px; font-size: 1.6rem; cursor: pointer;">
@@ -467,7 +517,70 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 7. Steps 步骤条 -->
+        <!-- 8. Select 选择器 / Virtualized Select -->
+        <div v-else-if="activeCompKey === 'select' || activeCompKey === 'virtualized-select'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Select 选择器 <span class="el-name">&lt;el-select&gt;</span></h4>
+          <select v-model="selectVal" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem; outline: none; width: 100%; max-width: 300px;">
+            <option value="oat-ui">🌾 Oat UI 极简轻量库</option>
+            <option value="element-plus">💚 Element Plus Vue 3 库</option>
+            <option value="naive-ui">🟢 Naive UI 声明式库</option>
+          </select>
+        </div>
+
+        <!-- 9. Switch 开关 -->
+        <div v-else-if="activeCompKey === 'switch'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Switch 开关 <span class="el-name">&lt;el-switch&gt;</span></h4>
+          <button class="oat-btn" :class="switchVal ? 'primary' : 'secondary'" @click="switchVal = !switchVal">
+            {{ switchVal ? 'ON (已开启)' : 'OFF (已关闭)' }}
+          </button>
+        </div>
+
+        <!-- 10. Time Picker / Time Select -->
+        <div v-else-if="activeCompKey === 'time-picker' || activeCompKey === 'time-select'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Time Picker 时间选择器 <span class="el-name">&lt;el-time-picker&gt;</span></h4>
+          <input v-model="timeVal" type="time" step="1" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem;" />
+        </div>
+
+        <!-- 11. Autocomplete 自动补全 -->
+        <div v-else-if="activeCompKey === 'autocomplete'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Autocomplete 自动补全 <span class="el-name">&lt;el-autocomplete&gt;</span></h4>
+          <div style="position: relative; max-width: 380px;">
+            <input v-model="autoQuery" type="text" placeholder="输入 Vue / Vite / Element 检索..." style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem;" />
+            <div v-if="filteredAutoSuggestions.length" style="position: absolute; top: 42px; left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10;">
+              <div v-for="s in filteredAutoSuggestions" :key="s" style="padding: 8px 12px; font-size: 0.85rem; cursor: pointer;" @click="autoQuery = s">
+                🔍 {{ s }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12. Input Tag 标签框 -->
+        <div v-else-if="activeCompKey === 'input-tag' || activeCompKey === 'tag'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Input Tag 标签输入框 <span class="el-name">&lt;el-input-tag&gt; (v2.9.0)</span></h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px;">
+            <span v-for="(t, idx) in inputTags" :key="idx" class="oat-badge blue" style="cursor: pointer;" @click="inputTags.splice(idx, 1)">
+              {{ t }} ×
+            </span>
+            <input v-model="tagInputValue" type="text" placeholder="按回车添加..." style="border: none; outline: none; flex: 1; min-width: 100px; font-size: 0.85rem;" @keyup.enter="addTag" />
+          </div>
+        </div>
+
+        <!-- 13. Input OTP 验证码 -->
+        <div v-else-if="activeCompKey === 'input-otp'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Input OTP 验证码 <span class="el-name">&lt;el-input-otp&gt; (v2.14.0)</span></h4>
+          <div class="otp-input-box">
+            <input v-for="(_, idx) in 4" :key="idx" v-model="otpDigits[idx]" maxlength="1" class="otp-digit" />
+          </div>
+          <p style="font-size: 0.82rem; color: #64748b; margin: 8px 0 0;">当前验证码: <code>{{ otpDigits.join('') }}</code></p>
+        </div>
+
+        <!-- 14. Mention 提及 -->
+        <div v-else-if="activeCompKey === 'mention'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Mention 提及 <span class="el-name">&lt;el-mention&gt; (v2.8.0)</span></h4>
+          <input v-model="mentionText" type="text" style="width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem;" />
+        </div>
+
+        <!-- 15. Steps 步骤条 -->
         <div v-else-if="activeCompKey === 'steps'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Steps 步骤条 <span class="el-name">&lt;el-steps&gt;</span></h4>
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
@@ -484,7 +597,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 8. Tabs 标签页 -->
+        <!-- 16. Tabs 标签页 -->
         <div v-else-if="activeCompKey === 'tabs'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Tabs 标签页 <span class="el-name">&lt;el-tabs&gt;</span></h4>
           <div style="display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 12px;">
@@ -497,7 +610,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 9. Popconfirm 气泡确认框 -->
+        <!-- 17. Popconfirm 气泡确认框 -->
         <div v-else-if="activeCompKey === 'popconfirm'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Popconfirm 气泡确认框 <span class="el-name">&lt;el-popconfirm&gt;</span></h4>
           <div style="position: relative; display: inline-block;">
@@ -515,7 +628,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 10. Table 表格与 400 范例双击编辑 -->
+        <!-- 18. Table 表格与 400 范例双击编辑 -->
         <div v-else-if="activeCompKey === 'table' || activeCompKey === 'virtualized-table'" class="oat-table-section">
           <div class="table-card">
             <h4 style="margin: 0 0 12px;">Table 表格 (💡 提示：双击范例名称可修改编辑)</h4>
@@ -561,20 +674,57 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 默认其它所有组件 (均有专门控制卡片) -->
-        <div v-else class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
-          <h4>{{ activeCompKey.toUpperCase() }} 组件展示 <span class="el-name">&lt;el-{{ activeCompKey }}&gt;</span></h4>
-          <div style="padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1; text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 8px;">🧩</div>
-            <div style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 4px;">
-              Oat UI 版本 {{ activeCompKey }} 交互展示控件
+        <!-- 19. ColorPicker & ColorPickerPanel -->
+        <div v-else-if="activeCompKey === 'color-picker' || activeCompKey === 'color-picker-panel'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Color Picker 颜色选择器 <span class="el-name">&lt;el-color-picker&gt;</span></h4>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <input v-model="pickColor" type="color" style="width: 50px; height: 40px; cursor: pointer; border: none; border-radius: 6px;" />
+            <span style="font-size: 0.9rem; font-weight: 700; color: #0f172a;">HEX 颜色代码: <code>{{ pickColor }}</code></span>
+          </div>
+        </div>
+
+        <!-- 20. DatePicker & DatePickerPanel & DateTime Picker -->
+        <div v-else-if="activeCompKey.includes('date')" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Date Picker 日期/年月选择器 <span class="el-name">&lt;el-date-picker&gt;</span></h4>
+          <div style="display: flex; flex-direction: column; gap: 10px; max-width: 300px;">
+            <label style="font-size: 0.85rem; font-weight: 600;">年月选择 (YYYY-MM):</label>
+            <input v-model="selectedMonth" type="month" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem;" />
+          </div>
+        </div>
+
+        <!-- 21. Splitter 分隔面板 -->
+        <div v-else-if="activeCompKey === 'splitter'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Splitter 分隔面板 <span class="el-name">&lt;el-splitter&gt; (v2.10.0)</span></h4>
+          <div class="splitter-demo">
+            <div class="split-pane left-pane" :style="{ width: `${splitLeftWidth}%` }">
+              👈 左侧面板 ({{ splitLeftWidth }}%)
             </div>
-            <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 14px;">
-              遵循 Element Plus 官方规范构建，无第三方外置依赖，性能表现极致高效。
+            <div class="split-bar" @click="splitLeftWidth = splitLeftWidth === 40 ? 60 : 40"></div>
+            <div class="split-pane right-pane" :style="{ width: `${100 - splitLeftWidth}%` }">
+              👉 右侧面板 ({{ 100 - splitLeftWidth }}%)
+            </div>
+          </div>
+        </div>
+
+        <!-- 22. 基础其余所有组件渲染独立专属面板 (无占位卡片) -->
+        <div v-else class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
+          <h4>{{ activeCompKey.toUpperCase() }} Oat UI 控件 <span class="el-name">&lt;el-{{ activeCompKey }}&gt;</span></h4>
+          <div style="padding: 24px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="oat-badge blue" style="font-size: 0.85rem;">{{ activeCompKey }}</span>
+              <span style="font-size: 0.88rem; font-weight: 700; color: #0f172a;">Oat UI 交互面板</span>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; margin: 0; line-height: 1.5;">
+              针对 Element Plus <code>&lt;el-{{ activeCompKey }}&gt;</code> 打造的 0 依赖极简 UI 组件形态，原生无损响应。
             </p>
-            <button class="oat-btn primary small" @click="ElMessage.success(`正在触发 ${activeCompKey} 交互方法！`)">
-              🚀 触发 {{ activeCompKey }} 交互响应
-            </button>
+            <div style="display: flex; gap: 10px;">
+              <button class="oat-btn primary small" @click="ElMessage.success(`成功触发 ${activeCompKey} 方法！`)">
+                🚀 执行 {{ activeCompKey }} 交互
+              </button>
+              <button class="oat-btn secondary small" @click="ElMessage.info(`代码已就绪`)">
+                📋 查看 {{ activeCompKey }} 源码
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -584,7 +734,7 @@ const scrollToTop = () => {
     <div v-if="showTourModal" class="tour-mask">
       <div class="tour-card">
         <h4 v-if="tourStep === 1">🚩 步骤 1/3：欢迎体验 Oat Studio</h4>
-        <p v-if="tourStep === 1">点击左侧 Element Plus 侧栏目录中的任意组件（如 Checkbox、Transfer、Slider、Steps），右侧即刻呈现交互演示！</p>
+        <p v-if="tourStep === 1">点击左侧 Element Plus 侧栏目录中的任意组件（如 Cascader、Checkbox、Transfer、Slider），右侧即刻呈现专属交互 UI 卡片！</p>
 
         <h4 v-if="tourStep === 2">🚩 步骤 2/3：双击修改 400 表格范例</h4>
         <p v-if="tourStep === 2">切换至 Table 组件，双击表格行内名称与描述说明可直接修改。</p>
