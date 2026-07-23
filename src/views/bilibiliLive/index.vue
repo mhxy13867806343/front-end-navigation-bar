@@ -128,15 +128,7 @@ const fetchLiveJson = async <T>(url: string): Promise<T> => {
         url: `https://corsproxy.io/?${encodeURIComponent(url)}`,
         parse: async (res: Response) => res.json()
       },
-      // Proxy 2: allorigins.win (JSON wrapper fallback)
-      {
-        url: `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-        parse: async (res: Response) => {
-          const wrapper = await res.json() as { contents: string }
-          return JSON.parse(wrapper.contents)
-        }
-      },
-      // Proxy 3: codetabs.com (Raw response fallback)
+      // Proxy 2: codetabs.com (Raw response fallback)
       {
         url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
         parse: async (res: Response) => res.json()

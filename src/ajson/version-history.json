@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T04:12:36.289Z",
+  "generatedAt": "2026-07-23T04:19:52.912Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "542d25f31e3c480742c69e7932e052ccc7ac061e",
+          "shortHash": "542d25f",
+          "date": "2026-07-23",
+          "time": "12:13",
+          "type": "问题修复",
+          "title": "introduce resilient multi-proxy fallback list (corsproxy.io -> allorigins -> codetabs) to prevent 408 request timeouts",
+          "scope": "bilibili-live",
+          "message": "fix(bilibili-live): introduce resilient multi-proxy fallback list (corsproxy.io -> allorigins -> codetabs) to prevent 408 request timeouts"
+        },
         {
           "hash": "7451b8fb552576b81406dc55287f40439e5762b4",
           "shortHash": "7451b8f",
@@ -298,16 +308,6 @@
           "title": "add QR code generator (Tab 9) and Chinese-to-Pinyin converter (Tab 10) to mingyan culture suite",
           "scope": "",
           "message": "feat: add QR code generator (Tab 9) and Chinese-to-Pinyin converter (Tab 10) to mingyan culture suite"
-        },
-        {
-          "hash": "3b7d597b5bec1ee690d0857e82aa09e5fc4de66c",
-          "shortHash": "3b7d597",
-          "date": "2026-07-22",
-          "time": "12:32",
-          "type": "代码重构",
-          "title": "extract reusable modal action bar, char tag, and text collapse SCSS utilities and update markdown documentation",
-          "scope": "",
-          "message": "refactor: extract reusable modal action bar, char tag, and text collapse SCSS utilities and update markdown documentation"
         }
       ]
     }
