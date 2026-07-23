@@ -10,21 +10,16 @@ This project is no longer actively updated. The current live demo and existing f
 
 ## 🌐 Live Demo
 
-👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
-
-- Bilibili Trending: [https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending)
-- Bilibili Live: [https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live)
+- 🏠 **Home**: [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
+- 🧡 **Xiaomi Official Shop**: [https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
+- 🛒 **Xiaomi Shopping Cart**: [https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart)
+- 🔐 **Permission Control Center**: [https://mhxy13867806343.github.io/front-end-navigation-bar/permission](https://mhxy13867806343.github.io/front-end-navigation-bar/permission)
+- 📜 **Security Audit Logs**: [https://mhxy13867806343.github.io/front-end-navigation-bar/logs](https://mhxy13867806343.github.io/front-end-navigation-bar/logs)
+- 🚫 **500 / 404 / 401 Error Pages**: [https://mhxy13867806343.github.io/front-end-navigation-bar/500](https://mhxy13867806343.github.io/front-end-navigation-bar/500)
+- 🌦️ **Weather Forecast**: [https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
 
 ## ✨ Features
 
-- **AI Tools Navigation**: Sidebar with categories + subcategories, covering dozens of categories such as AI chat, writing, painting, coding, and dev platforms
-- **Live Data Sync**: Fetches remote data in real time and merges it with local static data, automatically falling back to local data on failure
-- **Global Search**: Search across categories by name/description, with search history (up to 8 entries)
-- **Browser Compatibility Notice**: Checks browser capabilities at the top of the app and opens an Element Plus Dialog with 5 official browser download links, QR codes, current time, author GitHub, yearly greetings, and package-version links read from `package.json`
-- **Favorites**: Like/favorite tool cards, persisted locally, with a favorites history view
-- **Control Center Resources**: The right-side menu lists cloud-drive resources, AI development tool websites, and tool descriptions, opening links in new tabs
-- **AI News & Apps**: Daily AI news timeline, paged IT Home API-tag news, AI app store, AI tutorials/encyclopedia article lists
-- **Hotboards & Movie Data**: Supports Weibo, Bilibili hot search, Juejin, OSChina and more, plus box office and movie/TV ranking data
 - **API Toolbox**: Built-in collection of commonly used APIs
 - **Theme Switching**: One-click dark/light theme toggle with local persistence
 - **Custom Layout**: Adjustable grid columns (persisted locally), collapsible sidebar

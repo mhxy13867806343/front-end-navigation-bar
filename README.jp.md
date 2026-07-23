@@ -10,15 +10,28 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 
 ## 🌐 オンラインデモ
 
-👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
-
-- Bilibili トレンド：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending)
-- Bilibili ライブ：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live)
+- 🏠 **ホーム**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
+- 🧡 **Xiaomi 公式ショップ**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
+- 🛒 **Xiaomi ショッピングカート**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart)
+- 🔐 **権限管理コントロールセンター**：[https://mhxy13867806343.github.io/front-end-navigation-bar/permission](https://mhxy13867806343.github.io/front-end-navigation-bar/permission)
+- 📜 **システムセキュリティ監査ログ**：[https://mhxy13867806343.github.io/front-end-navigation-bar/logs](https://mhxy13867806343.github.io/front-end-navigation-bar/logs)
+- 🚫 **500 / 404 / 401 エラーページ**：[https://mhxy13867806343.github.io/front-end-navigation-bar/500](https://mhxy13867806343.github.io/front-end-navigation-bar/500)
+- 🌦️ **天気予報ビジュアル**：[https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
 
 ## ✨ 主な機能
 
-- **AI ツールナビゲーション**：サイドバーのカテゴリ + サブカテゴリで、AI チャット、ライティング、ペイント、プログラミング、開発プラットフォームなど数十のカテゴリをカバー
-- **リアルタイムデータ同期**：リモートデータソースからリアルタイムに取得してローカル静的データとマージ、失敗時はローカルデータに自動フォールバック
+- **🧡 Xiaomi 公式ショップ＆カート決済** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：27万行超の JSON データ (`public/shop-json/xiaomi-shop.json`) で駆動、`cartStore` 永続化、サイド引き出しカート (`CartDrawer.vue`)、フルスクリーンカート画面 (`/xiaomi-shop/cart`)、住所選択、クーポン適用（`MI888` 割引）および WeChat / Alipay 決済に対応。
+- **🔐 権限管理コントロールセンター** (`/permission`)：4 つの RBAC 役割（スーパー管理者、インフラ、運用、ゲスト）の切り替え、ディレクティブ権限 (`v-permission`)、JWT デコード確認、HTTP ステータスコード直接ジャンプに対応。
+- **📜 システム監査ログ** (`/logs`)：API ステータスコード、セキュリティブロック、スタックトレースをリアルタイムで追跡し CSV 出力に対応。
+- **🚫 HTTP ステータスコード＆エラー画面** (`/200`, `/401`, `/402`, `/403`, `/404`, `/405`, `/500`)：ワンクリック自動修復機能付きのインタラクティブなステータス画面。
+- **🚀 ワンクリックデプロイスクリプト**：内蔵シェルツール `scripts/deploy_update.sh` (`npm run deploy`) でローカルビルド、Git ステージング、コミット、GitHub 自動デプロイを実行。
+
+## 🆕 最近の更新
+
+- 🧡 **Xiaomi 公式ショップ＆ショッピングカートを追加** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：27万行超の JSON データ、永続化カート引き出し、インタラクティブ決済に対応しました。
+- 🛠️ ワンクリックデプロイツール `scripts/deploy_update.sh` (`npm run deploy`) を追加し、GitHub Actions のビルドメモリ上限を 8GB (`NODE_OPTIONS="--max-old-space-size=8192"`) に最適化しました。
+- 🔐 **権限コントロールセンター** (`/permission`) を追加し、RBAC ロール切り替えと HTTP ステータスジャンプに対応しました。
+- 📜 **システム監査ログセンター** (`/logs`) を追加しました。**リアルタイムデータ同期**：リモートデータソースからリアルタイムに取得してローカル静的データとマージ、失敗時はローカルデータに自動フォールバック
 - **グローバル検索**：名前／説明でカテゴリ横断検索、検索履歴付き（最大 8 件）
 - **ブラウザ互換性通知**：アプリ上部でブラウザ機能を確認し、Element Plus Dialog で 5 つの公式ブラウザダウンロードリンク、QR コード、現在時刻、作者 GitHub、年始メッセージ、`package.json` から読み取ったソフトウェアバージョンリンクを表示
 - **お気に入り**：ツールカードのいいね・お気に入り、ローカルに永続化、履歴の閲覧が可能

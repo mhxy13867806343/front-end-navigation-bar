@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-version-history.mts && node scripts/generate-juejin-rank-cache.mts && vite build",
+    "deploy": "bash scripts/deploy_update.sh",
     "preview": "vite preview",
     "validate:mcp": "node scripts/validate-mcp-navigation.mts",
     "test:mcp": "node --test scripts/validate-mcp-navigation.test.mts",

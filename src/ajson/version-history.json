@@ -1,9 +1,59 @@
 {
-  "generatedAt": "2026-07-23T09:30:53.192Z",
+  "generatedAt": "2026-07-23T09:53:09.551Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "e591849e53809c05179b2f05deec084691add623",
+          "shortHash": "e591849",
+          "date": "2026-07-23",
+          "time": "17:44",
+          "type": "功能更新",
+          "title": "add Xiaomi Shop interactive Cart Drawer and full-page Cart view with checkout payment flow",
+          "scope": "",
+          "message": "feat: add Xiaomi Shop interactive Cart Drawer and full-page Cart view with checkout payment flow"
+        },
+        {
+          "hash": "0cd07ed0c69258d54b7bab5132f2972797270e20",
+          "shortHash": "0cd07ed",
+          "date": "2026-07-23",
+          "time": "17:42",
+          "type": "问题修复",
+          "title": "match xiaomi-shop subroutes in App.vue isFlashRoute calculation",
+          "scope": "",
+          "message": "fix: match xiaomi-shop subroutes in App.vue isFlashRoute calculation"
+        },
+        {
+          "hash": "e5c6bf66c850d604831cd1a751d3df6b519a7e1d",
+          "shortHash": "e5c6bf6",
+          "date": "2026-07-23",
+          "time": "17:39",
+          "type": "代码重构",
+          "title": "restructure top notice bar buttons using Element Plus Dropdown component",
+          "scope": "",
+          "message": "refactor: restructure top notice bar buttons using Element Plus Dropdown component"
+        },
+        {
+          "hash": "a57161caac8c82e5f3a3f7c41f18a67fcc0daaa7",
+          "shortHash": "a57161c",
+          "date": "2026-07-23",
+          "time": "17:37",
+          "type": "功能更新",
+          "title": "add Xiaomi Shop navigation buttons to header actions and top notice bar",
+          "scope": "",
+          "message": "feat: add Xiaomi Shop navigation buttons to header actions and top notice bar"
+        },
+        {
+          "hash": "b7f7130bcb1dfe3f9dfdd20f342e8f58c2a5a37a",
+          "shortHash": "b7f7130",
+          "date": "2026-07-23",
+          "time": "17:33",
+          "type": "功能更新",
+          "title": "add Xiaomi Shop with 270k+ JSON data, Error/Status pages (200/401/402/403/404/405/500), Permission RBAC center, and Audit Logs",
+          "scope": "",
+          "message": "feat: add Xiaomi Shop with 270k+ JSON data, Error/Status pages (200/401/402/403/404/405/500), Permission RBAC center, and Audit Logs"
+        },
         {
           "hash": "4791124a64c68a93895bfbb81fa16fa119231237",
           "shortHash": "4791124",
@@ -258,56 +308,6 @@
           "title": "re-align grid panels into 3 equal-height columns to completely remove vertical empty gaps",
           "scope": "big-screen",
           "message": "fix(big-screen): re-align grid panels into 3 equal-height columns to completely remove vertical empty gaps"
-        },
-        {
-          "hash": "e458c5862312c17e6c6af4c00b09383e20284d25",
-          "shortHash": "e458c58",
-          "date": "2026-07-22",
-          "time": "20:42",
-          "type": "问题修复",
-          "title": "place China City Map Panel in center column as main centerpiece and add offline GeoJSON fallback for network resilience",
-          "scope": "big-screen",
-          "message": "fix(big-screen): place China City Map Panel in center column as main centerpiece and add offline GeoJSON fallback for network resilience"
-        },
-        {
-          "hash": "de0313f46620acadda55e736284988dd5bf2ce35",
-          "shortHash": "de0313f",
-          "date": "2026-07-22",
-          "time": "20:36",
-          "type": "问题修复",
-          "title": "fix armL/armR/legL/legR rotation reference error in mario-3d animation loop",
-          "scope": "three-showcase",
-          "message": "fix(three-showcase): fix armL/armR/legL/legR rotation reference error in mario-3d animation loop"
-        },
-        {
-          "hash": "7812ed112df4e8915371b15f005f1388319b6717",
-          "shortHash": "7812ed1",
-          "date": "2026-07-22",
-          "time": "20:31",
-          "type": "功能更新",
-          "title": "implement 1:1 3D NES Super Mario Bros (World 1-1) in Three.js showcase with 3D Mario physics, question blocks, coins, Goombas, flagpole, HUD telemetry, and D-Pad controls",
-          "scope": "",
-          "message": "feat: implement 1:1 3D NES Super Mario Bros (World 1-1) in Three.js showcase with 3D Mario physics, question blocks, coins, Goombas, flagpole, HUD telemetry, and D-Pad controls"
-        },
-        {
-          "hash": "b8e8bcfa639d4bc9585d230b6d98bb860373c7e7",
-          "shortHash": "b8e8bcf",
-          "date": "2026-07-22",
-          "time": "20:16",
-          "type": "功能更新",
-          "title": "integrate WeChat article guide (https://mp.weixin.qq.com/s/J62wvjNYy79h5dFDRo1Vcw) into Three.js Showcase, update PRD/tech docs, wechat-featured data, and git preview",
-          "scope": "",
-          "message": "feat: integrate WeChat article guide (https://mp.weixin.qq.com/s/J62wvjNYy79h5dFDRo1Vcw) into Three.js Showcase, update PRD/tech docs, wechat-featured data, and git preview"
-        },
-        {
-          "hash": "b0ff092e4959be8eab50caeafc2e972c0b752539",
-          "shortHash": "b0ff092",
-          "date": "2026-07-22",
-          "time": "19:48",
-          "type": "问题修复",
-          "title": "bind activeCategory and selectedTag click handlers to trigger real API category and tag filtering in cocoloop feed (/cocoloop)",
-          "scope": "",
-          "message": "fix: bind activeCategory and selectedTag click handlers to trigger real API category and tag filtering in cocoloop feed (/cocoloop)"
         }
       ]
     }
