@@ -52,13 +52,73 @@
       margin: 0 0 20px;
       font-size: 0.98rem;
       color: #475569;
-      max-width: 900px;
+      max-width: 920px;
       line-height: 1.6;
 
       a {
         color: #2563eb;
         text-decoration: underline;
         font-weight: 600;
+      }
+    }
+
+    /* Dialog 参考说明卡片 */
+    .dialog-reference-banner {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid #2563eb;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+
+      .ref-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ref-desc {
+        font-size: 0.86rem;
+        color: #475569;
+        line-height: 1.6;
+        margin-bottom: 10px;
+      }
+
+      .ref-links {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        .ref-link-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 12px;
+          border-radius: 6px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.15s;
+
+          &.el-link {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #047857;
+            &:hover { background: #d1fae5; }
+          }
+
+          &.naive-link {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
+            &:hover { background: #dcfce7; }
+          }
+        }
       }
     }
 
@@ -105,7 +165,6 @@
   display: flex;
   gap: 24px;
 
-  /* Element Plus 官方目录侧栏 1:1 */
   .el-sidebar-nav {
     width: 280px;
     flex-shrink: 0;
@@ -227,268 +286,6 @@
       flex-direction: column;
       gap: 12px;
     }
-  }
-}
-
-/* 穿梭框 Transfer 专用样式 */
-.transfer-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  .transfer-list {
-    flex: 1;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 10px;
-    min-height: 140px;
-    background: #f8fafc;
-
-    .t-header {
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: #334155;
-      margin-bottom: 8px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .t-item {
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      cursor: pointer;
-      margin-bottom: 6px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.15s;
-
-      &:hover {
-        border-color: #2563eb;
-        color: #2563eb;
-        background: #eff6ff;
-      }
-    }
-  }
-}
-
-/* 滑块 Slider 专用样式 */
-.slider-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  input[type="range"] {
-    flex: 1;
-    accent-color: #2563eb;
-    cursor: pointer;
-  }
-
-  .slider-val {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: #2563eb;
-    min-width: 44px;
-  }
-}
-
-/* 滚动条 Scrollbar 专用样式 */
-.scrollbar-demo-box {
-  height: 120px;
-  overflow-y: auto;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 10px;
-  background: #f8fafc;
-
-  .scroll-item {
-    padding: 6px 10px;
-    border-radius: 6px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 6px;
-    font-size: 0.82rem;
-  }
-}
-
-/* Splitter 分隔面板 */
-.splitter-demo {
-  display: flex;
-  height: 100px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  overflow: hidden;
-
-  .split-pane {
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.85rem;
-  }
-
-  .left-pane {
-    background: #f1f5f9;
-    color: #334155;
-  }
-
-  .right-pane {
-    background: #eff6ff;
-    color: #2563eb;
-  }
-
-  .split-bar {
-    width: 6px;
-    background: #cbd5e1;
-    cursor: col-resize;
-    &:hover { background: #2563eb; }
-  }
-}
-
-/* OTP 验证码输入框 */
-.otp-input-box {
-  display: flex;
-  gap: 8px;
-
-  .otp-digit {
-    width: 40px;
-    height: 44px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: 800;
-    outline: none;
-
-    &:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-  }
-}
-
-/* Calendar 日历小部件 */
-.mini-calendar {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px;
-  background: #ffffff;
-
-  .cal-header {
-    display: flex;
-    justify-content: space-between;
-    font-weight: 700;
-    font-size: 0.85rem;
-    margin-bottom: 8px;
-  }
-
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    text-align: center;
-    font-size: 0.78rem;
-
-    .day-name {
-      color: #94a3b8;
-      font-weight: 700;
-      padding-bottom: 4px;
-    }
-
-    .day-cell {
-      padding: 6px 2px;
-      border-radius: 6px;
-      cursor: pointer;
-      &:hover { background: #f1f5f9; }
-      &.active { background: #2563eb; color: #ffffff; font-weight: 700; }
-    }
-  }
-}
-
-/* Empty 空状态 */
-.empty-demo {
-  text-align: center;
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 10px;
-  border: 1px dashed #cbd5e1;
-
-  .empty-icon { font-size: 2.2rem; margin-bottom: 6px; }
-  .empty-text { font-size: 0.85rem; color: #64748b; margin-bottom: 10px; }
-}
-
-/* Descriptions 描述列表 */
-.desc-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-
-  td {
-    padding: 8px 10px;
-    border: 1px solid #e2e8f0;
-  }
-
-  .label-cell {
-    background: #f8fafc;
-    font-weight: 700;
-    color: #475569;
-    width: 30%;
-  }
-
-  .value-cell {
-    background: #ffffff;
-    color: #0f172a;
-  }
-}
-
-/* Tour 漫游式引导蒙层 */
-.tour-mask {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.7);
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  .tour-card {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 24px;
-    max-width: 400px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-
-    h4 { margin: 0 0 8px; font-size: 1.1rem; color: #0f172a; }
-    p { margin: 0 0 16px; font-size: 0.88rem; color: #475569; }
-  }
-}
-
-/* Backtop 回到顶部按键 */
-.backtop-btn {
-  position: fixed;
-  right: 28px;
-  bottom: 28px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  font-size: 1.2rem;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
-  cursor: pointer;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-
-  &:hover {
-    transform: translateY(-4px);
   }
 }
 
