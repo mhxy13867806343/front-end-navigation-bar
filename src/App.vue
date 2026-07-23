@@ -49,6 +49,7 @@ const {
   randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
   starActiveName, starActivePeriod, starHoroscopeData, isStarLoading, queryStarHoroscope,
   idcardQueryNo, idcardQueryMode, idcardInfoData, idcardUpgradeResult, isIdcardLoading, idcardError, queryIdCard,
+  lolmSelectedDan, lolmSelectedPosition, lolmSearchKeyword, lolmRankData, isLolmLoading, queryLolmData,
   
   // Video & Photo Explorer exports
   showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
@@ -268,6 +269,34 @@ const versionFeatureCount = computed<number>((): number => countVersionItems(ver
 const versionCodeCount = computed<number>((): number => countVersionItems(versionCodeGroups.value))
 const latestVersionItem = computed<VersionHistoryCommit | null>((): VersionHistoryCommit | null => {
   return versionHistory.groups[0]?.items[0] || null
+})
+
+const lolmFilteredList = computed(() => {
+  if (!lolmRankData.value) return []
+  const danData = lolmRankData.value[lolmSelectedDan.value]
+  if (!danData) return []
+
+  let list: any[] = []
+  if (lolmSelectedPosition.value !== 'all') {
+    list = danData[lolmSelectedPosition.value] || []
+  } else {
+    const map = new Map<string, any>()
+    for (const key of Object.keys(danData)) {
+      for (const item of (danData[key] || [])) {
+        if (!map.has(item.heroId) || item.winRateNum > (map.get(item.heroId)?.winRateNum || 0)) {
+          map.set(item.heroId, item)
+        }
+      }
+    }
+    list = Array.from(map.values())
+  }
+
+  const kw = lolmSearchKeyword.value.trim().toLowerCase()
+  if (kw) {
+    list = list.filter(h => h.name.toLowerCase().includes(kw) || h.title.toLowerCase().includes(kw))
+  }
+
+  return list.sort((a, b) => b.winRateNum - a.winRateNum)
 })
 
 const openVersionHistoryDialog = (): void => {
@@ -2215,6 +2244,104 @@ watch(isDarkMode, () => {
 
             <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
               💡 请在上方输入框输入要查询归属地或升级的身份证号码后点击查询
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 7.8 英雄联盟手游国服数据 -->
+        <el-tab-pane name="lolm">
+          <template #label>
+            <span>⚔️ LOLM国服数据</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 13px; font-weight: bold; color: var(--text-color);">分段选择：</span>
+                  <el-radio-group v-model="lolmSelectedDan" size="small">
+                    <el-radio-button label="1">💎 钻石以上</el-radio-button>
+                    <el-radio-button label="2">👑 大师以上</el-radio-button>
+                    <el-radio-button label="3">🏆 王者</el-radio-button>
+                    <el-radio-button label="4">⚔️ 峡谷之巅</el-radio-button>
+                  </el-radio-group>
+                </div>
+
+                <el-button type="primary" size="small" :loading="isLolmLoading" @click="queryLolmData">
+                  🔄 刷新国服榜单
+                </el-button>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 13px; font-weight: bold; color: var(--text-color);">分路位置：</span>
+                  <el-radio-group v-model="lolmSelectedPosition" size="small">
+                    <el-radio-button label="all">🌐 全部</el-radio-button>
+                    <el-radio-button label="2">⚔️ 上单</el-radio-button>
+                    <el-radio-button label="5">🌲 打野</el-radio-button>
+                    <el-radio-button label="1">🧙‍♂️ 中路</el-radio-button>
+                    <el-radio-button label="3">🏹 下路</el-radio-button>
+                    <el-radio-button label="4">🛡️ 辅助</el-radio-button>
+                  </el-radio-group>
+                </div>
+
+                <el-input
+                  v-model="lolmSearchKeyword"
+                  placeholder="🔍 搜索英雄名称 / 称号"
+                  clearable
+                  size="small"
+                  style="width: 220px;"
+                />
+              </div>
+            </div>
+
+            <!-- Table List -->
+            <div v-if="lolmFilteredList && lolmFilteredList.length > 0">
+              <el-table :data="lolmFilteredList" border size="small" style="width: 100%; border-radius: 8px; overflow: hidden; max-height: 360px;">
+                <el-table-column type="index" label="排名" width="60" align="center">
+                  <template #default="scope">
+                    <span :style="{ fontWeight: 'bold', color: scope.$index === 0 ? '#f59e0b' : scope.$index === 1 ? '#94a3b8' : scope.$index === 2 ? '#b45309' : 'var(--text-color)' }">
+                      {{ scope.$index + 1 }}
+                    </span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="英雄" min-width="150">
+                  <template #default="scope">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <img :src="scope.row.avatar" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--primary-color);" />
+                      <div>
+                        <div style="font-weight: bold; color: var(--text-color); font-size: 13px;">{{ scope.row.title }}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">{{ scope.row.name }}</div>
+                      </div>
+                    </div>
+                  </template>
+                </el-table-column>
+
+                <el-table-column prop="winRateNum" label="胜率" width="100" align="center" sortable>
+                  <template #default="scope">
+                    <strong style="color: #4ade80;">{{ scope.row.winRatePercent }}</strong>
+                  </template>
+                </el-table-column>
+
+                <el-table-column prop="appearRateNum" label="登场率" width="100" align="center" sortable>
+                  <template #default="scope">
+                    <span style="color: #38bdf8;">{{ scope.row.appearRatePercent }}</span>
+                  </template>
+                </el-table-column>
+
+                <el-table-column prop="forbidRateNum" label="BAN率" width="100" align="center" sortable>
+                  <template #default="scope">
+                    <span style="color: #f87171;">{{ scope.row.forbidRatePercent }}</span>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+
+            <div v-else-if="isLolmLoading" style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <el-icon class="is-loading"><Loading /></el-icon> 正在拉取英雄联盟手游国服数据...
+            </div>
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              暂无匹配的英雄联盟手游国服数据
             </div>
           </div>
         </el-tab-pane>

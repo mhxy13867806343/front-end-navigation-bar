@@ -55,6 +55,10 @@ export const serverProxy: ServerProxyMap = {
     Origin: 'https://v3.alapi.cn',
     Referer: 'https://v3.alapi.cn/'
   }),
+  '/api-lolm': createProxyEntry('/api-lolm', 'https://mlol.qt.qq.com', {
+    Origin: 'https://lolm.qq.com',
+    Referer: 'https://lolm.qq.com/'
+  }),
   '/api-aa1': createProxyEntry('/api-aa1', 'https://v.api.aa1.cn', {
     Origin: 'https://v.api.aa1.cn',
     Referer: 'https://api.aa1.cn/doc/bilibili-rs.html'

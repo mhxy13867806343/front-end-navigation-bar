@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T06:36:52.403Z",
+  "generatedAt": "2026-07-23T06:47:35.994Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "b9187ea64d5ce8f8658e9be1ee29c6bc4872e356",
+          "shortHash": "b9187ea",
+          "date": "2026-07-23",
+          "time": "14:37",
+          "type": "问题修复",
+          "title": "preserve query results and state seamlessly across mode switches and button clicks",
+          "scope": "idcard",
+          "message": "fix(idcard): preserve query results and state seamlessly across mode switches and button clicks"
+        },
         {
           "hash": "25963b44eac9c1f74b97641b5fbd591b0224995e",
           "shortHash": "25963b4",
@@ -298,16 +308,6 @@
           "title": "add cursor: pointer and hover effects for view detail buttons and clickable list items in bigScreen",
           "scope": "",
           "message": "style: add cursor: pointer and hover effects for view detail buttons and clickable list items in bigScreen"
-        },
-        {
-          "hash": "88df5d48bda48a586c0581175cb47fcdd026ccf1",
-          "shortHash": "88df5d4",
-          "date": "2026-07-22",
-          "time": "19:14",
-          "type": "问题修复",
-          "title": "add cursor pointer and hover effect to all 查看详情 action buttons on big screen",
-          "scope": "",
-          "message": "fix: add cursor pointer and hover effect to all 查看详情 action buttons on big screen"
         }
       ]
     }

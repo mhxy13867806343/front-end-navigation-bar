@@ -100,6 +100,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '🪪',
     path: '/idcard',
     tag: 'ALAPI 身份证'
+  },
+  {
+    id: 'lolm',
+    name: '英雄联盟手游国服数据',
+    desc: '同步腾讯官方《英雄联盟手游》国服全服高阶排位战报，查看钻石、大师、王者、峡谷之巅各分路英雄胜率、登场率与BAN率。',
+    icon: '⚔️',
+    path: '/lolm',
+    tag: 'LOLM 国服'
   }
 ]
 

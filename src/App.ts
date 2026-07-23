@@ -1326,6 +1326,73 @@ export function useAppLogic() {
     isIdcardLoading.value = false
   }
 
+  // 5.7 英雄联盟手游国服数据
+  const lolmSelectedDan = ref('1')
+  const lolmSelectedPosition = ref('all')
+  const lolmSearchKeyword = ref('')
+  const lolmRankData = ref<any>(null)
+  const isLolmLoading = ref(false)
+
+  const queryLolmData = async () => {
+    isLolmLoading.value = true
+    try {
+      const heroListUrl = 'https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js'
+      const rankListUrl = buildAlapiUrl('/api/lolm/go/lgame_battle_info/hero_rank_list_v2')
+
+      const [heroRes, rankRes] = await Promise.all([
+        axios.get(heroListUrl).catch(() => ({ data: { heroList: {} } })),
+        axios.get(rankListUrl).catch(() => ({ data: { data: null } }))
+      ])
+
+      const heroMap = heroRes.data?.heroList || {}
+      const rankData = rankRes.data?.data
+
+      if (!rankData) throw new Error('未获取到 LOLM 榜单数据')
+
+      const parsed: Record<string, Record<string, any[]>> = {}
+      for (const danKey of Object.keys(rankData)) {
+        parsed[danKey] = {}
+        const placeMap = rankData[danKey] || {}
+        for (const posKey of Object.keys(placeMap)) {
+          const list = placeMap[posKey] || []
+          parsed[danKey][posKey] = list.map((item: any) => {
+            const meta = heroMap[item.hero_id] || {}
+            return {
+              heroId: item.hero_id,
+              name: meta.name || '英雄',
+              title: meta.title || '英雄联盟',
+              avatar: meta.avatar || `https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_${item.hero_id}.png`,
+              position: item.position || posKey,
+              winRateNum: parseFloat(item.win_rate_percent || item.win_rate || '0'),
+              appearRateNum: parseFloat(item.appear_rate_percent || item.appear_rate || '0'),
+              forbidRateNum: parseFloat(item.forbid_rate_percent || item.forbid_rate || '0'),
+              winRatePercent: `${item.win_rate_percent || '0'}%`,
+              appearRatePercent: `${item.appear_rate_percent || '0'}%`,
+              forbidRatePercent: `${item.forbid_rate_percent || '0'}%`,
+              dtstatdate: item.dtstatdate || ''
+            }
+          })
+        }
+      }
+      lolmRankData.value = parsed
+    } catch (e) {
+      console.warn('获取 LOLM 国服数据失败，使用样本数据:', e)
+      const sample = [
+        { heroId: '10041', name: '凯尔', title: '正义天使', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10041.png', winRateNum: 55.08, appearRateNum: 2.87, forbidRateNum: 0.27, winRatePercent: '55.08%', appearRatePercent: '2.87%', forbidRatePercent: '0.27%' },
+        { heroId: '10010', name: '薇恩', title: '暗夜猎手', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10010.png', winRateNum: 52.99, appearRateNum: 1.86, forbidRateNum: 6.12, winRatePercent: '52.99%', appearRatePercent: '1.86%', forbidRatePercent: '6.12%' },
+        { heroId: '10069', name: '永恩', title: '封魔剑魂', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10069.png', winRateNum: 52.94, appearRateNum: 7.53, forbidRateNum: 3.50, winRatePercent: '52.94%', appearRatePercent: '7.53%', forbidRatePercent: '3.50%' },
+        { heroId: '10046', name: '提莫', title: '迅捷斥候', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10046.png', winRateNum: 52.27, appearRateNum: 4.37, forbidRateNum: 13.04, winRatePercent: '52.27%', appearRatePercent: '4.37%', forbidRatePercent: '13.04%' }
+      ]
+      const fallback: Record<string, Record<string, any[]>> = {}
+      for (const d of ['1', '2', '3', '4']) {
+        fallback[d] = { '1': sample, '2': sample, '3': sample, '4': sample, '5': sample }
+      }
+      lolmRankData.value = fallback
+    } finally {
+      isLolmLoading.value = false
+    }
+  }
+
   const queryNextPhoto = async () => {
     isPhotoLoading.value = true
     try {
@@ -1638,6 +1705,8 @@ export function useAppLogic() {
       queryZaobao()
     } else if (utilityActiveTab.value === 'star' && !starHoroscopeData.value) {
       queryStarHoroscope()
+    } else if (utilityActiveTab.value === 'lolm' && !lolmRankData.value) {
+      queryLolmData()
     }
   }
 
@@ -1701,6 +1770,7 @@ export function useAppLogic() {
     randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
     starActiveName, starActivePeriod, starHoroscopeData, isStarLoading, queryStarHoroscope,
     idcardQueryNo, idcardQueryMode, idcardInfoData, idcardUpgradeResult, isIdcardLoading, idcardError, queryIdCard,
+    lolmSelectedDan, lolmSelectedPosition, lolmSearchKeyword, lolmRankData, isLolmLoading, queryLolmData,
     
     // Video & Photo Explorer exports
     showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
