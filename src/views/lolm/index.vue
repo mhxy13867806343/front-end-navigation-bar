@@ -114,6 +114,10 @@
       </div>
     </div>
 
+    <div v-else-if="errorMessage" class="empty-state">
+      ⚠️ {{ errorMessage }}
+    </div>
+
     <div v-else class="empty-state">
       🔍 暂无符合条件的英雄数据，请尝试调整筛选分段或搜索关键词。
     </div>
@@ -123,7 +127,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { resolveApiUrl } from '../../utils/resolveApiUrl'
+import { requestLolmHeroListJson, requestLolmRankJson } from '../../utils/lolmApi'
 
 interface HeroMeta {
   heroId: string
@@ -157,6 +161,7 @@ const sortOrder = ref<'desc' | 'asc'>('desc')
 
 const updateDate = ref<string>('')
 const allRankData = ref<Record<string, Record<string, HeroRankItem[]>>>({})
+const errorMessage = ref<string>('')
 
 const danOptions = [
   { label: '💎 钻石以上', value: '1' },
@@ -236,37 +241,13 @@ const sortedHeroList = computed<HeroRankItem[]>(() => {
   })
 })
 
-function getFallbackRankData(): Record<string, Record<string, HeroRankItem[]>> {
-  const sampleHeroes: HeroRankItem[] = [
-    { heroId: '10041', name: '凯尔', title: '正义天使', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10041.png', position: '2', winRateNum: 55.08, appearRateNum: 2.87, forbidRateNum: 0.27, winRatePercent: '55.08%', appearRatePercent: '2.87%', forbidRatePercent: '0.27%', dtstatdate: '20260722' },
-    { heroId: '10010', name: '薇恩', title: '暗夜猎手', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10010.png', position: '2', winRateNum: 52.99, appearRateNum: 1.86, forbidRateNum: 6.12, winRatePercent: '52.99%', appearRatePercent: '1.86%', forbidRatePercent: '6.12%', dtstatdate: '20260722' },
-    { heroId: '10069', name: '永恩', title: '封魔剑魂', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10069.png', position: '2', winRateNum: 52.94, appearRateNum: 7.53, forbidRateNum: 3.50, winRatePercent: '52.94%', appearRatePercent: '7.53%', forbidRatePercent: '3.50%', dtstatdate: '20260722' },
-    { heroId: '10046', name: '提莫', title: '迅捷斥候', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10046.png', position: '2', winRateNum: 52.27, appearRateNum: 4.37, forbidRateNum: 13.04, winRatePercent: '52.27%', appearRatePercent: '4.37%', forbidRatePercent: '13.04%', dtstatdate: '20260722' },
-    { heroId: '10118', name: '慎', title: '暮光之眼', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10118.png', position: '2', winRateNum: 52.20, appearRateNum: 1.52, forbidRateNum: 0.05, winRatePercent: '52.20%', appearRatePercent: '1.52%', forbidRatePercent: '0.05%', dtstatdate: '20260722' }
-  ]
-
-  const dataMap: Record<string, Record<string, HeroRankItem[]>> = {}
-  for (const dan of ['1', '2', '3', '4']) {
-    dataMap[dan] = {
-      '1': sampleHeroes,
-      '2': sampleHeroes,
-      '3': sampleHeroes,
-      '4': sampleHeroes,
-      '5': sampleHeroes
-    }
-  }
-  return dataMap
-}
-
 async function fetchLolmData(): Promise<void> {
   loading.value = true
+  errorMessage.value = ''
   try {
-    const heroListUrl = 'https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js'
-    const rankListUrl = resolveApiUrl('/api-lolm/go/lgame_battle_info/hero_rank_list_v2')
-
     const [heroRes, rankRes] = await Promise.all([
-      fetch(heroListUrl).then(r => r.json()).catch(() => ({ heroList: {} })),
-      fetch(rankListUrl).then(r => r.json()).catch(() => ({ data: null }))
+      requestLolmHeroListJson<{ heroList?: Record<string, HeroMeta> }>().catch(() => ({ heroList: {} })),
+      requestLolmRankJson<{ data?: Record<string, Record<string, any[]>> }>().catch(() => ({ data: undefined }))
     ])
 
     const heroMap: Record<string, HeroMeta> = heroRes.heroList || {}
@@ -316,9 +297,11 @@ async function fetchLolmData(): Promise<void> {
       updateDate.value = new Date().toLocaleDateString('zh-CN')
     }
   } catch (err) {
-    console.warn('获取 LOLM 英雄胜率失败，启用精彩样本兜底:', err)
-    allRankData.value = getFallbackRankData()
-    updateDate.value = '2026-07-22'
+    const message = err instanceof Error ? err.message : '获取 LOLM 英雄胜率失败'
+    console.warn('获取 LOLM 英雄胜率失败:', err)
+    allRankData.value = {}
+    updateDate.value = ''
+    errorMessage.value = message
   } finally {
     loading.value = false
   }

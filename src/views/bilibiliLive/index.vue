@@ -6,7 +6,7 @@ import { resolveApiUrl } from '../../utils/resolveApiUrl'
 import { requestJinaJson } from '../../utils/jinaReader'
 
 type LiveTabId = 'recommend' | 'hot' | 'new'
-type LiveSourceId = 'all' | 'chat' | 'radio' | 'online-game' | 'single-game'
+type LiveSourceId = string
 
 interface BilibiliLiveWatchedShow {
   text_small?: string
@@ -41,6 +41,20 @@ interface BilibiliLiveListData {
   list?: BilibiliLiveApiItem[]
 }
 
+interface BilibiliLiveArea {
+  id?: number | string
+  parent_id?: number | string
+  parent_name?: string
+  name?: string
+  pic?: string
+}
+
+interface BilibiliLiveAreaGroup {
+  id?: number | string
+  name?: string
+  list?: BilibiliLiveArea[]
+}
+
 interface BilibiliLiveApiResponse<T> {
   code: number
   message?: string
@@ -62,31 +76,109 @@ interface BilibiliLiveRoom {
   roomUrl: string
 }
 
+interface BilibiliLiveSource {
+  id: LiveSourceId
+  label: string
+  icon: string
+  parentAreaId: number
+  areaId: number
+}
+
+interface BilibiliLiveSubArea {
+  id: string
+  label: string
+  parentAreaId: number
+  areaId: number
+}
+
 const router = useRouter()
 const tabs: Array<{ id: LiveTabId; label: string; icon: string }> = [
   { id: 'recommend', label: '推荐直播', icon: '✨' },
   { id: 'hot', label: '人气直播', icon: '🔥' },
   { id: 'new', label: '最新开播', icon: '🆕' }
 ]
-const sources: Array<{ id: LiveSourceId; label: string; icon: string; parentAreaId: number; areaId: number }> = [
+const fallbackSources: BilibiliLiveSource[] = [
   { id: 'all', label: '全部直播', icon: '📺', parentAreaId: 0, areaId: 0 },
   { id: 'chat', label: '聊天室', icon: '💬', parentAreaId: 14, areaId: 0 },
   { id: 'radio', label: '电台', icon: '📻', parentAreaId: 5, areaId: 0 },
-  { id: 'online-game', label: '网游', icon: '🎮', parentAreaId: 1, areaId: 21 },
+  { id: 'online-game', label: '网游', icon: '🎮', parentAreaId: 2, areaId: 0 },
   { id: 'single-game', label: '单机', icon: '🕹', parentAreaId: 6, areaId: 0 }
 ]
+const areaIconMap: Record<string, string> = {
+  网游: '🎮',
+  手游: '📱',
+  单机游戏: '🕹',
+  娱乐: '🎤',
+  电台: '📻',
+  虚拟主播: '🧬',
+  聊天室: '💬',
+  生活: '🏠',
+  知识: '📚',
+  赛事: '🏆',
+  互动玩法: '🎲'
+}
 
 const activeTab = ref<LiveTabId>('recommend')
 const activeSource = ref<LiveSourceId>('all')
+const activeAreaId = ref<number>(0)
 const hasStarted = ref<boolean>(false)
 const loading = ref<boolean>(false)
+const areaLoading = ref<boolean>(false)
 const liveRooms = ref<BilibiliLiveRoom[]>([])
 const liveRoomCount = ref<number>(0)
 const updateTime = ref<string>('')
 const errorMessage = ref<string>('')
+const liveAreaGroups = ref<BilibiliLiveAreaGroup[]>([])
 
 const activeTabInfo = computed(() => tabs.find(tab => tab.id === activeTab.value) || tabs[0])
-const activeSourceInfo = computed(() => sources.find(source => source.id === activeSource.value) || sources[0])
+const sources = computed<BilibiliLiveSource[]>(() => {
+  if (!liveAreaGroups.value.length) return fallbackSources
+
+  const dynamicSources: BilibiliLiveSource[] = liveAreaGroups.value.map((group: BilibiliLiveAreaGroup): BilibiliLiveSource => {
+    const label = group.name || '直播分区'
+    const parentAreaId = Number(group.id || 0)
+    return {
+      id: `area-${parentAreaId}`,
+      label: label === '单机游戏' ? '单机' : label,
+      icon: areaIconMap[label] || '📺',
+      parentAreaId,
+      areaId: 0
+    }
+  })
+
+  return [fallbackSources[0], ...dynamicSources]
+})
+const activeSourceInfo = computed(() => sources.value.find(source => source.id === activeSource.value) || sources.value[0])
+const subAreas = computed<BilibiliLiveSubArea[]>(() => {
+  const parentAreaId = activeSourceInfo.value.parentAreaId
+  if (!parentAreaId) return []
+
+  const group = liveAreaGroups.value.find((item: BilibiliLiveAreaGroup): boolean => {
+    return Number(item.id || 0) === parentAreaId
+  })
+  const children = group?.list || []
+
+  return [
+    {
+      id: `area-${parentAreaId}-all`,
+      label: '全部',
+      parentAreaId,
+      areaId: 0
+    },
+    ...children.map((area: BilibiliLiveArea): BilibiliLiveSubArea => {
+      const areaId = Number(area.id || 0)
+      return {
+        id: `area-${parentAreaId}-${areaId}`,
+        label: area.name || '未命名分类',
+        parentAreaId,
+        areaId
+      }
+    })
+  ]
+})
+const activeSubAreaInfo = computed(() => {
+  return subAreas.value.find(area => area.areaId === activeAreaId.value)
+})
 
 const normalizeImageUrl = (url?: string): string => {
   if (!url) return ''
@@ -145,6 +237,10 @@ const getLiveApiBase = (): string => {
   return import.meta.env.PROD ? 'https://api.live.bilibili.com' : '/api-bilibili-live'
 }
 
+const getAreaListUrl = (): string => {
+  return `${getLiveApiBase()}/room/v1/Area/getList?show_pinyin=1`
+}
+
 const getSortType = (tabId: LiveTabId): string => {
   if (tabId === 'hot') return 'online'
   if (tabId === 'new') return 'live_time'
@@ -159,14 +255,30 @@ const buildLiveQuery = (params: Record<string, string | number | undefined>): st
   return query.toString()
 }
 
-const getLiveListUrls = (sourceId: LiveSourceId, tabId: LiveTabId): string[] => {
-  const source = sources.find(item => item.id === sourceId) || sources[0]
+const fetchLiveAreaGroups = async (): Promise<void> => {
+  if (liveAreaGroups.value.length || areaLoading.value) return
+
+  areaLoading.value = true
+
+  try {
+    const json = await fetchLiveJson<BilibiliLiveApiResponse<BilibiliLiveAreaGroup[]>>(getAreaListUrl())
+    if (json.code !== 0) {
+      throw new Error(json.message || json.msg || `分区请求失败：${json.code}`)
+    }
+    liveAreaGroups.value = Array.isArray(json.data) ? json.data : []
+  } finally {
+    areaLoading.value = false
+  }
+}
+
+const getLiveListUrls = (sourceId: LiveSourceId, tabId: LiveTabId, areaId: number): string[] => {
+  const source = sources.value.find(item => item.id === sourceId) || sources.value[0]
   const base = getLiveApiBase()
   const sortType = getSortType(tabId)
   const commonParams = {
     platform: 'web',
     parent_area_id: source.parentAreaId,
-    area_id: source.areaId,
+    area_id: areaId,
     page: 1,
     page_size: 30,
     sort_type: sortType
@@ -177,10 +289,10 @@ const getLiveListUrls = (sourceId: LiveSourceId, tabId: LiveTabId): string[] => 
   ]
 }
 
-const fetchLiveRooms = async (sourceId: LiveSourceId, tabId: LiveTabId): Promise<BilibiliLiveRoom[]> => {
+const fetchLiveRooms = async (sourceId: LiveSourceId, tabId: LiveTabId, areaId: number): Promise<BilibiliLiveRoom[]> => {
   let lastError: unknown = null
 
-  for (const url of getLiveListUrls(sourceId, tabId)) {
+  for (const url of getLiveListUrls(sourceId, tabId, areaId)) {
     try {
       const json = await fetchLiveJson<BilibiliLiveApiResponse<BilibiliLiveListData | BilibiliLiveApiItem[]>>(url)
 
@@ -212,7 +324,8 @@ const fetchLiveRooms = async (sourceId: LiveSourceId, tabId: LiveTabId): Promise
 
 const loadLiveData = async (
   sourceId: LiveSourceId = activeSource.value,
-  tabId: LiveTabId = activeTab.value
+  tabId: LiveTabId = activeTab.value,
+  areaId: number = activeAreaId.value
 ): Promise<void> => {
   if (loading.value) return
 
@@ -222,7 +335,8 @@ const loadLiveData = async (
   liveRooms.value = []
 
   try {
-    liveRooms.value = await fetchLiveRooms(sourceId, tabId)
+    await fetchLiveAreaGroups()
+    liveRooms.value = await fetchLiveRooms(sourceId, tabId, areaId)
     updateTime.value = formatNowTime()
   } catch (error) {
     const message = error instanceof Error ? error.message : '直播数据获取失败'
@@ -235,12 +349,18 @@ const loadLiveData = async (
 
 const selectTab = (tabId: LiveTabId): void => {
   activeTab.value = tabId
-  if (hasStarted.value) void loadLiveData(activeSource.value, tabId)
+  if (hasStarted.value) void loadLiveData(activeSource.value, tabId, activeAreaId.value)
 }
 
 const selectSource = (sourceId: LiveSourceId): void => {
   activeSource.value = sourceId
-  if (hasStarted.value) void loadLiveData(sourceId, activeTab.value)
+  activeAreaId.value = 0
+  if (hasStarted.value) void loadLiveData(sourceId, activeTab.value, 0)
+}
+
+const selectSubArea = (area: BilibiliLiveSubArea): void => {
+  activeAreaId.value = area.areaId
+  if (hasStarted.value) void loadLiveData(activeSource.value, activeTab.value, area.areaId)
 }
 
 const openRoom = (room: BilibiliLiveRoom): void => {
@@ -312,10 +432,25 @@ const openRoom = (room: BilibiliLiveRoom): void => {
         </button>
       </section>
 
+      <section v-if="subAreas.length" class="live-subareas" aria-label="直播子分类">
+        <button
+          v-for="area in subAreas"
+          :key="area.id"
+          type="button"
+          class="live-subarea"
+          :class="{ active: activeAreaId === area.areaId }"
+          :disabled="loading"
+          @click="selectSubArea(area)"
+        >
+          {{ area.label }}
+        </button>
+      </section>
+
       <section class="live-summary">
         <strong>{{ activeSourceInfo.label }}</strong>
         <span>{{ formatCount(liveRoomCount) }}</span>
         <em>{{ activeTabInfo.label }}</em>
+        <small v-if="activeSubAreaInfo && activeSubAreaInfo.areaId">/ {{ activeSubAreaInfo.label }}</small>
       </section>
 
       <section v-if="loading" class="live-loading" aria-live="polite">

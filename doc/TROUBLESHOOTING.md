@@ -113,3 +113,25 @@ const chinaCascaderOptions = markRaw(rawCascaderOptions as CascaderNode[])
 ### 🛠️ 解决方案
 1. 增加 `decodeURIComponent` 安全解码处理。
 2. 在 `findApiEndpoint` 中引入多级降级匹配机制（先分类全等匹配，若失败则按接口名全量降级检索），确保 100% 精准命中有问题的路由。
+
+---
+
+## 7. GitHub Pages 线上请求第三方接口跨域
+
+### 📌 问题现象
+本地开发环境通过 Vite 代理访问第三方接口正常，但 GitHub Pages 或 `vite preview` 环境中直接请求第三方域名时，浏览器控制台报：
+```text
+Access to XMLHttpRequest at 'https://mlol.qt.qq.com/...' from origin 'http://127.0.0.1:4173' has been blocked by CORS policy
+```
+
+### 🔍 原因分析
+1. `axios` 只改变请求方式，不会绕过浏览器同源策略；如果第三方响应没有 `Access-Control-Allow-Origin`，浏览器仍会拦截。
+2. Vite `server.proxy` 只在本地开发服务器生效，打包后的 GitHub Pages 是纯静态站点，不能继续使用本地代理。
+3. 对于只读榜单类 JSON，可以在生产环境改走可跨域读取的包装服务，再从文本中解析真实 JSON。
+
+### 🛠️ 解决方案
+LOLM 国服榜单统一通过 `src/utils/lolmApi.ts` 请求：
+- 开发环境：`/api-lolm` 走 Vite 本地代理。
+- 生产环境：使用 `requestJinaJson` 包装第三方 URL 后解析 JSON，避免浏览器直接跨域请求。
+
+同时工具箱中的 Element Plus 表格需要使用组件属性 `max-height`，不能只在 `style` 中写 `max-height`，否则内部滚动区域不会正确生成，容易看起来只显示了前几条数据。

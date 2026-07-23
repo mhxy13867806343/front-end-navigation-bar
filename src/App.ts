@@ -45,6 +45,7 @@ import { useSearch } from './composables/useSearch'
 import { useRandomWebsites } from './composables/useRandomWebsites'
 import { resolveApiUrl } from './utils/resolveApiUrl'
 import { requestJinaJson } from './utils/jinaReader'
+import { requestLolmHeroListJson, requestLolmRankJson } from './utils/lolmApi'
 
 const UAPIS_API_BASE: string = '/api-uapis'
 const AA1_API_BASE: string = '/api-aa1'
@@ -1336,16 +1337,13 @@ export function useAppLogic() {
   const queryLolmData = async () => {
     isLolmLoading.value = true
     try {
-      const heroListUrl = 'https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js'
-      const rankListUrl = resolveApiUrl('/api-lolm/go/lgame_battle_info/hero_rank_list_v2')
-
       const [heroRes, rankRes] = await Promise.all([
-        axios.get(heroListUrl).catch(() => ({ data: { heroList: {} } })),
-        axios.get(rankListUrl).catch(() => ({ data: { data: null } }))
+        requestLolmHeroListJson<{ heroList?: Record<string, any> }>().catch(() => ({ heroList: {} })),
+        requestLolmRankJson<{ data?: Record<string, Record<string, any[]>> }>().catch(() => ({ data: undefined }))
       ])
 
-      const heroMap = heroRes.data?.heroList || {}
-      const rankData = rankRes.data?.data
+      const heroMap = heroRes.heroList || {}
+      const rankData = rankRes.data
 
       if (!rankData) throw new Error('未获取到 LOLM 榜单数据')
 

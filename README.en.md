@@ -12,6 +12,9 @@ This project is no longer actively updated. The current live demo and existing f
 
 👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 
+- Bilibili Trending: [https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending)
+- Bilibili Live: [https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live)
+
 ## ✨ Features
 
 - **AI Tools Navigation**: Sidebar with categories + subcategories, covering dozens of categories such as AI chat, writing, painting, coding, and dev platforms
@@ -29,6 +32,9 @@ This project is no longer actively updated. The current live demo and existing f
 
 ## 🆕 Recent Updates
 
+- Added the `/bilibili-live` page with on-demand live data loading, dynamic Bilibili live areas, sub-area filters, and recommend / popular / latest tabs.
+- Fixed LOLM China server data in local and online environments: local development uses the Vite proxy, production uses a read-only wrapped JSON request, and the toolbox table now scrolls through the full returned hero list.
+- Improved `/bilibili-trending` so the refresh countdown only targets the search hot-list while other Bilibili ranking sections keep their own loading and error states.
 - Juejin hot rankings now use a build-time same-origin cache in production, avoiding direct cross-origin requests on GitHub Pages.
 - Added a browser compatibility bar to the home page and standalone route views, with details shown in an Element Plus Dialog and QR assets stored under `src/assets/qc/`.
 - Added cloud-drive document links, Codex / TRAE / Devin / Antigravity entries, and a dynamic-year blessing to the control center.

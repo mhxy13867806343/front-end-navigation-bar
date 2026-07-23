@@ -14,6 +14,8 @@
 - 🌦️ **天气预报可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
 - 💰 **黄金行情/接口可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC](https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC)
 - 📜 **名人名言与智慧语录**：[https://mhxy13867806343.github.io/front-end-navigation-bar/mingyan](https://mhxy13867806343.github.io/front-end-navigation-bar/mingyan)
+- 📺 **Bilibili 热搜与热门榜**：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending)
+- 🔴 **Bilibili 直播数据**：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live)
 
 ## ✨ 功能特性
 
@@ -36,6 +38,9 @@
 
 ## 🆕 近期更新
 
+- 🔴 **新增 Bilibili 直播数据页** (`/bilibili-live`)：进入“直播”后再拉取线上直播数据，分区与子分类动态同步，支持推荐、人气、最新开播切换。
+- ⚔️ **修复 LOLM 国服数据跨域与展示数量**：开发环境走 Vite 本地代理，线上环境走只读数据包装解析；工具箱表格改为内部滚动，完整展示接口返回的英雄榜单。
+- 📺 **增强 Bilibili 热搜/热门榜线上兼容** (`/bilibili-trending`)：刷新只作用于搜索热搜榜，热门/必看/音乐榜等列表独立展示线上接口状态。
 - 📺 **优化 Bilibili 热搜榜列表细节** (`/bilibili-trending`)：右侧箭头仅在存在有效热搜 icon 时显示，避免无图标条目出现孤立箭头占位。
 - 🌦️ **新增天气预报独立视图** (`/weather`)：内置实况天气、ECharts 双温 7 天柱状图 / 40 天平滑折线图及天气指数卡片。
 - 💰 **升级接口中心纯可视化看板** (`/api-center`)：自动直接呈现黄金/白银/铂金/钯金行情卡片、品牌金价列表、数据表格及大图预览。

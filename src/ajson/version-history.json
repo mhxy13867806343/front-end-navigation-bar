@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T07:00:25.799Z",
+  "generatedAt": "2026-07-23T08:37:46.832Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "f70d8b07d500fdb020a36178fca15e5e8f1864bf",
+          "shortHash": "f70d8b0",
+          "date": "2026-07-23",
+          "time": "15:00",
+          "type": "问题修复",
+          "title": "correct Tencent API endpoint URL in App.ts & add Dan 4 fallback mapping for dynamic position switching",
+          "scope": "lolm",
+          "message": "fix(lolm): correct Tencent API endpoint URL in App.ts & add Dan 4 fallback mapping for dynamic position switching"
+        },
         {
           "hash": "74aec24fedaf49fdc6375eef0c0fb90fd3311c3f",
           "shortHash": "74aec24",
@@ -298,16 +308,6 @@
           "title": "refactor CocoLoop page with 1:1 Discourse community UI, left sidebar menu, banner, avatar stack, and infinite scroll (/cocoloop)",
           "scope": "",
           "message": "feat: refactor CocoLoop page with 1:1 Discourse community UI, left sidebar menu, banner, avatar stack, and infinite scroll (/cocoloop)"
-        },
-        {
-          "hash": "70a03d219e132a27fb555b76e83b0a58ecea14c1",
-          "shortHash": "70a03d2",
-          "date": "2026-07-22",
-          "time": "19:34",
-          "type": "功能更新",
-          "title": "add CocoLoop community latest feed page with infinite scroll loading, tag filtering, detail modal, and proxy setup (/cocoloop)",
-          "scope": "",
-          "message": "feat: add CocoLoop community latest feed page with infinite scroll loading, tag filtering, detail modal, and proxy setup (/cocoloop)"
         }
       ]
     }

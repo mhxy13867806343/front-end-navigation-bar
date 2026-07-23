@@ -12,6 +12,9 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 
 👉 [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 
+- Bilibili トレンド：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending)
+- Bilibili ライブ：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live)
+
 ## ✨ 主な機能
 
 - **AI ツールナビゲーション**：サイドバーのカテゴリ + サブカテゴリで、AI チャット、ライティング、ペイント、プログラミング、開発プラットフォームなど数十のカテゴリをカバー
@@ -29,6 +32,9 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 
 ## 🆕 最近の更新
 
+- `/bilibili-live` ページを追加し、入室後にライブデータを取得、Bilibili ライブ分区と子カテゴリを動的に同期し、推薦／人気／最新配信の切り替えに対応しました。
+- LOLM 中国サーバーデータのローカル／オンライン環境対応を修正。開発環境は Vite プロキシ、本番環境は読み取り専用のラップ済み JSON 取得を使い、ツールボックスの表は返却された英雄リスト全体をスクロール表示できます。
+- `/bilibili-trending` の更新処理を改善し、カウントダウン付き更新は検索ホットリストのみを対象にし、他の Bilibili ランキングは独立した読み込み／エラー状態を持つようにしました。
 - 掘金ホットランキングは本番環境でビルド時生成の同一オリジンキャッシュを使用し、GitHub Pages で直接クロスオリジンリクエストを行わないようにしました。
 - ホームページと独立ルート画面の上部にブラウザ互換性検出バーを追加し、詳細は Element Plus Dialog で表示、QR 画像は `src/assets/qc/` に配置しました。
 - コントロールセンターにクラウド資料リンク、Codex / TRAE / Devin / Antigravity の公式入口、動的な年表示の祝福文を追加しました。

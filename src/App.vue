@@ -2296,7 +2296,11 @@ watch(isDarkMode, () => {
 
             <!-- Table List -->
             <div v-if="lolmFilteredList && lolmFilteredList.length > 0">
-              <el-table :data="lolmFilteredList" border size="small" style="width: 100%; border-radius: 8px; overflow: hidden; max-height: 360px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--text-secondary); font-size: 12px;">
+                <span>当前共 {{ lolmFilteredList.length }} 位英雄数据</span>
+                <span>表格可滚动查看全部</span>
+              </div>
+              <el-table :data="lolmFilteredList" border size="small" max-height="520" style="width: 100%; border-radius: 8px; overflow: hidden;">
                 <el-table-column type="index" label="排名" width="60" align="center">
                   <template #default="scope">
                     <span :style="{ fontWeight: 'bold', color: scope.$index === 0 ? '#f59e0b' : scope.$index === 1 ? '#94a3b8' : scope.$index === 2 ? '#b45309' : 'var(--text-color)' }">

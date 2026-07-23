@@ -62,7 +62,7 @@ test('RunCode page includes editor input output and run controls', () => {
 
 test('Home page exposes floating QQ contact next to the email contact', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-  const styleSource = readFileSync(new URL('../src/style/style.css', import.meta.url), 'utf8')
+  const styleSource = readFileSync(new URL('../src/style/style.scss', import.meta.url), 'utf8')
 
   assert.match(appSource, /mqqwpa:\/\/im\/chat\?chat_type=wpa&uin=869710179&version=1&src_type=web/)
   assert.match(appSource, /class="floating-contact-bar"/)
