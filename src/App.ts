@@ -1337,7 +1337,7 @@ export function useAppLogic() {
     isLolmLoading.value = true
     try {
       const heroListUrl = 'https://game.gtimg.cn/images/lgamem/act/lrlib/js/heroList/hero_list.js'
-      const rankListUrl = buildAlapiUrl('/api/lolm/go/lgame_battle_info/hero_rank_list_v2')
+      const rankListUrl = resolveApiUrl('/api-lolm/go/lgame_battle_info/hero_rank_list_v2')
 
       const [heroRes, rankRes] = await Promise.all([
         axios.get(heroListUrl).catch(() => ({ data: { heroList: {} } })),
@@ -1374,20 +1374,15 @@ export function useAppLogic() {
           })
         }
       }
+
+      // 峡谷之巅 ('4') 零数据兜底映射
+      if (!parsed['4'] || Object.keys(parsed['4']).length === 0 || Object.values(parsed['4']).every(arr => arr.length === 0)) {
+        parsed['4'] = parsed['3'] || parsed['1'] || parsed['0'] || {}
+      }
+
       lolmRankData.value = parsed
     } catch (e) {
-      console.warn('获取 LOLM 国服数据失败，使用样本数据:', e)
-      const sample = [
-        { heroId: '10041', name: '凯尔', title: '正义天使', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10041.png', winRateNum: 55.08, appearRateNum: 2.87, forbidRateNum: 0.27, winRatePercent: '55.08%', appearRatePercent: '2.87%', forbidRatePercent: '0.27%' },
-        { heroId: '10010', name: '薇恩', title: '暗夜猎手', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10010.png', winRateNum: 52.99, appearRateNum: 1.86, forbidRateNum: 6.12, winRatePercent: '52.99%', appearRatePercent: '1.86%', forbidRatePercent: '6.12%' },
-        { heroId: '10069', name: '永恩', title: '封魔剑魂', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10069.png', winRateNum: 52.94, appearRateNum: 7.53, forbidRateNum: 3.50, winRatePercent: '52.94%', appearRatePercent: '7.53%', forbidRatePercent: '3.50%' },
-        { heroId: '10046', name: '提莫', title: '迅捷斥候', avatar: 'https://game.gtimg.cn/images/lgamem/act/lrlib/img/HeadIcon/H_S_10046.png', winRateNum: 52.27, appearRateNum: 4.37, forbidRateNum: 13.04, winRatePercent: '52.27%', appearRatePercent: '4.37%', forbidRatePercent: '13.04%' }
-      ]
-      const fallback: Record<string, Record<string, any[]>> = {}
-      for (const d of ['1', '2', '3', '4']) {
-        fallback[d] = { '1': sample, '2': sample, '3': sample, '4': sample, '5': sample }
-      }
-      lolmRankData.value = fallback
+      console.warn('获取 LOLM 国服数据失败:', e)
     } finally {
       isLolmLoading.value = false
     }

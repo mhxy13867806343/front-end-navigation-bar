@@ -306,6 +306,11 @@ async function fetchLolmData(): Promise<void> {
       }
     }
 
+    // 峡谷之巅 ('4') 零数据兜底映射
+    if (!parsed['4'] || Object.keys(parsed['4']).length === 0 || Object.values(parsed['4']).every(arr => arr.length === 0)) {
+      parsed['4'] = parsed['3'] || parsed['1'] || parsed['0'] || {}
+    }
+
     allRankData.value = parsed
     if (!updateDate.value) {
       updateDate.value = new Date().toLocaleDateString('zh-CN')
