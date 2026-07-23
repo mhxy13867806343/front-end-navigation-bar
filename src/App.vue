@@ -2160,7 +2160,10 @@ watch(isDarkMode, () => {
             />
 
             <!-- 1. 归属地信息展示 -->
-            <div v-if="idcardQueryMode === 'query' && idcardInfoData" style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+            <div v-if="idcardInfoData && (idcardQueryMode === 'query' || !idcardUpgradeResult)" style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+              <div v-if="idcardQueryMode === 'upgrade' && !idcardUpgradeResult" style="color: #fbbf24; font-size: 13px; margin-bottom: 12px;">
+                💡 该身份证号已为 18 位标准格式，无须升级。为您展示归属地与详细信息：
+              </div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
                 <h4 style="margin: 0; color: var(--primary-color); font-size: 15px;">
                   📍 归属地发证机关：{{ idcardInfoData.address || idcardInfoData.province + (idcardInfoData.city || '') + (idcardInfoData.county || '') }}
@@ -2202,7 +2205,7 @@ watch(isDarkMode, () => {
             <!-- 2. 15位升级18位结果展示 -->
             <div v-else-if="idcardQueryMode === 'upgrade' && idcardUpgradeResult" style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
               <div style="font-size: 15px; font-weight: bold; color: var(--primary-color); margin-bottom: 12px;">
-                🎉 身份证号升级成功！
+                🎉 15 位身份证号升级成功！
               </div>
               <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
                 <div>原始 15 位旧卡号：<code style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">{{ idcardUpgradeResult.id }}</code></div>

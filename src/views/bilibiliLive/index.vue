@@ -173,7 +173,6 @@ const getLiveListUrls = (sourceId: LiveSourceId, tabId: LiveTabId): string[] => 
   }
 
   return [
-    `${base}/xlive/web-interface/v1/second/getList?${buildLiveQuery(commonParams)}`,
     `${base}/room/v3/area/getRoomList?${buildLiveQuery({ ...commonParams, cate_id: 0, tag_version: 1 })}`
   ]
 }

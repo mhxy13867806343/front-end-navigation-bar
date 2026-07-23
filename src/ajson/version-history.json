@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T06:31:32.513Z",
+  "generatedAt": "2026-07-23T06:36:52.403Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "25963b44eac9c1f74b97641b5fbd591b0224995e",
+          "shortHash": "25963b4",
+          "date": "2026-07-23",
+          "time": "14:32",
+          "type": "功能更新",
+          "title": "add ID card info query & 15-to-18 upgrade tab into Smart Toolbox dialog in App.vue",
+          "scope": "idcard",
+          "message": "feat(idcard): add ID card info query & 15-to-18 upgrade tab into Smart Toolbox dialog in App.vue"
+        },
         {
           "hash": "2077d33a7743dc474691a2730e2405630f901749",
           "shortHash": "2077d33",
@@ -298,16 +308,6 @@
           "title": "add cursor pointer and hover effect to all 查看详情 action buttons on big screen",
           "scope": "",
           "message": "fix: add cursor pointer and hover effect to all 查看详情 action buttons on big screen"
-        },
-        {
-          "hash": "7f09a06533760cc09185ce40cd9bf4dacf323284",
-          "shortHash": "7f09a06",
-          "date": "2026-07-22",
-          "time": "18:54",
-          "type": "功能更新",
-          "title": "add success toast with timestamp on mock data refresh button click",
-          "scope": "",
-          "message": "feat: add success toast with timestamp on mock data refresh button click"
         }
       ]
     }

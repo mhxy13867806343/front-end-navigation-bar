@@ -1265,56 +1265,65 @@ export function useAppLogic() {
 
     isIdcardLoading.value = true
     idcardError.value = ''
-    idcardInfoData.value = null
-    idcardUpgradeResult.value = null
 
+    // 1. 尝试查询归属地信息
     try {
-      if (idcardQueryMode.value === 'upgrade') {
-        const res = await axios.get(buildAlapiUrl('/api/idcard/upgrade'), {
-          params: {
-            token: 'qgqofofvmxtoskffd37omkscobipmn',
-            id: inputNo
-          }
-        })
-        if (res.data && (res.data.code === 200 || res.data.success) && res.data.data) {
-          idcardUpgradeResult.value = res.data.data
-        } else {
-          throw new Error(res.data?.message || '身份证升级失败，请检查15位身份证格式')
+      const res = await axios.get(buildAlapiUrl('/api/idcard'), {
+        params: {
+          token: 'qgqofofvmxtoskffd37omkscobipmn',
+          id: inputNo
         }
-      } else {
-        const res = await axios.get(buildAlapiUrl('/api/idcard'), {
-          params: {
-            token: 'qgqofofvmxtoskffd37omkscobipmn',
-            id: inputNo
-          }
-        })
-        if (res.data && (res.data.code === 200 || res.data.success) && res.data.data) {
-          idcardInfoData.value = res.data.data
-        } else {
-          throw new Error(res.data?.message || '身份证号不合法')
-        }
+      })
+      if (res.data && (res.data.code === 200 || res.data.success) && res.data.data) {
+        idcardInfoData.value = res.data.data
       }
-    } catch (e: any) {
-      console.warn('ALAPI 身份证查询接口返回异常，尝试智能本地校验解析:', e)
-      const errText = getRequestErrorMessage(e, '查询失败')
-      idcardError.value = errText
+    } catch (e) {
+      console.warn('调用 ALAPI idcard 失败，尝试本地智能解析:', e)
+    }
 
-      if (idcardQueryMode.value === 'query') {
-        const fallback = parseIdCardFallback(inputNo)
-        if (fallback) {
-          idcardInfoData.value = fallback
-          idcardError.value = ''
+    // 2. 如果是 15 位身份证，尝试升级接口
+    if (inputNo.length === 15) {
+      try {
+        const upgradeRes = await axios.get(buildAlapiUrl('/api/idcard/upgrade'), {
+          params: {
+            token: 'qgqofofvmxtoskffd37omkscobipmn',
+            id: inputNo
+          }
+        })
+        if (upgradeRes.data && (upgradeRes.data.code === 200 || upgradeRes.data.success) && upgradeRes.data.data) {
+          idcardUpgradeResult.value = upgradeRes.data.data
         }
-      } else if (idcardQueryMode.value === 'upgrade') {
+      } catch (e) {
+        console.warn('调用 ALAPI upgrade 失败，使用本地升位:', e)
         const upgraded = upgradeIdCardFallback(inputNo)
         if (upgraded) {
           idcardUpgradeResult.value = { id: inputNo, new_id: upgraded }
-          idcardError.value = ''
         }
       }
-    } finally {
-      isIdcardLoading.value = false
+    } else {
+      // 18位身份号码无须升级
+      idcardUpgradeResult.value = null
     }
+
+    // 3. 智能本地解析兜底
+    if (!idcardInfoData.value) {
+      const fallback = parseIdCardFallback(inputNo)
+      if (fallback) {
+        idcardInfoData.value = fallback
+      }
+    }
+    if (inputNo.length === 15 && !idcardUpgradeResult.value) {
+      const upgraded = upgradeIdCardFallback(inputNo)
+      if (upgraded) {
+        idcardUpgradeResult.value = { id: inputNo, new_id: upgraded }
+      }
+    }
+
+    if (!idcardInfoData.value && !idcardUpgradeResult.value) {
+      idcardError.value = '身份证号码不合法，请输入正确格式'
+    }
+
+    isIdcardLoading.value = false
   }
 
   const queryNextPhoto = async () => {

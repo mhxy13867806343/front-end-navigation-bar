@@ -48,7 +48,10 @@
     </div>
 
     <!-- Result Display -->
-    <div v-if="infoData && mode === 'query'" class="result-card">
+    <div v-if="infoData && (mode === 'query' || !upgradeResult)" class="result-card">
+      <div v-if="mode === 'upgrade' && !upgradeResult" style="color: #fbbf24; font-size: 13px; margin-bottom: 12px;">
+        💡 该身份证号已为 18 位标准格式，无须升级。为您展示归属地与详细信息：
+      </div>
       <div class="res-title">
         📍 归属地发证机关：{{ infoData.address || infoData.province + (infoData.city || '') + (infoData.county || '') }}
       </div>
