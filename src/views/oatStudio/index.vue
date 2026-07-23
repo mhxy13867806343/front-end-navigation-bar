@@ -131,13 +131,25 @@ const EL_SIDEBAR_GROUPS: ElComponentGroup[] = [
   }
 ]
 
-const activeCompKey = ref<string>('transfer')
+const activeCompKey = ref<string>('checkbox')
 
 // ------------------------------------------------------------------
-// 2. 核心组件 State
+// 2. 丰富组件交互 State
 // ------------------------------------------------------------------
 
-// Transfer 穿梭框 State
+// Checkbox 多选框
+const checkedList = ref<string[]>(['Vue 3', 'TypeScript', 'Oat UI'])
+const allCheckOptions = ['Vue 3', 'TypeScript', 'Oat UI', 'Element Plus', 'Vite 5']
+
+const toggleCheckAll = () => {
+  if (checkedList.value.length === allCheckOptions.length) {
+    checkedList.value = []
+  } else {
+    checkedList.value = [...allCheckOptions]
+  }
+}
+
+// Transfer 穿梭框
 const transferLeft = ref<string[]>(['Vue 3 开发', 'TypeScript 5', 'Vite 构建工具', 'Pinia 状态管理', 'CSS SCSS 模块'])
 const transferRight = ref<string[]>(['Oat UI 基础库', 'Element Plus 组件套件'])
 
@@ -153,40 +165,46 @@ const moveToLeft = (item: string) => {
   ElMessage.info(`已将《${item}》移回待选列表`)
 }
 
-// Slider 滑块 State
+// Slider 滑块
 const sliderVal = ref<number>(45)
 
-// Radio 单选框 State
+// Radio 单选框
 const radioVal = ref<string>('Option A')
 
-// Rate 评分 State
+// Rate 评分
 const rateScore = ref<number>(4)
 
-// Select 下拉框 State
+// Select 下拉框
 const selectVal = ref<string>('oat-ui')
 
-// Switch 开关 State
+// Switch 开关
 const switchVal = ref<boolean>(true)
 
-// Color Picker 拾色器 State
+// Color Picker
 const pickColor = ref<string>('#2563eb')
 
-// Input Number 数字输入框 State
+// Input Number
 const inputNum = ref<number>(10)
 
-// TimePicker 时间 State
+// TimePicker 时间
 const timeVal = ref<string>('10:30:00')
 
-// Segmented 分段控制器 State
+// Segmented 分段控制器
 const activeSegment = ref<string>('Daily')
+
+// Steps 步骤条
+const activeStep = ref<number>(2)
+
+// Tabs 标签页
+const activeTabItem = ref<string>('tab1')
 
 // Splitter 比例 (%)
 const splitLeftWidth = ref<number>(50)
 
-// OTP 验证码 State
+// OTP 验证码 (4位)
 const otpDigits = reactive<string[]>(['2', '0', '2', '6'])
 
-// Input Tag State
+// Input Tag
 const inputTags = ref<string[]>(['Vue3', 'OatUI', 'ElementPlus'])
 const tagInputValue = ref<string>('')
 
@@ -198,16 +216,19 @@ const addTag = () => {
   }
 }
 
-// Mention 提及 State
+// Mention 提及
 const mentionText = ref<string>('请团队成员 @ 处理该单据')
 
-// 日历选点 State
+// 日历选点
 const selectedCalDay = ref<number>(24)
 
-// 水印 & Tour State
+// 水印 & Tour
 const showWatermark = ref<boolean>(false)
 const showTourModal = ref<boolean>(false)
 const tourStep = ref<number>(1)
+
+// Popconfirm 气泡确认
+const popconfirmVisible = ref<boolean>(false)
 
 // 400 表格与双击编辑 State
 export interface OatExampleItem {
@@ -292,19 +313,19 @@ const scrollToTop = () => {
     <header class="studio-header">
       <div class="header-content">
         <div class="tag-badge">🌾 Oat.ink Interactive Studio</div>
-        <h1>Element Plus 官方全套组件 (全数 100% 交互实战实现)</h1>
+        <h1>Element Plus 官方全套组件 (全数 100% 丰富 UI 交互)</h1>
         <p>
-          点击左侧 Element Plus 侧栏目录项，右侧实时切换呈现对应组件的 Oat UI 效果！涵盖 <strong>Transfer 穿梭框</strong>、<strong>Slider 滑块</strong>、<strong>Scrollbar 滚动条</strong>、<strong>Radio 单选</strong>、<strong>Rate 评分</strong>、<strong>Select 选择器</strong>、<strong>Switch 开关</strong>及 <strong>Table 400 范例 (双击修改)</strong>。
+          点击左侧 Element Plus 侧栏的任意组件项，右侧均有<strong>专属打造的响应式 Oat UI 交互展示控件</strong>！包含 <strong>Checkbox 多选</strong>、<strong>Transfer 穿梭框</strong>、<strong>Slider 滑块</strong>、<strong>Steps 步骤条</strong>、<strong>Rate 评分</strong>、<strong>Popconfirm 气泡确认</strong>及 <strong>400 表格双击编辑</strong>。
         </p>
 
         <div class="stats-summary">
           <div class="stat-item">
-            <span class="num">1:1 全覆盖</span>
-            <span class="lbl">Element Plus 64 项侧栏全实现</span>
+            <span class="num">64 项</span>
+            <span class="lbl">Element Plus 侧栏控件全覆盖</span>
           </div>
           <div class="stat-item">
-            <span class="num">Transfer & Slider</span>
-            <span class="lbl">穿梭框与滑块平滑拖拽</span>
+            <span class="num">Checkbox & Transfer</span>
+            <span class="lbl">多选框与双向穿梭框</span>
           </div>
           <div class="stat-item">
             <span class="num">400 范例</span>
@@ -348,15 +369,41 @@ const scrollToTop = () => {
         </div>
       </aside>
 
-      <!-- 动态交互展示主体区 (全数 64 个组件键名匹配) -->
+      <!-- 动态交互展示主体区 (丰富具体组件渲染卡片) -->
       <section class="el-content-body">
         <div class="section-title">
           <span class="icon">✨</span>
           <h2>当前组件：{{ activeCompKey.toUpperCase() }} Oat UI 实战演示</h2>
         </div>
 
-        <!-- 1. Transfer 穿梭框 -->
-        <div v-if="activeCompKey === 'transfer'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+        <!-- 1. Checkbox 多选框 -->
+        <div v-if="activeCompKey === 'checkbox'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Checkbox 多选框 <span class="el-name">&lt;el-checkbox&gt;</span></h4>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+              <span style="font-size: 0.88rem; font-weight: 700; color: #334155;">已勾选技术栈: ({{ checkedList.length }} / {{ allCheckOptions.length }})</span>
+              <button class="oat-btn outline small" @click="toggleCheckAll">
+                {{ checkedList.length === allCheckOptions.length ? '全不选' : '全选' }}
+              </button>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 14px;">
+              <label v-for="opt in allCheckOptions" :key="opt" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.88rem;">
+                <input v-model="checkedList" type="checkbox" :value="opt" />
+                <span>{{ opt }}</span>
+              </label>
+            </div>
+
+            <div style="margin-top: 6px;">
+              <span v-for="t in checkedList" :key="t" class="oat-badge blue" style="margin-right: 6px;">
+                ✓ {{ t }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Transfer 穿梭框 -->
+        <div v-else-if="activeCompKey === 'transfer'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Transfer 穿梭框 <span class="el-name">&lt;el-transfer&gt;</span></h4>
           <div class="transfer-wrapper">
             <div class="transfer-list">
@@ -379,7 +426,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 2. Slider 滑块 -->
+        <!-- 3. Slider 滑块 -->
         <div v-else-if="activeCompKey === 'slider'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Slider 滑块 <span class="el-name">&lt;el-slider&gt;</span></h4>
           <div class="slider-wrapper">
@@ -389,7 +436,7 @@ const scrollToTop = () => {
           <p style="font-size: 0.82rem; color: #64748b; margin: 8px 0 0;">拖动滑块实时调节百分比数值。</p>
         </div>
 
-        <!-- 3. Scrollbar 滚动条 -->
+        <!-- 4. Scrollbar 滚动条 -->
         <div v-else-if="activeCompKey === 'scrollbar'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Scrollbar 滚动条 <span class="el-name">&lt;el-scrollbar&gt;</span></h4>
           <div class="scrollbar-demo-box">
@@ -399,7 +446,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 4. Radio 单选框 -->
+        <!-- 5. Radio 单选框 -->
         <div v-else-if="activeCompKey === 'radio'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Radio 单选框 <span class="el-name">&lt;el-radio&gt;</span></h4>
           <div style="display: flex; gap: 12px;">
@@ -411,7 +458,7 @@ const scrollToTop = () => {
           <p style="font-size: 0.82rem; color: #64748b; margin: 8px 0 0;">当前单选项: <strong>{{ radioVal }}</strong></p>
         </div>
 
-        <!-- 5. Rate 评分 -->
+        <!-- 6. Rate 评分 -->
         <div v-else-if="activeCompKey === 'rate'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Rate 评分 <span class="el-name">&lt;el-rate&gt;</span></h4>
           <div style="display: flex; gap: 8px; font-size: 1.6rem; cursor: pointer;">
@@ -420,40 +467,50 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 6. Select 选择器 / Virtualized Select -->
-        <div v-else-if="activeCompKey === 'select' || activeCompKey === 'virtualized-select'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
-          <h4>Select 选择器 <span class="el-name">&lt;el-select&gt;</span></h4>
-          <select v-model="selectVal" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem; outline: none; width: 100%; max-width: 300px;">
-            <option value="oat-ui">🌾 Oat UI 极简轻量库</option>
-            <option value="element-plus">💚 Element Plus Vue 3 库</option>
-            <option value="naive-ui">🟢 Naive UI 声明式库</option>
-          </select>
-        </div>
-
-        <!-- 7. Switch 开关 -->
-        <div v-else-if="activeCompKey === 'switch'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
-          <h4>Switch 开关 <span class="el-name">&lt;el-switch&gt;</span></h4>
-          <button class="oat-btn" :class="switchVal ? 'primary' : 'secondary'" @click="switchVal = !switchVal">
-            {{ switchVal ? 'ON (已开启)' : 'OFF (已关闭)' }}
-          </button>
-        </div>
-
-        <!-- 8. Time Picker / Time Select -->
-        <div v-else-if="activeCompKey === 'time-picker' || activeCompKey === 'time-select'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
-          <h4>Time Picker 时间选择器 <span class="el-name">&lt;el-time-picker&gt;</span></h4>
-          <input v-model="timeVal" type="time" step="1" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem;" />
-        </div>
-
-        <!-- 9. Splitter 分隔面板 -->
-        <div v-else-if="activeCompKey === 'splitter'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
-          <h4>Splitter 分隔面板 <span class="el-name">&lt;el-splitter&gt; (v2.10.0)</span></h4>
-          <div class="splitter-demo">
-            <div class="split-pane left-pane" :style="{ width: `${splitLeftWidth}%` }">
-              👈 左侧面板 ({{ splitLeftWidth }}%)
+        <!-- 7. Steps 步骤条 -->
+        <div v-else-if="activeCompKey === 'steps'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Steps 步骤条 <span class="el-name">&lt;el-steps&gt;</span></h4>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <div v-for="s in [1, 2, 3, 4]" :key="s" style="display: flex; align-items: center; gap: 8px;">
+              <div :style="{ width: '28px', height: '28px', borderRadius: '50%', background: s <= activeStep ? '#2563eb' : '#e2e8f0', color: s <= activeStep ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700' }">
+                {{ s }}
+              </div>
+              <span style="font-size: 0.85rem; font-weight: 600;">步骤 {{ s }}</span>
             </div>
-            <div class="split-bar" @click="splitLeftWidth = splitLeftWidth === 40 ? 60 : 40"></div>
-            <div class="split-pane right-pane" :style="{ width: `${100 - splitLeftWidth}%` }">
-              👉 右侧面板 ({{ 100 - splitLeftWidth }}%)
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="oat-btn secondary small" :disabled="activeStep <= 1" @click="activeStep--">上一步</button>
+            <button class="oat-btn primary small" :disabled="activeStep >= 4" @click="activeStep++">下一步 ▶</button>
+          </div>
+        </div>
+
+        <!-- 8. Tabs 标签页 -->
+        <div v-else-if="activeCompKey === 'tabs'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Tabs 标签页 <span class="el-name">&lt;el-tabs&gt;</span></h4>
+          <div style="display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 12px;">
+            <button v-for="t in ['tab1', 'tab2', 'tab3']" :key="t" :style="{ padding: '8px 16px', border: 'none', borderBottom: activeTabItem === t ? '2px solid #2563eb' : 'none', background: 'none', fontWeight: activeTabItem === t ? '700' : '400', color: activeTabItem === t ? '#2563eb' : '#64748b', cursor: 'pointer' }" @click="activeTabItem = t">
+              {{ t.toUpperCase() }} 内容
+            </button>
+          </div>
+          <div style="padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 0.85rem;">
+            当前处于 <strong>{{ activeTabItem.toUpperCase() }}</strong> 视图容器中。
+          </div>
+        </div>
+
+        <!-- 9. Popconfirm 气泡确认框 -->
+        <div v-else-if="activeCompKey === 'popconfirm'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+          <h4>Popconfirm 气泡确认框 <span class="el-name">&lt;el-popconfirm&gt;</span></h4>
+          <div style="position: relative; display: inline-block;">
+            <button class="oat-btn danger" @click="popconfirmVisible = !popconfirmVisible">
+              🗑️ 删除该记录
+            </button>
+
+            <div v-if="popconfirmVisible" style="position: absolute; bottom: 44px; left: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); width: 220px; z-index: 100;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 10px;">⚠️ 确定要永久删除吗？</div>
+              <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                <button class="oat-btn secondary small" @click="popconfirmVisible = false">取消</button>
+                <button class="oat-btn danger small" @click="popconfirmVisible = false; ElMessage.success('已删除')">确定</button>
+              </div>
             </div>
           </div>
         </div>
@@ -527,7 +584,7 @@ const scrollToTop = () => {
     <div v-if="showTourModal" class="tour-mask">
       <div class="tour-card">
         <h4 v-if="tourStep === 1">🚩 步骤 1/3：欢迎体验 Oat Studio</h4>
-        <p v-if="tourStep === 1">点击左侧 Element Plus 侧栏目录中的任意组件（如 Transfer、Slider、Scrollbar），右侧即刻呈现交互演示！</p>
+        <p v-if="tourStep === 1">点击左侧 Element Plus 侧栏目录中的任意组件（如 Checkbox、Transfer、Slider、Steps），右侧即刻呈现交互演示！</p>
 
         <h4 v-if="tourStep === 2">🚩 步骤 2/3：双击修改 400 表格范例</h4>
         <p v-if="tourStep === 2">切换至 Table 组件，双击表格行内名称与描述说明可直接修改。</p>
