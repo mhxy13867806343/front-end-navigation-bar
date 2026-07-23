@@ -48,6 +48,7 @@ const {
   trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
   randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
   starActiveName, starActivePeriod, starHoroscopeData, isStarLoading, queryStarHoroscope,
+  idcardQueryNo, idcardQueryMode, idcardInfoData, idcardUpgradeResult, isIdcardLoading, idcardError, queryIdCard,
   
   // Video & Photo Explorer exports
   showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
@@ -2119,6 +2120,98 @@ watch(isDarkMode, () => {
 
             <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
               <el-icon class="is-loading"><Loading /></el-icon> 正在为您算取星座运势数据...
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 7.5 身份证信息查询 -->
+        <el-tab-pane name="idcard">
+          <template #label>
+            <span>🪪 身份证信息查询</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+              <el-radio-group v-model="idcardQueryMode" size="small">
+                <el-radio-button label="query">🪪 归属地信息查询</el-radio-button>
+                <el-radio-button label="upgrade">🚀 15位升级18位</el-radio-button>
+              </el-radio-group>
+
+              <el-input
+                v-model="idcardQueryNo"
+                :placeholder="idcardQueryMode === 'upgrade' ? '请输入15位旧身份证号' : '请输入15位或18位身份证号'"
+                clearable
+                style="flex: 1; max-width: 320px;"
+                @keyup.enter="queryIdCard"
+              />
+
+              <el-button type="primary" :loading="isIdcardLoading" @click="queryIdCard">
+                🔍 {{ idcardQueryMode === 'upgrade' ? '升级生成' : '查询归属地' }}
+              </el-button>
+            </div>
+
+            <!-- Error alert -->
+            <el-alert
+              v-if="idcardError && !idcardInfoData && !idcardUpgradeResult"
+              :title="idcardError"
+              type="warning"
+              show-icon
+              :closable="false"
+              style="margin-bottom: 16px;"
+            />
+
+            <!-- 1. 归属地信息展示 -->
+            <div v-if="idcardQueryMode === 'query' && idcardInfoData" style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <h4 style="margin: 0; color: var(--primary-color); font-size: 15px;">
+                  📍 归属地发证机关：{{ idcardInfoData.address || idcardInfoData.province + (idcardInfoData.city || '') + (idcardInfoData.county || '') }}
+                </h4>
+                <span style="font-size: 12px; color: var(--text-secondary);">
+                  行政区划代码: <strong>{{ idcardInfoData.address_code || '已校验' }}</strong>
+                </span>
+              </div>
+
+              <el-descriptions :column="2" border size="small">
+                <el-descriptions-item label="🎂 出生日期">
+                  <strong>{{ idcardInfoData.birthday }}</strong> ({{ idcardInfoData.age }} 周岁)
+                </el-descriptions-item>
+
+                <el-descriptions-item label="👤 性别">
+                  <span :style="{ color: idcardInfoData.sex === 1 ? '#38bdf8' : '#f472b6', fontWeight: 'bold' }">
+                    {{ idcardInfoData.sex === 1 ? '♂ 男' : '♀ 女' }}
+                  </span>
+                </el-descriptions-item>
+
+                <el-descriptions-item label="✨ 所属星座">
+                  <strong style="color: #c084fc;">{{ idcardInfoData.constellation }}</strong>
+                </el-descriptions-item>
+
+                <el-descriptions-item label="🐴 生肖属相">
+                  <strong style="color: #fbbf24;">{{ idcardInfoData.zodiac }}</strong>
+                </el-descriptions-item>
+
+                <el-descriptions-item label="🗺️ 省份/城市">
+                  {{ idcardInfoData.province }} {{ idcardInfoData.city }} {{ idcardInfoData.county }}
+                </el-descriptions-item>
+
+                <el-descriptions-item label="🔢 号码长度">
+                  {{ idcardInfoData.length || 18 }} 位标准格式
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+
+            <!-- 2. 15位升级18位结果展示 -->
+            <div v-else-if="idcardQueryMode === 'upgrade' && idcardUpgradeResult" style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+              <div style="font-size: 15px; font-weight: bold; color: var(--primary-color); margin-bottom: 12px;">
+                🎉 身份证号升级成功！
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+                <div>原始 15 位旧卡号：<code style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px;">{{ idcardUpgradeResult.id }}</code></div>
+                <div>升级 18 位新卡号：<strong style="color: #4ade80; font-size: 16px; font-family: monospace;">{{ idcardUpgradeResult.new_id }}</strong></div>
+              </div>
+            </div>
+
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              💡 请在上方输入框输入要查询归属地或升级的身份证号码后点击查询
             </div>
           </div>
         </el-tab-pane>

@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T06:20:47.594Z",
+  "generatedAt": "2026-07-23T06:31:32.513Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "2077d33a7743dc474691a2730e2405630f901749",
+          "shortHash": "2077d33",
+          "date": "2026-07-23",
+          "time": "14:21",
+          "type": "功能更新",
+          "title": "mount Constellation Horoscope Query (✨ 星座运势) directly into Smart Toolbox tabs dialog in App.vue",
+          "scope": "toolbox",
+          "message": "feat(toolbox): mount Constellation Horoscope Query (✨ 星座运势) directly into Smart Toolbox tabs dialog in App.vue"
+        },
         {
           "hash": "a769812fe460197aa6bfd4bfea6598f6dc77a997",
           "shortHash": "a769812",
@@ -298,16 +308,6 @@
           "title": "add success toast with timestamp on mock data refresh button click",
           "scope": "",
           "message": "feat: add success toast with timestamp on mock data refresh button click"
-        },
-        {
-          "hash": "5566921ce4b62502d4c7b4c2ee41292b8635bace",
-          "shortHash": "5566921",
-          "date": "2026-07-22",
-          "time": "13:26",
-          "type": "工程维护",
-          "title": "update version history | (2**16)-1=65535 | 2026-07-22",
-          "scope": "",
-          "message": "chore: update version history | (2**16)-1=65535 | 2026-07-22"
         }
       ]
     }

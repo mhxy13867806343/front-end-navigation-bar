@@ -6,6 +6,7 @@ import { resolveApiUrl } from '../../utils/resolveApiUrl'
 import { requestJinaJson } from '../../utils/jinaReader'
 
 type LiveTabId = 'recommend' | 'hot' | 'new'
+type LiveSourceId = 'all' | 'chat' | 'radio' | 'online-game' | 'single-game'
 
 interface BilibiliLiveWatchedShow {
   text_small?: string
@@ -40,21 +41,6 @@ interface BilibiliLiveListData {
   list?: BilibiliLiveApiItem[]
 }
 
-interface BilibiliLiveHomeModule {
-  module_info?: {
-    count?: number
-  }
-  list?: BilibiliLiveApiItem[]
-}
-
-interface BilibiliLiveHomeData {
-  online_total?: number
-  dynamic?: number
-  recommend_room_list?: BilibiliLiveApiItem[]
-  ranking_list?: BilibiliLiveApiItem[]
-  room_list?: BilibiliLiveHomeModule[]
-}
-
 interface BilibiliLiveApiResponse<T> {
   code: number
   message?: string
@@ -82,8 +68,16 @@ const tabs: Array<{ id: LiveTabId; label: string; icon: string }> = [
   { id: 'hot', label: '人气直播', icon: '🔥' },
   { id: 'new', label: '最新开播', icon: '🆕' }
 ]
+const sources: Array<{ id: LiveSourceId; label: string; icon: string; parentAreaId: number; areaId: number }> = [
+  { id: 'all', label: '全部直播', icon: '📺', parentAreaId: 0, areaId: 0 },
+  { id: 'chat', label: '聊天室', icon: '💬', parentAreaId: 14, areaId: 0 },
+  { id: 'radio', label: '电台', icon: '📻', parentAreaId: 5, areaId: 0 },
+  { id: 'online-game', label: '网游', icon: '🎮', parentAreaId: 1, areaId: 21 },
+  { id: 'single-game', label: '单机', icon: '🕹', parentAreaId: 6, areaId: 0 }
+]
 
 const activeTab = ref<LiveTabId>('recommend')
+const activeSource = ref<LiveSourceId>('all')
 const hasStarted = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const liveRooms = ref<BilibiliLiveRoom[]>([])
@@ -92,6 +86,7 @@ const updateTime = ref<string>('')
 const errorMessage = ref<string>('')
 
 const activeTabInfo = computed(() => tabs.find(tab => tab.id === activeTab.value) || tabs[0])
+const activeSourceInfo = computed(() => sources.find(source => source.id === activeSource.value) || sources[0])
 
 const normalizeImageUrl = (url?: string): string => {
   if (!url) return ''
@@ -146,75 +141,80 @@ const fetchLiveJson = async <T>(url: string): Promise<T> => {
   }
 }
 
-const getHomeUrl = (): string => {
-  return import.meta.env.PROD
-    ? 'https://api.live.bilibili.com/xlive/web-interface/v1/webMain/getList?platform=web&page=1'
-    : '/api-bilibili-live/xlive/web-interface/v1/webMain/getList?platform=web&page=1'
+const getLiveApiBase = (): string => {
+  return import.meta.env.PROD ? 'https://api.live.bilibili.com' : '/api-bilibili-live'
 }
 
-const getListUrl = (tabId: LiveTabId): string => {
-  if (import.meta.env.PROD) {
-    const sortType = tabId === 'new' ? 'live_time' : 'online'
-    return `https://api.live.bilibili.com/room/v3/area/getRoomList?platform=web&parent_area_id=0&cate_id=0&area_id=0&sort_type=${sortType}&page=1&page_size=30`
-  } else {
-    const sortType = tabId === 'new' ? 'live_time' : 'online'
-    return `/api-bilibili-live/room/v3/area/getRoomList?platform=web&parent_area_id=0&cate_id=0&area_id=0&sort_type=${sortType}&page=1&page_size=30`
-  }
+const getSortType = (tabId: LiveTabId): string => {
+  if (tabId === 'hot') return 'online'
+  if (tabId === 'new') return 'live_time'
+  return ''
 }
 
-const fetchLiveRoomCount = async (): Promise<number> => {
-  const url = import.meta.env.PROD
-    ? 'https://api.live.bilibili.com/room/v1/Area/getLiveRoomCountByAreaID?areaId=0'
-    : '/api-bilibili-live/room/v1/Area/getLiveRoomCountByAreaID?areaId=0'
-  const json = await fetchLiveJson<BilibiliLiveApiResponse<{ num?: number }>>(url)
-  return json.code === 0 ? Number(json.data?.num || 0) : 0
-}
-
-const fetchLiveHomeData = async (): Promise<BilibiliLiveHomeData> => {
-  const json = await fetchLiveJson<BilibiliLiveApiResponse<BilibiliLiveHomeData>>(getHomeUrl())
-  if (json.code !== 0) {
-    throw new Error(json.message || json.msg || `请求失败：${json.code}`)
-  }
-
-  return json.data || {}
-}
-
-const getHomeModuleRooms = (homeData: BilibiliLiveHomeData): BilibiliLiveApiItem[] => {
-  return (homeData.room_list || []).flatMap((module: BilibiliLiveHomeModule): BilibiliLiveApiItem[] => {
-    return Array.isArray(module.list) ? module.list : []
+const buildLiveQuery = (params: Record<string, string | number | undefined>): string => {
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]: [string, string | number | undefined]): void => {
+    if (value !== undefined && value !== '') query.set(key, String(value))
   })
+  return query.toString()
 }
 
-const getRoomsFromHomeData = (tabId: LiveTabId, homeData: BilibiliLiveHomeData): BilibiliLiveApiItem[] => {
-  if (tabId === 'recommend') {
-    return homeData.recommend_room_list?.length ? homeData.recommend_room_list : getHomeModuleRooms(homeData)
+const getLiveListUrls = (sourceId: LiveSourceId, tabId: LiveTabId): string[] => {
+  const source = sources.find(item => item.id === sourceId) || sources[0]
+  const base = getLiveApiBase()
+  const sortType = getSortType(tabId)
+  const commonParams = {
+    platform: 'web',
+    parent_area_id: source.parentAreaId,
+    area_id: source.areaId,
+    page: 1,
+    page_size: 30,
+    sort_type: sortType
   }
 
-  const moduleRooms = getHomeModuleRooms(homeData)
-  if (moduleRooms.length) {
-    return [...moduleRooms].sort((a: BilibiliLiveApiItem, b: BilibiliLiveApiItem): number => {
-      return Number(b.online || 0) - Number(a.online || 0)
-    })
-  }
-
-  return homeData.ranking_list || []
+  return [
+    `${base}/xlive/web-interface/v1/second/getList?${buildLiveQuery(commonParams)}`,
+    `${base}/room/v3/area/getRoomList?${buildLiveQuery({ ...commonParams, cate_id: 0, tag_version: 1 })}`
+  ]
 }
 
-const fetchLiveRooms = async (tabId: LiveTabId): Promise<BilibiliLiveRoom[]> => {
-  const json = await fetchLiveJson<BilibiliLiveApiResponse<BilibiliLiveListData | BilibiliLiveApiItem[]>>(getListUrl(tabId))
+const fetchLiveRooms = async (sourceId: LiveSourceId, tabId: LiveTabId): Promise<BilibiliLiveRoom[]> => {
+  let lastError: unknown = null
 
-  if (json.code !== 0) {
-    throw new Error(json.message || json.msg || `请求失败：${json.code}`)
+  for (const url of getLiveListUrls(sourceId, tabId)) {
+    try {
+      const json = await fetchLiveJson<BilibiliLiveApiResponse<BilibiliLiveListData | BilibiliLiveApiItem[]>>(url)
+
+      if (json.code !== 0) {
+        throw new Error(json.message || json.msg || `请求失败：${json.code}`)
+      }
+
+      const data = json.data
+      const rawList = Array.isArray(data) ? data : data?.list || []
+      if (!rawList.length) {
+        lastError = new Error('当前接口返回空列表')
+        continue
+      }
+
+      if (!Array.isArray(data) && typeof data?.count === 'number') {
+        liveRoomCount.value = data.count
+      } else {
+        liveRoomCount.value = rawList.length
+      }
+
+      return rawList.map(toLiveRoom)
+    } catch (error) {
+      lastError = error
+    }
   }
 
-  const data = json.data
-  const rawList = Array.isArray(data) ? data : data?.list || []
-  if (!Array.isArray(data) && typeof data?.count === 'number') liveRoomCount.value = data.count
-
-  return rawList.map(toLiveRoom)
+  throw lastError instanceof Error ? lastError : new Error('直播数据获取失败')
 }
 
-const loadLiveData = async (tabId: LiveTabId = activeTab.value): Promise<void> => {
+const loadLiveData = async (
+  sourceId: LiveSourceId = activeSource.value,
+  tabId: LiveTabId = activeTab.value
+): Promise<void> => {
   if (loading.value) return
 
   hasStarted.value = true
@@ -223,25 +223,7 @@ const loadLiveData = async (tabId: LiveTabId = activeTab.value): Promise<void> =
   liveRooms.value = []
 
   try {
-    if (tabId === 'recommend' || tabId === 'hot') {
-      const homeData = await fetchLiveHomeData()
-      liveRoomCount.value = Number(homeData.online_total || homeData.dynamic || liveRoomCount.value || 0)
-      liveRooms.value = getRoomsFromHomeData(tabId, homeData).map(toLiveRoom)
-      updateTime.value = formatNowTime()
-      return
-    }
-
-    const [countResult, roomsResult] = await Promise.allSettled([fetchLiveRoomCount(), fetchLiveRooms(tabId)])
-
-    if (roomsResult.status === 'rejected') {
-      throw roomsResult.reason
-    }
-
-    const rooms = roomsResult.value
-    if (countResult.status === 'fulfilled') {
-      liveRoomCount.value = countResult.value || liveRoomCount.value
-    }
-    liveRooms.value = rooms
+    liveRooms.value = await fetchLiveRooms(sourceId, tabId)
     updateTime.value = formatNowTime()
   } catch (error) {
     const message = error instanceof Error ? error.message : '直播数据获取失败'
@@ -254,7 +236,12 @@ const loadLiveData = async (tabId: LiveTabId = activeTab.value): Promise<void> =
 
 const selectTab = (tabId: LiveTabId): void => {
   activeTab.value = tabId
-  if (hasStarted.value) void loadLiveData(tabId)
+  if (hasStarted.value) void loadLiveData(activeSource.value, tabId)
+}
+
+const selectSource = (sourceId: LiveSourceId): void => {
+  activeSource.value = sourceId
+  if (hasStarted.value) void loadLiveData(sourceId, activeTab.value)
 }
 
 const openRoom = (room: BilibiliLiveRoom): void => {
@@ -291,7 +278,22 @@ const openRoom = (room: BilibiliLiveRoom): void => {
 
     <template v-else>
       <section class="live-toolbar">
-        <div class="live-tabs" aria-label="直播分类">
+        <div class="live-sources" aria-label="直播分区">
+          <button
+            v-for="source in sources"
+            :key="source.id"
+            type="button"
+            class="live-source"
+            :class="{ active: activeSource === source.id }"
+            :disabled="loading"
+            @click="selectSource(source.id)"
+          >
+            <span>{{ source.icon }}</span>
+            {{ source.label }}
+          </button>
+        </div>
+
+        <div class="live-tabs" aria-label="直播排序">
           <button
             v-for="tab in tabs"
             :key="tab.id"
@@ -312,7 +314,7 @@ const openRoom = (room: BilibiliLiveRoom): void => {
       </section>
 
       <section class="live-summary">
-        <strong>全部直播</strong>
+        <strong>{{ activeSourceInfo.label }}</strong>
         <span>{{ formatCount(liveRoomCount) }}</span>
         <em>{{ activeTabInfo.label }}</em>
       </section>

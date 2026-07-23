@@ -80,7 +80,7 @@ const toolboxItems: ToolboxItem[] = [
   {
     id: 'bilibili-live',
     name: '直播',
-    desc: '进入直播页后点击 Bibi 直播，再获取并展示 Bilibili 推荐、人气与最新开播直播间数据。',
+    desc: '进入直播页后点击 Bibi 直播，再按全部、聊天室、电台、网游、单机获取 Bilibili 直播间数据。',
     icon: '📡',
     path: '/bilibili-live',
     tag: 'Bibi 直播'
@@ -92,6 +92,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '✨',
     path: '/star',
     tag: 'ALAPI 星座'
+  },
+  {
+    id: 'idcard',
+    name: '身份证信息查询',
+    desc: '基于 ALAPI 校验解析 15/18 位身份证归属地行政区划、出生年月日、周岁年龄、性别、星座与生肖，并支持 15 位升级 18 位。',
+    icon: '🪪',
+    path: '/idcard',
+    tag: 'ALAPI 身份证'
   }
 ]
 

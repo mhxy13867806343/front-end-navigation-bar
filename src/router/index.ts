@@ -83,6 +83,11 @@ const routes = [
     component: () => import('../views/star/index.vue')
   },
   {
+    path: '/idcard',
+    name: 'IdCard',
+    component: () => import('../views/idcard/index.vue')
+  },
+  {
     path: '/api-center',
     name: 'ApiCenter',
     component: () => import('../views/apiCenter/index.vue')

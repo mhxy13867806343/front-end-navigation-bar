@@ -1181,6 +1181,142 @@ export function useAppLogic() {
     }
   }
 
+  // 5.6 身份证信息查询与升级
+  const idcardQueryNo = ref('')
+  const idcardQueryMode = ref<'query' | 'upgrade'>('query')
+  const idcardInfoData = ref<any>(null)
+  const idcardUpgradeResult = ref<any>(null)
+  const isIdcardLoading = ref(false)
+  const idcardError = ref('')
+
+  const PROVINCE_MAP: Record<string, string> = {
+    '11': '北京市', '12': '天津市', '13': '河北省', '14': '山西省', '15': '内蒙古自治区',
+    '21': '辽宁省', '22': '吉林省', '23': '黑龙江省', '31': '上海市', '32': '江苏省',
+    '33': '浙江省', '34': '安徽省', '35': '福建省', '36': '江西省', '37': '山东省',
+    '41': '河南省', '42': '湖北省', '43': '湖南省', '44': '广东省', '45': '广西壮族自治区',
+    '46': '海南省', '50': '重庆市', '51': '四川省', '52': '贵州省', '53': '云南省',
+    '54': '西藏自治区', '61': '陕西省', '62': '甘肃省', '63': '青海省', '64': '宁夏回族自治区',
+    '65': '新疆维吾尔自治区', '71': '台湾省', '81': '香港特别行政区', '82': '澳门特别行政区'
+  }
+
+  const upgradeIdCardFallback = (id15: string): string | null => {
+    if (!/^\d{15}$/.test(id15)) return null
+    const first17 = id15.substring(0, 6) + '19' + id15.substring(6)
+    const weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+    const checkCodes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
+    let sum = 0
+    for (let i = 0; i < 17; i++) {
+      sum += parseInt(first17[i]) * weights[i]
+    }
+    return first17 + checkCodes[sum % 11]
+  }
+
+  const parseIdCardFallback = (idStr: string): any | null => {
+    let card = idStr.toUpperCase()
+    if (card.length === 15) {
+      const upgraded = upgradeIdCardFallback(card)
+      if (!upgraded) return null
+      card = upgraded
+    }
+    if (!/^\d{17}[\dX]$/.test(card)) return null
+
+    const provCode = card.substring(0, 2)
+    const province = PROVINCE_MAP[provCode] || '全国未知行政区'
+    const yearStr = card.substring(6, 10)
+    const monthStr = card.substring(10, 12)
+    const dayStr = card.substring(12, 14)
+    const year = parseInt(yearStr)
+    const month = parseInt(monthStr)
+    const day = parseInt(dayStr)
+
+    const sexDigit = parseInt(card.substring(16, 17))
+    const sex = sexDigit % 2 === 1 ? 1 : 0
+    const currentYear = new Date().getFullYear()
+    const age = currentYear - year
+
+    const zodiacs = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪']
+    const zodiac = zodiacs[(year - 4) % 12] || ''
+
+    const dates = [20, 19, 21, 20, 21, 22, 23, 23, 23, 24, 23, 22]
+    const consts = ['摩羯座', '水瓶座', '双鱼座', '白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座', '天秤座', '天蝎座', '射手座', '摩羯座']
+    const constellation = day < dates[month - 1] ? consts[month - 1] : consts[month]
+
+    return {
+      address_code: card.substring(0, 6),
+      province,
+      city: province,
+      county: '',
+      address: province,
+      birthday: `${yearStr}-${monthStr}-${dayStr}`,
+      constellation,
+      zodiac,
+      sex,
+      length: card.length,
+      age
+    }
+  }
+
+  const queryIdCard = async () => {
+    const inputNo = idcardQueryNo.value.trim()
+    if (!inputNo) {
+      ElMessage.warning('请输入身份证号码')
+      return
+    }
+
+    isIdcardLoading.value = true
+    idcardError.value = ''
+    idcardInfoData.value = null
+    idcardUpgradeResult.value = null
+
+    try {
+      if (idcardQueryMode.value === 'upgrade') {
+        const res = await axios.get(buildAlapiUrl('/api/idcard/upgrade'), {
+          params: {
+            token: 'qgqofofvmxtoskffd37omkscobipmn',
+            id: inputNo
+          }
+        })
+        if (res.data && (res.data.code === 200 || res.data.success) && res.data.data) {
+          idcardUpgradeResult.value = res.data.data
+        } else {
+          throw new Error(res.data?.message || '身份证升级失败，请检查15位身份证格式')
+        }
+      } else {
+        const res = await axios.get(buildAlapiUrl('/api/idcard'), {
+          params: {
+            token: 'qgqofofvmxtoskffd37omkscobipmn',
+            id: inputNo
+          }
+        })
+        if (res.data && (res.data.code === 200 || res.data.success) && res.data.data) {
+          idcardInfoData.value = res.data.data
+        } else {
+          throw new Error(res.data?.message || '身份证号不合法')
+        }
+      }
+    } catch (e: any) {
+      console.warn('ALAPI 身份证查询接口返回异常，尝试智能本地校验解析:', e)
+      const errText = getRequestErrorMessage(e, '查询失败')
+      idcardError.value = errText
+
+      if (idcardQueryMode.value === 'query') {
+        const fallback = parseIdCardFallback(inputNo)
+        if (fallback) {
+          idcardInfoData.value = fallback
+          idcardError.value = ''
+        }
+      } else if (idcardQueryMode.value === 'upgrade') {
+        const upgraded = upgradeIdCardFallback(inputNo)
+        if (upgraded) {
+          idcardUpgradeResult.value = { id: inputNo, new_id: upgraded }
+          idcardError.value = ''
+        }
+      }
+    } finally {
+      isIdcardLoading.value = false
+    }
+  }
+
   const queryNextPhoto = async () => {
     isPhotoLoading.value = true
     try {
@@ -1555,6 +1691,7 @@ export function useAppLogic() {
     trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
     randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
     starActiveName, starActivePeriod, starHoroscopeData, isStarLoading, queryStarHoroscope,
+    idcardQueryNo, idcardQueryMode, idcardInfoData, idcardUpgradeResult, isIdcardLoading, idcardError, queryIdCard,
     
     // Video & Photo Explorer exports
     showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
