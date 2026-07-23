@@ -230,6 +230,221 @@
   }
 }
 
+/* 穿梭框 Transfer 专用样式 */
+.transfer-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .transfer-list {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px;
+    min-height: 140px;
+    background: #f8fafc;
+
+    .t-header {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #334155;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .t-item {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      margin-bottom: 6px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+
+      &:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
+      }
+    }
+  }
+}
+
+/* 滑块 Slider 专用样式 */
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  input[type="range"] {
+    flex: 1;
+    accent-color: #2563eb;
+    cursor: pointer;
+  }
+
+  .slider-val {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #2563eb;
+    min-width: 44px;
+  }
+}
+
+/* 滚动条 Scrollbar 专用样式 */
+.scrollbar-demo-box {
+  height: 120px;
+  overflow-y: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fafc;
+
+  .scroll-item {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 6px;
+    font-size: 0.82rem;
+  }
+}
+
+/* Splitter 分隔面板 */
+.splitter-demo {
+  display: flex;
+  height: 100px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+
+  .split-pane {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .left-pane {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .right-pane {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+
+  .split-bar {
+    width: 6px;
+    background: #cbd5e1;
+    cursor: col-resize;
+    &:hover { background: #2563eb; }
+  }
+}
+
+/* OTP 验证码输入框 */
+.otp-input-box {
+  display: flex;
+  gap: 8px;
+
+  .otp-digit {
+    width: 40px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 800;
+    outline: none;
+
+    &:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+  }
+}
+
+/* Calendar 日历小部件 */
+.mini-calendar {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #ffffff;
+
+  .cal-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+    font-size: 0.78rem;
+
+    .day-name {
+      color: #94a3b8;
+      font-weight: 700;
+      padding-bottom: 4px;
+    }
+
+    .day-cell {
+      padding: 6px 2px;
+      border-radius: 6px;
+      cursor: pointer;
+      &:hover { background: #f1f5f9; }
+      &.active { background: #2563eb; color: #ffffff; font-weight: 700; }
+    }
+  }
+}
+
+/* Empty 空状态 */
+.empty-demo {
+  text-align: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px dashed #cbd5e1;
+
+  .empty-icon { font-size: 2.2rem; margin-bottom: 6px; }
+  .empty-text { font-size: 0.85rem; color: #64748b; margin-bottom: 10px; }
+}
+
+/* Descriptions 描述列表 */
+.desc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  td {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .label-cell {
+    background: #f8fafc;
+    font-weight: 700;
+    color: #475569;
+    width: 30%;
+  }
+
+  .value-cell {
+    background: #ffffff;
+    color: #0f172a;
+  }
+}
+
 /* Tour 漫游式引导蒙层 */
 .tour-mask {
   position: fixed;
