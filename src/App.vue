@@ -6,6 +6,7 @@ import AiArticlesList from './components/AiArticlesList.vue'
 import AiAppStore from './components/AiAppStore.vue'
 import AiNewsTimeline from './components/AiNewsTimeline.vue'
 import AlapiBottomMusicPlayer from './components/AlapiBottomMusicPlayer.vue'
+import AnalogClock from './components/AnalogClock.vue'
 import ApiToolbox from './components/ApiToolbox.vue'
 import BrowserSupportNotice from './components/BrowserSupportNotice.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
@@ -972,6 +973,7 @@ watch(isDarkMode, () => {
           </button>
 
           <div class="header-right-actions" :aria-hidden="!isHeaderActionsOpen">
+            <AnalogClock class="header-analog-clock" />
             <el-dropdown trigger="click" placement="bottom-end" @command="handleQuickActionCommand">
               <button class="dropdown-trigger quick-actions-trigger" type="button">
                 快捷入口

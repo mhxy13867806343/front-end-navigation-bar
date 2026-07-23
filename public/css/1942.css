@@ -1,0 +1,150 @@
+/* 1942 Remake specific styles */
+#game {
+  height: 92vh;
+  max-width: 96vw;
+}
+
+#touch {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#touch button {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba(61, 169, 252, 0.6);
+  background: rgba(18, 24, 38, 0.8);
+  color: var(--txt);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+#touch button:active {
+  transform: scale(0.92);
+  background: rgba(61, 169, 252, 0.35);
+}
+
+.last {
+  font-size: 12px;
+  color: #ffd166;
+  min-height: 16px;
+  margin-bottom: 12px;
+}
+
+.seg {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.seg-btn {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 10px;
+  border: 1px solid #2a3650;
+  background: #0e1422;
+  color: #e6edf3;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.seg-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #04121f;
+}
+
+.binds {
+  margin-bottom: 16px;
+}
+
+.bind-row {
+  margin-bottom: 12px;
+}
+
+.bind-title {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.bind-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.bind-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid #2a3650;
+  background: #0e1422;
+  color: #e6edf3;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.bind-btn:hover {
+  border-color: var(--accent);
+}
+
+.bind-btn.capturing {
+  border-color: #ffd166;
+  color: #ffd166;
+}
+
+.bind-btn .bl {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.bind-btn .bk {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ghost {
+  width: 100%;
+  padding: 11px 0;
+  border-radius: 10px;
+  border: 1px solid #2a3650;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ghost:hover {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.reset-binds {
+  display: block;
+  margin: 6px auto 0;
+  font-size: 12px;
+  color: #94a3b8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.reset-binds:hover {
+  color: var(--accent);
+}

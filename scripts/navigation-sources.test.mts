@@ -91,11 +91,14 @@ test('RunCode page includes editor input output and run controls', () => {
   assert.match(runCodeSource, /outputText/)
 })
 
-test('Home page does not render floating QQ and email contact buttons', () => {
+test('Home page keeps quick-entry clock without floating QQ and email contact buttons', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const styleSource = readFileSync(new URL('../src/style/style.scss', import.meta.url), 'utf8')
 
   assert.match(appSource, /mqqwpa:\/\/im\/chat\?chat_type=wpa&uin=869710179&version=1&src_type=web/)
+  assert.match(appSource, /import AnalogClock from '\.\/components\/AnalogClock\.vue'/)
+  assert.match(appSource, /<AnalogClock class="header-analog-clock" \/>/)
+  assert.match(styleSource, /\.header-analog-clock\s*\{[\s\S]*?--clock-size:\s*28px/)
   assert.doesNotMatch(appSource, /class="floating-contact-bar"/)
   assert.doesNotMatch(appSource, /class="floating-contact-icon floating-qq-icon"/)
   assert.doesNotMatch(appSource, /class="floating-contact-icon floating-email-icon"/)

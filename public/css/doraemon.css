@@ -1,0 +1,46 @@
+/* Doraemon Remake specific styles */
+#game {
+  max-width: 96vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+}
+
+#touch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#touch .pad {
+  position: absolute;
+  bottom: 18px;
+  display: flex;
+  gap: 12px;
+}
+
+#touch .left {
+  left: 18px;
+}
+
+#touch .right {
+  right: 18px;
+  flex-direction: column;
+}
+
+#touch button {
+  pointer-events: auto;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(61, 169, 252, 0.6);
+  background: rgba(18, 24, 38, 0.8);
+  color: var(--txt);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+#touch button:active {
+  transform: scale(0.92);
+  background: rgba(61, 169, 252, 0.35);
+}

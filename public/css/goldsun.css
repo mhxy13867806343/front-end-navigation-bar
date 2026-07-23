@@ -1,0 +1,56 @@
+/* Golden Sun Remake specific styles */
+:root {
+  --psy: #5ad1ff;
+}
+
+#game {
+  background: #06040d;
+  border-color: #2a2350;
+  box-shadow: 0 0 40px rgba(255, 209, 102, 0.12);
+  max-width: 96vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+}
+
+#touch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#touch .pad {
+  position: absolute;
+  bottom: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+#touch .left {
+  left: 16px;
+}
+
+#touch .right {
+  right: 16px;
+}
+
+#touch button {
+  pointer-events: auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 209, 102, 0.5);
+  background: rgba(26, 21, 48, 0.85);
+  color: var(--txt);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+#touch button:active {
+  transform: scale(0.92);
+  background: rgba(255, 209, 102, 0.3);
+}
+
+.hint {
+  color: #6b6390;
+}
