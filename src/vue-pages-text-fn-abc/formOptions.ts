@@ -180,3 +180,19 @@ export const MOVIE_PERIOD_OPTIONS: SelectOption[] = [
   { label: '本周排行', value: 'week' },
   { label: '本月排行', value: 'month' }
 ]
+
+// Constellation Horoscope options
+export const STAR_OPTIONS: SelectOption[] = [
+  { label: '♈ 白羊座 (3.21-4.19)', value: 'aries' },
+  { label: '♉ 金牛座 (4.20-5.20)', value: 'taurus' },
+  { label: '♊ 双子座 (5.21-6.21)', value: 'gemini' },
+  { label: '♋ 巨蟹座 (6.22-7.22)', value: 'cancer' },
+  { label: '♌ 狮子座 (7.23-8.22)', value: 'leo' },
+  { label: '♍ 处女座 (8.23-9.22)', value: 'virgo' },
+  { label: '♎ 天秤座 (9.23-10.23)', value: 'libra' },
+  { label: '♏ 天蝎座 (10.24-11.22)', value: 'scorpio' },
+  { label: '♐ 射手座 (11.23-12.21)', value: 'sagittarius' },
+  { label: '♑ 摩羯座 (12.22-1.19)', value: 'capricorn' },
+  { label: '♒ 水瓶座 (1.20-2.18)', value: 'aquarius' },
+  { label: '♓ 双鱼座 (2.19-3.20)', value: 'pisces' }
+]

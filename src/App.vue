@@ -47,6 +47,7 @@ const {
   movieRatings, movieRatingsChannel, movieRatingsPeriod, movieRatingsError, isMovieRatingsLoading, queryMovieRatings,
   trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
   randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
+  starActiveName, starActivePeriod, starHoroscopeData, isStarLoading, queryStarHoroscope,
   
   // Video & Photo Explorer exports
   showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
@@ -77,7 +78,8 @@ import {
   RESOLUTION_OPTIONS,
   RANDOM_IMAGE_CATEGORY_OPTIONS,
   MOVIE_CHANNEL_OPTIONS,
-  MOVIE_PERIOD_OPTIONS
+  MOVIE_PERIOD_OPTIONS,
+  STAR_OPTIONS
 } from '@/vue-pages-text-fn-abc/formOptions'
 
 import { useRoute, useRouter } from 'vue-router'
@@ -2010,6 +2012,113 @@ watch(isDarkMode, () => {
                   </a>
                 </el-button>
               </div>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- 7. 星座运势 -->
+        <el-tab-pane name="star">
+          <template #label>
+            <span>✨ 星座运势</span>
+          </template>
+          <div style="padding: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 14px; font-weight: bold; color: var(--text-color);">选择星座：</span>
+                <el-select v-model="starActiveName" placeholder="选择星座" @change="queryStarHoroscope" style="width: 170px;">
+                  <el-option
+                    v-for="opt in STAR_OPTIONS"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
+                  />
+                </el-select>
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <el-radio-group v-model="starActivePeriod" size="small">
+                  <el-radio-button label="day">今日</el-radio-button>
+                  <el-radio-button label="tomorrow">明日</el-radio-button>
+                  <el-radio-button label="week">本周</el-radio-button>
+                  <el-radio-button label="month">本月</el-radio-button>
+                  <el-radio-button label="year">本年</el-radio-button>
+                </el-radio-group>
+
+                <el-button type="primary" size="small" :loading="isStarLoading" @click="queryStarHoroscope">
+                  🔍 查询运势
+                </el-button>
+              </div>
+            </div>
+
+            <!-- 星座运势内容库 -->
+            <div v-if="starHoroscopeData && starHoroscopeData[starActivePeriod]" style="display: flex; flex-direction: column; gap: 16px;">
+              <el-row :gutter="16">
+                <!-- 指数面板 -->
+                <el-col :span="10">
+                  <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: var(--primary-color);">
+                      🌟 运势指数 ({{ starHoroscopeData[starActivePeriod].date || '最新' }})
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center;" v-if="starHoroscopeData[starActivePeriod].all">
+                        <span>综合运势</span>
+                        <strong style="color: #c084fc;">{{ starHoroscopeData[starActivePeriod].all }}</strong>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;" v-if="starHoroscopeData[starActivePeriod].love">
+                        <span>爱情运势</span>
+                        <strong style="color: #f472b6;">{{ starHoroscopeData[starActivePeriod].love }}</strong>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;" v-if="starHoroscopeData[starActivePeriod].work">
+                        <span>事业学业</span>
+                        <strong style="color: #38bdf8;">{{ starHoroscopeData[starActivePeriod].work }}</strong>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;" v-if="starHoroscopeData[starActivePeriod].money">
+                        <span>财富财运</span>
+                        <strong style="color: #fbbf24;">{{ starHoroscopeData[starActivePeriod].money }}</strong>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; align-items: center;" v-if="starHoroscopeData[starActivePeriod].health">
+                        <span>健康指数</span>
+                        <strong style="color: #4ade80;">{{ starHoroscopeData[starActivePeriod].health }}</strong>
+                      </div>
+                    </div>
+
+                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-color); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                      <div v-if="starHoroscopeData[starActivePeriod].yi"><strong>👍 宜：</strong><span style="color: #4ade80;">{{ starHoroscopeData[starActivePeriod].yi }}</span></div>
+                      <div v-if="starHoroscopeData[starActivePeriod].ji"><strong>⚠️ 忌：</strong><span style="color: #f87171;">{{ starHoroscopeData[starActivePeriod].ji }}</span></div>
+                      <div v-if="starHoroscopeData[starActivePeriod].lucky_color"><strong>🎨 幸运色：</strong><span>{{ starHoroscopeData[starActivePeriod].lucky_color }}</span></div>
+                      <div v-if="starHoroscopeData[starActivePeriod].lucky_number"><strong>🔢 幸运数：</strong><span>{{ starHoroscopeData[starActivePeriod].lucky_number }}</span></div>
+                      <div v-if="starHoroscopeData[starActivePeriod].lucky_star" style="grid-column: span 2;"><strong>⭐ 贵人星座：</strong><span style="color: var(--primary-color);">{{ starHoroscopeData[starActivePeriod].lucky_star }}</span></div>
+                    </div>
+                  </div>
+                </el-col>
+
+                <!-- 详细文本解析 -->
+                <el-col :span="14">
+                  <div style="background: var(--hover-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                    <div v-if="starHoroscopeData[starActivePeriod].all_text">
+                      <h5 style="margin: 0 0 4px 0; color: var(--primary-color); font-size: 13px;">✨ 综合运势解析</h5>
+                      <p style="margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-color);">{{ starHoroscopeData[starActivePeriod].all_text }}</p>
+                    </div>
+                    <div v-if="starHoroscopeData[starActivePeriod].love_text">
+                      <h5 style="margin: 0 0 4px 0; color: #f472b6; font-size: 13px;">💖 感情运势</h5>
+                      <p style="margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-color);">{{ starHoroscopeData[starActivePeriod].love_text }}</p>
+                    </div>
+                    <div v-if="starHoroscopeData[starActivePeriod].work_text">
+                      <h5 style="margin: 0 0 4px 0; color: #38bdf8; font-size: 13px;">💼 事业学业</h5>
+                      <p style="margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-color);">{{ starHoroscopeData[starActivePeriod].work_text }}</p>
+                    </div>
+                    <div v-if="starHoroscopeData[starActivePeriod].money_text">
+                      <h5 style="margin: 0 0 4px 0; color: #fbbf24; font-size: 13px;">💰 财运理财</h5>
+                      <p style="margin: 0; font-size: 12px; line-height: 1.6; color: var(--text-color);">{{ starHoroscopeData[starActivePeriod].money_text }}</p>
+                    </div>
+                  </div>
+                </el-col>
+              </el-row>
+            </div>
+
+            <div v-else style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+              <el-icon class="is-loading"><Loading /></el-icon> 正在为您算取星座运势数据...
             </div>
           </div>
         </el-tab-pane>

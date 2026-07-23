@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T06:13:06.385Z",
+  "generatedAt": "2026-07-23T06:20:47.594Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "a769812fe460197aa6bfd4bfea6598f6dc77a997",
+          "shortHash": "a769812",
+          "date": "2026-07-23",
+          "time": "14:13",
+          "type": "功能更新",
+          "title": "add Constellation Horoscope Query page (/star) powered by ALAPI with full period tabs and fallbacks",
+          "scope": "star",
+          "message": "feat(star): add Constellation Horoscope Query page (/star) powered by ALAPI with full period tabs and fallbacks"
+        },
         {
           "hash": "f7f37448e89f141a61de5792f9f417c004a997e3",
           "shortHash": "f7f3744",
@@ -298,16 +308,6 @@
           "title": "update version history | (2**16)-1=65535 | 2026-07-22",
           "scope": "",
           "message": "chore: update version history | (2**16)-1=65535 | 2026-07-22"
-        },
-        {
-          "hash": "c49f3b217e062db4cb185e1d969c3c208a2d5a26",
-          "shortHash": "c49f3b2",
-          "date": "2026-07-22",
-          "time": "13:25",
-          "type": "问题修复",
-          "title": "support province autocomplete for oil prices | (2**16)-1=65535 | 2026-07-22",
-          "scope": "",
-          "message": "fix: support province autocomplete for oil prices | (2**16)-1=65535 | 2026-07-22"
         }
       ]
     }

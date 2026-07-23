@@ -1133,6 +1133,54 @@ export function useAppLogic() {
     }
   }
 
+  // 5.5 星座运势
+  const starActiveName = ref('libra')
+  const starActivePeriod = ref<'day' | 'tomorrow' | 'week' | 'month' | 'year'>('day')
+  const starHoroscopeData = ref<any>(null)
+  const isStarLoading = ref(false)
+
+  const queryStarHoroscope = async () => {
+    isStarLoading.value = true
+    try {
+      const res = await axios.get(buildAlapiUrl('/api/star'), {
+        params: {
+          token: 'qgqofofvmxtoskffd37omkscobipmn',
+          star: starActiveName.value
+        }
+      })
+      if (res.data && (res.data.code === 200 || res.data.success) && res.data.data) {
+        starHoroscopeData.value = res.data.data
+      } else {
+        throw new Error(res.data?.message || '获取星座运势数据失败')
+      }
+    } catch (e) {
+      console.warn('获取星座运势失败，使用本地精选数据:', e)
+      starHoroscopeData.value = {
+        day: {
+          date: new Date().toLocaleDateString('zh-CN'),
+          all: '85%',
+          love: '88%',
+          work: '82%',
+          money: '75%',
+          health: '90%',
+          yi: '团队沟通、制定计划',
+          ji: '盲目投资、熬夜加班',
+          notice: '保持从容心态',
+          lucky_color: '天蓝色',
+          lucky_number: 7,
+          lucky_star: '双子座',
+          all_text: '整体运势呈上佳态势！思维敏捷，适合处理复杂的工作和规划新目标。',
+          love_text: '感情运势甜美，沟通顺畅，默契十足。',
+          work_text: '工作表现亮眼，能够高效解决此前积压的疑难问题。',
+          money_text: '财运平稳，偏财运小有提升，适合合理理财。',
+          health_text: '精力充沛，身体状态良好，建议保持规律作息。'
+        }
+      }
+    } finally {
+      isStarLoading.value = false
+    }
+  }
+
   const queryNextPhoto = async () => {
     isPhotoLoading.value = true
     try {
@@ -1443,6 +1491,8 @@ export function useAppLogic() {
       queryZhihuDaily()
     } else if (utilityActiveTab.value === 'zaobao' && !zaobaoData.value) {
       queryZaobao()
+    } else if (utilityActiveTab.value === 'star' && !starHoroscopeData.value) {
+      queryStarHoroscope()
     }
   }
 
@@ -1504,6 +1554,7 @@ export function useAppLogic() {
     movieRatings, movieRatingsChannel, movieRatingsPeriod, movieRatingsError, isMovieRatingsLoading, queryMovieRatings,
     trackingNumber, trackingCarrier, trackingPhone, trackingCarrierName, trackingInfo, isTrackingLoading, queryCourier,
     randomImageCategory, randomImageUrl, isRandomImageLoading, queryRandomImage,
+    starActiveName, starActivePeriod, starHoroscopeData, isStarLoading, queryStarHoroscope,
     
     // Video & Photo Explorer exports
     showVideoDialog, videoActiveChannel, isVideoLoading, currentVideoUrl, currentPhotoUrl, isPhotoLoading, queryNextVideo, queryNextPhoto,
