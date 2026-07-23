@@ -10,6 +10,7 @@ This project is no longer actively updated. The current live demo and existing f
 
 ## 🌐 Live Demo
 
+- 🌾 **Oat UI Studio Demo**: [https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio)
 - 🏠 **Home**: [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 - 🧡 **Xiaomi Official Shop**: [https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
 - 🛒 **Xiaomi Shopping Cart**: [https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart)
@@ -20,12 +21,15 @@ This project is no longer actively updated. The current live demo and existing f
 
 ## ✨ Features
 
+- **🌾 Oat UI Studio (`/oat-studio`)**: 1:1 Element Plus 64-item Component Sidebar directory. Features Oat Dialog / Modal design inspired by **Element Plus Dialog** layout and **Naive UI OS-Theme Dialog** backdrop filter backdrop. Includes 400 examples dataset with double-click inline cell editing.
 - **API Toolbox**: Built-in collection of commonly used APIs
 - **Theme Switching**: One-click dark/light theme toggle with local persistence
 - **Custom Layout**: Adjustable grid columns (persisted locally), collapsible sidebar
 - **Context Menu**: Tool cards support "Open in new tab / Copy link"
 
 ## 🆕 Recent Updates
+
+- 🌾 **Added Oat UI Studio (`/oat-studio`)**: 1:1 Element Plus 64-item sidebar directory, Element Plus & Naive UI OS-Theme Dialog reference banner, 400 examples dataset with double-click inline editing, Cascader, Checkbox, Transfer, Slider, and custom interactive UI cards.
 
 - Added the `/bilibili-live` page with on-demand live data loading, dynamic Bilibili live areas, sub-area filters, and recommend / popular / latest tabs.
 - Fixed LOLM China server data in local and online environments: local development uses the Vite proxy, production uses a read-only wrapped JSON request, and the toolbox table now scrolls through the full returned hero list.

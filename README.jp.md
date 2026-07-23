@@ -10,6 +10,7 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 
 ## 🌐 オンラインデモ
 
+- 🌾 **Oat UI スタジオ演習センター**：[https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio)
 - 🏠 **ホーム**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 - 🧡 **Xiaomi 公式ショップ**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
 - 🛒 **Xiaomi ショッピングカート**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart)
@@ -20,6 +21,7 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 
 ## ✨ 主な機能
 
+- **🌾 Oat UI Studio (`/oat-studio`)**：Element Plus 64 項のコンポーネントディレクトリを 1:1 再現。**Element Plus Dialog** と **Naive UI OS-Theme Dialog** 的設計仕様を融合。400 件のサンプルデータとダブルクリックによるインライン編集に対応。
 - **🧡 Xiaomi 公式ショップ＆カート決済** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：27万行超の JSON データ (`public/shop-json/xiaomi-shop.json`) で駆動、`cartStore` 永続化、サイド引き出しカート (`CartDrawer.vue`)、フルスクリーンカート画面 (`/xiaomi-shop/cart`)、住所選択、クーポン適用（`MI888` 割引）および WeChat / Alipay 決済に対応。
 - **🔐 権限管理コントロールセンター** (`/permission`)：4 つの RBAC 役割（スーパー管理者、インフラ、運用、ゲスト）の切り替え、ディレクティブ権限 (`v-permission`)、JWT デコード確認、HTTP ステータスコード直接ジャンプに対応。
 - **📜 システム監査ログ** (`/logs`)：API ステータスコード、セキュリティブロック、スタックトレースをリアルタイムで追跡し CSV 出力に対応。
@@ -27,6 +29,8 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 - **🚀 ワンクリックデプロイスクリプト**：内蔵シェルツール `scripts/deploy_update.sh` (`npm run deploy`) でローカルビルド、Git ステージング、コミット、GitHub 自動デプロイを実行。
 
 ## 🆕 最近の更新
+
+- 🌾 **Oat UI Studio (`/oat-studio`) を追加**：Element Plus 64 項コンポーネントサイドバー、Element Plus Dialog および Naive UI OS-Theme Dialog 公式設計バナー、400 件の表ダブルクリック編集機能を追加しました。
 
 - 🧡 **Xiaomi 公式ショップ＆ショッピングカートを追加** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：27万行超の JSON データ、永続化カート引き出し、インタラクティブ決済に対応しました。
 - 🛠️ ワンクリックデプロイツール `scripts/deploy_update.sh` (`npm run deploy`) を追加し、GitHub Actions のビルドメモリ上限を 8GB (`NODE_OPTIONS="--max-old-space-size=8192"`) に最適化しました。
