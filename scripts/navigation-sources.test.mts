@@ -83,9 +83,13 @@ test('Oat UI has a direct route, navbar dropdown button, and 26 components showc
 test('Oat Studio provides update notice modal, new page modal, and confirm dialogs', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const studioSource = readFileSync(new URL('../src/views/oatStudio/index.vue', import.meta.url), 'utf8')
+  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 
   assert.match(routerSource, /path:\s*'\/oat-studio'/)
   assert.match(routerSource, /views\/oatStudio\/index\.vue/)
+  assert.match(appSource, /routeViewPaths:[\s\S]*?\/oat-studio/)
+  assert.match(noticeSource, /command="\/oat-studio"/)
   assert.match(studioSource, /OatUpdateModal/)
   assert.match(studioSource, /OatCreatePageModal/)
   assert.match(studioSource, /OatConfirmModal/)

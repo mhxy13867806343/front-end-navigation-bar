@@ -308,6 +308,7 @@ onUnmounted((): void => {
           <el-dropdown-menu>
             <el-dropdown-item command="/web-components">🧩 Web Components 核心与进阶</el-dropdown-item>
             <el-dropdown-item command="/oat-ui">🌾 Oat UI 全套 26 个组件实例</el-dropdown-item>
+            <el-dropdown-item command="/oat-studio">🚀 Oat UI 实战展厅与更新弹窗</el-dropdown-item>
             <el-dropdown-item divided command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
             <el-dropdown-item command="https://www.ruanyifeng.com/blog/2019/08/web_components.html">📰 阮一峰 Web Components 教程</el-dropdown-item>
             <el-dropdown-item command="https://oat.ink/usage/">🌾 Oat UI 官方 Usage 文档</el-dropdown-item>
