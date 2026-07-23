@@ -245,9 +245,13 @@ onUnmounted((): void => {
             <el-dropdown-item command="/405">⚡ 405 方法不受允许</el-dropdown-item>
             <el-dropdown-item command="/500">🔥 500 服务器错误</el-dropdown-item>
             <el-dropdown-item command="/logs">📜 实时系统日志</el-dropdown-item>
+            <el-dropdown-item command="/xiaomi-shop">🧡 小米商城 (27万行数据)</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      <el-button type="warning" plain size="small" @click="goToPage('/xiaomi-shop')" style="background: #ff6700; border-color: #ff6700; color: #fff; font-weight: bold;">
+        🧡 小米商城
+      </el-button>
       <el-button type="info" plain size="small" @click="goToPage('/permission')">
         🔐 权限控制
       </el-button>

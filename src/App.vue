@@ -977,6 +977,11 @@ watch(isDarkMode, () => {
             <button class="dropdown-trigger feature-page-btn" @click="router.push('/feature')" style="background: #7c3aed; color: white; border-color: #7c3aed; font-weight: bold;">
               🧩 功能页面
             </button>
+
+            <!-- 小米商城入口 -->
+            <button class="dropdown-trigger xiaomi-shop-btn" @click="router.push('/xiaomi-shop')" style="background: #ff6700; color: white; border-color: #ff6700; font-weight: bold;">
+              🧡 小米商城
+            </button>
           </div>
         </div>
 
