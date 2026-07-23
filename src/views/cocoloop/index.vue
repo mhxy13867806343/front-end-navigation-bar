@@ -5,6 +5,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { Search, Refresh, Top, CopyDocument, Link, ArrowLeft } from '@element-plus/icons-vue'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
+import { requestJinaJson } from '@/utils/jinaReader'
 
 const router = useRouter()
 
@@ -94,6 +95,7 @@ const selectedTab = ref<'latest' | 'hot' | 'category'>('latest')
 const selectedTag = ref<string>('')
 const activeCategory = ref<CategoryMeta | null>(null)
 const isSidebarCollapsed = ref<boolean>(false)
+const isProd: boolean = import.meta.env.PROD
 
 // Detail Modal State
 const showDetailModal = ref<boolean>(false)
@@ -196,12 +198,14 @@ const fetchPageData = async (page: number): Promise<void> => {
     }
 
     const apiUrl = resolveApiUrl(rawPath)
-    const res = await axios.get<CocoTopicListResponse>(apiUrl)
+    const data = isProd
+      ? await requestJinaJson<CocoTopicListResponse>(apiUrl)
+      : (await axios.get<CocoTopicListResponse>(apiUrl)).data
 
-    if (res.data && res.data.topic_list && Array.isArray(res.data.topic_list.topics)) {
-      const newTopics = res.data.topic_list.topics
-      const newUsers = res.data.users || []
-      const newTags = res.data.topic_list.top_tags || []
+    if (data && data.topic_list && Array.isArray(data.topic_list.topics)) {
+      const newTopics = data.topic_list.topics
+      const newUsers = data.users || []
+      const newTags = data.topic_list.top_tags || []
 
       // Merge users into map
       newUsers.forEach(u => usersMap.value.set(u.id, u))

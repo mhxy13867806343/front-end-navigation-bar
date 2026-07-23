@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
-import { fallbackCnblogsNews, type CnblogsNewsItem } from './mock/newsMock'
+import type { CnblogsNewsItem } from './mock/newsMock'
 
 type PrimaryTab = 'latest' | 'recommend' | 'digg' | 'sitehome'
 type DiggType = 'today' | 'yesterday' | 'week' | 'month'
@@ -26,6 +26,7 @@ const searchQuery = ref<string>('')
 const selectedTag = ref<string | null>(null)
 const activeNewsDetail = ref<CnblogsNewsItem | null>(null)
 const detailModalVisible = ref<boolean>(false)
+const JINA_READER_PREFIX = 'https://r.jina.ai/http://r.jina.ai/http://'
 
 const topHighlights = ref<TopHighlight[]>([
   { label: '编辑推荐', title: '如何设计一个 Agent 友好的 CLI 工具', link: 'https://www.cnblogs.com/rossiXYZ/p/21514625', stats: '13/12/1753' },
@@ -54,6 +55,86 @@ const updateUrlHash = (page: number): void => {
   } else if (window.location.hash.startsWith('#p')) {
     history.pushState('', document.title, window.location.pathname + window.location.search)
   }
+}
+
+const toJinaReaderUrl = (url: string): string => `${JINA_READER_PREFIX}${url}`
+
+const extractJinaContent = (text: string): string => {
+  const marker = 'Markdown Content:'
+  const markerIndex = text.indexOf(marker)
+  return (markerIndex >= 0 ? text.slice(markerIndex + marker.length) : text).trim()
+}
+
+const stripMarkdownImages = (text: string): string => {
+  return text
+    .replace(/\[!\[[^\]]*\]\([^)]+\)\]\([^)]+\)/g, '')
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const createCnblogsItem = (
+  title: string,
+  link: string,
+  summary: string,
+  diggCount = 0
+): CnblogsNewsItem | null => {
+  const normalizedTitle = title.trim()
+  const normalizedLink = link.trim()
+  if (!normalizedTitle || !/https?:\/\/(?:news\.|www\.)?cnblogs\.com\//.test(normalizedLink)) return null
+  if (!/(?:\/n\/\d+\/?|\/p\/\d+\/?)/.test(normalizedLink)) return null
+
+  const id = normalizedLink.match(/\/(?:n|p)\/(\d+)/)?.[1] || `${normalizedTitle}-${itemsHash(normalizedLink)}`
+
+  return {
+    id,
+    title: normalizedTitle,
+    link: normalizedLink,
+    summary: stripMarkdownImages(summary),
+    author: '博客园',
+    publishTime: '最新',
+    diggCount,
+    commentCount: 0,
+    viewCount: 0,
+    tags: ['线上数据']
+  }
+}
+
+const itemsHash = (value: string): string => {
+  let hash = 0
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0
+  }
+  return hash.toString(36)
+}
+
+const pushUniqueItem = (items: CnblogsNewsItem[], item: CnblogsNewsItem | null): void => {
+  if (!item || items.some(current => current.link === item.link)) return
+  items.push(item)
+}
+
+const parseCnblogsMarkdown = (markdownText: string): { items: CnblogsNewsItem[]; maxPage?: number } => {
+  const content = extractJinaContent(markdownText)
+  const items: CnblogsNewsItem[] = []
+  const pattern = /(?:^|\n)(?:(\d+)\s*\n+)?## \[([^\]]+)\]\((https?:\/\/[^)]+)\)\s*\n+([\s\S]*?)(?=\n(?:\d+\s*\n+)?## \[|$)/g
+  let match: RegExpExecArray | null = pattern.exec(content)
+
+  while (match) {
+    const diggCount = Number(match[1] || 0)
+    pushUniqueItem(items, createCnblogsItem(match[2], match[3], match[4] || '', diggCount))
+    match = pattern.exec(content)
+  }
+
+  if (items.length === 0) {
+    const linkPattern = /(?:^|\n)[*-]\s+\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g
+    let linkMatch: RegExpExecArray | null = linkPattern.exec(content)
+    while (linkMatch) {
+      pushUniqueItem(items, createCnblogsItem(linkMatch[1], linkMatch[2], ''))
+      linkMatch = linkPattern.exec(content)
+    }
+  }
+
+  return { items, maxPage: 100 }
 }
 
 const parseCnblogsHtml = (htmlText: string): { items: CnblogsNewsItem[]; maxPage?: number } => {
@@ -212,11 +293,15 @@ const fetchNewsData = async (): Promise<void> => {
       return
     }
 
-    const apiUrl = resolveApiUrl(targetPath)
+    const apiUrl = import.meta.env.PROD
+      ? toJinaReaderUrl(resolveApiUrl(targetPath))
+      : resolveApiUrl(targetPath)
     const res = await fetch(apiUrl)
     if (!res.ok) throw new Error(`HTTP error ${res.status}`)
-    const htmlText = await res.text()
-    const { items, maxPage } = parseCnblogsHtml(htmlText)
+    const responseText = await res.text()
+    const { items, maxPage } = import.meta.env.PROD
+      ? parseCnblogsMarkdown(responseText)
+      : parseCnblogsHtml(responseText)
 
     if (maxPage && maxPage > 1) {
       totalPages.value = maxPage
@@ -225,11 +310,12 @@ const fetchNewsData = async (): Promise<void> => {
     if (items.length > 0) {
       newsList.value = items
     } else {
-      newsList.value = page >= 100 ? [] : fallbackCnblogsNews
+      throw new Error('未解析出博客园线上数据')
     }
   } catch (err) {
-    console.warn('Fetch cnblogs data via proxy failed, using fallback data:', err)
-    newsList.value = currentPage.value >= 100 ? [] : fallbackCnblogsNews
+    console.warn('Fetch cnblogs live data failed:', err)
+    newsList.value = []
+    ElMessage.error(err instanceof Error ? err.message : '博客园线上数据获取失败')
   } finally {
     loading.value = false
   }

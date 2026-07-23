@@ -74,6 +74,7 @@ const liveRooms = ref<BilibiliLiveRoom[]>([])
 const liveRoomCount = ref<number>(0)
 const updateTime = ref<string>('')
 const errorMessage = ref<string>('')
+const JINA_READER_PREFIX = 'https://r.jina.ai/http://r.jina.ai/http://'
 
 const activeTabInfo = computed(() => tabs.find(tab => tab.id === activeTab.value) || tabs[0])
 
@@ -120,38 +121,22 @@ const toLiveRoom = (item: BilibiliLiveApiItem, index: number): BilibiliLiveRoom 
   }
 }
 
+const toJinaReaderUrl = (url: string): string => `${JINA_READER_PREFIX}${url}`
+
+const extractJinaContent = (text: string): string => {
+  const marker = 'Markdown Content:'
+  const markerIndex = text.indexOf(marker)
+  return (markerIndex >= 0 ? text.slice(markerIndex + marker.length) : text).trim()
+}
+
 const fetchLiveJson = async <T>(url: string): Promise<T> => {
   if (import.meta.env.PROD) {
-    const proxies = [
-      // Proxy 1: corsproxy.io (Very fast, handles browser requests well)
-      {
-        url: `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        parse: async (res: Response) => res.json()
-      },
-      // Proxy 2: codetabs.com (Raw response fallback)
-      {
-        url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-        parse: async (res: Response) => res.json()
-      }
-    ]
-
-    let lastError: any = null
-    for (const proxy of proxies) {
-      try {
-        console.log(`Trying Bilibili Live proxy: ${proxy.url}`)
-        const res = await fetch(proxy.url, {
-          // Timeout signal of 8 seconds to prevent hanging on slow proxies
-          signal: AbortSignal.timeout(8000)
-        })
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await proxy.parse(res)
-        return data as T
-      } catch (err) {
-        console.warn(`Proxy failed: ${proxy.url}`, err)
-        lastError = err
-      }
-    }
-    throw lastError || new Error('所有可用 B 站直播代理均请求失败或超时')
+    const res = await fetch(toJinaReaderUrl(url), {
+      signal: AbortSignal.timeout(15000)
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const text = await res.text()
+    return JSON.parse(extractJinaContent(text)) as T
   } else {
     const res = await fetch(resolveApiUrl(url))
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -206,11 +191,19 @@ const loadLiveData = async (tabId: LiveTabId = activeTab.value): Promise<void> =
   liveRooms.value = []
 
   try {
-    const [count, rooms] = await Promise.all([
+    const [countResult, roomsResult] = await Promise.allSettled([
       fetchLiveRoomCount(),
       fetchLiveRooms(tabId)
     ])
-    liveRoomCount.value = count || liveRoomCount.value
+
+    if (roomsResult.status === 'rejected') {
+      throw roomsResult.reason
+    }
+
+    const rooms = roomsResult.value
+    if (countResult.status === 'fulfilled') {
+      liveRoomCount.value = countResult.value || liveRoomCount.value
+    }
     liveRooms.value = rooms
     updateTime.value = formatNowTime()
   } catch (error) {

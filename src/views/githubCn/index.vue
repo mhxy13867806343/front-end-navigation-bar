@@ -3,10 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { NButton } from 'naive-ui'
-import { resolveApiUrl } from '../../utils/resolveApiUrl'
 import {
-  mockRepoList,
-  mockWeeklyList,
   mockCollections,
   mockTopics,
   mockAwesome,
@@ -35,11 +32,57 @@ const loading = ref<boolean>(false)
 const loadingMore = ref<boolean>(false)
 const currentPage = ref<number>(1)
 const hasMore = ref<boolean>(true)
+const repoError = ref<string>('')
+const weeklyError = ref<string>('')
 
-const repoList = ref<GithubRepoItem[]>(mockRepoList)
-const weeklyList = ref<WeeklyIssueItem[]>(mockWeeklyList)
+const repoList = ref<GithubRepoItem[]>([])
+const weeklyList = ref<WeeklyIssueItem[]>([])
 const activeRepoDetail = ref<GithubRepoItem | null>(null)
 const detailModalVisible = ref<boolean>(false)
+
+interface GithubSearchOwner {
+  login?: string
+  avatar_url?: string
+}
+
+interface GithubSearchRepo {
+  id: number
+  name?: string
+  full_name?: string
+  owner?: GithubSearchOwner
+  description?: string | null
+  stargazers_count?: number
+  forks_count?: number
+  open_issues_count?: number
+  language?: string | null
+  size?: number
+  updated_at?: string
+  pushed_at?: string
+  topics?: string[]
+  license?: {
+    spdx_id?: string
+    name?: string
+  } | null
+}
+
+interface GithubSearchResponse {
+  items?: GithubSearchRepo[]
+}
+
+interface GithubIssueUser {
+  login?: string
+}
+
+interface GithubIssueItem {
+  number: number
+  title?: string
+  html_url?: string
+  body?: string | null
+  created_at?: string
+  updated_at?: string
+  comments?: number
+  user?: GithubIssueUser | null
+}
 
 const getLanguageColor = (lang: string): string => {
   const map: Record<string, string> = {
@@ -61,6 +104,82 @@ const formatSize = (bytes: number): string => {
   if (!bytes) return '1.2 MB'
   if (bytes > 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} GB`
   return `${(bytes / 1024).toFixed(1)} MB`
+}
+
+const formatGithubDate = (date: Date): string => {
+  return date.toISOString().slice(0, 10)
+}
+
+const getPushedAfterDate = (): string => {
+  const daysMap: Record<TimeRange, number> = {
+    daily: 1,
+    weekly: 7,
+    monthly: 30
+  }
+  const date = new Date()
+  date.setDate(date.getDate() - daysMap[timeRange.value])
+  return formatGithubDate(date)
+}
+
+const buildSparkline = (seed: number): number[] => {
+  return Array.from({ length: 20 }, (_item: unknown, index: number): number => {
+    const wave = Math.sin((seed + index * 17) / 19)
+    return Math.max(8, Math.round(45 + wave * 30 + index * 2))
+  })
+}
+
+const mapGithubRepo = (item: GithubSearchRepo): GithubRepoItem => {
+  const [fallbackOwner, fallbackName] = (item.full_name || item.name || 'github/repo').split('/')
+  const stars: number = item.stargazers_count || 0
+  const forks: number = item.forks_count || 0
+  const issues: number = item.open_issues_count || 0
+  const language: string = item.language || 'Unknown'
+
+  return {
+    id: String(item.id),
+    name: item.name || fallbackName || 'repo',
+    owner: item.owner?.login || fallbackOwner || 'developer',
+    ownerAvatar: item.owner?.avatar_url,
+    description: item.description || '暂无描述',
+    stars,
+    forks,
+    issues,
+    valueScore: Math.round(stars * 0.58 + forks * 1.2 + Math.max(0, 1000 - issues) * 0.15),
+    language,
+    languageColor: getLanguageColor(language),
+    size: formatSize((item.size || 0) * 1024),
+    updatedAt: (item.pushed_at || item.updated_at || new Date().toISOString()).slice(0, 10),
+    topics: item.topics || [],
+    sparkline: buildSparkline(item.id),
+    isActive: true,
+    license: item.license?.spdx_id || item.license?.name || 'NOASSERTION'
+  }
+}
+
+const fetchGithubWeeklyData = async (): Promise<void> => {
+  weeklyError.value = ''
+  try {
+    const res = await fetch('https://api.github.com/repos/ruanyf/weekly/issues?state=open&per_page=12', {
+      cache: 'no-cache',
+      headers: {
+        Accept: 'application/vnd.github+json'
+      }
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const issues = (await res.json()) as GithubIssueItem[]
+    weeklyList.value = issues.map((issue: GithubIssueItem): WeeklyIssueItem => ({
+      vol: `#${issue.number}`,
+      title: issue.title || '未命名周刊条目',
+      author: issue.user?.login || 'ruanyf/weekly',
+      date: (issue.updated_at || issue.created_at || new Date().toISOString()).slice(0, 10),
+      summary: (issue.body || '暂无摘要').replace(/!\[[\s\S]*?\]\([\s\S]*?\)/g, '').replace(/<[^>]+>/g, '').slice(0, 140),
+      link: issue.html_url || 'https://github.com/ruanyf/weekly/issues'
+    }))
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    weeklyError.value = `GitHub 周刊接口不可用：${message}`
+    weeklyList.value = []
+  }
 }
 
 const syncQueryFromRoute = (): void => {
@@ -102,100 +221,52 @@ const fetchLiveGithubCnData = async (resetPage = true): Promise<void> => {
     currentPage.value = 1
     loading.value = true
     hasMore.value = true
+    repoError.value = ''
   }
 
   try {
+    const q: string[] = [`stars:>=${minStars.value || 1}`]
+    if (onlyActive.value) q.push(`pushed:>${getPushedAfterDate()}`)
+    if (selectedLicense.value) q.push(`license:${selectedLicense.value.toLowerCase()}`)
+    if (searchQuery.value.trim()) q.push(searchQuery.value.trim())
+
+    const sort: string = currentTab.value === 'ranking' ? rankingSort.value : 'stars'
     const params = new URLSearchParams({
-      time_range: timeRange.value,
-      active: String(onlyActive.value),
-      min_stars: String(minStars.value),
-      license: selectedLicense.value || '',
+      q: q.join(' '),
+      sort,
+      order: 'desc',
       page: String(currentPage.value),
       per_page: '12'
     })
 
-    const targetUrl = resolveApiUrl(`/api-github-cn-backend/api/repos/trending?${params.toString()}`)
-    const res = await fetch(targetUrl)
+    const res = await fetch(`https://api.github.com/search/repositories?${params.toString()}`, {
+      cache: 'no-cache',
+      headers: {
+        Accept: 'application/vnd.github+json'
+      }
+    })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const json = await res.json()
+    const json = (await res.json()) as GithubSearchResponse
+    const fetchedItems: GithubRepoItem[] = (json.items || []).map(mapGithubRepo)
 
-    if (json.code === 200 && json.data?.repositories?.length > 0) {
-      const fetchedItems: GithubRepoItem[] = json.data.repositories.map((item: any) => ({
-        id: String(item.id),
-        name: item.name || item.full_name?.split('/')[1] || 'repo',
-        owner: item.owner_login || item.full_name?.split('/')[0] || 'developer',
-        ownerAvatar: item.owner_avatar_url,
-        description: item.description || '暂无描述',
-        stars: item.stars || 0,
-        forks: item.forks || 0,
-        issues: item.open_issues || 0,
-        valueScore: item.value_score || item.analysis?.value_score || Math.floor((item.stars || 0) * 0.6),
-        language: item.language || 'TypeScript',
-        languageColor: getLanguageColor(item.language),
-        size: formatSize(item.size),
-        updatedAt: (item.updated_at || item.last_updated || '2026-07-22').slice(0, 10),
-        topics: item.topics || [],
-        sparkline: item.commit_activity || item.analysis?.commit_activity || Array.from({ length: 20 }, () => Math.floor(Math.random() * 80 + 10)),
-        isActive: item.analysis?.is_active ?? true,
-        license: item.license?.spdx_id || item.license?.name || 'MIT'
-      }))
+    if (resetPage) {
+      repoList.value = fetchedItems
+    } else {
+      repoList.value = [...repoList.value, ...fetchedItems]
+    }
 
-      if (resetPage) {
-        repoList.value = fetchedItems
-      } else {
-        repoList.value = [...repoList.value, ...fetchedItems]
-      }
-
-      if (fetchedItems.length < 12) {
-        hasMore.value = false
-      }
-    } else if (!resetPage) {
+    if (fetchedItems.length < 12) {
       hasMore.value = false
     }
-  } catch (err) {
-    console.warn('Fetch live github-cn data failed, using mock generator:', err)
+  } catch (err: unknown) {
+    const message: string = err instanceof Error ? err.message : String(err)
+    repoError.value = `GitHub 官方接口不可用：${message}`
+    console.warn('Fetch live github data failed:', err)
     if (resetPage) {
-      repoList.value = mockRepoList
+      repoList.value = []
     } else {
-      const extraItems: GithubRepoItem[] = [
-        {
-          id: `next-page-${currentPage.value}-1`,
-          name: `open-agent-v${currentPage.value}`,
-          owner: 'agentic-community',
-          description: `基于大语言模型与自定义 Tool 的下一代 LLM Agent 工具链 (第 ${currentPage.value} 页加载项目)。`,
-          stars: 124000 - currentPage.value * 5000,
-          forks: 18200,
-          issues: 340,
-          valueScore: 88500,
-          language: 'TypeScript',
-          languageColor: '#3178C6',
-          size: '42.5 MB',
-          updatedAt: '2026-07-22',
-          topics: ['agent', 'llm', 'typescript', 'ai'],
-          sparkline: [20, 30, 45, 60, 50, 70, 85, 95, 110, 125, 140, 130, 150, 165, 180, 195, 210, 225, 240, 255],
-          isActive: true,
-          license: 'MIT'
-        },
-        {
-          id: `next-page-${currentPage.value}-2`,
-          name: `fast-db-engine-${currentPage.value}`,
-          owner: 'hyper-db',
-          description: `极致性能单机嵌入式 Key-Value 数据库，基于 Rust 编写 (第 ${currentPage.value} 页加载项目)。`,
-          stars: 96500 - currentPage.value * 4000,
-          forks: 11200,
-          issues: 180,
-          valueScore: 74200,
-          language: 'Rust',
-          languageColor: '#dea584',
-          size: '18.2 MB',
-          updatedAt: '2026-07-21',
-          topics: ['rust', 'database', 'storage', 'high-performance'],
-          sparkline: [40, 55, 70, 85, 100, 115, 130, 145, 160, 175, 190, 205, 220, 235, 250, 265, 280, 295, 310, 325],
-          isActive: true,
-          license: 'Apache-2.0'
-        }
-      ]
-      repoList.value = [...repoList.value, ...extraItems]
+      currentPage.value = Math.max(1, currentPage.value - 1)
+      hasMore.value = false
     }
   } finally {
     loading.value = false
@@ -221,7 +292,11 @@ const handleTabChange = (tab: ActivePageTab): void => {
     minStars.value = 0
   }
   updateRouteQuery()
-  void fetchLiveGithubCnData(true)
+  if (tab === 'weekly') {
+    void fetchGithubWeeklyData()
+  } else if (['home', 'trends', 'ranking'].includes(tab)) {
+    void fetchLiveGithubCnData(true)
+  }
 }
 
 const handleApplyFilter = (): void => {
@@ -242,6 +317,10 @@ const handleClearFilter = (): void => {
 
 const openExternalRepo = (name: string, owner: string): void => {
   window.open(`https://github.com/${owner}/${name}`, '_blank')
+}
+
+const openExternalUrl = (url: string): void => {
+  window.open(url, '_blank')
 }
 
 const openRepoDetail = (repo: GithubRepoItem): void => {
@@ -302,7 +381,11 @@ const filteredRepoList = computed(() => {
 
 onMounted(() => {
   syncQueryFromRoute()
-  void fetchLiveGithubCnData(true)
+  if (currentTab.value === 'weekly') {
+    void fetchGithubWeeklyData()
+  } else {
+    void fetchLiveGithubCnData(true)
+  }
 })
 
 watch([onlyActive, minStars, selectedLicense, timeRange, rankingSort], () => {
@@ -559,10 +642,18 @@ watch(() => route.query, () => {
       <!-- Loading State Indicator -->
       <div v-if="loading && currentPage === 1" class="loading-state-bar">
         <div class="spinner"></div>
-        <p>正在请求 api.github-cn.com 真实数据...</p>
+        <p>正在请求 GitHub 官方实时数据...</p>
+      </div>
+
+      <div v-else-if="repoError && ['home', 'trends', 'ranking'].includes(currentTab)" class="empty-state">
+        <p>📭 {{ repoError }}</p>
       </div>
 
       <!-- Content Area 1: Weekly Cards Section -->
+      <section v-else-if="currentTab === 'weekly' && weeklyError" class="empty-state">
+        <p>📭 {{ weeklyError }}</p>
+      </section>
+
       <section v-else-if="currentTab === 'weekly'" class="weekly-cards-grid">
         <div v-for="w in weeklyList" :key="w.vol" class="weekly-card">
           <div class="weekly-header">
@@ -574,7 +665,7 @@ watch(() => route.query, () => {
             <span class="gh-icon">🐙</span> {{ w.author }}
           </div>
           <p class="weekly-summary">{{ w.summary }}</p>
-          <button type="button" class="read-full-btn" @click="openExternalRepo('weekly', w.author)">
+          <button type="button" class="read-full-btn" @click="openExternalUrl(w.link)">
             阅读全文 &gt;
           </button>
         </div>

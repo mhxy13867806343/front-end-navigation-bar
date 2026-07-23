@@ -159,6 +159,7 @@
 
 <script setup lang="ts">
 import { requestJson } from '@/utils/request'
+import { requestJinaText } from '@/utils/jinaReader'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
 import { Search, Loading } from '@element-plus/icons-vue'
 import {
@@ -188,6 +189,7 @@ const cursor = ref<string>('0')
 const hasMore = ref<boolean>(true)
 const loading = ref<boolean>(false)
 const error = ref<string>('')
+const isProd: boolean = import.meta.env.PROD
 
 const userModalVisible = ref<boolean>(false)
 const selectedUser = ref<ThemeUser | null>(null)
@@ -225,6 +227,15 @@ async function fetchThemes(reset: boolean = false): Promise<void> {
     hasMore.value = true
   }
   try {
+    if (isProd) {
+      const list: ThemeItem[] = await fetchThemesFromJuejinWeb()
+      if (seq !== requestSeq) return
+      themes.value = reset ? list : [...themes.value, ...list]
+      cursor.value = '0'
+      hasMore.value = false
+      return
+    }
+
     const body: ThemeQueryBody = {
       keyword: keyword.value,
       cursor: cursor.value,
@@ -250,6 +261,49 @@ async function fetchThemes(reset: boolean = false): Promise<void> {
   } finally {
     if (seq === requestSeq) loading.value = false
   }
+}
+
+async function fetchThemesFromJuejinWeb(): Promise<ThemeItem[]> {
+  const text: string = await requestJinaText('https://juejin.cn/hot/articles/1')
+  const matches: ThemeItem[] = []
+  const seenIds: Set<string> = new Set()
+  const topicPattern = /\[(?:!\[[\s\S]*?\]\([^)]+\))*\s*#([^#\]]+)#\s*([\d.]+[kKmMwW万mM]*)\]\((https:\/\/juejin\.cn\/(?:pin\/topic|theme\/detail)\/\d+[^)]*)\)/g
+  let match: RegExpExecArray | null
+
+  while ((match = topicPattern.exec(text)) !== null) {
+    const name: string = match[1].trim()
+    const link: string = match[3]
+    const id: string = link.match(/\/(\d+)/)?.[1] || `${name}-${matches.length}`
+    if (seenIds.has(id)) continue
+    seenIds.add(id)
+    matches.push({
+      id,
+      name,
+      cover: '',
+      brief: link,
+      hot: parseJuejinMetric(match[2]),
+      viewCount: 0,
+      userCount: 0,
+      isLottery: text.slice(Math.max(0, match.index - 160), match.index + match[0].length).includes('lottery'),
+      isRec: text.slice(Math.max(0, match.index - 160), match.index + match[0].length).includes('rec'),
+      recentUsers: []
+    })
+  }
+
+  const keywordText: string = keyword.value.trim()
+  return keywordText
+    ? matches.filter((item: ThemeItem): boolean => item.name.toLowerCase().includes(keywordText.toLowerCase()))
+    : matches
+}
+
+function parseJuejinMetric(value: string): number {
+  const normalized: string = value.trim().toLowerCase()
+  const numeric: number = Number.parseFloat(normalized)
+  if (!Number.isFinite(numeric)) return 0
+  if (normalized.includes('m')) return Math.round(numeric * 1000000)
+  if (normalized.includes('k')) return Math.round(numeric * 1000)
+  if (normalized.includes('w') || normalized.includes('万')) return Math.round(numeric * 10000)
+  return Math.round(numeric)
 }
 
 function search(): void {

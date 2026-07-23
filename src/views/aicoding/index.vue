@@ -102,6 +102,7 @@
 import type { ComputedRef, Ref } from 'vue'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
 import { requestJson } from '@/utils/request'
+import { requestJinaJson } from '@/utils/jinaReader'
 import {
   JUEJIN_AUTHOR_RANK_OPTIONS,
   JUEJIN_HOT_AUTHOR_CATEGORY_OPTIONS,
@@ -278,7 +279,8 @@ const rankItems: Ref<RankItem[]> = ref<RankItem[]>([])
 const loading: Ref<boolean> = ref<boolean>(false)
 const error: Ref<string> = ref<string>('')
 const rankPeriodText: Ref<string> = ref<string>('')
-const shouldUseJuejinRankCache: boolean = import.meta.env.PROD
+const shouldUseJuejinRankCache = false
+const isProd: boolean = import.meta.env.PROD
 const juejinRankCacheUrl: string = `${import.meta.env.BASE_URL}live-data/juejin-rank-cache.json`
 
 let requestSeq: number = 0
@@ -397,10 +399,17 @@ async function fetchArticleRankResponse(
     return readJuejinCacheEntry(cache.articleRanks[articleRankCacheKey(categoryId, rankType)], '缓存暂无文章榜数据')
   }
 
-  return requestJson<JuejinArticleRankResponse>(buildJuejinArticleRankUrl(categoryId, rankType))
+  const url: string = buildJuejinArticleRankUrl(categoryId, rankType)
+  return isProd
+    ? requestJinaJson<JuejinArticleRankResponse>(url)
+    : requestJson<JuejinArticleRankResponse>(url)
 }
 
 async function fetchColumnRankResponse(): Promise<JuejinColumnRankResponse> {
+  if (isProd) {
+    throw new Error('精选专栏榜使用掘金 POST 接口，当前静态线上环境无法跨域读取；已停止展示本地缓存数据')
+  }
+
   if (shouldUseJuejinRankCache) {
     const cache: JuejinRankCache = await loadJuejinRankCache()
     return readJuejinCacheEntry(cache.columnRank, '缓存暂无专栏榜数据')
@@ -413,6 +422,10 @@ async function fetchColumnRankResponse(): Promise<JuejinColumnRankResponse> {
 }
 
 async function fetchCollectionRankResponse(): Promise<JuejinCollectionRankResponse> {
+  if (isProd) {
+    throw new Error('推荐收藏集使用掘金 POST 接口，当前静态线上环境无法跨域读取；已停止展示本地缓存数据')
+  }
+
   if (shouldUseJuejinRankCache) {
     const cache: JuejinRankCache = await loadJuejinRankCache()
     return readJuejinCacheEntry(cache.collectionRank, '缓存暂无收藏集榜数据')
@@ -428,6 +441,10 @@ async function fetchAuthorRankResponse(
   categoryId: string,
   rankType: JuejinAuthorRankType
 ): Promise<JuejinAuthorRankResponse> {
+  if (isProd) {
+    throw new Error('作者榜使用掘金 POST 接口，当前静态线上环境无法跨域读取；已停止展示本地缓存数据')
+  }
+
   if (shouldUseJuejinRankCache) {
     const cache: JuejinRankCache = await loadJuejinRankCache()
     return readJuejinCacheEntry(cache.authorRanks[authorRankCacheKey(categoryId, rankType)], '缓存暂无作者榜数据')

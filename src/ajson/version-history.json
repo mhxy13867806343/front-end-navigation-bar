@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T04:19:52.912Z",
+  "generatedAt": "2026-07-23T05:33:02.351Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "522c5952e9173859be11c378a13f4243f010d24a",
+          "shortHash": "522c595",
+          "date": "2026-07-23",
+          "time": "12:20",
+          "type": "问题修复",
+          "title": "remove allorigins.win proxy from the request pool",
+          "scope": "bilibili-live",
+          "message": "fix(bilibili-live): remove allorigins.win proxy from the request pool"
+        },
         {
           "hash": "542d25f31e3c480742c69e7932e052ccc7ac061e",
           "shortHash": "542d25f",
@@ -298,16 +308,6 @@
           "title": "add Hanfu News (Tab 11) and Oil Price Query (Tab 12) to mingyan culture suite",
           "scope": "",
           "message": "feat: add Hanfu News (Tab 11) and Oil Price Query (Tab 12) to mingyan culture suite"
-        },
-        {
-          "hash": "ebb806e49be57db0054242561985009d35bdd1ae",
-          "shortHash": "ebb806e",
-          "date": "2026-07-22",
-          "time": "12:59",
-          "type": "功能更新",
-          "title": "add QR code generator (Tab 9) and Chinese-to-Pinyin converter (Tab 10) to mingyan culture suite",
-          "scope": "",
-          "message": "feat: add QR code generator (Tab 9) and Chinese-to-Pinyin converter (Tab 10) to mingyan culture suite"
         }
       ]
     }

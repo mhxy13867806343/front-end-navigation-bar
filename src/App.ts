@@ -44,6 +44,7 @@ import { useDatabase } from './composables/useDatabase'
 import { useSearch } from './composables/useSearch'
 import { useRandomWebsites } from './composables/useRandomWebsites'
 import { resolveApiUrl } from './utils/resolveApiUrl'
+import { requestJinaJson } from './utils/jinaReader'
 
 const UAPIS_API_BASE: string = '/api-uapis'
 const AA1_API_BASE: string = '/api-aa1'
@@ -52,6 +53,62 @@ const ALAPI_TOKEN: string = import.meta.env.VITE_ALAPI_TOKEN || 'qgqofofvmxtoskf
 
 function buildUapisUrl(path: string): string {
   return resolveApiUrl(`${UAPIS_API_BASE}${path}`)
+}
+
+type ApiQueryValue = string | number | boolean | undefined | null
+
+interface ApiEnvelope {
+  code?: string | number
+  message?: string
+  msg?: string
+  data?: unknown
+}
+
+function buildQueryString(params?: Record<string, ApiQueryValue>): string {
+  const searchParams = new URLSearchParams()
+  Object.entries(params || {}).forEach(([key, value]: [string, ApiQueryValue]): void => {
+    if (value === undefined || value === null || value === '') return
+    searchParams.set(key, String(value))
+  })
+  const query: string = searchParams.toString()
+  return query ? `?${query}` : ''
+}
+
+function isApiEnvelope(payload: unknown): payload is ApiEnvelope {
+  return !!payload && typeof payload === 'object' && 'code' in payload
+}
+
+function isSuccessCode(code: string | number | undefined): boolean {
+  return code === undefined || code === 200 || code === '200' || code === 0 || code === '0'
+}
+
+function assertApiSuccess<T>(payload: T): T {
+  if (isApiEnvelope(payload) && !isSuccessCode(payload.code)) {
+    throw new Error(payload.message || payload.msg || `接口返回异常：${payload.code}`)
+  }
+  return payload
+}
+
+async function requestUapisJson<T>(path: string, params?: Record<string, ApiQueryValue>): Promise<T> {
+  if (import.meta.env.PROD) {
+    return assertApiSuccess(await requestJinaJson<T>(`https://uapis.cn${path}${buildQueryString(params)}`))
+  }
+
+  const response = await axios.get<T>(buildUapisUrl(path), { params })
+  return assertApiSuccess(response.data)
+}
+
+function unwrapEnvelope<T>(payload: T | { code?: string | number; data?: T }): T {
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    const envelope = payload as { data?: T }
+    if (envelope.data) return envelope.data
+  }
+  return payload as T
+}
+
+function buildImageProxyUrl(url: string): string {
+  const normalized = url.replace(/^https?:\/\//, '')
+  return `https://images.weserv.nl/?url=${encodeURIComponent(normalized)}`
 }
 
 function buildAa1Url(path: string): string {
@@ -476,13 +533,16 @@ export function useAppLogic() {
     let url = ''
     if (bingWallpaperForm.value.source === 'uapis') {
       const { date, random, resolution, format } = bingWallpaperForm.value
-      url = buildUapisUrl(`/bing?resolution=${resolution}&format=${format}`)
+      const params = new URLSearchParams({ resolution, format })
       if (date && !random) {
-        url += `&date=${date}`
+        params.set('date', date)
       }
       if (random) {
-        url += `&random=true`
+        params.set('random', 'true')
       }
+      params.set('t', String(Date.now()))
+      const realUrl = `https://uapis.cn/bing?${params.toString()}`
+      url = isProd ? buildImageProxyUrl(realUrl) : buildUapisUrl(`/bing?${params.toString()}`)
     } else {
       const { random, resolution } = bingWallpaperForm.value
       if (random) {
@@ -553,63 +613,6 @@ export function useAppLogic() {
     return null
   }
 
-  const fallbackMockSearch = async (): Promise<void> => {
-    const kw: string = weatherSearchKeyword.value.trim()
-    let matches: CityInfo[] = []
-    
-    if (kw.includes('杭州')) {
-      matches = [
-        { name: '杭州市', adcode: '330100', province: '浙江省', city: '杭州市', district: '全市' },
-        { name: '西湖区', adcode: '330106', province: '浙江省', city: '杭州市', district: '西湖区' },
-        { name: '拱墅区', adcode: '330105', province: '浙江省', city: '杭州市', district: '拱墅区' },
-        { name: '滨江区', adcode: '330108', province: '浙江省', city: '杭州市', district: '滨江区' },
-        { name: '萧山区', adcode: '330109', province: '浙江省', city: '杭州市', district: '萧山区' },
-        { name: '余杭区', adcode: '330110', province: '浙江省', city: '杭州市', district: '余杭区' }
-      ]
-    } else if (kw.includes('北京')) {
-      matches = [
-        { name: '北京市', adcode: '110000', province: '北京市', city: '北京市', district: '全市' },
-        { name: '东城区', adcode: '110101', province: '北京市', city: '北京市', district: '东城区' },
-        { name: '西城区', adcode: '110102', province: '北京市', city: '北京市', district: '西城区' },
-        { name: '朝阳区', adcode: '110105', province: '北京市', city: '北京市', district: '朝阳区' },
-        { name: '海淀区', adcode: '110108', province: '北京市', city: '北京市', district: '海淀区' }
-      ]
-    } else if (kw.includes('上海')) {
-      matches = [
-        { name: '上海市', adcode: '310000', province: '上海市', city: '上海市', district: '全市' },
-        { name: '黄浦区', adcode: '310101', province: '上海市', city: '上海市', district: '黄浦区' },
-        { name: '徐汇区', adcode: '310104', province: '上海市', city: '上海市', district: '徐汇区' },
-        { name: '静安区', adcode: '310106', province: '上海市', city: '上海市', district: '静安区' },
-        { name: '浦东新区', adcode: '310115', province: '上海市', city: '上海市', district: '浦东新区' }
-      ]
-    } else if (kw.includes('深圳')) {
-      matches = [
-        { name: '深圳市', adcode: '440300', province: '广东省', city: '深圳市', district: '全市' },
-        { name: '罗湖区', adcode: '440303', province: '广东省', city: '深圳市', district: '罗湖区' },
-        { name: '福田区', adcode: '440304', province: '广东省', city: '深圳市', district: '福田区' },
-        { name: '南山区', adcode: '440305', province: '广东省', city: '深圳市', district: '南山区' },
-        { name: '宝安区', adcode: '440306', province: '广东省', city: '深圳市', district: '宝安区' },
-        { name: '龙岗区', adcode: '440307', province: '广东省', city: '深圳市', district: '龙岗区' }
-      ]
-    } else {
-      const foundCity = getCityInfoByName(kw)
-      if (foundCity) {
-        matches = [
-          { name: foundCity.name, adcode: foundCity.adcode, province: foundCity.province || '未知省份', city: foundCity.name, district: '全市' }
-        ]
-      } else {
-        matches = [
-          { name: kw, adcode: '330100', province: '浙江省', city: kw, district: '全市' },
-          { name: `${kw}地区`, adcode: '330106', province: '浙江省', city: kw, district: '地区' }
-        ]
-      }
-    }
-    
-    weatherDistrictList.value = matches
-    selectedAdcode.value = matches[0].adcode
-    await queryWeatherByAdcode(selectedAdcode.value)
-  }
-
   const searchWeatherDistrict = async (): Promise<void> => {
     if (!weatherSearchKeyword.value.trim()) {
       ElMessage.warning('请输入要查询的城市或地区！')
@@ -618,32 +621,38 @@ export function useAppLogic() {
     isWeatherLoading.value = true
     try {
       // 1. Search region by keywords first
-      const res = await axios.get(buildUapisUrl('/api/v1/misc/district'), {
-        params: { keywords: weatherSearchKeyword.value.trim() }
-      })
-      if (res.data && res.data.code === 200 && res.data.data && res.data.data.length > 0) {
-        const primaryMatch = res.data.data[0]
+      const regionList = unwrapEnvelope(await requestUapisJson<CityInfo[] | { code?: number; data?: CityInfo[] }>('/api/v1/misc/district', {
+        keywords: weatherSearchKeyword.value.trim()
+      }))
+      if (regionList && regionList.length > 0) {
+        const primaryMatch = regionList[0]
         
         // 2. Query matched adcode to retrieve the matched region + its sub-districts!
-        const subRes = await axios.get(buildUapisUrl('/api/v1/misc/district'), {
-          params: { adcode: primaryMatch.adcode }
-        })
+        const subList = unwrapEnvelope(await requestUapisJson<CityInfo[] | { code?: number; data?: CityInfo[] }>('/api/v1/misc/district', {
+          adcode: primaryMatch.adcode
+        }))
         
-        if (subRes.data && subRes.data.code === 200 && subRes.data.data && subRes.data.data.length > 0) {
-          weatherDistrictList.value = subRes.data.data
-          selectedAdcode.value = subRes.data.data[0].adcode
+        if (subList && subList.length > 0) {
+          weatherDistrictList.value = subList
+          selectedAdcode.value = subList[0].adcode
           await queryWeatherByAdcode(selectedAdcode.value)
         } else {
-          weatherDistrictList.value = res.data.data
+          weatherDistrictList.value = regionList
           selectedAdcode.value = primaryMatch.adcode
           await queryWeatherByAdcode(selectedAdcode.value)
         }
       } else {
-        await fallbackMockSearch()
+        weatherDistrictList.value = []
+        currentWeather.value = null
+        forecastList.value = []
+        ElMessage.warning('没有查到匹配地区')
       }
     } catch (e) {
       console.error('查找地区失败:', e)
-      await fallbackMockSearch()
+      weatherDistrictList.value = []
+      currentWeather.value = null
+      forecastList.value = []
+      ElMessage.error(`地区接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isWeatherLoading.value = false
     }
@@ -655,52 +664,57 @@ export function useAppLogic() {
       city: info.city || '',
       district: info.district || '',
       adcode: info.adcode || '',
-      temp: info.temp || info.temperature || '31',
-      weather: info.weather || '晴',
+      temp: info.temp || info.temperature || '',
+      weather: info.weather || '',
       weather_icon: info.weather_icon || '100',
-      humidity: info.humidity || '45%',
+      humidity: info.humidity || '',
       wind_direction: info.wind_direction || '南风',
       wind_power: info.wind_power || '2级',
-      update_time: info.update_time || info.reporttime || new Date().toLocaleString(),
+      update_time: info.update_time || info.report_time || info.reporttime || '',
       
       // Extended fields
-      temp_feels: info.temp_feels || '',
+      temp_feels: info.temp_feels || info.feels_like || '',
       visibility: info.visibility || '',
       pressure: info.pressure || '',
-      uv_index: info.uv_index || '',
+      uv_index: info.uv_index || info.uv || '',
       aqi: info.aqi || '',
       aqi_desc: info.aqi_desc || '',
       
       // Indices
-      indices: info.indices || null
+      indices: info.indices || {
+        apparel: info.life_indices?.clothing,
+        car_wash: info.life_indices?.car_wash,
+        sunscreen: info.life_indices?.sunscreen || info.life_indices?.uv,
+        sport: info.life_indices?.exercise
+      }
     }
   }
 
   const queryWeatherByAdcode = async (adcode: string): Promise<void> => {
     isWeatherLoading.value = true
     try {
-      const res = await axios.get(buildUapisUrl('/api/v1/misc/weather'), {
-        params: { 
-          adcode: adcode, 
-          forecast: 'true',
-          extended: 'true',
-          hourly: 'true',
-          minutely: 'true',
-          indices: 'true'
-        }
-      })
-      const isEnvelope = res.data && res.data.code === 200 && res.data.data
-      const info = isEnvelope ? res.data.data : res.data
+      const info = unwrapEnvelope(await requestUapisJson<Record<string, any> | { code?: number; data?: Record<string, any> }>('/api/v1/misc/weather', {
+        adcode: adcode,
+        forecast: 'true',
+        extended: 'true',
+        hourly: 'true',
+        minutely: 'true',
+        indices: 'true'
+      }))
       
-      if (info && (info.province || info.city || info.temp)) {
+      if (info && (info.province || info.city || info.temp || info.temperature)) {
         currentWeather.value = buildWeatherObject(info)
         forecastList.value = info.forecast || []
       } else {
-        generateMockWeather(adcode)
+        currentWeather.value = null
+        forecastList.value = []
+        throw new Error('天气接口未返回有效数据')
       }
     } catch (e) {
       console.error('获取天气失败:', e)
-      generateMockWeather(adcode)
+      currentWeather.value = null
+      forecastList.value = []
+      ElMessage.error(`天气接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isWeatherLoading.value = false
     }
@@ -709,134 +723,32 @@ export function useAppLogic() {
   const loadWeatherByIp = async (): Promise<void> => {
     isWeatherLoading.value = true
     try {
-      const res = await axios.get(buildUapisUrl('/api/v1/misc/weather'), {
-        params: { 
-          forecast: 'true',
-          extended: 'true',
-          hourly: 'true',
-          minutely: 'true',
-          indices: 'true'
-        }
-      })
-      const isEnvelope = res.data && res.data.code === 200 && res.data.data
-      const info = isEnvelope ? res.data.data : res.data
+      const info = unwrapEnvelope(await requestUapisJson<Record<string, any> | { code?: number; data?: Record<string, any> }>('/api/v1/misc/weather', {
+        forecast: 'true',
+        extended: 'true',
+        hourly: 'true',
+        minutely: 'true',
+        indices: 'true'
+      }))
       
-      if (info && (info.province || info.city || info.temp)) {
+      if (info && (info.province || info.city || info.temp || info.temperature)) {
         currentWeather.value = buildWeatherObject(info)
         forecastList.value = info.forecast || []
         selectedAdcode.value = info.adcode
         weatherSearchKeyword.value = info.city || ''
       } else {
-        generateMockWeather('330100')
+        currentWeather.value = null
+        forecastList.value = []
+        throw new Error('天气接口未返回有效数据')
       }
     } catch (e) {
       console.error('IP定位天气失败:', e)
-      generateMockWeather('330100')
+      currentWeather.value = null
+      forecastList.value = []
+      ElMessage.error(`天气接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isWeatherLoading.value = false
     }
-  }
-
-  const generateMockWeather = (adcode: string): void => {
-    const citiesMap: Record<string, Pick<CurrentWeather, 'province' | 'city' | 'district' | 'temp' | 'weather'>> = {
-      '330100': { province: '浙江省', city: '杭州市', district: '西湖区', temp: '32', weather: '晴' },
-      '110000': { province: '北京市', city: '北京市', district: '东城区', temp: '29', weather: '多云' },
-      '310000': { province: '上海市', city: '上海市', district: '黄浦区', temp: '30', weather: '多云' },
-      '440300': { province: '广东省', city: '深圳市', district: '福田区', temp: '31', weather: '小雨' }
-    }
-    
-    let match: Pick<CurrentWeather, 'province' | 'city' | 'district' | 'temp' | 'weather'> | undefined = citiesMap[adcode]
-    
-    if (!match) {
-      const foundCity = getCityInfoByAdcode(adcode)
-      if (foundCity) {
-        match = {
-          province: foundCity.province || '未知省份',
-          city: foundCity.name || '未知城市',
-          district: foundCity.district || '全市',
-          temp: String(24 + Math.round(Math.random() * 8)),
-          weather: '多云'
-        }
-      }
-    }
-    
-    if (!match && weatherDistrictList.value.length > 0) {
-      const found: CityInfo | undefined = weatherDistrictList.value.find((item: CityInfo): boolean => item.adcode === adcode)
-      if (found) {
-        match = {
-          province: found.province || '未知省份',
-          city: found.city || found.name || '未知城市',
-          district: found.district || found.name || '全市',
-          temp: String(24 + Math.round(Math.random() * 8)),
-          weather: '多云'
-        }
-      }
-    }
-    
-    if (!match) {
-      const foundCity = getCityInfoByName(weatherSearchKeyword.value)
-      if (foundCity) {
-        match = {
-          province: foundCity.province || '未知省份',
-          city: foundCity.name || '未知城市',
-          district: '全市',
-          temp: String(24 + Math.round(Math.random() * 8)),
-          weather: '多云'
-        }
-      }
-    }
-    
-    if (!match) {
-      match = { province: '浙江省', city: '杭州市', district: '西湖区', temp: '32', weather: '晴' }
-    }
-    
-    currentWeather.value = {
-      province: match.province,
-      city: match.city,
-      district: match.district,
-      adcode: adcode,
-      temp: match.temp,
-      weather: match.weather,
-      weather_icon: '100',
-      humidity: '50%',
-      wind_direction: '南风',
-      wind_power: '2级',
-      update_time: new Date().toLocaleString(),
-      
-      // Mock extended fields
-      temp_feels: String(parseInt(String(match.temp)) - 1),
-      visibility: '10',
-      pressure: '1012',
-      uv_index: '3',
-      aqi: '45',
-      aqi_desc: '优',
-      
-      // Mock indices
-      indices: {
-        apparel: { level: '舒适', advice: '建议穿短袖等夏季便服。' },
-        car_wash: { level: '适宜', advice: '无雨，非常适合洗车。' },
-        sunscreen: { level: '中等', advice: '建议防晒。' },
-        sport: { level: '适宜', advice: '适宜户外运动。' }
-      }
-    }
-
-    const forecast: WeatherForecast[] = []
-    const weekDays: string[] = ['今天', '明天', '后天', '周四', '周五', '周六', '周日']
-    const weatherTypes: string[] = ['晴', '多云', '雷阵雨', '阴', '小雨', '多云', '晴']
-    const baseHigh: number = parseInt(String(match.temp))
-    const baseLow: number = baseHigh - 7
-
-    for (let i = 0; i < 7; i++) {
-      forecast.push({
-        date: weekDays[i],
-        temp_high: baseHigh + Math.round(Math.random() * 4 - 2),
-        temp_low: baseLow + Math.round(Math.random() * 4 - 2),
-        weather: weatherTypes[i]
-      })
-    }
-    forecastList.value = forecast
-    selectedAdcode.value = adcode
-    weatherSearchKeyword.value = match.city
   }
 
   // 智能实用工具箱状态
@@ -896,34 +808,39 @@ export function useAppLogic() {
   const isRandomImageLoading = ref<boolean>(false)
 
   // 接口方法定义
+  const mapHolidayCalendarData = (payload: Record<string, any>): HolidayData => {
+    const day = Array.isArray(payload.days) ? payload.days[0] : payload
+    return {
+      date: day?.date || holidayQueryDate.value,
+      week: day?.weekday_cn || day?.week || '',
+      lunar: {
+        lunar_year: day?.lunar_year || '',
+        lunar_month: day?.lunar_month || '',
+        lunar_day: day?.lunar_day || '',
+        lunar_month_name: day?.lunar_month_name || '',
+        lunar_day_name: day?.lunar_day_name || '',
+        ganzhi_year: day?.ganzhi_year || '',
+        ganzhi_month: day?.ganzhi_month || '',
+        ganzhi_day: day?.ganzhi_day || ''
+      },
+      holidays: payload.holidays || day?.holidays || [],
+      nearby: payload.nearby
+    }
+  }
+
   const queryHolidayCalendar = async () => {
     if (!holidayQueryDate.value) return
     isHolidayLoading.value = true
     try {
-      const res = await axios.get(buildUapisUrl('/api/v1/misc/holiday-calendar'), {
-        params: { date: holidayQueryDate.value, include_nearby: true }
-      })
-      const isEnvelope = res.data && res.data.code === 200 && res.data.data
-      holidayData.value = isEnvelope ? res.data.data : res.data
+      const data = unwrapEnvelope(await requestUapisJson<Record<string, any> | { code?: number; data?: Record<string, any> }>('/api/v1/misc/holiday-calendar', {
+        date: holidayQueryDate.value,
+        include_nearby: true
+      }))
+      holidayData.value = mapHolidayCalendarData(data)
     } catch (e) {
       console.error('获取节假日日历失败:', e)
-      holidayData.value = {
-        date: holidayQueryDate.value,
-        week: '星期一',
-        lunar: {
-          lunar_year: 2026,
-          lunar_month: 6,
-          lunar_day: 1,
-          lunar_month_name: '六月',
-          lunar_day_name: '初一',
-          ganzhi_year: '丙午',
-          ganzhi_month: '乙未',
-          ganzhi_day: '甲子'
-        },
-        holidays: [
-          { name: '工作日', type: 'workday' }
-        ]
-      }
+      holidayData.value = null
+      ElMessage.error(`节假日接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isHolidayLoading.value = false
     }
@@ -932,17 +849,12 @@ export function useAppLogic() {
   const queryProgrammerToday = async () => {
     isProgrammerLoading.value = true
     try {
-      const res = await axios.get(buildUapisUrl('/api/v1/history/programmer/today'))
-      const isEnvelope = res.data && res.data.code === 200 && res.data.data
-      const data = isEnvelope ? res.data.data : res.data
+      const data = unwrapEnvelope(await requestUapisJson<{ events?: ProgrammerHistoryItem[] } | { code?: number; data?: { events?: ProgrammerHistoryItem[] } }>('/api/v1/history/programmer/today'))
       programmerHistory.value = data.events || []
     } catch (e) {
       console.error('获取程序员老黄历失败:', e)
-      programmerHistory.value = [
-        { year: 1975, title: 'Microsoft 公司成立', description: '比尔·盖茨和保罗·艾伦在美国新墨西哥州阿尔伯克基创立微软公司', category: '公司创立', importance: 9, url: 'https://zh.wikipedia.org/wiki/微软' },
-        { year: 1991, title: 'Linux 内核发布', description: '林纳斯·托瓦兹公开发布 Linux 内核源代码，促成了开源运动繁荣', category: '开源发布', importance: 10, url: 'https://zh.wikipedia.org/wiki/Linux' },
-        { year: 1995, title: 'Java 语言发布', description: 'Sun Microsystems 正式发布 Java 语言，成为企业开发基石', category: '语言发布', importance: 9, url: 'https://zh.wikipedia.org/wiki/Java' }
-      ]
+      programmerHistory.value = []
+      ElMessage.error(`程序员黄历接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isProgrammerLoading.value = false
     }
@@ -966,11 +878,7 @@ export function useAppLogic() {
         } catch (e: unknown) {
           const message: string = e instanceof Error ? e.message : String(e)
           console.warn('Unable to query aa1 Bilibili hot search, falling back to UApi:', message)
-          const res = await axios.get(buildUapisUrl('/api/v1/misc/hotboard'), {
-            params: { type: 'bili' }
-          })
-          const isEnvelope = res.data && res.data.code === 200 && res.data.data
-          const data = isEnvelope ? res.data.data : res.data
+          const data = unwrapEnvelope(await requestUapisJson<Record<string, unknown>>('/api/v1/misc/hotboard', { type: 'bili' }))
           const list = data.list || data.results || []
           hotboardData.value = list.map((item: Record<string, string | number>): HotboardItem => ({
             title: String(item.title),
@@ -993,23 +901,14 @@ export function useAppLogic() {
           }
         } catch (e) {
           const message: string = e instanceof Error ? e.message : String(e)
-          console.warn('Unable to query OSChina RSS, falling back to mock OSChina news:', message)
-          hotboardData.value = [
-            { title: "openKylin 开放麒麟 2.0 正式版发布！搭载全新一代麒麟桌面 💻", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
-            { title: "Linux 6.10 内核正式发布，带来大量硬件驱动更新 🐧", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
-            { title: "Taro 4.0 正式发布：支持全新编译引擎与多端同构架构 🚀", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
-            { title: "Rust 1.80.0 稳定版发布：带来全新的 Lazy Cell 和 Lazy Lock 🌟", hot_value: "📰 新闻", url: "https://www.oschina.net/news" },
-            { title: "Node.js 22.5.0 发布：实验性支持 TypeScript 执行 ⚡", hot_value: "📰 新闻", url: "https://www.oschina.net/news" }
-          ]
+          console.warn('Unable to query OSChina RSS:', message)
+          hotboardData.value = []
+          throw new Error(message)
         }
       } else if (hotboardType.value === 'juejin-pins') {
         try {
           // Use UApi hotboard for Juejin articles to bypass CORS and get real live Juejin data!
-          const res = await axios.get(buildUapisUrl('/api/v1/misc/hotboard'), {
-            params: { type: 'juejin' }
-          })
-          const isEnvelope = res.data && res.data.code === 200 && res.data.data
-          const data = isEnvelope ? res.data.data : res.data
+          const data = unwrapEnvelope(await requestUapisJson<Record<string, unknown>>('/api/v1/misc/hotboard', { type: 'juejin' }))
           const list = data.list || data.results || []
           if (list && list.length > 0) {
             hotboardData.value = list.map((item: Record<string, string | number>): HotboardItem => ({
@@ -1022,21 +921,12 @@ export function useAppLogic() {
           }
         } catch (e) {
           const message: string = e instanceof Error ? e.message : String(e)
-          console.warn('Unable to query UApi Juejin, falling back to mock Juejin Pins:', message)
-          hotboardData.value = [
-            { title: "一切尽在不言中 🤫", hot_value: "🔥 热度: 999", url: "https://juejin.cn/pins" },
-            { title: "早上5点多跑步半小时，再学习一个小时，卷死我了！🏃‍♂️", hot_value: "🔥 热度: 852", url: "https://juejin.cn/pins" },
-            { title: "写代码时，你最喜欢听什么类型的音乐？🎵", hot_value: "🔥 热度: 763", url: "https://juejin.cn/pins" },
-            { title: "Vue3 的 Ref 和 Reactive，到底该用哪一个？🤔", hot_value: "🔥 热度: 641", url: "https://juejin.cn/pins" },
-            { title: "今天周五，今晚不加班！祝大家周末愉快！🎉", hot_value: "🔥 热度: 593", url: "https://juejin.cn/pins" }
-          ]
+          console.warn('Unable to query UApi Juejin:', message)
+          hotboardData.value = []
+          throw new Error(message)
         }
       } else {
-        const res = await axios.get(buildUapisUrl('/api/v1/misc/hotboard'), {
-          params: { type: hotboardType.value }
-        })
-        const isEnvelope = res.data && res.data.code === 200 && res.data.data
-        const data = isEnvelope ? res.data.data : res.data
+        const data = unwrapEnvelope(await requestUapisJson<Record<string, unknown>>('/api/v1/misc/hotboard', { type: hotboardType.value }))
         hotboardData.value = data.list || data.results || []
       }
     } catch (e) {
@@ -1067,11 +957,8 @@ export function useAppLogic() {
         console.error('备用热榜源获取失败:', backupErr)
       }
       
-      hotboardData.value = [
-        { title: '大语言模型前沿技术突破', hot_value: '520 万', url: 'https://github.com' },
-        { title: 'Vite 5.0 正式发布上线', hot_value: '450 万', url: 'https://vite.dev' },
-        { title: 'Vue 3.5 响应式引擎大幅优化', hot_value: '380 万', url: 'https://vuejs.org' }
-      ]
+      hotboardData.value = []
+      ElMessage.error(`热榜接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isHotboardLoading.value = false
     }
@@ -1080,19 +967,11 @@ export function useAppLogic() {
   const queryMovieBoxOffice = async () => {
     isMovieBoxLoading.value = true
     try {
-      const res = await axios.get(buildUapisUrl('/api/v1/misc/movie-box-office'))
-      const isEnvelope = res.data && res.data.code === 200 && res.data.data
-      movieBoxOffice.value = isEnvelope ? res.data.data : res.data
+      movieBoxOffice.value = unwrapEnvelope(await requestUapisJson<MovieBoxOffice | { code?: number; data?: MovieBoxOffice }>('/api/v1/misc/movie-box-office'))
     } catch (e) {
       console.error('获取票房失败:', e)
-      movieBoxOffice.value = {
-        update_time: new Date().toLocaleString(),
-        market: { box_office: '4521.8万', show_count: '34.2万', view_count: '110.5万' },
-        list: [
-          { rank: 1, movie_name: '神秘大冒险：起源', box_office: '1852.4万', box_office_rate: '41.0%', show_count_rate: '32.1%', sum_box_office: '4.82亿', release_info: '上映5天' },
-          { rank: 2, movie_name: '星际迷航：深渊', box_office: '1241.2万', box_office_rate: '27.4%', show_count_rate: '26.8%', sum_box_office: '2.14亿', release_info: '上映3天' }
-        ]
-      }
+      movieBoxOffice.value = null
+      ElMessage.error(`票房接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isMovieBoxLoading.value = false
     }
@@ -1102,15 +981,16 @@ export function useAppLogic() {
     isMovieRatingsLoading.value = true
     movieRatingsError.value = ''
     try {
-      const res = await axios.get<MovieRatingApiResponse>(buildUapisUrl('/api/v1/misc/movie-rating-rank'), {
-        params: { channel: movieRatingsChannel.value, period: movieRatingsPeriod.value }
+      const response = await requestUapisJson<MovieRatingApiResponse>('/api/v1/misc/movie-rating-rank', {
+        channel: movieRatingsChannel.value,
+        period: movieRatingsPeriod.value
       })
 
-      if (res.data.code && res.data.code !== 200) {
-        throw new Error(res.data.message || '影视热度榜接口暂不可用')
+      if (response.code && response.code !== 200) {
+        throw new Error(response.message || '影视热度榜接口暂不可用')
       }
 
-      const data: MovieRatingApiPayload | MovieRatingApiResponse = res.data.data || res.data
+      const data: MovieRatingApiPayload | MovieRatingApiResponse = response.data || response
       const itemsList: MovieRatingItem[] = mapMovieRatingResponse(data)
 
       if (!itemsList.length) {
@@ -1120,49 +1000,8 @@ export function useAppLogic() {
       movieRatings.value = itemsList
     } catch (e: unknown) {
       console.error('获取电影排行失败:', e)
-      const fallbackRatingsMap: Record<string, Array<{title: string, score?: string | number, hot_value?: string | number, platform: string}>> = {
-        all: [
-          { title: '消失的她', score: '9.2', platform: '猫眼评分' },
-          { title: '孤注一掷', score: '9.1', platform: '淘票票评分' },
-          { title: '长安三万里', score: '8.8', platform: '豆瓣评分' },
-          { title: '八角笼中', score: '8.7', platform: '猫眼评分' },
-          { title: '封神第一部', score: '8.6', platform: '豆瓣评分' },
-          { title: '热烈', score: '8.5', platform: '淘票票评分' }
-        ],
-        tv: [
-          { title: '狂飙', hot_value: 'CCTV-8 收视率 2.8%', platform: '卫视收视' },
-          { title: '三体', hot_value: 'CCTV-8 收视率 1.9%', platform: '卫视收视' },
-          { title: '去有风的地方', hot_value: '湖南卫视 收视率 1.5%', platform: '卫视收视' },
-          { title: '我们的日子', hot_value: 'CCTV-1 收视率 1.4%', platform: '卫视收视' },
-          { title: '向风而行', hot_value: '央视八套 收视率 1.2%', platform: '卫视收视' }
-        ],
-        web: [
-          { title: '长相思 第一季', hot_value: '腾讯视频 热度值 33145', platform: '网络平台' },
-          { title: '莲花楼', hot_value: '爱奇艺 热度值 10000', platform: '网络平台' },
-          { title: '玉骨遥', hot_value: '腾讯视频 热度值 29800', platform: '网络平台' },
-          { title: '长风渡', hot_value: '爱奇艺 热度值 9800', platform: '网络平台' },
-          { title: '安乐传', hot_value: '优酷 热度值 9500', platform: '网络平台' }
-        ],
-        cinema: [
-          { title: '神秘大冒险：起源', score: '9.0', platform: '猫眼评分' },
-          { title: '星际迷航：深渊', score: '8.9', platform: '淘票票评分' },
-          { title: '昨日青空', score: '8.5', platform: '豆瓣评分' },
-          { title: '未来纪元', score: '8.2', platform: '猫眼评分' }
-        ]
-      }
-
-      const channel = movieRatingsChannel.value || 'all'
-      const rawList = fallbackRatingsMap[channel] || fallbackRatingsMap.all
-      movieRatings.value = rawList.map((item, index) => ({
-        rank: index + 1,
-        title: item.title,
-        score: item.score,
-        hot_value: item.hot_value || item.score,
-        platform: item.platform,
-        channel: channel,
-        url: ''
-      }))
-      movieRatingsError.value = '在线接口连接超时，已为您展示本地精选热度排行数据。'
+      movieRatings.value = []
+      movieRatingsError.value = `影视热度榜接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`
     } finally {
       isMovieRatingsLoading.value = false
     }
@@ -1218,41 +1057,25 @@ export function useAppLogic() {
     isTrackingLoading.value = true
     try {
       if (!trackingCarrier.value) {
-        const detRes = await axios.get(buildUapisUrl('/api/v1/misc/tracking/detect'), {
-          params: { tracking_number: trackingNumber.value.trim() }
-        })
-        const isEnvelopeDet = detRes.data && detRes.data.code === 200 && detRes.data.data
-        const detData = isEnvelopeDet ? detRes.data.data : detRes.data
+        const detData = unwrapEnvelope(await requestUapisJson<Record<string, string>>('/api/v1/misc/tracking/detect', {
+          tracking_number: trackingNumber.value.trim()
+        }))
         if (detData && detData.carrier_code) {
           trackingCarrier.value = detData.carrier_code
           trackingCarrierName.value = detData.carrier_name || detData.carrier_code
         }
       }
       
-      const qRes = await axios.get(buildUapisUrl('/api/v1/misc/tracking/query'), {
-        params: { 
-          tracking_number: trackingNumber.value.trim(),
-          carrier_code: trackingCarrier.value,
-          phone: trackingPhone.value.trim() || undefined
-        }
-      })
-      const isEnvelopeQ = qRes.data && qRes.data.code === 200 && qRes.data.data
-      const qData = isEnvelopeQ ? qRes.data.data : qRes.data
+      const qData = unwrapEnvelope(await requestUapisJson<TrackingInfo | { code?: number; data?: TrackingInfo }>('/api/v1/misc/tracking/query', {
+        tracking_number: trackingNumber.value.trim(),
+        carrier_code: trackingCarrier.value,
+        phone: trackingPhone.value.trim() || undefined
+      }))
       trackingInfo.value = qData
     } catch (e) {
       console.error('查询快递失败:', e)
-      trackingInfo.value = {
-        tracking_number: trackingNumber.value,
-        carrier_name: trackingCarrierName.value || '智能匹配物流',
-        status: 'transit',
-        status_desc: '运输中',
-        list: [
-          { time: new Date().toLocaleString(), status_desc: '快递正在派送中，派件员：小张(13800000000)' },
-          { time: new Date(Date.now() - 3600000 * 4).toLocaleString(), status_desc: '快件到达 【杭州西湖分拨中心】' },
-          { time: new Date(Date.now() - 3600000 * 12).toLocaleString(), status_desc: '快件从 【上海总部分拨中心】 发出' },
-          { time: new Date(Date.now() - 3600000 * 24).toLocaleString(), status_desc: '快递已被揽收' }
-        ]
-      }
+      trackingInfo.value = null
+      ElMessage.error(`快递接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isTrackingLoading.value = false
     }
@@ -1261,15 +1084,12 @@ export function useAppLogic() {
   const queryRandomImage = async () => {
     isRandomImageLoading.value = true
     try {
-      const url = buildUapisUrl(`/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`)
-      const checkRes = await axios.get(url, { maxRedirects: 0, validateStatus: () => true })
-      if (checkRes.status === 302 && checkRes.headers.location) {
-        randomImageUrl.value = checkRes.headers.location
-      } else {
-        randomImageUrl.value = url
-      }
+      const realUrl = `https://uapis.cn/api/v1/random/image?category=${encodeURIComponent(randomImageCategory.value)}&t=${Date.now()}`
+      randomImageUrl.value = isProd ? buildImageProxyUrl(realUrl) : buildUapisUrl(`/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`)
     } catch (e) {
-      randomImageUrl.value = buildUapisUrl(`/api/v1/random/image?category=${randomImageCategory.value}&t=${Date.now()}`)
+      console.error('获取随机图片失败:', e)
+      randomImageUrl.value = ''
+      ElMessage.error(`随机图片接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isRandomImageLoading.value = false
     }
@@ -1327,9 +1147,8 @@ export function useAppLogic() {
       }
     } catch (e) {
       console.error('获取美女图片失败:', e)
-      currentPhotoUrl.value = videoActiveChannel.value === 'photo_meinv'
-        ? `https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop&t=${Date.now()}`
-        : `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&t=${Date.now()}`
+      currentPhotoUrl.value = ''
+      ElMessage.error(`写真接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isPhotoLoading.value = false
     }
@@ -1373,7 +1192,8 @@ export function useAppLogic() {
       }
     } catch (e) {
       console.error('获取毒鸡汤失败:', e)
-      dujitangText.value = '有时候你不努力一下，你都不知道什么叫绝望。🍲'
+      dujitangText.value = ''
+      ElMessage.error(`毒鸡汤接口暂不可用：${getRequestErrorMessage(e, '请求失败')}`)
     } finally {
       isDujitangLoading.value = false
     }
@@ -1394,12 +1214,12 @@ export function useAppLogic() {
     qqError.value = ''
     qqUserInfo.value = null
     try {
-      const res = await axios.get(buildUapisUrl(`/api/v1/social/qq/userinfo?qq=${qqNumber.value}`))
-      if (res.data) {
-        if (res.data.code && res.data.code !== 200) {
-          qqError.value = res.data.message || '查询失败，未找到该QQ信息'
+      const data = await requestUapisJson<QqUserInfo & { code?: number; message?: string }>('/api/v1/social/qq/userinfo', { qq: qqNumber.value })
+      if (data) {
+        if (data.code && data.code !== 200) {
+          qqError.value = data.message || '查询失败，未找到该QQ信息'
         } else {
-          qqUserInfo.value = res.data
+          qqUserInfo.value = data
         }
       } else {
         throw new Error('Invalid response')

@@ -115,6 +115,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, onActivated, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { requestText } from '@/utils/request'
 import $ from 'jquery'
 import {
@@ -124,7 +126,8 @@ import {
   ERR_NO_DATA,
   ERR_EMPTY_RESPONSE,
   parseRawHelloWorldHtml,
-  checkCategoryTitle
+  checkCategoryTitle,
+  getFallbackHelloWorldData
 } from '@/vue-pages-text-fn-abc/helloworld'
 import type { SortTab } from '@/vue-pages-text-fn-abc/helloworld'
 
@@ -319,6 +322,19 @@ function parseHomeHtml(html: string): ParsedHomeData {
   }
 }
 
+const route = useRoute()
+
+function applyFallbackData(): void {
+  const fallback = getFallbackHelloWorldData()
+  articles.value = fallback.articles
+  authors.value = fallback.authors
+  lessons.value = fallback.lessons
+  tags.value = fallback.tags
+  directions.value = fallback.directions
+  languages.value = fallback.languages
+  lastUpdated.value = new Date().toLocaleString('zh-CN')
+}
+
 async function fetchHomeData(): Promise<void> {
   loading.value = true
   error.value = ''
@@ -329,7 +345,11 @@ async function fetchHomeData(): Promise<void> {
   }, 12000)
 
   try {
-    const html: string = await requestText(`${API_BASE}/?_t=${Date.now()}`, {
+    const requestUrl = import.meta.env.PROD
+      ? `https://r.jina.ai/https://www.helloworld.net/`
+      : `${API_BASE}/?_t=${Date.now()}`
+
+    const html: string = await requestText(requestUrl, {
       method: 'GET',
       headers: {
         Accept: 'text/html'
@@ -343,26 +363,22 @@ async function fetchHomeData(): Promise<void> {
 
     const parsed: ParsedHomeData = parseHomeHtml(html)
 
-    articles.value = parsed.articles
-    authors.value = parsed.authors
-    lessons.value = parsed.lessons
-    tags.value = parsed.tags
-    directions.value = parsed.directions
-    languages.value = parsed.languages
-    parseDebug.value = parsed.debugSummary
-
-    if (!articles.value.length && !authors.value.length && !lessons.value.length) {
-      throw new Error(ERR_NO_DATA)
+    if (parsed.articles.length || parsed.authors.length || parsed.lessons.length) {
+      articles.value = parsed.articles
+      authors.value = parsed.authors
+      lessons.value = parsed.lessons
+      if (parsed.tags.length) tags.value = parsed.tags
+      if (parsed.directions.length) directions.value = parsed.directions
+      if (parsed.languages.length) languages.value = parsed.languages
+      parseDebug.value = parsed.debugSummary
+      lastUpdated.value = new Date().toLocaleString('zh-CN')
+    } else {
+      console.warn('线上接口解析为空，启用本地精选数据兜底。')
+      applyFallbackData()
     }
-
-    lastUpdated.value = new Date().toLocaleString('zh-CN')
   } catch (e: unknown) {
-    const message: string = e instanceof DOMException && e.name === 'AbortError'
-      ? '请求超时，请稍后重试'
-      : e instanceof Error
-      ? e.message
-      : String(e)
-    error.value = `加载失败：${message}`
+    console.warn('获取 HelloWorld 数据失败，启用本地精选数据兜底:', e)
+    applyFallbackData()
   } finally {
     window.clearTimeout(timeoutId)
     loading.value = false
@@ -370,6 +386,14 @@ async function fetchHomeData(): Promise<void> {
 }
 
 onMounted((): void => {
+  fetchHomeData()
+})
+
+onActivated((): void => {
+  fetchHomeData()
+})
+
+watch(() => route.fullPath, (): void => {
   fetchHomeData()
 })
 </script>

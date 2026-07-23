@@ -32,18 +32,24 @@ interface BilibiliApiResponse<T> {
 interface BilibiliVideoApiItem {
   aid?: number
   bvid?: string
+  author?: string
   title?: string
   pic?: string
   cover?: string
   cover43?: string
   desc?: string
-  duration?: number
+  duration?: number | string
   pubdate?: number
+  pub_date?: number
   tname?: string
   tnamev2?: string
+  rname?: string
   pid_name_v2?: string
   rcmd_reason?: string | { content?: string }
   achievement?: string
+  play?: number
+  video_review?: number
+  like?: number
   owner?: {
     name?: string
     mid?: number
@@ -116,6 +122,7 @@ const tabNotes = new Map<BilibiliTabId, string>()
 let refreshTimer: ReturnType<typeof setInterval> | null = null
 const MANUAL_REFRESH_COOLDOWN_SECONDS = 60
 const MIN_MANUAL_REFRESH_LOADING_MS = 600
+const JINA_READER_PREFIX = 'https://r.jina.ai/http://r.jina.ai/http://'
 
 const popularTabs: Array<{ id: BilibiliTabId; label: string; icon: string; description: string }> = [
   { id: 'popular', label: '综合热门', icon: '🔥', description: '各个领域中新奇好玩的优质内容都在这里' },
@@ -132,6 +139,14 @@ const isRefreshDisabled = computed<boolean>(() => !isHotSearchTab.value || loadi
 const hasVideoContent = computed<boolean>(() => popularItems.value.length > 0)
 
 const wait = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+
+const toJinaReaderUrl = (url: string): string => `${JINA_READER_PREFIX}${url}`
+
+const extractJinaContent = (text: string): string => {
+  const marker = 'Markdown Content:'
+  const markerIndex = text.indexOf(marker)
+  return (markerIndex >= 0 ? text.slice(markerIndex + marker.length) : text).trim()
+}
 
 const formatNowTime = (): string => {
   const now = new Date()
@@ -157,6 +172,11 @@ const formatDuration = (seconds?: number): string => {
   return `${minutes}:${restSeconds.toString().padStart(2, '0')}`
 }
 
+const formatDurationValue = (duration?: number | string): string => {
+  if (typeof duration === 'string') return duration
+  return formatDuration(duration)
+}
+
 const formatDate = (timestamp?: number): string => {
   if (!timestamp) return ''
   const date = new Date(timestamp * 1000)
@@ -180,7 +200,7 @@ const normalizeVideoItems = (items: BilibiliVideoApiItem[], badgeFallback = ''):
     .filter(item => item.title && (item.bvid || item.aid))
     .map((item, index) => {
       const bvidOrAid = item.bvid || `av${item.aid}`
-      const category = item.tnamev2 || item.tname || item.pid_name_v2 || 'Bilibili'
+      const category = item.tnamev2 || item.tname || item.rname || item.pid_name_v2 || 'Bilibili'
       const badge = getVideoReason(item.rcmd_reason) || item.achievement || badgeFallback || category
 
       return {
@@ -188,15 +208,15 @@ const normalizeVideoItems = (items: BilibiliVideoApiItem[], badgeFallback = ''):
         position: index + 1,
         title: item.title || '未命名视频',
         cover: normalizeImageUrl(item.cover43 || item.pic || item.cover),
-        ownerName: item.owner?.name || 'UP 主',
+        ownerName: item.owner?.name || item.author || 'UP 主',
         category,
         badge,
         desc: item.desc || '',
-        viewText: formatNumber(item.stat?.view ?? item.stat?.vv),
-        danmakuText: formatNumber(item.stat?.danmaku),
-        likeText: formatNumber(item.stat?.like),
-        durationText: formatDuration(item.duration),
-        pubdateText: formatDate(item.pubdate),
+        viewText: formatNumber(item.stat?.view ?? item.stat?.vv ?? item.play),
+        danmakuText: formatNumber(item.stat?.danmaku ?? item.video_review),
+        likeText: formatNumber(item.stat?.like ?? item.like),
+        durationText: formatDurationValue(item.duration),
+        pubdateText: formatDate(item.pubdate ?? item.pub_date),
         url: `https://www.bilibili.com/video/${bvidOrAid}`
       }
     })
@@ -270,51 +290,20 @@ const getWordTypeBadge = (item: BilibiliTrendingItem) => {
   return null
 }
 
-const fetchBilibiliJsonp = async <T>(baseUrl: string, path: string): Promise<T> => {
-  const callbackName = `bili_cb_${Math.random().toString(36).substring(2, 10)}`
-  const separator = path.includes('?') ? '&' : '?'
-  const jsonpUrl = `${baseUrl}${path}${separator}jsonp=jsonp&callback=${callbackName}`
-  
-  return new Promise<T>((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = jsonpUrl
-    script.referrerPolicy = 'no-referrer'
-    
-    const cleanup = () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script)
-      }
-      delete (window as any)[callbackName]
-    }
-    
-    const timeoutId = setTimeout(() => {
-      cleanup()
-      reject(new Error('请求超时 (JSONP)'))
-    }, 15000)
-    
-    (window as any)[callbackName] = (response: any) => {
-      clearTimeout(timeoutId)
-      cleanup()
-      if (response && response.code === 0) {
-        resolve(response.data)
-      } else {
-        reject(new Error(response?.message || `Bilibili API ${response?.code || 'unknown'}`))
-      }
-    }
-    
-    script.onerror = () => {
-      clearTimeout(timeoutId)
-      cleanup()
-      reject(new Error('JSONP request failed'))
-    }
-    
-    document.body.appendChild(script)
+const fetchProdBilibiliJson = async <T>(url: string): Promise<T> => {
+  const res = await fetch(toJinaReaderUrl(url), {
+    signal: AbortSignal.timeout(15000)
   })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const text = await res.text()
+  const json = JSON.parse(extractJinaContent(text)) as BilibiliApiResponse<T>
+  if (json.code !== 0 || !json.data) throw new Error(json.message || `Bilibili API ${json.code}`)
+  return json.data
 }
 
 const requestBilibiliJson = async <T>(path: string): Promise<T> => {
   if (import.meta.env.PROD) {
-    return fetchBilibiliJsonp<T>('https://api.bilibili.com', path)
+    return fetchProdBilibiliJson<T>(`https://api.bilibili.com${path}`)
   }
   const targetUrl = resolveApiUrl(`/api-bilibili-web${path}`)
   const res = await fetch(targetUrl)
@@ -331,7 +320,7 @@ const fetchBilibiliTrending = async (minimumLoadingMs = 0): Promise<void> => {
   try {
     let data: any
     if (import.meta.env.PROD) {
-      data = await fetchBilibiliJsonp<any>('https://app.bilibili.com', '/x/v2/search/trending/ranking?limit=100')
+      data = await fetchProdBilibiliJson<any>('https://app.bilibili.com/x/v2/search/trending/ranking?limit=100')
     } else {
       const targetUrl = resolveApiUrl('/api-bilibili-trending/x/v2/search/trending/ranking?limit=100')
       const res = await fetch(targetUrl)
@@ -396,8 +385,8 @@ const fetchPopularTab = async (tab: Exclude<BilibiliTabId, 'hot-search'>, minimu
       const endpointMap: Record<Exclude<BilibiliTabId, 'hot-search' | 'weekly'>, string> = {
         popular: '/x/web-interface/popular?ps=30&pn=1',
         precious: '/x/web-interface/popular/precious?page_size=30&page=1',
-        ranking: '/x/web-interface/ranking/v2?rid=0&type=all',
-        music: '/x/web-interface/ranking/v2?rid=3&type=all'
+        ranking: '/x/web-interface/ranking?rid=0&day=3',
+        music: '/x/web-interface/ranking?rid=3&day=3'
       }
       const data = await requestBilibiliJson<PopularListData>(endpointMap[tab])
       const videos = Array.isArray(data.list) ? data.list : []
