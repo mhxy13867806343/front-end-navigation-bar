@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T04:04:44.942Z",
+  "generatedAt": "2026-07-23T04:12:36.289Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "7451b8fb552576b81406dc55287f40439e5762b4",
+          "shortHash": "7451b8f",
+          "date": "2026-07-23",
+          "time": "12:06",
+          "type": "问题修复",
+          "title": "bypass CORS and referer blocks in production via JSONP and CORS proxy, and add local movieRatings fallbacks",
+          "scope": "bilibili, uapis",
+          "message": "fix(bilibili, uapis): bypass CORS and referer blocks in production via JSONP and CORS proxy, and add local movieRatings fallbacks"
+        },
         {
           "hash": "9f0631f9211301429b4e9e27399052b09be11b15",
           "shortHash": "9f0631f",
@@ -298,16 +308,6 @@
           "title": "extract reusable modal action bar, char tag, and text collapse SCSS utilities and update markdown documentation",
           "scope": "",
           "message": "refactor: extract reusable modal action bar, char tag, and text collapse SCSS utilities and update markdown documentation"
-        },
-        {
-          "hash": "978baa7f978ebd0247ce33011d5709bfc550148f",
-          "shortHash": "978baa7",
-          "date": "2026-07-22",
-          "time": "12:24",
-          "type": "功能更新",
-          "title": "add reading time estimation and 3-line smooth CSS collapse/expand animation for event detail modal",
-          "scope": "",
-          "message": "feat: add reading time estimation and 3-line smooth CSS collapse/expand animation for event detail modal"
         }
       ]
     }

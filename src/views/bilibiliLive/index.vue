@@ -122,11 +122,44 @@ const toLiveRoom = (item: BilibiliLiveApiItem, index: number): BilibiliLiveRoom 
 
 const fetchLiveJson = async <T>(url: string): Promise<T> => {
   if (import.meta.env.PROD) {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-    const res = await fetch(proxyUrl)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const wrapper = await res.json() as { contents: string }
-    return JSON.parse(wrapper.contents) as T
+    const proxies = [
+      // Proxy 1: corsproxy.io (Very fast, handles browser requests well)
+      {
+        url: `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        parse: async (res: Response) => res.json()
+      },
+      // Proxy 2: allorigins.win (JSON wrapper fallback)
+      {
+        url: `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+        parse: async (res: Response) => {
+          const wrapper = await res.json() as { contents: string }
+          return JSON.parse(wrapper.contents)
+        }
+      },
+      // Proxy 3: codetabs.com (Raw response fallback)
+      {
+        url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+        parse: async (res: Response) => res.json()
+      }
+    ]
+
+    let lastError: any = null
+    for (const proxy of proxies) {
+      try {
+        console.log(`Trying Bilibili Live proxy: ${proxy.url}`)
+        const res = await fetch(proxy.url, {
+          // Timeout signal of 8 seconds to prevent hanging on slow proxies
+          signal: AbortSignal.timeout(8000)
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await proxy.parse(res)
+        return data as T
+      } catch (err) {
+        console.warn(`Proxy failed: ${proxy.url}`, err)
+        lastError = err
+      }
+    }
+    throw lastError || new Error('所有可用 B 站直播代理均请求失败或超时')
   } else {
     const res = await fetch(resolveApiUrl(url))
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
