@@ -28,12 +28,72 @@ const activeNewsDetail = ref<CnblogsNewsItem | null>(null)
 const detailModalVisible = ref<boolean>(false)
 const JINA_READER_PREFIX = 'https://r.jina.ai/http://r.jina.ai/http://'
 
-const topHighlights = ref<TopHighlight[]>([
-  { label: '编辑推荐', title: '如何设计一个 Agent 友好的 CLI 工具', link: 'https://www.cnblogs.com/rossiXYZ/p/21514625', stats: '13/12/1753' },
-  { label: '最多推荐', title: 'C# .NET 周刊 | 2026 年 6 月 2 期', link: 'https://www.cnblogs.com/shanyou/p/21758689', stats: '0/3/286' },
-  { label: '新闻头条', title: '微软把Comic Chat开源了，那个让Comic Sans走进千家万户的聊天软件', link: 'https://news.cnblogs.com/n/831971/', stats: '0/1/160' },
-  { label: '推荐新闻', title: 'ChatGPT终于能「搜自己」！攒了近4年的对话，一键翻出', link: 'https://news.cnblogs.com/n/831968/', stats: '0/3/526' }
-])
+const topHighlights = ref<TopHighlight[]>([])
+
+const fetchTopHighlights = async (): Promise<void> => {
+  try {
+    const apiUrl = import.meta.env.PROD
+      ? toJinaReaderUrl(resolveApiUrl('/api-cnblogs-main/aggsite/headline'))
+      : resolveApiUrl('/api-cnblogs-main/aggsite/headline')
+    const res = await fetch(apiUrl)
+    if (!res.ok) return
+    const responseText = await res.text()
+    
+    const highlights: TopHighlight[] = []
+    
+    if (import.meta.env.PROD) {
+      const content = extractJinaContent(responseText)
+      const lines = content.split('\n')
+      for (const line of lines) {
+        if (line.includes('【') && line.includes('】')) {
+          const match = line.match(/\[【([^】]+)】([^\]]*?)(?:\(([^)]+)\))?\]\((https?:\/\/[^" )]+)/)
+          if (match) {
+            highlights.push({
+              label: match[1].trim(),
+              title: match[2].trim(),
+              link: match[4].trim(),
+              stats: (match[3] || '').trim()
+            })
+          }
+        }
+      }
+    } else {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(responseText, 'text/html')
+      const lis = doc.querySelectorAll('.card.headline ul li')
+      lis.forEach(li => {
+        const a = li.querySelector('a')
+        if (a && a.textContent) {
+          const text = a.textContent.trim()
+          const match = text.match(/【([^】]+)】(.*)\(([^)]+)\)/)
+          if (match) {
+            const rawLink = a.getAttribute('href') || ''
+            highlights.push({
+              label: match[1].trim(),
+              title: match[2].trim(),
+              link: rawLink.startsWith('http') ? rawLink : `https://www.cnblogs.com${rawLink}`,
+              stats: match[3].trim()
+            })
+          }
+        }
+      })
+    }
+    
+    if (highlights.length > 0) {
+      const seen = new Set<string>()
+      const uniqueHighlights: TopHighlight[] = []
+      for (const h of highlights) {
+        if (!seen.has(h.label)) {
+          seen.add(h.label)
+          uniqueHighlights.push(h)
+        }
+      }
+      topHighlights.value = uniqueHighlights.slice(0, 4)
+    }
+  } catch (err) {
+    console.warn('Fetch cnblogs top highlights failed:', err)
+  }
+}
 
 const syncPageFromHash = (): void => {
   const hash = window.location.hash
@@ -131,6 +191,28 @@ const parseCnblogsMarkdown = (markdownText: string): { items: CnblogsNewsItem[];
     while (linkMatch) {
       pushUniqueItem(items, createCnblogsItem(linkMatch[1], linkMatch[2], ''))
       linkMatch = linkPattern.exec(content)
+    }
+  }
+
+  if (items.length === 0) {
+    const lines = content.split('\n')
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index].trim()
+      const match = line.match(
+        /(?:^|\s)\[([^\]]+)\]\((https?:\/\/(?:news\.cnblogs\.com\/n\/\d+\/?|www\.cnblogs\.com\/[^)\s]+\/p\/\d+[^)\s]*))(?:"[^"]*")?\)/
+      )
+      if (!match) continue
+
+      const summaryLines: string[] = []
+      for (let cursor = index + 1; cursor < lines.length && summaryLines.length < 3; cursor += 1) {
+        const nextLine = lines[cursor].trim()
+        if (!nextLine) continue
+        if (/\]\(https?:\/\/(?:news\.cnblogs\.com\/n\/\d+\/?|www\.cnblogs\.com\/[^)\s]+\/p\/\d+)/.test(nextLine)) break
+        if (/^\[!\[|^!\[|^\*+\s+\[/.test(nextLine)) continue
+        summaryLines.push(nextLine)
+      }
+
+      pushUniqueItem(items, createCnblogsItem(match[1], match[2], summaryLines.join(' ')))
     }
   }
 
@@ -423,6 +505,7 @@ const allTags = computed(() => {
 
 onMounted(() => {
   syncPageFromHash()
+  void fetchTopHighlights()
   void fetchNewsData()
   window.addEventListener('hashchange', () => {
     syncPageFromHash()
@@ -454,7 +537,7 @@ onMounted(() => {
     </header>
 
     <!-- Top Highlight Recommends Box (Matching Screenshots 1 & 2) -->
-    <section class="top-highlights-box">
+    <section class="top-highlights-box" v-if="topHighlights.length > 0">
       <div v-for="h in topHighlights" :key="h.label" class="highlight-line">
         <span class="highlight-tag">【{{ h.label }}】</span>
         <a :href="h.link" target="_blank" class="highlight-title">{{ h.title }}</a>

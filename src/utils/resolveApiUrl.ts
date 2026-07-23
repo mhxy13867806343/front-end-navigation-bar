@@ -56,7 +56,11 @@ const PROXY_MAP: Record<string, string> = {
 export function resolveApiUrl(url: string): string {
   if (!isProd) return url
 
-  for (const [proxy, target] of Object.entries(PROXY_MAP)) {
+  const proxyEntries: Array<[string, string]> = Object.entries(PROXY_MAP).sort(
+    ([left], [right]): number => right.length - left.length
+  )
+
+  for (const [proxy, target] of proxyEntries) {
     if (url.startsWith(proxy)) {
       return url.replace(proxy, target)
     }

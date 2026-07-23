@@ -84,6 +84,14 @@ const toolboxItems: ToolboxItem[] = [
     icon: '📡',
     path: '/bilibili-live',
     tag: 'Bibi 直播'
+  },
+  {
+    id: 'star',
+    name: '星座运势查询',
+    desc: '实时查询十二星座今日、明日、本周、本月与本年综合运势、感情、事业、财运及幸运指南。',
+    icon: '✨',
+    path: '/star',
+    tag: 'ALAPI 星座'
   }
 ]
 

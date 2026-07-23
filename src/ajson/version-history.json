@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T05:33:02.351Z",
+  "generatedAt": "2026-07-23T06:13:06.385Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "f7f37448e89f141a61de5792f9f417c004a997e3",
+          "shortHash": "f7f3744",
+          "date": "2026-07-23",
+          "time": "13:33",
+          "type": "问题修复",
+          "title": "add production Jina reader & fallback dataset to resolve 0/0/0 parser error, and add onActivated + route watcher for page switching",
+          "scope": "helloworld",
+          "message": "fix(helloworld): add production Jina reader & fallback dataset to resolve 0/0/0 parser error, and add onActivated + route watcher for page switching"
+        },
         {
           "hash": "522c5952e9173859be11c378a13f4243f010d24a",
           "shortHash": "522c595",
@@ -298,16 +308,6 @@
           "title": "support province autocomplete for oil prices | (2**16)-1=65535 | 2026-07-22",
           "scope": "",
           "message": "fix: support province autocomplete for oil prices | (2**16)-1=65535 | 2026-07-22"
-        },
-        {
-          "hash": "af89323f06ff4b08208d2d64e49b7ea472ced453",
-          "shortHash": "af89323",
-          "date": "2026-07-22",
-          "time": "13:14",
-          "type": "功能更新",
-          "title": "add Hanfu News (Tab 11) and Oil Price Query (Tab 12) to mingyan culture suite",
-          "scope": "",
-          "message": "feat: add Hanfu News (Tab 11) and Oil Price Query (Tab 12) to mingyan culture suite"
         }
       ]
     }

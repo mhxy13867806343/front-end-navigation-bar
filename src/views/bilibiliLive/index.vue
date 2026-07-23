@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
+import { requestJinaJson } from '../../utils/jinaReader'
 
 type LiveTabId = 'recommend' | 'hot' | 'new'
 
@@ -37,6 +38,21 @@ interface BilibiliLiveApiItem {
 interface BilibiliLiveListData {
   count?: number
   list?: BilibiliLiveApiItem[]
+}
+
+interface BilibiliLiveHomeModule {
+  module_info?: {
+    count?: number
+  }
+  list?: BilibiliLiveApiItem[]
+}
+
+interface BilibiliLiveHomeData {
+  online_total?: number
+  dynamic?: number
+  recommend_room_list?: BilibiliLiveApiItem[]
+  ranking_list?: BilibiliLiveApiItem[]
+  room_list?: BilibiliLiveHomeModule[]
 }
 
 interface BilibiliLiveApiResponse<T> {
@@ -74,7 +90,6 @@ const liveRooms = ref<BilibiliLiveRoom[]>([])
 const liveRoomCount = ref<number>(0)
 const updateTime = ref<string>('')
 const errorMessage = ref<string>('')
-const JINA_READER_PREFIX = 'https://r.jina.ai/http://r.jina.ai/http://'
 
 const activeTabInfo = computed(() => tabs.find(tab => tab.id === activeTab.value) || tabs[0])
 
@@ -121,22 +136,9 @@ const toLiveRoom = (item: BilibiliLiveApiItem, index: number): BilibiliLiveRoom 
   }
 }
 
-const toJinaReaderUrl = (url: string): string => `${JINA_READER_PREFIX}${url}`
-
-const extractJinaContent = (text: string): string => {
-  const marker = 'Markdown Content:'
-  const markerIndex = text.indexOf(marker)
-  return (markerIndex >= 0 ? text.slice(markerIndex + marker.length) : text).trim()
-}
-
 const fetchLiveJson = async <T>(url: string): Promise<T> => {
   if (import.meta.env.PROD) {
-    const res = await fetch(toJinaReaderUrl(url), {
-      signal: AbortSignal.timeout(15000)
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const text = await res.text()
-    return JSON.parse(extractJinaContent(text)) as T
+    return requestJinaJson<T>(url)
   } else {
     const res = await fetch(resolveApiUrl(url))
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -144,17 +146,17 @@ const fetchLiveJson = async <T>(url: string): Promise<T> => {
   }
 }
 
+const getHomeUrl = (): string => {
+  return import.meta.env.PROD
+    ? 'https://api.live.bilibili.com/xlive/web-interface/v1/webMain/getList?platform=web&page=1'
+    : '/api-bilibili-live/xlive/web-interface/v1/webMain/getList?platform=web&page=1'
+}
+
 const getListUrl = (tabId: LiveTabId): string => {
   if (import.meta.env.PROD) {
-    if (tabId === 'recommend') {
-      return 'https://api.live.bilibili.com/room/v1/room/get_user_recommend?page=1&page_size=30'
-    }
     const sortType = tabId === 'new' ? 'live_time' : 'online'
     return `https://api.live.bilibili.com/room/v3/area/getRoomList?platform=web&parent_area_id=0&cate_id=0&area_id=0&sort_type=${sortType}&page=1&page_size=30`
   } else {
-    if (tabId === 'recommend') {
-      return '/api-bilibili-live/room/v1/room/get_user_recommend?page=1&page_size=30'
-    }
     const sortType = tabId === 'new' ? 'live_time' : 'online'
     return `/api-bilibili-live/room/v3/area/getRoomList?platform=web&parent_area_id=0&cate_id=0&area_id=0&sort_type=${sortType}&page=1&page_size=30`
   }
@@ -166,6 +168,36 @@ const fetchLiveRoomCount = async (): Promise<number> => {
     : '/api-bilibili-live/room/v1/Area/getLiveRoomCountByAreaID?areaId=0'
   const json = await fetchLiveJson<BilibiliLiveApiResponse<{ num?: number }>>(url)
   return json.code === 0 ? Number(json.data?.num || 0) : 0
+}
+
+const fetchLiveHomeData = async (): Promise<BilibiliLiveHomeData> => {
+  const json = await fetchLiveJson<BilibiliLiveApiResponse<BilibiliLiveHomeData>>(getHomeUrl())
+  if (json.code !== 0) {
+    throw new Error(json.message || json.msg || `请求失败：${json.code}`)
+  }
+
+  return json.data || {}
+}
+
+const getHomeModuleRooms = (homeData: BilibiliLiveHomeData): BilibiliLiveApiItem[] => {
+  return (homeData.room_list || []).flatMap((module: BilibiliLiveHomeModule): BilibiliLiveApiItem[] => {
+    return Array.isArray(module.list) ? module.list : []
+  })
+}
+
+const getRoomsFromHomeData = (tabId: LiveTabId, homeData: BilibiliLiveHomeData): BilibiliLiveApiItem[] => {
+  if (tabId === 'recommend') {
+    return homeData.recommend_room_list?.length ? homeData.recommend_room_list : getHomeModuleRooms(homeData)
+  }
+
+  const moduleRooms = getHomeModuleRooms(homeData)
+  if (moduleRooms.length) {
+    return [...moduleRooms].sort((a: BilibiliLiveApiItem, b: BilibiliLiveApiItem): number => {
+      return Number(b.online || 0) - Number(a.online || 0)
+    })
+  }
+
+  return homeData.ranking_list || []
 }
 
 const fetchLiveRooms = async (tabId: LiveTabId): Promise<BilibiliLiveRoom[]> => {
@@ -191,10 +223,15 @@ const loadLiveData = async (tabId: LiveTabId = activeTab.value): Promise<void> =
   liveRooms.value = []
 
   try {
-    const [countResult, roomsResult] = await Promise.allSettled([
-      fetchLiveRoomCount(),
-      fetchLiveRooms(tabId)
-    ])
+    if (tabId === 'recommend' || tabId === 'hot') {
+      const homeData = await fetchLiveHomeData()
+      liveRoomCount.value = Number(homeData.online_total || homeData.dynamic || liveRoomCount.value || 0)
+      liveRooms.value = getRoomsFromHomeData(tabId, homeData).map(toLiveRoom)
+      updateTime.value = formatNowTime()
+      return
+    }
+
+    const [countResult, roomsResult] = await Promise.allSettled([fetchLiveRoomCount(), fetchLiveRooms(tabId)])
 
     if (roomsResult.status === 'rejected') {
       throw roomsResult.reason

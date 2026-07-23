@@ -279,8 +279,8 @@ const rankItems: Ref<RankItem[]> = ref<RankItem[]>([])
 const loading: Ref<boolean> = ref<boolean>(false)
 const error: Ref<string> = ref<string>('')
 const rankPeriodText: Ref<string> = ref<string>('')
-const shouldUseJuejinRankCache = false
 const isProd: boolean = import.meta.env.PROD
+const shouldUseJuejinRankCache: boolean = isProd
 const juejinRankCacheUrl: string = `${import.meta.env.BASE_URL}live-data/juejin-rank-cache.json`
 
 let requestSeq: number = 0
@@ -406,13 +406,9 @@ async function fetchArticleRankResponse(
 }
 
 async function fetchColumnRankResponse(): Promise<JuejinColumnRankResponse> {
-  if (isProd) {
-    throw new Error('精选专栏榜使用掘金 POST 接口，当前静态线上环境无法跨域读取；已停止展示本地缓存数据')
-  }
-
   if (shouldUseJuejinRankCache) {
     const cache: JuejinRankCache = await loadJuejinRankCache()
-    return readJuejinCacheEntry(cache.columnRank, '缓存暂无专栏榜数据')
+    return readJuejinCacheEntry(cache.columnRank, '线上快照暂无专栏榜数据')
   }
 
   return requestJson<JuejinColumnRankResponse>(buildJuejinColumnRankUrl(), {
@@ -422,13 +418,9 @@ async function fetchColumnRankResponse(): Promise<JuejinColumnRankResponse> {
 }
 
 async function fetchCollectionRankResponse(): Promise<JuejinCollectionRankResponse> {
-  if (isProd) {
-    throw new Error('推荐收藏集使用掘金 POST 接口，当前静态线上环境无法跨域读取；已停止展示本地缓存数据')
-  }
-
   if (shouldUseJuejinRankCache) {
     const cache: JuejinRankCache = await loadJuejinRankCache()
-    return readJuejinCacheEntry(cache.collectionRank, '缓存暂无收藏集榜数据')
+    return readJuejinCacheEntry(cache.collectionRank, '线上快照暂无收藏集榜数据')
   }
 
   return requestJson<JuejinCollectionRankResponse>(buildJuejinCollectionRankUrl(), {
@@ -441,13 +433,9 @@ async function fetchAuthorRankResponse(
   categoryId: string,
   rankType: JuejinAuthorRankType
 ): Promise<JuejinAuthorRankResponse> {
-  if (isProd) {
-    throw new Error('作者榜使用掘金 POST 接口，当前静态线上环境无法跨域读取；已停止展示本地缓存数据')
-  }
-
   if (shouldUseJuejinRankCache) {
     const cache: JuejinRankCache = await loadJuejinRankCache()
-    return readJuejinCacheEntry(cache.authorRanks[authorRankCacheKey(categoryId, rankType)], '缓存暂无作者榜数据')
+    return readJuejinCacheEntry(cache.authorRanks[authorRankCacheKey(categoryId, rankType)], '线上快照暂无作者榜数据')
   }
 
   return requestJson<JuejinAuthorRankResponse>(buildJuejinAuthorRankUrl(), {

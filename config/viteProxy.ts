@@ -116,13 +116,13 @@ export const serverProxy: ServerProxyMap = {
     Origin: 'https://www.cocoloop.cn',
     Referer: 'https://www.cocoloop.cn/'
   }),
-  '/api-cnblogs': createProxyEntry('/api-cnblogs', 'https://news.cnblogs.com', {
-    Origin: 'https://news.cnblogs.com',
-    Referer: 'https://news.cnblogs.com/'
-  }),
   '/api-cnblogs-main': createProxyEntry('/api-cnblogs-main', 'https://www.cnblogs.com', {
     Origin: 'https://www.cnblogs.com',
     Referer: 'https://www.cnblogs.com/'
+  }),
+  '/api-cnblogs': createProxyEntry('/api-cnblogs', 'https://news.cnblogs.com', {
+    Origin: 'https://news.cnblogs.com',
+    Referer: 'https://news.cnblogs.com/'
   }),
   '/api-bilibili-trending': createProxyEntry('/api-bilibili-trending', 'https://app.bilibili.com', {
     Origin: 'https://app.bilibili.com',
