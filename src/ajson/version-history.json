@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-23T08:37:46.832Z",
+  "generatedAt": "2026-07-23T09:30:53.192Z",
   "groups": [
     {
       "date": "2026-07-23",
       "items": [
+        {
+          "hash": "4791124a64c68a93895bfbb81fa16fa119231237",
+          "shortHash": "4791124",
+          "date": "2026-07-23",
+          "time": "16:52",
+          "type": "问题修复",
+          "title": "improve live data pages and docs",
+          "scope": "",
+          "message": "fix: improve live data pages and docs"
+        },
         {
           "hash": "f70d8b07d500fdb020a36178fca15e5e8f1864bf",
           "shortHash": "f70d8b0",
@@ -298,16 +308,6 @@
           "title": "bind activeCategory and selectedTag click handlers to trigger real API category and tag filtering in cocoloop feed (/cocoloop)",
           "scope": "",
           "message": "fix: bind activeCategory and selectedTag click handlers to trigger real API category and tag filtering in cocoloop feed (/cocoloop)"
-        },
-        {
-          "hash": "1ec77f7059c1987f5c173a33472d321a72f84924",
-          "shortHash": "1ec77f7",
-          "date": "2026-07-22",
-          "time": "19:37",
-          "type": "功能更新",
-          "title": "refactor CocoLoop page with 1:1 Discourse community UI, left sidebar menu, banner, avatar stack, and infinite scroll (/cocoloop)",
-          "scope": "",
-          "message": "feat: refactor CocoLoop page with 1:1 Discourse community UI, left sidebar menu, banner, avatar stack, and infinite scroll (/cocoloop)"
         }
       ]
     }

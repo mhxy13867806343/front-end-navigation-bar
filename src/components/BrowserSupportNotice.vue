@@ -10,6 +10,12 @@ const goToWeather = (): void => {
 const goToMingyan = (): void => {
   router.push('/mingyan')
 }
+const goToPage = (path: string): void => {
+  router.push(path)
+}
+const handleCommand = (command: string): void => {
+  router.push(command)
+}
 import packageJson from '../../package.json'
 
 interface BrowserDownloadLink {
@@ -215,7 +221,7 @@ onUnmounted((): void => {
       </div>
     </div>
 
-    <div class="bar-actions" style="display: flex; gap: 8px; align-items: center;">
+    <div class="bar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
       <el-button type="primary" plain size="small" @click="dialogVisible = true">
         查看详情
       </el-button>
@@ -224,6 +230,29 @@ onUnmounted((): void => {
       </el-button>
       <el-button type="warning" plain size="small" @click="goToMingyan">
         📜 名人名言
+      </el-button>
+      <el-dropdown @command="handleCommand" trigger="click">
+        <el-button type="danger" plain size="small">
+          🚫 异常/状态页 ▾
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="/200">✅ 200 访问正常</el-dropdown-item>
+            <el-dropdown-item command="/401">🔑 401 未授权访问</el-dropdown-item>
+            <el-dropdown-item command="/402">💎 402 需要付费订阅</el-dropdown-item>
+            <el-dropdown-item command="/403">🛡️ 403 禁止/无权访问</el-dropdown-item>
+            <el-dropdown-item command="/404">🚀 404 页面未找到</el-dropdown-item>
+            <el-dropdown-item command="/405">⚡ 405 方法不受允许</el-dropdown-item>
+            <el-dropdown-item command="/500">🔥 500 服务器错误</el-dropdown-item>
+            <el-dropdown-item command="/logs">📜 实时系统日志</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      <el-button type="info" plain size="small" @click="goToPage('/permission')">
+        🔐 权限控制
+      </el-button>
+      <el-button type="warning" plain size="small" @click="goToPage('/logs')">
+        📜 系统日志
       </el-button>
     </div>
 

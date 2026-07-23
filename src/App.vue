@@ -113,7 +113,7 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/feature', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
 const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some((p: string): boolean => {
@@ -971,6 +971,11 @@ watch(isDarkMode, () => {
             <!-- 打开右侧抽屉按钮 -->
             <button class="dropdown-trigger drawer-trigger-btn" @click="showDrawer = true" style="background: var(--primary-color); color: white; border-color: var(--primary-color); font-weight: bold;">
               💼 控制中心
+            </button>
+
+            <!-- 功能页面入口 -->
+            <button class="dropdown-trigger feature-page-btn" @click="router.push('/feature')" style="background: #7c3aed; color: white; border-color: #7c3aed; font-weight: bold;">
+              🧩 功能页面
             </button>
           </div>
         </div>

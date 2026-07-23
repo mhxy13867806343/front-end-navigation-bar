@@ -11,25 +11,34 @@
 ## 🌐 在线预览
 
 - 🏠 **主页入口**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
+- 🧡 **小米官方商城**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
+- 🔐 **权限管理控制中心**：[https://mhxy13867806343.github.io/front-end-navigation-bar/permission](https://mhxy13867806343.github.io/front-end-navigation-bar/permission)
+- 📜 **系统安全与操作日志中心**：[https://mhxy13867806343.github.io/front-end-navigation-bar/logs](https://mhxy13867806343.github.io/front-end-navigation-bar/logs)
+- 🚫 **500 / 404 / 401 等状态页**：[https://mhxy13867806343.github.io/front-end-navigation-bar/500](https://mhxy13867806343.github.io/front-end-navigation-bar/500)
 - 🌦️ **天气预报可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
-- 💰 **黄金行情/接口可视化**：[https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC](https://mhxy13867806343.github.io/front-end-navigation-bar/api-center/ALAPI%E9%BB%84%E9%87%91%E4%BB%B7%E6%A0%BC/%E9%BB%84%E9%87%91%E5%AE%9E%E6%97%B6%E4%BB%B7%E6%A0%BC)
-- 📜 **名人名言与智慧语录**：[https://mhxy13867806343.github.io/front-end-navigation-bar/mingyan](https://mhxy13867806343.github.io/front-end-navigation-bar/mingyan)
-- 📺 **Bilibili 热搜与热门榜**：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-trending)
-- 🔴 **Bilibili 直播数据**：[https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live](https://mhxy13867806343.github.io/front-end-navigation-bar/bilibili-live)
 
 ## ✨ 功能特性
 
+- **🧡 小米官方商城 & 交互式收银台** (`/xiaomi-shop`)：基于 27万+ 行本地 JSON (`src/shop-json/xiaomi-shop.json`) 渲染，包含多分类商品列表、版本与颜色选购计算，并支持**微信支付、支付宝、云闪付、信用卡 24 期免息**的在线模拟支付与订单流转。
+- **🔐 权限管理与控制中心** (`/permission`)：内置 4 大 RBAC 角色（超级管理员、运维、运营、访客）实时切换、按钮级指令鉴权（`v-permission`）、路由访问矩阵、JWT Token 报文解析，以及**HTTP 状态码（200 / 401 / 402 / 403 / 404 / 405 / 500）一键直接跳过去展示**。
+- **📜 实时系统安全与操作日志中心** (`/logs`)：实时捕获全局 API 响应 HTTP 状态码、RBAC 拦截事件与异常 Stack Trace，支持状态码点击联动跳转、多级别筛选、关键字搜寻与离线 CSV 导出。
+- **🚫 完整 HTTP 状态码与异常页面集** (`/200`, `/401`, `/402`, `/403`, `/404`, `/405`, `/500`)：覆盖 200 OK 正常鉴权、401 未授权、402 付费订阅、403 禁止访问防火墙、404 迷失寻路、405 谓词受限、500 服务崩溃与一键自动修复。
 - **AI 工具导航**：侧边栏分类 + 子分类导航，覆盖 AI 聊天、写作、绘画、编程、开发平台等数十个分类
-- **📜 名人名言与智慧语录**：联动 ALAPI 分类与语录接口（先 1 后 2 交互），提供主题类型筛选、换一句刷新、一键复制及金句收藏库
+- **📜 名人名言与智慧语录**：联动 ALAPI 分类与语录接口，提供主题类型筛选、换一句刷新、一键复制及金句收藏库
 - **🌦️ 实时天气可视化**：集成 ALAPI 天气数据，支持实况、7 天柱状图、40 天折线图 (ECharts) 及天气指数
 - **💰 统一接口可视化看板**：自动拉取接口数据，提供贵金属实时行情、品牌黄金价格、图片与表格可视化呈现
-- **📍 全国省市区级联组件**：内置 `ChinaRegionCascader` 高性能全国省/市/区县级联选择器
+
+## 🆕 近期更新
+
+- 🧡 **新增小米官方商城 & 多通道收银台** (`/xiaomi-shop`)：本地由 `src/shop-json/xiaomi-shop.json`（276,530 行数据）驱动，商品详情页支持规格选购、微信/支付宝/云闪付在线支付与订单推送。
+- 🔐 **新增权限控制中心** (`/permission`)：支持超级管理员/运维/运营/访客角色一键切换，按钮指令鉴权演示，以及输入任意 HTTP 状态码（如 200, 401, 500）直接跳过去展示。
+- 📜 **新增系统审计日志中心** (`/logs`)：提供实时 HTTP 状态码追踪、安全鉴权拦截日志、异常 Stack Trace 追溯、状态码点击联动跳转及 CSV 导出。
+- 🚫 **新增全套系统状态与异常页面** (`/200`, `/401`, `/402`, `/403`, `/404`, `/405`, `/500`)：内置交互式 Token 刷新、收银台充值、防火墙提权、REST 谓词测试与服务器一键自我修复。**📍 全国省市区级联组件**：内置 `ChinaRegionCascader` 高性能全国省/市/区县级联选择器
 - **🎨 全站 SCSS 样式架构**：全面转换为 SCSS，内置玻璃拟态、自定义滚动条等 SCSS Mixins
 - **🛠️ 复用 Hooks 与工具**：封装 `useECharts`、`usePagination` 自定义 Hooks 及格式化工具库 `src/utils/format.ts`
 - **全局搜索**：支持按名称/描述跨分类搜索，带搜索历史记录（最多保留 8 条）
 - **浏览器兼容提示**：入口顶部检测浏览器能力，通过 Element Plus Dialog 提供浏览器下载入口与天气链接
 - **收藏点赞**：工具卡片点赞收藏，收藏记录本地持久化，可查看收藏历史
-- **控制中心资源**：右侧菜单集中展示网盘资料、AI 开发工具官网与简介，支持新页面打开
 - **AI 资讯与应用**：每日 AI 资讯时间线、IT之家 API 标签分页资讯、AI 应用集、AI 教程/百科文章列表
 - **实时热榜与影视数据**：支持微博、B 站热搜、掘金、OSChina 等热榜，以及院线票房、影视收视/评分榜
 - **主题切换**：明暗主题一键切换，偏好本地记忆

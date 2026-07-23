@@ -151,6 +151,71 @@ const routes = [
     path: '/three-showcase/lab',
     name: 'ThreeShowcaseLab',
     component: () => import('../views/threeShowcase/lab.vue')
+  },
+  {
+    path: '/feature',
+    name: 'Feature',
+    component: () => import('../views/feature/index.vue')
+  },
+  {
+    path: '/200',
+    name: 'Page200',
+    component: () => import('../views/error/200.vue')
+  },
+  {
+    path: '/401',
+    name: 'Page401',
+    component: () => import('../views/error/401.vue')
+  },
+  {
+    path: '/402',
+    name: 'Page402',
+    component: () => import('../views/error/402.vue')
+  },
+  {
+    path: '/403',
+    name: 'Page403',
+    component: () => import('../views/error/403.vue')
+  },
+  {
+    path: '/404',
+    name: 'Page404',
+    component: () => import('../views/error/404.vue')
+  },
+  {
+    path: '/405',
+    name: 'Page405',
+    component: () => import('../views/error/405.vue')
+  },
+  {
+    path: '/500',
+    name: 'Page500',
+    component: () => import('../views/error/500.vue')
+  },
+  {
+    path: '/permission',
+    name: 'Permission',
+    component: () => import('../views/permission/index.vue')
+  },
+  {
+    path: '/logs',
+    name: 'Logs',
+    component: () => import('../views/logs/index.vue')
+  },
+  {
+    path: '/xiaomi-shop',
+    name: 'XiaomiShop',
+    component: () => import('../views/xiaomiShop/index.vue')
+  },
+  {
+    path: '/xiaomi-shop/detail/:id',
+    name: 'XiaomiShopDetail',
+    component: () => import('../views/xiaomiShop/detail.vue')
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFoundCatchAll',
+    component: () => import('../views/error/404.vue')
   }
 ]
 
