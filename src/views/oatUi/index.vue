@@ -115,9 +115,10 @@ const tagInputCode = `<!-- 7. WebComponent: <ot-tag-input> & <ot-upload> -->
         参照 <a href="https://oat.ink/usage/" target="_blank">https://oat.ink/usage/</a> 官方标准打造的极简 Web Component 与 CSS 组件展示演练场，包含所有 26 类基础控件、WebComponent 拓展与一键复制代码！
       </p>
       <div class="actions">
+        <button class="btn-link highlight" @click="router.push('/oat-studio')">🚀 Oat UI 实战界面与更新弹窗展厅</button>
         <a href="https://oat.ink/demo/" target="_blank" class="btn-link">🌾 Oat.ink Kitchensink ↗</a>
         <a href="https://github.com/knadh/oat" target="_blank" class="btn-link">🐙 Oat GitHub ↗</a>
-        <button class="btn-link highlight" @click="router.push('/dyform')">🏠 返回 DyForm 首页</button>
+        <button class="btn-link" @click="router.push('/dyform')">🏠 返回 DyForm 首页</button>
       </div>
     </header>
 

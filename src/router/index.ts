@@ -168,6 +168,11 @@ const routes = [
     component: () => import('../views/oatUi/index.vue')
   },
   {
+    path: '/oat-studio',
+    name: 'OatStudio',
+    component: () => import('../views/oatStudio/index.vue')
+  },
+  {
     path: '/200',
     name: 'Page200',
     component: () => import('../views/error/200.vue')

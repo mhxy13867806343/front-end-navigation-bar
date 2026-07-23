@@ -80,6 +80,18 @@ test('Oat UI has a direct route, navbar dropdown button, and 26 components showc
   assert.match(oatRegistry, /registerOatUiComponents/)
 })
 
+test('Oat Studio provides update notice modal, new page modal, and confirm dialogs', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const studioSource = readFileSync(new URL('../src/views/oatStudio/index.vue', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /path:\s*'\/oat-studio'/)
+  assert.match(routerSource, /views\/oatStudio\/index\.vue/)
+  assert.match(studioSource, /OatUpdateModal/)
+  assert.match(studioSource, /OatCreatePageModal/)
+  assert.match(studioSource, /OatConfirmModal/)
+  assert.match(studioSource, /OatDrawer/)
+})
+
 test('RunCode page includes editor input output and run controls', () => {
   const runCodeSource = readFileSync(new URL('../src/views/runcode/index.vue', import.meta.url), 'utf8')
 
@@ -93,12 +105,27 @@ test('RunCode page includes editor input output and run controls', () => {
 
 test('Home page keeps quick-entry clock without floating QQ and email contact buttons', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const clockSource = readFileSync(new URL('../src/components/AnalogClock.vue', import.meta.url), 'utf8')
   const styleSource = readFileSync(new URL('../src/style/style.scss', import.meta.url), 'utf8')
 
   assert.match(appSource, /mqqwpa:\/\/im\/chat\?chat_type=wpa&uin=869710179&version=1&src_type=web/)
   assert.match(appSource, /import AnalogClock from '\.\/components\/AnalogClock\.vue'/)
   assert.match(appSource, /<AnalogClock class="header-analog-clock" \/>/)
+  assert.match(clockSource, /<el-dialog[\s\S]*?append-to-body[\s\S]*?align-center/)
+  assert.match(clockSource, /time-greeting/)
+  assert.match(clockSource, /凌晨/)
+  assert.match(clockSource, /早上/)
+  assert.match(clockSource, /中午/)
+  assert.match(clockSource, /下午/)
+  assert.match(clockSource, /晚上[\s\S]*?睡觉/)
+  assert.match(appSource, /<el-dropdown trigger="click" placement="bottom" :teleported="true"/)
   assert.match(styleSource, /\.header-analog-clock\s*\{[\s\S]*?--clock-size:\s*28px/)
+  assert.match(styleSource, /\.header-right-actions\s*\{[\s\S]*?width:\s*196px[\s\S]*?height:\s*52px[\s\S]*?overflow:\s*visible/)
+  assert.match(styleSource, /\.header-right-actions \.el-dropdown\s*\{[\s\S]*?flex:\s*0 0 132px/)
+  assert.match(styleSource, /\.quick-actions-trigger\s*\{[\s\S]*?width:\s*132px/)
+  const headerActionsBlocks = [...styleSource.matchAll(/\.header-right-actions\s*\{([^}]*)\}/g)].map((match) => match[1])
+  assert.ok(headerActionsBlocks.length > 0)
+  assert.ok(headerActionsBlocks.every((block) => !/flex-wrap:\s*wrap\b/.test(block)))
   assert.doesNotMatch(appSource, /class="floating-contact-bar"/)
   assert.doesNotMatch(appSource, /class="floating-contact-icon floating-qq-icon"/)
   assert.doesNotMatch(appSource, /class="floating-contact-icon floating-email-icon"/)
