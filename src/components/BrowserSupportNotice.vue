@@ -14,7 +14,11 @@ const goToPage = (path: string): void => {
   router.push(path)
 }
 const handleCommand = (command: string): void => {
-  router.push(command)
+  if (command === 'openDialog') {
+    dialogVisible.value = true
+  } else {
+    router.push(command)
+  }
 }
 import packageJson from '../../package.json'
 
@@ -222,15 +226,41 @@ onUnmounted((): void => {
     </div>
 
     <div class="bar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-      <el-button type="primary" plain size="small" @click="dialogVisible = true">
+      <!-- 查看详情 下拉菜单 (Element Plus Dropdown split-button) -->
+      <el-dropdown split-button type="primary" size="small" @click="dialogVisible = true" @command="handleCommand">
         查看详情
-      </el-button>
-      <el-button type="success" plain size="small" @click="goToWeather">
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="openDialog">⚙️ 浏览器兼容性检测</el-dropdown-item>
+            <el-dropdown-item command="/xiaomi-shop">🧡 小米商城 (27万行数据)</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
+      <!-- 天气预报 下拉菜单 (Element Plus Dropdown split-button) -->
+      <el-dropdown split-button type="success" size="small" @click="goToWeather" @command="handleCommand">
         🌦️ 天气预报
-      </el-button>
-      <el-button type="warning" plain size="small" @click="goToMingyan">
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="/weather">🌦️ 实时天气预报看板</el-dropdown-item>
+            <el-dropdown-item command="/api-center">💰 统一 API 行情看板</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
+      <!-- 名人名言 下拉菜单 (Element Plus Dropdown split-button) -->
+      <el-dropdown split-button type="warning" size="small" @click="goToMingyan" @command="handleCommand">
         📜 名人名言
-      </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="/mingyan">📜 经典名人名言语录</el-dropdown-item>
+            <el-dropdown-item command="/cocoloop">🌌 CocoLoop 社区</el-dropdown-item>
+            <el-dropdown-item command="/cnblogs">📰 博客园新闻</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
+      <!-- 异常/状态页 下拉菜单 (Element Plus Dropdown) -->
       <el-dropdown @command="handleCommand" trigger="click">
         <el-button type="danger" plain size="small">
           🚫 异常/状态页 ▾
@@ -244,20 +274,22 @@ onUnmounted((): void => {
             <el-dropdown-item command="/404">🚀 404 页面未找到</el-dropdown-item>
             <el-dropdown-item command="/405">⚡ 405 方法不受允许</el-dropdown-item>
             <el-dropdown-item command="/500">🔥 500 服务器错误</el-dropdown-item>
-            <el-dropdown-item command="/logs">📜 实时系统日志</el-dropdown-item>
-            <el-dropdown-item command="/xiaomi-shop">🧡 小米商城 (27万行数据)</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <el-button type="warning" plain size="small" @click="goToPage('/xiaomi-shop')" style="background: #ff6700; border-color: #ff6700; color: #fff; font-weight: bold;">
-        🧡 小米商城
-      </el-button>
-      <el-button type="info" plain size="small" @click="goToPage('/permission')">
-        🔐 权限控制
-      </el-button>
-      <el-button type="warning" plain size="small" @click="goToPage('/logs')">
-        📜 系统日志
-      </el-button>
+
+      <!-- 权限与日志 下拉菜单 (Element Plus Dropdown) -->
+      <el-dropdown @command="handleCommand" trigger="click">
+        <el-button type="info" plain size="small">
+          🔐 权限与日志 ▾
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="/permission">🔐 权限控制中心</el-dropdown-item>
+            <el-dropdown-item command="/logs">📜 实时系统日志</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
 
     <el-dialog
