@@ -40,6 +40,7 @@
       <div v-else-if="error && !hasRenderableData" class="state-block error">
         {{ error }}
         <a href="javascript:;" @click="fetchHomeData">重试</a>
+        <small v-if="parseDebug">{{ parseDebug }}</small>
       </div>
 
       <template v-else>
@@ -121,6 +122,8 @@ import {
   API_BASE,
   SITE_ORIGIN,
   ERR_NO_DATA,
+  ERR_EMPTY_RESPONSE,
+  parseRawHelloWorldHtml,
   checkCategoryTitle
 } from '@/vue-pages-text-fn-abc/helloworld'
 import type { SortTab } from '@/vue-pages-text-fn-abc/helloworld'
@@ -159,6 +162,7 @@ interface ParsedHomeData {
   tags: string[]
   directions: string[]
   languages: string[]
+  debugSummary: string
 }
 
 const sortTabs = SORT_TABS
@@ -173,6 +177,7 @@ const directions = ref<string[]>([])
 const languages = ref<string[]>([])
 const loading = ref<boolean>(false)
 const error = ref<string>('')
+const parseDebug = ref<string>('')
 const lastUpdated = ref<string>('')
 
 const hasRenderableData = computed<number>(() => {
@@ -204,13 +209,20 @@ function textOf($node: JQuery<HTMLElement>): string {
   return normalizeText($node?.text() || '')
 }
 
-function parseHomeHtml(html: string): ParsedHomeData {
-  const nodes: Node[] = $.parseHTML(html, document, false) || []
-  const $root: JQuery<HTMLElement> = $('<div>')
-  const rootElement: HTMLElement | undefined = $root.get(0)
-  nodes.forEach((node: Node): void => {
-    rootElement?.appendChild(node)
+function uniqueByUrl<T extends { url: string }>(items: T[]): T[] {
+  const seen: Set<string> = new Set()
+  return items.filter((item: T): boolean => {
+    if (!item.url || seen.has(item.url)) return false
+    seen.add(item.url)
+    return true
   })
+}
+
+function parseHomeHtml(html: string): ParsedHomeData {
+  const rawPrimary = parseRawHelloWorldHtml(html)
+  const parsedDocument: Document = new DOMParser().parseFromString(html, 'text/html')
+  const $root: JQuery<HTMLElement> = $('<div>')
+  $root.html(parsedDocument.body?.innerHTML || html)
 
   const articleList: HelloArticle[] = $root.find('.blog-item').map((_, element: HTMLElement): HelloArticle => {
     const $item: JQuery<HTMLElement> = $(element)
@@ -226,9 +238,29 @@ function parseHomeHtml(html: string): ParsedHomeData {
       likeCount: nums[1] || '0',
       commentCount: nums[2] || '0',
       url: toAbsoluteUrl($titleLink.attr('href') || ''),
-      cover: toAbsoluteUrl($item.find('.item-right').first().attr('src') || '')
+      cover: toAbsoluteUrl($item.find('img.item-right, .item-right img').first().attr('src') || '')
     }
   }).get().filter((item: HelloArticle): boolean => Boolean(item.title && item.url))
+
+  const fallbackArticleList: HelloArticle[] = articleList.length
+    ? []
+    : uniqueByUrl($root.find('a[href^="/p/"]').map((_, element: HTMLElement): HelloArticle => {
+      const $titleLink: JQuery<HTMLElement> = $(element)
+      const $container: JQuery<HTMLElement> = $titleLink.closest('.blog-item, .art-list > div, div')
+      const nums: string[] = $container.find('.num').map((__, node: HTMLElement): string => textOf($(node))).get()
+
+      return {
+        title: textOf($titleLink),
+        brief: textOf($container.find('.intro, [class*="intro"]').first()),
+        author: textOf($container.find('.name, [class*="name"]').first()),
+        time: textOf($container.find('.time, [class*="time"]').first()),
+        readCount: nums[0] || '0',
+        likeCount: nums[1] || '0',
+        commentCount: nums[2] || '0',
+        url: toAbsoluteUrl($titleLink.attr('href') || ''),
+        cover: toAbsoluteUrl($container.find('img.item-right, .item-right img, img').last().attr('src') || '')
+      }
+    }).get().filter((item: HelloArticle): boolean => Boolean(item.title && item.url)))
 
   const authorList: HelloAuthor[] = $root.find('.author-item').map((_, element: HTMLElement): HelloAuthor => {
     const $item: JQuery<HTMLElement> = $(element)
@@ -273,27 +305,42 @@ function parseHomeHtml(html: string): ParsedHomeData {
   })
 
   return {
-    articles: articleList,
-    authors: authorList,
-    lessons: lessonList,
+    articles: rawPrimary.articles.length
+      ? rawPrimary.articles.slice(0, 20)
+      : articleList.length
+      ? articleList
+      : fallbackArticleList.slice(0, 20),
+    authors: rawPrimary.authors.length ? rawPrimary.authors : authorList,
+    lessons: rawPrimary.lessons.length ? rawPrimary.lessons : lessonList,
     tags: tagList,
     directions: directionList,
-    languages: languageList
+    languages: languageList,
+    debugSummary: `响应 ${html.length} 字节；raw ${rawPrimary.articles.length}/${rawPrimary.authors.length}/${rawPrimary.lessons.length}；DOM ${articleList.length}/${authorList.length}/${lessonList.length}`
   }
 }
 
 async function fetchHomeData(): Promise<void> {
   loading.value = true
   error.value = ''
+  parseDebug.value = ''
+  const controller: AbortController = new AbortController()
+  const timeoutId: number = window.setTimeout((): void => {
+    controller.abort()
+  }, 12000)
 
   try {
-    const html: string = await requestText(`${API_BASE}/`, {
+    const html: string = await requestText(`${API_BASE}/?_t=${Date.now()}`, {
       method: 'GET',
       headers: {
         Accept: 'text/html'
       },
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: controller.signal
     })
+    if (!html.trim()) {
+      throw new Error(ERR_EMPTY_RESPONSE)
+    }
+
     const parsed: ParsedHomeData = parseHomeHtml(html)
 
     articles.value = parsed.articles
@@ -302,6 +349,7 @@ async function fetchHomeData(): Promise<void> {
     tags.value = parsed.tags
     directions.value = parsed.directions
     languages.value = parsed.languages
+    parseDebug.value = parsed.debugSummary
 
     if (!articles.value.length && !authors.value.length && !lessons.value.length) {
       throw new Error(ERR_NO_DATA)
@@ -309,9 +357,14 @@ async function fetchHomeData(): Promise<void> {
 
     lastUpdated.value = new Date().toLocaleString('zh-CN')
   } catch (e: unknown) {
-    const message: string = e instanceof Error ? e.message : String(e)
+    const message: string = e instanceof DOMException && e.name === 'AbortError'
+      ? '请求超时，请稍后重试'
+      : e instanceof Error
+      ? e.message
+      : String(e)
     error.value = `加载失败：${message}`
   } finally {
+    window.clearTimeout(timeoutId)
     loading.value = false
   }
 }

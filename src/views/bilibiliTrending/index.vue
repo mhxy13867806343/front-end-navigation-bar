@@ -270,7 +270,52 @@ const getWordTypeBadge = (item: BilibiliTrendingItem) => {
   return null
 }
 
+const fetchBilibiliJsonp = async <T>(baseUrl: string, path: string): Promise<T> => {
+  const callbackName = `bili_cb_${Math.random().toString(36).substring(2, 10)}`
+  const separator = path.includes('?') ? '&' : '?'
+  const jsonpUrl = `${baseUrl}${path}${separator}jsonp=jsonp&callback=${callbackName}`
+  
+  return new Promise<T>((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = jsonpUrl
+    script.referrerPolicy = 'no-referrer'
+    
+    const cleanup = () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script)
+      }
+      delete (window as any)[callbackName]
+    }
+    
+    const timeoutId = setTimeout(() => {
+      cleanup()
+      reject(new Error('请求超时 (JSONP)'))
+    }, 15000)
+    
+    (window as any)[callbackName] = (response: any) => {
+      clearTimeout(timeoutId)
+      cleanup()
+      if (response && response.code === 0) {
+        resolve(response.data)
+      } else {
+        reject(new Error(response?.message || `Bilibili API ${response?.code || 'unknown'}`))
+      }
+    }
+    
+    script.onerror = () => {
+      clearTimeout(timeoutId)
+      cleanup()
+      reject(new Error('JSONP request failed'))
+    }
+    
+    document.body.appendChild(script)
+  })
+}
+
 const requestBilibiliJson = async <T>(path: string): Promise<T> => {
+  if (import.meta.env.PROD) {
+    return fetchBilibiliJsonp<T>('https://api.bilibili.com', path)
+  }
   const targetUrl = resolveApiUrl(`/api-bilibili-web${path}`)
   const res = await fetch(targetUrl)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -284,51 +329,33 @@ const fetchBilibiliTrending = async (minimumLoadingMs = 0): Promise<void> => {
   loading.value = true
   contentNote.value = ''
   try {
-    const targetUrl = resolveApiUrl('/api-bilibili-trending/x/v2/search/trending/ranking?limit=100')
-    const res = await fetch(targetUrl)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const json = await res.json()
-
-    if (json.code === 0 && json.data) {
-      const { featured, ranking } = parseTrendingData(json.data)
-      if (featured.length === 0 && ranking.length === 0) throw new Error('热搜列表为空')
-
-      topList.value = featured
-      list.value = ranking
-      updateTime.value = formatNowTime()
-      loadedTabs.add('hot-search')
-      tabNotes.set('hot-search', '')
-      ElMessage.success(`已更新 Bilibili 搜索热搜榜 (${featured.length + ranking.length} 条)`)
+    let data: any
+    if (import.meta.env.PROD) {
+      data = await fetchBilibiliJsonp<any>('https://app.bilibili.com', '/x/v2/search/trending/ranking?limit=100')
     } else {
-      throw new Error(json.message || '数据结构异常')
+      const targetUrl = resolveApiUrl('/api-bilibili-trending/x/v2/search/trending/ranking?limit=100')
+      const res = await fetch(targetUrl)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      if (json.code !== 0 || !json.data) throw new Error(json.message || '数据结构异常')
+      data = json.data
     }
+
+    const { featured, ranking } = parseTrendingData(data)
+    if (featured.length === 0 && ranking.length === 0) throw new Error('热搜列表为空')
+
+    topList.value = featured
+    list.value = ranking
+    updateTime.value = formatNowTime()
+    loadedTabs.add('hot-search')
+    tabNotes.set('hot-search', '')
+    ElMessage.success(`已更新 Bilibili 搜索热搜榜 (${featured.length + ranking.length} 条)`)
   } catch (err) {
-    console.warn('Fetch bilibili trending failed, using fallback mock dataset:', err)
-    topList.value = [
-      {
-        position: 1,
-        keyword: '人民对美好生活的向往就是我们的奋斗目标',
-        show_name: '人民对美好生活的向往就是我们的奋斗目标',
-        word_type: 8,
-        icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAYAAACMRWrdAAAACXBIWXMAACE4AAAhOAFFljFgAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAHjSURBVHgB7ZnRbcIwFEUvadVvRmADlP+C0knaDaATABMUNmgnadT+9C9ig4yQ76oNfRZRhSDYz4kNMbwjIaLkKcmNr+1cBxAEQRAEoXP0uIXr5H4GRFPa7OM8FMDmdZh+PnOKWcLWyeiFSqfoACWwiNOPuakuAoveEzoC3fCEWXeZcIWt0BHIim+cOovBY7ykv0ecdfDAasjoX4LQIdh9rClZkvQj/EyqyR1qki1xQ3NRWsAjXoWRqEGE8p02B3uH8hLfD3H6lcMT3uaxLBlNSVSGQ1EKEnyXqRp4wnmLba33O+O/gm2WPqzpVJjGeiacW9OZFQ3WM+Hcmq1bzN56JtxYs5WwFtYz0dqaja3Y0nomWluzkTAVPCP0KHxqX4hV4j2adsvtMZ3d+uoa25Brj7UwZppWVoopxi+PFcR0rEQUq1rtmehaWTKew5IGLaZP05SXVuqGOf2DBoi8EqfNe9zUvMst3KGst4g1rVRHNfpRq4xysh6Nrm7yXpM+Vvd0jdYzobMmNzXvYi2sSrBKXFH9Flzrmdiz5v/5aVXKenT0HltoSWFTt58ekNdrX/0qVXCIsNAQYaEhwkJDhIWGCAsNERYapxBWMPc55RTCDhJ3k0Rsi/egqdj5fq2Q78jCNfEHMma377blSZ4AAAAASUVORK5CYII=',
-        hot_id: 262402
-      }
-    ]
-    list.value = [
-      { position: 1, keyword: '北京WB 广州TTG', show_name: '广州TTG战胜北京WB', word_type: 8, call_reason: 4, hot_id: 262864 },
-      { position: 2, keyword: '足协辟谣米利西奇辞职', show_name: '足协辟谣米利西奇辞职', word_type: 4, hot_id: 262875 },
-      { position: 3, keyword: '妙脆角猫最危险的一天', show_name: '妙脆角猫最危险的一天', word_type: 9, hot_id: 262865 },
-      { position: 4, keyword: 'TES WE', show_name: 'TES战胜WE LPL第三赛段', word_type: 5, hot_id: 262858 },
-      { position: 5, keyword: 'AG DRG', show_name: 'AG vs DRG VCT第二赛段', word_type: 7, hot_id: 262871 },
-      { position: 6, keyword: '你们宿舍全进世界杯', show_name: '你们宿舍全进世界杯', word_type: 9, hot_id: 262881 },
-      { position: 7, keyword: 'TES战胜WE赛后数据', show_name: 'TES战胜WE赛后数据', word_type: 4, hot_id: 262878 },
-      { position: 8, keyword: '美加墨世界杯回顾复盘', show_name: '美加墨世界杯回顾复盘', word_type: 8, hot_id: 262874 },
-      { position: 9, keyword: '在村里举办一场世界杯', show_name: '在村里举办一场世界杯', word_type: 12, hot_id: 262870 },
-      { position: 10, keyword: 'Mrbeast结婚啦', show_name: 'Mrbeast结婚啦', word_type: 8, hot_id: 262815 }
-    ]
-    contentNote.value = '热搜接口暂时不可用，已展示本地兜底数据。'
+    console.warn('Fetch bilibili trending failed:', err)
+    contentNote.value = `热搜榜接口暂时不可用：${err instanceof Error ? err.message : '未知错误'}`
     tabNotes.set('hot-search', contentNote.value)
     updateTime.value = formatNowTime()
+    ElMessage.error(contentNote.value)
   } finally {
     const remainingLoadingMs = minimumLoadingMs - (Date.now() - startedAt)
     if (remainingLoadingMs > 0) await wait(remainingLoadingMs)

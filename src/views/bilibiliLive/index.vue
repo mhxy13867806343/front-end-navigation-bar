@@ -120,24 +120,46 @@ const toLiveRoom = (item: BilibiliLiveApiItem, index: number): BilibiliLiveRoom 
   }
 }
 
-const getListUrl = (tabId: LiveTabId): string => {
-  if (tabId === 'recommend') {
-    return resolveApiUrl('/api-bilibili-live/room/v1/room/get_user_recommend?page=1&page_size=30')
+const fetchLiveJson = async <T>(url: string): Promise<T> => {
+  if (import.meta.env.PROD) {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
+    const res = await fetch(proxyUrl)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const wrapper = await res.json() as { contents: string }
+    return JSON.parse(wrapper.contents) as T
+  } else {
+    const res = await fetch(resolveApiUrl(url))
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return res.json() as Promise<T>
   }
+}
 
-  const sortType = tabId === 'new' ? 'live_time' : 'online'
-  return resolveApiUrl(`/api-bilibili-live/room/v3/area/getRoomList?platform=web&parent_area_id=0&cate_id=0&area_id=0&sort_type=${sortType}&page=1&page_size=30`)
+const getListUrl = (tabId: LiveTabId): string => {
+  if (import.meta.env.PROD) {
+    if (tabId === 'recommend') {
+      return 'https://api.live.bilibili.com/room/v1/room/get_user_recommend?page=1&page_size=30'
+    }
+    const sortType = tabId === 'new' ? 'live_time' : 'online'
+    return `https://api.live.bilibili.com/room/v3/area/getRoomList?platform=web&parent_area_id=0&cate_id=0&area_id=0&sort_type=${sortType}&page=1&page_size=30`
+  } else {
+    if (tabId === 'recommend') {
+      return '/api-bilibili-live/room/v1/room/get_user_recommend?page=1&page_size=30'
+    }
+    const sortType = tabId === 'new' ? 'live_time' : 'online'
+    return `/api-bilibili-live/room/v3/area/getRoomList?platform=web&parent_area_id=0&cate_id=0&area_id=0&sort_type=${sortType}&page=1&page_size=30`
+  }
 }
 
 const fetchLiveRoomCount = async (): Promise<number> => {
-  const response = await fetch(resolveApiUrl('/api-bilibili-live/room/v1/Area/getLiveRoomCountByAreaID?areaId=0'))
-  const json = await response.json() as BilibiliLiveApiResponse<{ num?: number }>
+  const url = import.meta.env.PROD
+    ? 'https://api.live.bilibili.com/room/v1/Area/getLiveRoomCountByAreaID?areaId=0'
+    : '/api-bilibili-live/room/v1/Area/getLiveRoomCountByAreaID?areaId=0'
+  const json = await fetchLiveJson<BilibiliLiveApiResponse<{ num?: number }>>(url)
   return json.code === 0 ? Number(json.data?.num || 0) : 0
 }
 
 const fetchLiveRooms = async (tabId: LiveTabId): Promise<BilibiliLiveRoom[]> => {
-  const response = await fetch(getListUrl(tabId))
-  const json = await response.json() as BilibiliLiveApiResponse<BilibiliLiveListData | BilibiliLiveApiItem[]>
+  const json = await fetchLiveJson<BilibiliLiveApiResponse<BilibiliLiveListData | BilibiliLiveApiItem[]>>(getListUrl(tabId))
 
   if (json.code !== 0) {
     throw new Error(json.message || json.msg || `请求失败：${json.code}`)

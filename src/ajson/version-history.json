@@ -1,6 +1,21 @@
 {
-  "generatedAt": "2026-07-22T18:05:26.433Z",
+  "generatedAt": "2026-07-23T04:04:44.942Z",
   "groups": [
+    {
+      "date": "2026-07-23",
+      "items": [
+        {
+          "hash": "9f0631f9211301429b4e9e27399052b09be11b15",
+          "shortHash": "9f0631f",
+          "date": "2026-07-23",
+          "time": "02:06",
+          "type": "功能更新",
+          "title": "add Bilibili Live page, optimize Bilibili Trending badges/CDN, add music player toggle settings, and integrate Naive UI back-to-top",
+          "scope": "",
+          "message": "feat: add Bilibili Live page, optimize Bilibili Trending badges/CDN, add music player toggle settings, and integrate Naive UI back-to-top"
+        }
+      ]
+    },
     {
       "date": "2026-07-22",
       "items": [
@@ -293,16 +308,6 @@
           "title": "add reading time estimation and 3-line smooth CSS collapse/expand animation for event detail modal",
           "scope": "",
           "message": "feat: add reading time estimation and 3-line smooth CSS collapse/expand animation for event detail modal"
-        },
-        {
-          "hash": "eb301fd5e04a82327fecb9226f1099b88571fe03",
-          "shortHash": "eb301fd",
-          "date": "2026-07-22",
-          "time": "12:21",
-          "type": "功能更新",
-          "title": "add character length count tag and one-click copy button to detail dialog modals",
-          "scope": "",
-          "message": "feat: add character length count tag and one-click copy button to detail dialog modals"
         }
       ]
     }
