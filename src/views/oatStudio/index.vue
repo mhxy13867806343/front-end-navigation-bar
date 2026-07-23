@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import OatUpdateModal from '@/components/oatUi/OatUpdateModal.vue'
@@ -12,7 +12,7 @@ registerOatUiComponents()
 const router = useRouter()
 
 // ------------------------------------------------------------------
-// 1. 生成 400 个 Oat UI 组件、表格与界面范例数据集
+// 1. 生成 400 个 Oat UI 组件与表格范例数据集
 // ------------------------------------------------------------------
 export interface OatExampleItem {
   id: number
@@ -33,8 +33,8 @@ const generate400Examples = (): OatExampleItem[] => {
   const baseTemplates = [
     {
       cat: '表格组件' as const,
-      names: ['Oat 可筛选排序数据表格', 'Oat 极简紧凑型列表', 'Oat 带选择框批量表格', 'Oat 展开行细节表格', 'Oat 状态徽章响应式表格', 'Oat 跨页分页数据大表', 'Oat 虚拟滚动万条表格', 'Oat 冻结首列表单表格'],
-      descs: ['包含 .oat-table 样式修饰、列头排序与 hover 效果', '适用于数据密集型后台的压缩边距表格', '支持多选 Checkbox 与批量导出操作栏', '点击行展开详细 JSON 与关联数据', '内嵌 .oat-badge 状态指示与时间戳', '支持页码选择与 pageSize 动态切换', '轻量级 DOM 节点复用与千行不卡顿渲染', '固定左侧序号与操作列的高阶表格'],
+      names: ['Oat 可双击编辑数据表格', 'Oat 极简紧凑型列表', 'Oat 带选择框批量表格', 'Oat 展开行细节表格', 'Oat 状态徽章响应式表格', 'Oat 跨页分页数据大表', 'Oat 虚拟滚动万条表格', 'Oat 冻结首列表单表格'],
+      descs: ['包含 .oat-table 样式修饰、双击单元格行内编辑与保存', '适用于数据密集型后台的压缩边距表格', '支持多选 Checkbox 与批量导出操作栏', '点击行展开详细 JSON 与关联数据', '内嵌 .oat-badge 状态指示与时间戳', '支持页码选择与 pageSize 动态切换', '轻量级 DOM 节点复用与千行不卡顿渲染', '固定左侧序号与操作列的高阶表格'],
       sizes: ['1.2 KB', '0.8 KB', '1.5 KB', '2.1 KB', '1.1 KB', '1.8 KB', '3.4 KB', '2.6 KB']
     },
     {
@@ -45,21 +45,21 @@ const generate400Examples = (): OatExampleItem[] => {
     },
     {
       cat: '表单控件' as const,
-      names: ['Oat 胶囊按钮组', 'Oat 标签选择器 (<ot-tag-input>)', 'Oat 拖拽文件上传 (<ot-upload>)', 'Oat 组合下拉菜单 (<ot-dropdown>)', 'Oat 极简单选框与复选框', 'Oat 范围滑块 (<input type=range>)', 'Oat 仪表计量条 (<meter>)', 'Oat 进度条控件 (<progress>)'],
-      descs: ['包含 primary, secondary, outline, danger 形态', '原生 Web Component 变体，支持回车添加与删除', '支持拖拽拖放文件与上传进度动画', '自定义 trigger 与带有 shadow 阴影浮层', '原生无损样式覆盖，高对比度聚焦环', '实时数值响应与 Tail 充能填充', '展示 0.0 至 1.0 的数据占比与阀值色', '支持 indeterminate 循环加载与平滑 fill'],
+      names: ['Oat 实时校验表单与年月选择器', 'Oat 标签选择器 (<ot-tag-input>)', 'Oat 拖拽文件上传 (<ot-upload>)', 'Oat 组合下拉菜单 (<ot-dropdown>)', 'Oat 极简单选框与复选框', 'Oat 范围滑块 (<input type=range>)', 'Oat 仪表计量条 (<meter>)', 'Oat 进度条控件 (<progress>)'],
+      descs: ['包含邮箱/手机号/年月 YYYY-MM 正则校验与错误提示', '原生 Web Component 变体，支持回车添加与删除', '支持拖拽拖放文件与上传进度动画', '自定义 trigger 与带有 shadow 阴影浮层', '原生无损样式覆盖，高对比度聚焦环', '实时数值响应与 Tail 充能填充', '展示 0.0 至 1.0 的数据占比与阀值色', '支持 indeterminate 循环加载与平滑 fill'],
       sizes: ['0.9 KB', '1.6 KB', '2.5 KB', '1.8 KB', '0.7 KB', '0.8 KB', '0.6 KB', '0.5 KB']
     },
     {
       cat: '数据展示' as const,
-      names: ['Oat 极简卡片容器 (.oat-card)', 'Oat 统计指标块 (Stats Box)', 'Oat 步骤条 (Stepper Timeline)', 'Oat 标签页切换 (<ot-tabs>)', 'Oat 知识库折叠面板 (<details>)', 'Oat 徽章提示 (.oat-badge)', 'Oat 代码展示块 (<code>/<pre>)', 'Oat 快捷键徽章 (<kbd>)'],
-      descs: ['包揽 header, body, footer 三层级结构', '包含指标大字、同比环比趋势与图标', '展示多阶段工作流与当前步骤亮起', '支持多 Slot 注入与平滑 Tab 划线过渡', '原生 HTML5 展开收起手风琴动画', '支持 blue, green, orange, purple, danger', '自带代码高亮与右侧一键复制', '适配 macOS 与 Windows 标准快捷键外观'],
-      sizes: ['1.1 KB', '1.4 KB', '1.9 KB', '1.7 KB', '1.0 KB', '0.4 KB', '0.9 KB', '0.3 KB']
+      names: ['Oat 树形目录与层级组件', 'Oat 极简卡片容器 (.oat-card)', 'Oat 统计指标块 (Stats Box)', 'Oat 步骤条 (Stepper Timeline)', 'Oat 标签页切换 (<ot-tabs>)', 'Oat 知识库折叠面板 (<details>)', 'Oat 徽章提示 (.oat-badge)', 'Oat 代码展示块 (<code>/<pre>)'],
+      descs: ['包含展开折叠、添加子节点与选中提示树形图', '包揽 header, body, footer 三层级结构', '包含指标大字、同比环比趋势与图标', '展示多阶段工作流与当前步骤亮起', '支持多 Slot 注入与平滑 Tab 划线过渡', '原生 HTML5 展开收起手风琴动画', '支持 blue, green, orange, purple, danger', '自带代码高亮与右侧一键复制'],
+      sizes: ['1.8 KB', '1.1 KB', '1.4 KB', '1.9 KB', '1.7 KB', '1.0 KB', '0.4 KB', '0.9 KB']
     },
     {
       cat: '布局排版' as const,
-      names: ['Oat Grid 响应式栅格系统', 'Oat Flex 两栏侧边栏布局', 'Oat TopBar 极简页头栏', 'Oat 粘性吸顶 Toolbar', 'Oat 宽屏流式居中 Container', 'Oat 仪表盘 4 宫格卡片布局', 'Oat 分隔线与垂直间距', 'Oat 极简 Footer 页脚'],
-      descs: ['使用 CSS Grid 自适应 mobile/tablet/desktop', '固定侧边导航与右侧内容区自适应滚动', '包含 Logo、搜索框与用户头像区', '滚动时吸顶并附带 Glassmorphism 模糊', 'max-width 1280px 居中大屏内容约束', '适用于控制台 Metric 卡片平铺', '带有文本居中的分割线与 spacing 工具类', '包含版权声明、友情链接与版本号'],
-      sizes: ['1.5 KB', '2.0 KB', '1.6 KB', '1.2 KB', '0.8 KB', '2.3 KB', '0.5 KB', '0.9 KB']
+      names: ['Oat 省市区级联下拉选择器', 'Oat Grid 响应式栅格系统', 'Oat Flex 两栏侧边栏布局', 'Oat TopBar 极简页头栏', 'Oat 粘性吸顶 Toolbar', 'Oat 宽屏流式居中 Container', 'Oat 仪表盘 4 宫格卡片布局', 'Oat 分隔线与垂直间距'],
+      descs: ['支持省份与城市二级联动下拉与重置', '使用 CSS Grid 自适应 mobile/tablet/desktop', '固定侧边导航与右侧内容区自适应滚动', '包含 Logo、搜索框与用户头像区', '滚动时吸顶并附带 Glassmorphism 模糊', 'max-width 1280px 居中大屏内容约束', '适用于控制台 Metric 卡片平铺', '带有文本居中的分割线与 spacing 工具类'],
+      sizes: ['1.6 KB', '1.5 KB', '2.0 KB', '1.6 KB', '1.2 KB', '0.8 KB', '2.3 KB', '0.5 KB']
     },
     {
       cat: '高级应用' as const,
@@ -111,55 +111,43 @@ const generate400Examples = (): OatExampleItem[] => {
   return items
 }
 
-const allExamples = generate400Examples()
+const allExamples = ref<OatExampleItem[]>(generate400Examples())
 
 // ------------------------------------------------------------------
-// 2. 状态与筛选逻辑
+// 2. 表格数据、双击行内编辑与筛选
 // ------------------------------------------------------------------
 const activeCat = ref<typeof CATEGORIES[number]>('全部')
 const searchQuery = ref<string>('')
 const sortKey = ref<'id' | 'name' | 'category' | 'status' | 'size'>('id')
 const sortOrder = ref<'asc' | 'desc'>('asc')
-
 const currentPage = ref<number>(1)
 const pageSize = ref<number>(20)
 
-// 详情/源码弹窗状态
-const previewItem = ref<OatExampleItem | null>(null)
-const previewModalOpen = ref<boolean>(false)
+// 双击修改表格单元格状态
+const editingCellId = ref<number | null>(null)
+const editingField = ref<string | null>(null)
+const editValue = ref<string>('')
 
-// 基础弹窗状态
-const updateModalOpen = ref<boolean>(false)
-const createPageModalOpen = ref<boolean>(false)
-const confirmModalOpen = ref<boolean>(false)
-const confirmType = ref<'warning' | 'danger' | 'success' | 'info'>('warning')
-const confirmTitle = ref<string>('确认删除该记录？')
-const confirmMsg = ref<string>('此操作将不可撤销，删除后该数据记录将从本地数据库中永久移除。')
-const drawerOpen = ref<boolean>(false)
+const startCellEdit = (item: OatExampleItem, field: keyof OatExampleItem) => {
+  editingCellId.value = item.id
+  editingField.value = field
+  editValue.value = String(item[field])
+}
 
-// 动态创建的页面列表
-const createdPages = ref<NewPageData[]>([
-  {
-    title: '示例·数据分析看板',
-    path: 'analytics-dashboard',
-    template: 'dashboard',
-    tags: ['数据', '看板', 'Oat UI'],
-    description: '核心指标卡片与用户流失分析大屏',
-    isPublic: true
-  },
-  {
-    title: '示例·极简个人中心',
-    path: 'user-profile',
-    template: 'blank',
-    tags: ['用户', '设置'],
-    description: '基本信息设置与个人密钥管理',
-    isPublic: false
+const saveCellEdit = (item: OatExampleItem) => {
+  if (editingCellId.value && editingField.value) {
+    const field = editingField.value as keyof OatExampleItem
+    if (field === 'name' || field === 'description') {
+      ;(item as any)[field] = editValue.value.trim() || item[field]
+      ElMessage.success(`已保存修改！#${item.id} ${field}: "${(item as any)[field]}"`)
+    }
   }
-])
+  editingCellId.value = null
+  editingField.value = null
+}
 
-// 过滤与排序
 const filteredExamples = computed(() => {
-  return allExamples.filter((item) => {
+  return allExamples.value.filter((item) => {
     const matchesCat = activeCat.value === '全部' || item.category === activeCat.value
     const q = searchQuery.value.trim().toLowerCase()
     const matchesQuery = !q ||
@@ -179,7 +167,6 @@ const filteredExamples = computed(() => {
   })
 })
 
-// 分页列表
 const paginatedExamples = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   return filteredExamples.value.slice(start, start + pageSize.value)
@@ -198,6 +185,167 @@ const handleSort = (key: typeof sortKey.value) => {
   }
 }
 
+// ------------------------------------------------------------------
+// 3. 表单实时校验 State
+// ------------------------------------------------------------------
+const validForm = reactive({
+  username: '',
+  email: '',
+  phone: '',
+  yearMonth: '2026-07',
+  role: 'developer'
+})
+
+const formErrors = reactive({
+  username: '',
+  email: '',
+  phone: '',
+  yearMonth: ''
+})
+
+const validateForm = () => {
+  let valid = true
+  if (!validForm.username.trim() || validForm.username.length < 2) {
+    formErrors.username = '姓名不能小于 2 个字符'
+    valid = false
+  } else {
+    formErrors.username = ''
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(validForm.email)) {
+    formErrors.email = '请填入有效的邮箱地址（如 user@oat.ink）'
+    valid = false
+  } else {
+    formErrors.email = ''
+  }
+
+  const phoneRegex = /^1[3-9]\d{9}$/
+  if (!phoneRegex.test(validForm.phone)) {
+    formErrors.phone = '请填入有效的 11 位手机号码'
+    valid = false
+  } else {
+    formErrors.phone = ''
+  }
+
+  if (!validForm.yearMonth) {
+    formErrors.yearMonth = '请选择生效年月'
+    valid = false
+  } else {
+    formErrors.yearMonth = ''
+  }
+
+  if (valid) {
+    ElMessage.success('表单校验全部通过，成功提交！')
+  } else {
+    ElMessage.error('表单填写存在错误，请核对红色提示')
+  }
+}
+
+// ------------------------------------------------------------------
+// 4. 树形目录组件 (Tree View State)
+// ------------------------------------------------------------------
+interface TreeNode {
+  id: string
+  label: string
+  icon: string
+  expanded?: boolean
+  children?: TreeNode[]
+}
+
+const treeData = ref<TreeNode[]>([
+  {
+    id: '1',
+    label: 'src 项目源码目录',
+    icon: '📁',
+    expanded: true,
+    children: [
+      {
+        id: '1-1',
+        label: 'components 组件库',
+        icon: '📁',
+        expanded: true,
+        children: [
+          { id: '1-1-1', label: 'oatUi/OatUpdateModal.vue', icon: '📄' },
+          { id: '1-1-2', label: 'oatUi/OatCreatePageModal.vue', icon: '📄' },
+          { id: '1-1-3', label: 'oatUi/OatConfirmModal.vue', icon: '📄' },
+          { id: '1-1-4', label: 'oatUi/OatDrawer.vue', icon: '📄' }
+        ]
+      },
+      {
+        id: '1-2',
+        label: 'views 视图目录',
+        icon: '📁',
+        expanded: true,
+        children: [
+          { id: '1-2-1', label: 'oatStudio/index.vue (400 范例展厅)', icon: '🚀' },
+          { id: '1-2-2', label: 'oatUi/index.vue (26 控件基础库)', icon: '🌾' }
+        ]
+      }
+    ]
+  }
+])
+
+const selectedTreeNode = ref<TreeNode | null>(treeData.value[0].children![0].children![0])
+
+const toggleTreeNode = (node: TreeNode) => {
+  if (node.children) node.expanded = !node.expanded
+}
+
+const selectTreeNode = (node: TreeNode) => {
+  selectedTreeNode.value = node
+}
+
+const addChildNode = () => {
+  if (!selectedTreeNode.value) return
+  if (!selectedTreeNode.value.children) selectedTreeNode.value.children = []
+  const newId = `${selectedTreeNode.value.id}-${selectedTreeNode.value.children.length + 1}`
+  selectedTreeNode.value.children.push({
+    id: newId,
+    label: `自定义新节点 #${newId}`,
+    icon: '📄'
+  })
+  selectedTreeNode.value.expanded = true
+  ElMessage.success(`在节点《${selectedTreeNode.value.label}》下添加子节点！`)
+}
+
+// ------------------------------------------------------------------
+// 5. 年月/日期选择器 & 省市级联选择器 State
+// ------------------------------------------------------------------
+const selectedMonth = ref<string>('2026-07')
+const startDate = ref<string>('2026-07-01')
+const endDate = ref<string>('2026-07-24')
+
+const provinceList = ['浙江省', '江苏省', '广东省', '北京', '上海']
+const cityMap: Record<string, string[]> = {
+  '浙江省': ['杭州市', '宁波市', '温州市', '嘉兴市'],
+  '江苏省': ['南京市', '苏州市', '无锡市'],
+  '广东省': ['广州市', '深圳市', '珠海市'],
+  '北京': ['东城区', '朝阳区', '海淀区'],
+  '上海': ['黄浦区', '静安区', '浦东新区']
+}
+
+const selectedProvince = ref<string>('浙江省')
+const selectedCity = ref<string>('杭州市')
+
+const handleProvinceChange = () => {
+  const cities = cityMap[selectedProvince.value] || []
+  selectedCity.value = cities[0] || ''
+}
+
+// ------------------------------------------------------------------
+// 6. 其它基础弹窗与预览状态
+// ------------------------------------------------------------------
+const previewItem = ref<OatExampleItem | null>(null)
+const previewModalOpen = ref<boolean>(false)
+const updateModalOpen = ref<boolean>(false)
+const createPageModalOpen = ref<boolean>(false)
+const confirmModalOpen = ref<boolean>(false)
+const confirmType = ref<'warning' | 'danger' | 'success' | 'info'>('warning')
+const confirmTitle = ref<string>('确认删除该记录？')
+const confirmMsg = ref<string>('此操作将不可撤销，删除后该数据记录将从本地数据库中永久移除。')
+const drawerOpen = ref<boolean>(false)
+
 const copySnippet = async (item: OatExampleItem) => {
   try {
     await navigator.clipboard.writeText(item.snippet)
@@ -211,33 +359,6 @@ const openPreview = (item: OatExampleItem) => {
   previewItem.value = item
   previewModalOpen.value = true
 }
-
-const handleCreatePage = (data: NewPageData) => {
-  createdPages.value.unshift(data)
-  ElMessage.success(`成功生成页面《${data.title}》(/oat-studio/${data.path})！`)
-}
-
-const triggerConfirmDialog = (type: 'warning' | 'danger' | 'success' | 'info') => {
-  confirmType.value = type
-  if (type === 'danger') {
-    confirmTitle.value = '确定危险删除？'
-    confirmMsg.value = '此操作将无法还原，确定要清理全站缓存并重置状态吗？'
-  } else if (type === 'success') {
-    confirmTitle.value = '配置发布成功'
-    confirmMsg.value = '当前全局路由与 Oat UI 组件定义已成功同步至部署节点。'
-  } else if (type === 'warning') {
-    confirmTitle.value = '版本切换警告'
-    confirmMsg.value = '检测到您正尝试从 v2.4.0 降级，可能部分新特性无法向下兼容。'
-  } else {
-    confirmTitle.value = '系统常规提示'
-    confirmMsg.value = '欢迎使用基于 oat.ink 规范打造的极简组件套件。'
-  }
-  confirmModalOpen.value = true
-}
-
-const onConfirmAction = () => {
-  ElMessage.success('已执行确认操作')
-}
 </script>
 
 <template>
@@ -246,29 +367,28 @@ const onConfirmAction = () => {
     <header class="studio-header">
       <div class="header-content">
         <div class="tag-badge">🌾 Oat.ink Interactive Studio</div>
-        <h1>Oat UI 全套 400 个实战范例与表格组件套件</h1>
+        <h1>Oat UI 全套 400 个范例库、双击编辑表格与高级表单套件</h1>
         <p>
-          遵循 <a href="https://oat.ink/" target="_blank">Oat UI (oat.ink)</a>
-          极简理念，汇聚包含<strong>完整 400 个交互范例的响应式表格 (.oat-table)</strong>、<strong>系统更新提示框</strong>、<strong>新建页面表单</strong>、<strong>确认对话框</strong>与<strong>右侧抽屉</strong>。
+          遵循 <a href="https://oat.ink/" target="_blank">Oat UI (oat.ink)</a> 极简规范，包含<strong>400 个全量范例表格 (支持双击修改)</strong>、<strong>实时校验表单</strong>、<strong>树形目录组件</strong>、<strong>年月与日期范围选择器</strong>及<strong>省市区级联下拉框</strong>。
         </p>
 
         <!-- 数据统计速览栏 -->
         <div class="stats-summary">
           <div class="stat-item">
             <span class="num">400</span>
-            <span class="lbl">全套组件与表格范例</span>
+            <span class="lbl">全套组件与范例数据集</span>
           </div>
           <div class="stat-item">
-            <span class="num">6 大</span>
-            <span class="lbl">覆盖场景分类</span>
+            <span class="num">双击修改</span>
+            <span class="lbl">表格单元格行内编辑</span>
           </div>
           <div class="stat-item">
-            <span class="num">.oat-table</span>
-            <span class="lbl">原生极简表格修饰</span>
+            <span class="num">表单校验</span>
+            <span class="lbl">邮箱/手机号/年月正则</span>
           </div>
           <div class="stat-item">
-            <span class="num">0 依赖</span>
-            <span class="lbl">极致快速加载性能</span>
+            <span class="num">树形与级联</span>
+            <span class="lbl">Tree View & Cascader</span>
           </div>
         </div>
 
@@ -291,12 +411,12 @@ const onConfirmAction = () => {
 
     <!-- Main 主体区 -->
     <main class="studio-container">
-      <!-- 1. 400 个 Oat UI 范例大表格专区 (.oat-table) -->
+      <!-- 模块 1: 400 个 Oat UI 范例大表格专区 (支持双击修改) -->
       <section class="studio-section oat-table-section">
         <div class="section-title">
           <span class="icon">📊</span>
-          <h2>1. Oat UI 全套 400 个组件与范例数据集 (.oat-table)</h2>
-          <span class="sub-tag">支持列头排序、分类筛选、实时搜索与代码复制</span>
+          <h2>1. Oat UI 全套 400 个范例表格 (.oat-table) — 💡 提示：双击单元格可直接修改！</h2>
+          <span class="sub-tag">支持列头排序、双击修改名称/描述、分类筛选与代码复制</span>
         </div>
 
         <div class="table-card">
@@ -325,7 +445,7 @@ const onConfirmAction = () => {
             </div>
           </div>
 
-          <!-- 原生 Oat 表格展示区 -->
+          <!-- 原生 Oat 表格展示区 (支持双击编辑) -->
           <div class="table-wrapper">
             <table class="oat-table">
               <thead>
@@ -334,7 +454,7 @@ const onConfirmAction = () => {
                     编号 <span v-if="sortKey === 'id'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
                   </th>
                   <th class="sortable" @click="handleSort('name')">
-                    范例名称 <span v-if="sortKey === 'name'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+                    范例名称 (双击编辑) <span v-if="sortKey === 'name'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
                   </th>
                   <th class="sortable" @click="handleSort('category')">
                     分类 <span v-if="sortKey === 'category'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
@@ -345,7 +465,7 @@ const onConfirmAction = () => {
                   <th class="sortable" @click="handleSort('size')">
                     大小 <span v-if="sortKey === 'size'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
                   </th>
-                  <th>描述说明</th>
+                  <th>描述说明 (双击编辑)</th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -358,12 +478,28 @@ const onConfirmAction = () => {
 
                 <tr v-for="item in paginatedExamples" :key="item.id">
                   <td class="item-id">#{{ String(item.id).padStart(3, '0') }}</td>
-                  <td>
-                    <div class="comp-name">{{ item.name }}</div>
+
+                  <!-- 可双击编辑的名称 -->
+                  <td class="editable-td" @dblclick="startCellEdit(item, 'name')">
+                    <div v-if="editingCellId === item.id && editingField === 'name'">
+                      <input
+                        v-model="editValue"
+                        type="text"
+                        class="cell-edit-input"
+                        @blur="saveCellEdit(item)"
+                        @keyup.enter="saveCellEdit(item)"
+                      />
+                    </div>
+                    <div v-else class="comp-name">
+                      {{ item.name }}
+                      <span class="edit-hint">✏️ 双击修改</span>
+                    </div>
                   </td>
+
                   <td>
                     <span class="oat-badge gray">{{ item.category }}</span>
                   </td>
+
                   <td>
                     <span
                       class="oat-badge"
@@ -377,10 +513,28 @@ const onConfirmAction = () => {
                       {{ item.status }}
                     </span>
                   </td>
+
                   <td>
                     <span class="size-tag">{{ item.size }}</span>
                   </td>
-                  <td class="comp-desc">{{ item.description }}</td>
+
+                  <!-- 可双击编辑的描述 -->
+                  <td class="editable-td" @dblclick="startCellEdit(item, 'description')">
+                    <div v-if="editingCellId === item.id && editingField === 'description'">
+                      <input
+                        v-model="editValue"
+                        type="text"
+                        class="cell-edit-input"
+                        @blur="saveCellEdit(item)"
+                        @keyup.enter="saveCellEdit(item)"
+                      />
+                    </div>
+                    <div v-else class="comp-desc">
+                      {{ item.description }}
+                      <span class="edit-hint">✏️ 双击修改</span>
+                    </div>
+                  </td>
+
                   <td>
                     <div class="action-cell">
                       <button class="oat-btn outline small" @click="openPreview(item)">
@@ -424,92 +578,232 @@ const onConfirmAction = () => {
         </div>
       </section>
 
-      <!-- 2. 常用交互弹窗触发展区 -->
-      <section class="studio-section">
+      <!-- 模块 2: Oat 响应式表单带完整实时校验 -->
+      <section class="studio-section oat-form-validation-section">
         <div class="section-title">
-          <span class="icon">💬</span>
-          <h2>2. Oat UI 常用交互弹窗与抽屉试验场</h2>
-          <span class="sub-tag">点击下列卡片按钮快速开启体验</span>
+          <span class="icon">📝</span>
+          <h2>2. Oat UI 响应式表单与实时正则校验 (Form Validation)</h2>
+          <span class="sub-tag">包含必填项、邮箱/手机号格式校验与错误提醒</span>
         </div>
 
-        <div class="trigger-grid">
-          <!-- 弹窗 1: 更新提示 -->
-          <div class="trigger-card">
-            <div class="card-icon">🎉</div>
-            <h3>新版本更新提示 (Release Notes)</h3>
-            <p>包含版本 Tag 徽章、新功能 Timeline、版本亮点与“稍后提醒/立即体验”胶囊按钮。</p>
-            <button class="oat-btn primary" @click="updateModalOpen = true">
-              触发更新提示弹窗
-            </button>
-          </div>
+        <div class="form-card">
+          <div class="form-grid">
+            <!-- 姓名 -->
+            <div class="form-field">
+              <label>真实姓名 <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input
+                  v-model="validForm.username"
+                  type="text"
+                  placeholder="请输入姓名..."
+                  :class="{ 'has-error': formErrors.username }"
+                />
+              </div>
+              <span v-if="formErrors.username" class="err-msg">⚠️ {{ formErrors.username }}</span>
+            </div>
 
-          <!-- 弹窗 2: 新建页面 modal -->
-          <div class="trigger-card">
-            <div class="card-icon">📝</div>
-            <h3>新建页面 / 项目模态表单</h3>
-            <p>基于 Oat UI 极简表单规范，支持配置路由 Path、页面类型模板（Dashboard / 列表）与 Tag。</p>
-            <button class="oat-btn primary" @click="createPageModalOpen = true">
-              触发新建页面弹窗
-            </button>
-          </div>
+            <!-- 邮箱 -->
+            <div class="form-field">
+              <label>电子邮箱 <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input
+                  v-model="validForm.email"
+                  type="email"
+                  placeholder="如：developer@oat.ink"
+                  :class="{ 'has-error': formErrors.email }"
+                />
+              </div>
+              <span v-if="formErrors.email" class="err-msg">⚠️ {{ formErrors.email }}</span>
+            </div>
 
-          <!-- 弹窗 3: 危险/警告对话框 -->
-          <div class="trigger-card">
-            <div class="card-icon">⚠️</div>
-            <h3>警告 / 危险删除确认框</h3>
-            <p>用于拦截关键与危险性操作，带有高亮图标提示与明确的双选项胶囊按键。</p>
-            <div class="btn-group-row" style="display: flex; gap: 8px;">
-              <button class="oat-btn danger small" @click="triggerConfirmDialog('danger')">
-                危险删除
-              </button>
-              <button class="oat-btn secondary small" @click="triggerConfirmDialog('warning')">
-                警告提示
-              </button>
+            <!-- 手机号 -->
+            <div class="form-field">
+              <label>手机号码 <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input
+                  v-model="validForm.phone"
+                  type="tel"
+                  placeholder="如：13812345678"
+                  :class="{ 'has-error': formErrors.phone }"
+                />
+              </div>
+              <span v-if="formErrors.phone" class="err-msg">⚠️ {{ formErrors.phone }}</span>
+            </div>
+
+            <!-- 年月选择 -->
+            <div class="form-field">
+              <label>生效年月 (YYYY-MM) <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input
+                  v-model="validForm.yearMonth"
+                  type="month"
+                  :class="{ 'has-error': formErrors.yearMonth }"
+                />
+              </div>
+              <span v-if="formErrors.yearMonth" class="err-msg">⚠️ {{ formErrors.yearMonth }}</span>
+            </div>
+
+            <!-- 角色权限 -->
+            <div class="form-field">
+              <label>权限角色</label>
+              <div class="input-wrapper">
+                <select v-model="validForm.role">
+                  <option value="developer">👨‍💻 开发者 (Developer)</option>
+                  <option value="designer">🎨 UI 设计师 (Designer)</option>
+                  <option value="admin">👑 运维管理员 (Admin)</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <!-- 弹窗 4: 右侧抽屉 -->
-          <div class="trigger-card">
-            <div class="card-icon">📂</div>
-            <h3>右侧滑出抽屉 (Drawer)</h3>
-            <p>极简的右侧滑出面板，适用于系统通知中心、详细配置或日志历史查阅。</p>
-            <button class="oat-btn secondary" @click="drawerOpen = true">
-              滑出右侧抽屉
+          <div class="form-actions">
+            <button class="oat-btn secondary" @click="validForm.username=''; validForm.email=''; validForm.phone=''">
+              重置表单
+            </button>
+            <button class="oat-btn primary" @click="validateForm">
+              ✅ 验证并提交表单
             </button>
           </div>
         </div>
       </section>
 
-      <!-- 3. 已动态生成的 Oat 页面成果展示 -->
-      <section class="studio-section dynamic-pages-section">
+      <!-- 模块 3: Oat 树形目录与层级组件 (Tree View) -->
+      <section class="studio-section oat-tree-section">
         <div class="section-title">
-          <span class="icon">📄</span>
-          <h2>3. 已生成的 Oat UI 交互页面 ({{ createdPages.length }})</h2>
-          <button class="oat-btn outline small" @click="createPageModalOpen = true">
-            + 继续新建
-          </button>
+          <span class="icon">🌳</span>
+          <h2>3. Oat UI 极简树形目录组件 (Tree View)</h2>
+          <span class="sub-tag">支持节点展开/折叠、高亮选中与动态追加节点</span>
         </div>
 
-        <div v-if="!createdPages.length" class="empty-box">
-          尚无动态页面，点击顶部“+ 新建 Oat 交互页面”按钮尝试生成！
-        </div>
-
-        <div v-else class="pages-grid">
-          <div v-for="(pg, idx) in createdPages" :key="idx" class="created-page-card">
-            <div class="card-top">
-              <span class="tpl-badge">{{ pg.template.toUpperCase() }}</span>
-              <span class="path-text">/oat-studio/{{ pg.path }}</span>
-            </div>
-            <h4>{{ pg.title }}</h4>
-            <p>{{ pg.description || '暂无详细描述信息' }}</p>
-            <div class="card-bottom">
-              <div class="tags">
-                <span v-for="(t, tIdx) in pg.tags" :key="tIdx" class="tag">#{{ t }}</span>
+        <div class="tree-card">
+          <!-- 树形展示栏 -->
+          <div class="tree-sidebar">
+            <div v-for="node in treeData" :key="node.id" class="tree-node">
+              <div
+                class="node-label"
+                :class="{ selected: selectedTreeNode?.id === node.id }"
+                @click="selectTreeNode(node)"
+              >
+                <span class="toggle-icon" @click.stop="toggleTreeNode(node)">
+                  {{ node.children ? (node.expanded ? '▼' : '▶') : '•' }}
+                </span>
+                <span class="node-icon">{{ node.icon }}</span>
+                <span>{{ node.label }}</span>
               </div>
-              <button class="oat-btn secondary small" @click="ElMessage.info(`预览页面 /oat-studio/${pg.path}`)">
-                预览页面
+
+              <!-- 子节点递归渲染 -->
+              <div v-if="node.children && node.expanded" class="node-children">
+                <div v-for="c1 in node.children" :key="c1.id" class="tree-node">
+                  <div
+                    class="node-label"
+                    :class="{ selected: selectedTreeNode?.id === c1.id }"
+                    @click="selectTreeNode(c1)"
+                  >
+                    <span class="toggle-icon" @click.stop="toggleTreeNode(c1)">
+                      {{ c1.children ? (c1.expanded ? '▼' : '▶') : '•' }}
+                    </span>
+                    <span class="node-icon">{{ c1.icon }}</span>
+                    <span>{{ c1.label }}</span>
+                  </div>
+
+                  <div v-if="c1.children && c1.expanded" class="node-children">
+                    <div v-for="c2 in c1.children" :key="c2.id" class="tree-node">
+                      <div
+                        class="node-label"
+                        :class="{ selected: selectedTreeNode?.id === c2.id }"
+                        @click="selectTreeNode(c2)"
+                      >
+                        <span class="toggle-icon">•</span>
+                        <span class="node-icon">{{ c2.icon }}</span>
+                        <span>{{ c2.label }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 当前选中节点信息与操作区 -->
+          <div class="tree-detail">
+            <div class="detail-box">
+              <h4>当前选中节点信息</h4>
+              <p>节点 ID: <code>{{ selectedTreeNode?.id || '未选中' }}</code></p>
+              <p>节点名称: <strong>{{ selectedTreeNode?.label || '未选中' }}</strong></p>
+            </div>
+
+            <div class="tree-actions" style="display: flex; gap: 10px;">
+              <button class="oat-btn primary" :disabled="!selectedTreeNode" @click="addChildNode">
+                + 在该节点下追加子节点
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 模块 4: 年月与日期范围选择器 (Date & Month Picker) -->
+      <section class="studio-section oat-datepicker-section">
+        <div class="section-title">
+          <span class="icon">📅</span>
+          <h2>4. Oat UI 年月选择器与日期范围套件</h2>
+          <span class="sub-tag">包含标准年月选择 (YYYY-MM)、日期区间与快捷按键</span>
+        </div>
+
+        <div class="picker-grid">
+          <!-- 1. 年月选择器 -->
+          <div class="picker-card">
+            <h4>年月选择器 (Year-Month)</h4>
+            <p>选择月份 (如 2026-07)，常用于月度结算与月度指标统计。</p>
+            <div class="picker-input-box">
+              <input v-model="selectedMonth" type="month" />
+            </div>
+            <div class="quick-capsules">
+              <span class="capsule" @click="selectedMonth = '2026-07'">本月 (2026-07)</span>
+              <span class="capsule" @click="selectedMonth = '2026-06'">上月 (2026-06)</span>
+            </div>
+          </div>
+
+          <!-- 2. 日期范围选择器 -->
+          <div class="picker-card">
+            <h4>日期范围选择器 (Date Range)</h4>
+            <p>选择起始日期与截止日期，进行区间数据检索。</p>
+            <div class="picker-input-box">
+              <input v-model="startDate" type="date" />
+              <span style="align-self: center;">至</span>
+              <input v-model="endDate" type="date" />
+            </div>
+            <div class="quick-capsules">
+              <span class="capsule" @click="startDate = '2026-07-24'; endDate = '2026-07-24'">今天</span>
+              <span class="capsule" @click="startDate = '2026-07-17'; endDate = '2026-07-24'">近 7 天</span>
+              <span class="capsule" @click="startDate = '2026-07-01'; endDate = '2026-07-31'">本月全月</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 模块 5: 省市区级联与下拉组件 (Cascader & Select) -->
+      <section class="studio-section oat-select-section">
+        <div class="section-title">
+          <span class="icon">🔻</span>
+          <h2>5. Oat UI 省市区级联下拉选择器</h2>
+          <span class="sub-tag">支持一级省份与二级城市联动响应</span>
+        </div>
+
+        <div class="select-grid">
+          <div class="select-card">
+            <h4>省份-城市两级级联选择器</h4>
+            <div class="cascader-box">
+              <select v-model="selectedProvince" @change="handleProvinceChange">
+                <option v-for="prov in provinceList" :key="prov" :value="prov">{{ prov }}</option>
+              </select>
+
+              <select v-model="selectedCity">
+                <option v-for="c in (cityMap[selectedProvince] || [])" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 12px;">
+              当前已选择: <strong>{{ selectedProvince }} - {{ selectedCity }}</strong>
+            </p>
           </div>
         </div>
       </section>
@@ -526,7 +820,7 @@ const onConfirmAction = () => {
       @confirm="previewItem && copySnippet(previewItem)"
     />
 
-    <!-- 其它通用弹窗挂载 -->
+    <!-- 通用弹窗挂载 -->
     <OatUpdateModal v-model="updateModalOpen" @confirm="ElMessage.success('已开启新功能体验！')" />
 
     <OatCreatePageModal v-model="createPageModalOpen" @create="handleCreatePage" />
@@ -542,14 +836,9 @@ const onConfirmAction = () => {
     <OatDrawer v-model="drawerOpen" title="🔔 全局系统通知" subtitle="Oat UI 极简抽屉">
       <div class="notification-list">
         <div class="notif-item">
-          <div class="notif-title">🎉 Oat UI 400 个范例库上线</div>
-          <div class="notif-desc">包含数据表格 .oat-table、更新提示模态框与右侧抽屉套件。</div>
-          <div class="notif-time">今天 10:45</div>
-        </div>
-        <div class="notif-item">
-          <div class="notif-title">⚡ 单元测试全数通过</div>
-          <div class="notif-desc">导航与核心组件 12/12 项集成测试全部 pass。</div>
-          <div class="notif-time">今天 09:12</div>
+          <div class="notif-title">🎉 Oat UI 400 个范例库升级</div>
+          <div class="notif-desc">包含双击编辑表格、实时校验表单、树形目录与年月选择器。</div>
+          <div class="notif-time">今天 10:50</div>
         </div>
       </div>
       <template #footer>
