@@ -213,6 +213,11 @@ const routes = [
     component: () => import('../views/xiaomiShop/detail.vue')
   },
   {
+    path: '/xiaomi-shop/cart',
+    name: 'XiaomiShopCart',
+    component: () => import('../views/xiaomiShop/cart.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFoundCatchAll',
     component: () => import('../views/error/404.vue')

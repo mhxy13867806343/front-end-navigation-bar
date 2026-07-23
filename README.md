@@ -12,6 +12,7 @@
 
 - 🏠 **主页入口**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 - 🧡 **小米官方商城**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
+- 🛒 **小米商城购物车**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart)
 - 🔐 **权限管理控制中心**：[https://mhxy13867806343.github.io/front-end-navigation-bar/permission](https://mhxy13867806343.github.io/front-end-navigation-bar/permission)
 - 📜 **系统安全与操作日志中心**：[https://mhxy13867806343.github.io/front-end-navigation-bar/logs](https://mhxy13867806343.github.io/front-end-navigation-bar/logs)
 - 🚫 **500 / 404 / 401 等状态页**：[https://mhxy13867806343.github.io/front-end-navigation-bar/500](https://mhxy13867806343.github.io/front-end-navigation-bar/500)
@@ -19,7 +20,7 @@
 
 ## ✨ 功能特性
 
-- **🧡 小米官方商城 & 交互式收银台** (`/xiaomi-shop`)：基于 27万+ 行本地 JSON (`src/shop-json/xiaomi-shop.json`) 渲染，包含多分类商品列表、版本与颜色选购计算，并支持**微信支付、支付宝、云闪付、信用卡 24 期免息**的在线模拟支付与订单流转。
+- **🧡 小米官方商城 & 购物车结算** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：基于 27万+ 行本地 JSON (`src/shop-json/xiaomi-shop.json`) 渲染，内置持久化 `cartStore`、侧边抽屉购物车 (`CartDrawer.vue`) 与全屏购物车页面 (`/xiaomi-shop/cart`)，包含地址选择、优惠券兑换（`MI888` 减 50）、全选删除与**微信支付、支付宝、云闪付、信用卡 24 期免息**的在线模拟支付与订单流转。
 - **🔐 权限管理与控制中心** (`/permission`)：内置 4 大 RBAC 角色（超级管理员、运维、运营、访客）实时切换、按钮级指令鉴权（`v-permission`）、路由访问矩阵、JWT Token 报文解析，以及**HTTP 状态码（200 / 401 / 402 / 403 / 404 / 405 / 500）一键直接跳过去展示**。
 - **📜 实时系统安全与操作日志中心** (`/logs`)：实时捕获全局 API 响应 HTTP 状态码、RBAC 拦截事件与异常 Stack Trace，支持状态码点击联动跳转、多级别筛选、关键字搜寻与离线 CSV 导出。
 - **🚫 完整 HTTP 状态码与异常页面集** (`/200`, `/401`, `/402`, `/403`, `/404`, `/405`, `/500`)：覆盖 200 OK 正常鉴权、401 未授权、402 付费订阅、403 禁止访问防火墙、404 迷失寻路、405 谓词受限、500 服务崩溃与一键自动修复。

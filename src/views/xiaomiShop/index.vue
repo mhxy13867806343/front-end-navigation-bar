@@ -62,14 +62,46 @@ const filteredProducts = computed(() => {
   })
 })
 
+import CartDrawer from './CartDrawer.vue'
+import { addToCartStore, cartTotalCount } from './cartStore'
+
+const showCartDrawer = ref(false)
+const showPayModal = ref(false)
+const payTitle = ref('小米商城收银台')
+const payAmount = ref(0)
+const selectedPayMethod = ref('wechat')
+const paySuccess = ref(false)
+const isPaying = ref(false)
+
+const openPaymentModal = (amount: number, title: string) => {
+  payAmount.value = amount
+  payTitle.value = title
+  showPayModal.value = true
+  paySuccess.value = false
+}
+
+const confirmPay = () => {
+  isPaying.value = true
+  setTimeout(() => {
+    isPaying.value = false
+    paySuccess.value = true
+    ElMessage.success('🎉 模拟支付完成！仓库将立即为您安排顺丰发货！')
+  }, 1500)
+}
+
 const goToDetail = (productId: string) => {
   router.push(`/xiaomi-shop/detail/${productId}`)
 }
 
 const addToCart = (e: MouseEvent, product: Product) => {
   e.stopPropagation()
-  cartCount.value++
-  ElMessage.success(`🛒 成功将 [${product.name}] 加入购物车！`)
+  addToCartStore({
+    productId: product.id,
+    name: product.name,
+    subtitle: product.subtitle,
+    coverImage: product.coverImage,
+    price: product.price
+  })
 }
 
 const handleBannerClick = (productId: string) => {
@@ -83,6 +115,82 @@ const goHome = () => {
 
 <template>
   <div class="xiaomi-shop-page">
+    <!-- Cart Drawer -->
+    <CartDrawer
+      v-model:visible="showCartDrawer"
+      @openPayment="openPaymentModal"
+    />
+
+    <!-- Payment Checkout Modal -->
+    <el-dialog
+      v-model="showPayModal"
+      :title="payTitle"
+      width="540px"
+      align-center
+    >
+      <div v-if="!paySuccess" class="payment-modal-body">
+        <div class="pay-amount-box">
+          <span class="label">应付总金额</span>
+          <span class="val">￥{{ payAmount }}</span>
+        </div>
+
+        <div class="pay-method-title">选择支付方式：</div>
+        <div class="pay-method-grid">
+          <div
+            class="pay-method-card"
+            :class="{ active: selectedPayMethod === 'wechat' }"
+            @click="selectedPayMethod = 'wechat'"
+          >
+            <span class="pay-icon">💚</span>
+            <div class="pay-name">微信支付</div>
+          </div>
+          <div
+            class="pay-method-card"
+            :class="{ active: selectedPayMethod === 'alipay' }"
+            @click="selectedPayMethod = 'alipay'"
+          >
+            <span class="pay-icon">💙</span>
+            <div class="pay-name">支付宝</div>
+          </div>
+          <div
+            class="pay-method-card"
+            :class="{ active: selectedPayMethod === 'unionpay' }"
+            @click="selectedPayMethod = 'unionpay'"
+          >
+            <span class="pay-icon">🔴</span>
+            <div class="pay-name">云闪付 / 银联</div>
+          </div>
+        </div>
+
+        <div class="qr-code-box">
+          <div class="fake-qr">
+            <div class="qr-pattern"></div>
+            <div class="qr-center">mi</div>
+          </div>
+          <div class="qr-tip">
+            请使用 {{ selectedPayMethod === 'wechat' ? '微信' : selectedPayMethod === 'alipay' ? '支付宝' : '云闪付' }} 扫描二维码完成支付
+          </div>
+        </div>
+
+        <el-button
+          type="warning"
+          size="large"
+          class="confirm-pay-btn"
+          :loading="isPaying"
+          @click="confirmPay"
+        >
+          {{ isPaying ? '正在向银行发起扣款...' : `模拟已完成付款 ￥${payAmount}` }}
+        </el-button>
+      </div>
+
+      <div v-else class="pay-success-box">
+        <div class="success-icon">🎉</div>
+        <h2>支付成功！</h2>
+        <p>订单已成功推送到小米物流仓库，预计明日顺丰发货！</p>
+        <el-button type="primary" @click="showPayModal = false">完成</el-button>
+      </div>
+    </el-dialog>
+
     <!-- Top Announcement Bar -->
     <div class="top-bar">
       <div class="container bar-content">
@@ -125,10 +233,10 @@ const goHome = () => {
           </el-input>
         </div>
 
-        <div class="header-cart" @click="ElMessage.info('当前购物车已有 ' + cartCount + ' 件商品')">
+        <div class="header-cart" @click="showCartDrawer = true">
           <span class="cart-icon">🛒</span>
           <span>购物车</span>
-          <span class="cart-badge">{{ cartCount }}</span>
+          <span class="cart-badge">{{ cartTotalCount }}</span>
         </div>
       </div>
     </header>
