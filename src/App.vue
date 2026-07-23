@@ -118,9 +118,10 @@ const isFlashRoute = computed<boolean>(() => {
   const path = route.path
   return routeViewPaths.some((p: string): boolean => {
     if (path === p || path.endsWith(p)) return true
-    if (p === '/h5' && path.startsWith('/h5/')) return true
-    if (p === '/api-center' && path.startsWith('/api-center/')) return true
-    if (p === '/three-showcase' && path.startsWith('/three-showcase/')) return true
+    if (p === '/h5' && (path.startsWith('/h5/') || path.includes('/h5/'))) return true
+    if (p === '/api-center' && (path.startsWith('/api-center/') || path.includes('/api-center/'))) return true
+    if (p === '/three-showcase' && (path.startsWith('/three-showcase/') || path.includes('/three-showcase/'))) return true
+    if (p === '/xiaomi-shop' && (path.startsWith('/xiaomi-shop/') || path.includes('/xiaomi-shop'))) return true
     return false
   })
 })
