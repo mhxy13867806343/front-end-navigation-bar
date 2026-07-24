@@ -96,6 +96,21 @@ test('Oat Studio provides update notice modal, new page modal, and confirm dialo
   assert.match(studioSource, /OatDrawer/)
 })
 
+test('Auth Showcase provides 10 distinct interactive Login and Register UI themes switchable via Tabs', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const authSource = readFileSync(new URL('../src/views/authShowcase/index.vue', import.meta.url), 'utf8')
+  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /path:\s*'\/auth-showcase'/)
+  assert.match(routerSource, /views\/authShowcase\/index\.vue/)
+  assert.match(noticeSource, /command="\/auth-showcase"/)
+  assert.match(authSource, /THEME_TABS/)
+  assert.match(authSource, /glassmorphism/)
+  assert.match(authSource, /cyberpunk/)
+  assert.match(authSource, /macfrost/)
+  assert.match(authSource, /neumorphism/)
+})
+
 test('RunCode page includes editor input output and run controls', () => {
   const runCodeSource = readFileSync(new URL('../src/views/runcode/index.vue', import.meta.url), 'utf8')
 
@@ -116,6 +131,11 @@ test('Home page keeps quick-entry clock without floating QQ and email contact bu
   assert.match(appSource, /import AnalogClock from '\.\/components\/AnalogClock\.vue'/)
   assert.match(appSource, /<AnalogClock class="header-analog-clock" \/>/)
   assert.match(clockSource, /<el-dialog[\s\S]*?append-to-body[\s\S]*?align-center/)
+  assert.match(clockSource, /<el-dialog[\s\S]*?draggable/)
+  assert.match(clockSource, /@contextmenu\.prevent="openClockContextMenu"/)
+  assert.match(clockSource, /class="clock-context-menu"/)
+  assert.match(clockSource, /隐藏弹窗/)
+  assert.match(clockSource, /hideClockDialogFromMenu/)
   assert.match(clockSource, /time-greeting/)
   assert.match(clockSource, /凌晨/)
   assert.match(clockSource, /早上/)

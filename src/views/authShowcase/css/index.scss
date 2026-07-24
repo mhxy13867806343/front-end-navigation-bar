@@ -1,0 +1,500 @@
+// 10 款精美登录注册 UI 展厅专属 SCSS 样式集
+.auth-showcase-page {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  padding-bottom: 60px;
+
+  .showcase-header {
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 32px 24px 24px;
+    backdrop-filter: blur(12px);
+    margin-bottom: 24px;
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      .brand-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .badge-tag {
+          padding: 4px 10px;
+          border-radius: 9999px;
+          background: rgba(37, 99, 235, 0.2);
+          border: 1px solid rgba(59, 130, 246, 0.4);
+          color: #60a5fa;
+          font-size: 0.8rem;
+          font-weight: 700;
+        }
+
+        h1 {
+          margin: 0;
+          font-size: 1.6rem;
+          font-weight: 800;
+          background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+      }
+
+      .back-link-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #e2e8f0;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+          color: #ffffff;
+        }
+      }
+    }
+  }
+
+  // 10 Tabs 导航栏
+  .theme-tabs-nav {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    padding: 0 24px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .tab-item {
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover {
+        background: rgba(51, 65, 85, 0.8);
+        color: #f1f5f9;
+        transform: translateY(-1px);
+      }
+
+      &.active {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border-color: #60a5fa;
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      }
+    }
+  }
+
+  // 主体内容区
+  .showcase-stage {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+
+    .theme-card-wrapper {
+      min-height: 560px;
+      border-radius: 20px;
+      padding: 40px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+
+// ------------------------------------------------------------------
+// 10 大主题专属 UI 框架样式集
+// ------------------------------------------------------------------
+
+// Theme 1: 🌌 Glassmorphism 水晶毛玻璃
+.theme-glassmorphism {
+  background: radial-gradient(circle at 20% 20%, #3b82f6 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, #8b5cf6 0%, transparent 40%),
+              #0f172a;
+
+  .glass-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 36px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+
+    .mode-toggle {
+      display: flex;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 4px;
+      margin-bottom: 24px;
+
+      button {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: #94a3b8;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.active {
+          background: rgba(255, 255, 255, 0.2);
+          color: #ffffff;
+        }
+      }
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      label {
+        display: block;
+        font-size: 0.82rem;
+        color: #cbd5e1;
+        margin-bottom: 6px;
+      }
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        outline: none;
+        box-sizing: border-box;
+
+        &:focus {
+          border-color: #60a5fa;
+          box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+        }
+      }
+    }
+
+    .glass-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+    }
+  }
+}
+
+// Theme 2: 🖤 Modern Dark 极简暗黑
+.theme-moderndark {
+  background: #090d16;
+
+  .dark-card {
+    width: 100%;
+    max-width: 400px;
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+    padding: 32px;
+
+    .dark-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: #06b6d4;
+      color: #0f172a;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  }
+}
+
+// Theme 3: 🌾 Oat UI Minimalist 极简风
+.theme-oatminimal {
+  background: #f1f5f9;
+  color: #0f172a;
+
+  .oat-card {
+    width: 100%;
+    max-width: 380px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+
+    input {
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      background: #f8fafc;
+    }
+
+    .oat-btn-primary {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  }
+}
+
+// Theme 4: ⚡ Cyberpunk Neon 赛博朋克
+.theme-cyberpunk {
+  background: #050508;
+
+  .cyber-card {
+    width: 100%;
+    max-width: 420px;
+    background: #0d0e15;
+    border: 2px solid #ff007f;
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.4), inset 0 0 15px rgba(0, 240, 255, 0.2);
+    border-radius: 4px;
+    padding: 32px;
+
+    .cyber-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #00f0ff;
+      color: #000000;
+      font-weight: 900;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00f0ff;
+    }
+  }
+}
+
+// Theme 5: 🍎 macOS Tahoe Frost 苹果磨砂
+.theme-macfrost {
+  background: linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%);
+  color: #1e293b;
+
+  .mac-window {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+
+    .mac-titlebar {
+      height: 38px;
+      background: rgba(255, 255, 255, 0.5);
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+
+        &.red { background: #ff5f56; }
+        &.yellow { background: #ffbd2e; }
+        &.green { background: #27c93f; }
+      }
+    }
+
+    .mac-body {
+      padding: 28px;
+    }
+  }
+}
+
+// Theme 6: 📱 Mobile App H5 手机端微卡片
+.theme-mobileh5 {
+  background: #18181b;
+
+  .phone-mockup {
+    width: 320px;
+    background: #000000;
+    border: 8px solid #27272a;
+    border-radius: 36px;
+    padding: 24px 18px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+
+    .phone-notch {
+      width: 100px;
+      height: 18px;
+      background: #27272a;
+      border-radius: 0 0 12px 12px;
+      margin: -24px auto 16px;
+    }
+  }
+}
+
+// Theme 7: 💼 Enterprise B2B SaaS 双栏
+.theme-b2bsaas {
+  background: #0f172a;
+
+  .saas-split-box {
+    width: 100%;
+    max-width: 820px;
+    background: #1e293b;
+    border-radius: 20px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+
+    .saas-left {
+      flex: 1;
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      h3 { margin: 0 0 12px; font-size: 1.5rem; font-weight: 800; }
+      p { margin: 0; font-size: 0.88rem; opacity: 0.85; line-height: 1.6; }
+    }
+
+    .saas-right {
+      flex: 1;
+      padding: 40px;
+    }
+  }
+}
+
+// Theme 8: 🎮 Gaming E-Sports 竞速
+.theme-esports {
+  background: radial-gradient(circle at center, #2e1065 0%, #090514 100%);
+
+  .esports-card {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(30, 27, 75, 0.8);
+    border: 1px solid #7c3aed;
+    border-radius: 16px;
+    padding: 32px;
+
+    .esports-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+      color: #ffffff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  }
+}
+
+// Theme 9: 🍃 Pastel Nature 柔和风
+.theme-pastel {
+  background: linear-gradient(135deg, #fef2f2 0%, #e0f2fe 100%);
+  color: #334155;
+
+  .pastel-card {
+    width: 100%;
+    max-width: 380px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+
+    input {
+      border: 1px solid #cbd5e1;
+      border-radius: 9999px;
+      padding: 10px 18px;
+    }
+
+    .pastel-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 9999px;
+      border: none;
+      background: #38bdf8;
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  }
+}
+
+// Theme 10: 🧊 Neumorphism 3D 新拟物化
+.theme-neumorphism {
+  background: #e0e5ec;
+  color: #333333;
+
+  .neu-card {
+    width: 100%;
+    max-width: 380px;
+    background: #e0e5ec;
+    border-radius: 24px;
+    padding: 36px;
+    box-shadow: 9px 9px 16px rgb(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.8);
+
+    input {
+      border: none;
+      background: #e0e5ec;
+      border-radius: 12px;
+      box-shadow: inset 3px 3px 6px #b8b9be, inset -3px -3px 6px #ffffff;
+      padding: 12px 14px;
+      color: #333;
+      outline: none;
+    }
+
+    .neu-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background: #e0e5ec;
+      box-shadow: 5px 5px 10px #b8b9be, -5px -5px 10px #ffffff;
+      color: #2563eb;
+      font-weight: 800;
+      cursor: pointer;
+
+      &:active {
+        box-shadow: inset 2px 2px 5px #b8b9be, inset -2px -2px 5px #ffffff;
+      }
+    }
+  }
+}

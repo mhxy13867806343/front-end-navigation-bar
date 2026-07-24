@@ -21,6 +21,7 @@
 
 ## ✨ 功能特性
 
+- **🔐 10 款精美登录注册 UI 展厅** (`/auth-showcase`)：新增在顶栏「🧩 Web组件与库」下拉菜单中！包含 **毛玻璃水晶**、**极简暗黑**、**Oat UI 纯净风**、**赛博朋克霓虹**、**macOS 磨砂窗**、**移动 H5 微卡片**、**企业 B2B SaaS 双栏**、**电竞竞速极光**、**柔和马卡龙** 与 **新拟物化 3D** 等 10 款不同主题风格的登录注册交互界面，支持 10 Tabs 即时切换与登录/注册模式切变。
 - **🌾 Oat UI Studio 实战演练中心** (`/oat-studio`)：集成 [Oat.ink 官方 26 项原生 WebComponents / CSS 组件](https://oat.ink/components/) (Dropdown, TagInput, Upload, Tabs WC) 与 Element Plus 官方 64 项组件侧栏目录。内置对话框 (Dialog / Modal) 融入 **Element Plus Dialog** 居中布局与 **Naive UI OS-Theme Dialog** 极简高斯模糊遮罩；包含 **Transfer 穿梭框**、**Slider 滑块**、**Scrollbar 滚动条**、**Steps 步骤条**、**Rate 评分**，以及 400 个全量范例记录并支持**单元格双击行内即时编辑**。
 - **🧡 小米官方商城 & 购物车结算** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：基于 27万+ 行本地 JSON (`src/shop-json/xiaomi-shop.json`) 渲染，内置持久化 `cartStore`、侧边抽屉购物车 (`CartDrawer.vue`) 与全屏购物车页面 (`/xiaomi-shop/cart`)，包含地址选择、优惠券兑换（`MI888` 减 50）、全选删除与**微信支付、支付宝、云闪付、信用卡 24 期免息**的在线模拟支付与订单流转。
 - **🔐 权限管理与控制中心** (`/permission`)：内置 4 大 RBAC 角色（超级管理员、运维、运营、访客）实时切换、按钮级指令鉴权（`v-permission`）、路由访问矩阵、JWT Token 报文解析，以及**HTTP 状态码（200 / 401 / 402 / 403 / 404 / 405 / 500）一键直接跳过去展示**。

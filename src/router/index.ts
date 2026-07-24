@@ -173,6 +173,11 @@ const routes = [
     component: () => import('../views/oatStudio/index.vue')
   },
   {
+    path: '/auth-showcase',
+    name: 'AuthShowcase',
+    component: () => import('../views/authShowcase/index.vue')
+  },
+  {
     path: '/200',
     name: 'Page200',
     component: () => import('../views/error/200.vue')
