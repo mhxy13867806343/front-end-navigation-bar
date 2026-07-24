@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T02:46:30.668Z",
+  "generatedAt": "2026-07-24T03:07:31.183Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "cff3ffbe0b78878c597c70f040aededbbb9d60b1",
+          "shortHash": "cff3ffb",
+          "date": "2026-07-24",
+          "time": "10:46",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "1aec485a5676768b2857e193e16899025f57895e",
           "shortHash": "1aec485",
@@ -293,16 +303,6 @@
           "title": "implement interactive Oat UI demonstrations for all Element Plus sidebar components (Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, TimePicker, Splitter, Table)",
           "scope": "",
           "message": "feat: implement interactive Oat UI demonstrations for all Element Plus sidebar components (Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, TimePicker, Splitter, Table)"
-        },
-        {
-          "hash": "70789031027b0c0851f909e5bafa1b80f0c13a73",
-          "shortHash": "7078903",
-          "date": "2026-07-24",
-          "time": "00:54",
-          "type": "功能更新",
-          "title": "add 1:1 Element Plus component sidebar directory (Tour, Watermark, Splitter, OTP, Tag, Calendar) with Oat UI",
-          "scope": "",
-          "message": "feat: add 1:1 Element Plus component sidebar directory (Tour, Watermark, Splitter, OTP, Tag, Calendar) with Oat UI"
         }
       ]
     }

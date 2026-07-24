@@ -260,6 +260,9 @@ const resetStorage = () => {
           </h1>
         </div>
         <div style="display: flex; gap: 10px;">
+          <button style="padding: 10px 14px; border-radius: 10px; border: 1px solid #38bdf8; background: rgba(56,189,248,0.1); color: #38bdf8; font-weight: 700; font-size: 0.84rem; cursor: pointer;" @click="router.push('/source-code?file=scheduleX')">
+            💻 查看/复制本页源码
+          </button>
           <button style="padding: 10px 14px; border-radius: 10px; border: 1px solid #ef4444; background: transparent; color: #ef4444; font-weight: 700; font-size: 0.84rem; cursor: pointer;" @click="resetStorage">
             🔄 重置默认缓存
           </button>

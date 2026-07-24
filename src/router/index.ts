@@ -203,6 +203,11 @@ const routes = [
     component: () => import('../views/scheduleXShowcase/index.vue')
   },
   {
+    path: '/source-code',
+    name: 'SourceCodeViewer',
+    component: () => import('../views/sourceCode/index.vue')
+  },
+  {
     path: '/200',
     name: 'Page200',
     component: () => import('../views/error/200.vue')

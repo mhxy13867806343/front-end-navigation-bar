@@ -319,6 +319,7 @@ onUnmounted((): void => {
             <el-dropdown-item command="/motion-showcase">⚡ Motion for Vue 50+ 款经典特效展厅</el-dropdown-item>
             <el-dropdown-item command="/schedule-x">📅 Schedule-X v4.6 现代日历调度组件</el-dropdown-item>
             <el-dropdown-item command="/three-showcase/china-map">🗺️ Three.js 3D 中国地图设计器</el-dropdown-item>
+            <el-dropdown-item command="/source-code">💻 页面与功能全量源码查看/复制</el-dropdown-item>
             <el-dropdown-item divided command="triggerVersionCheck">🚀 模拟测试版本更新检测 (Element Plus UI)</el-dropdown-item>
             <el-dropdown-item command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
             <el-dropdown-item command="https://www.ruanyifeng.com/blog/2019/08/web_components.html">📰 阮一峰 Web Components 教程</el-dropdown-item>
