@@ -153,6 +153,11 @@ const routes = [
     component: () => import('../views/threeShowcase/lab.vue')
   },
   {
+    path: '/three-showcase/china-map',
+    name: 'ThreeShowcaseChinaMap',
+    component: () => import('../views/threeShowcase/chinaMap3d.vue')
+  },
+  {
     path: '/feature',
     name: 'Feature',
     component: () => import('../views/feature/index.vue')

@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T02:26:40.872Z",
+  "generatedAt": "2026-07-24T02:29:46.277Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "e3bb716b877c6d1558abe03f6a086d943f3a7284",
+          "shortHash": "e3bb716",
+          "date": "2026-07-24",
+          "time": "10:26",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "29f24dfb16f5adcc27129e50dcba93409b2a93ba",
           "shortHash": "29f24df",
@@ -293,16 +303,6 @@
           "title": "add 400 Oat UI component and table examples dataset with filtering, column sorting, and pagination in Oat Studio",
           "scope": "",
           "message": "feat: add 400 Oat UI component and table examples dataset with filtering, column sorting, and pagination in Oat Studio"
-        },
-        {
-          "hash": "aea4c80f7aee89ca3f0c1e19812116721c685f2d",
-          "shortHash": "aea4c80",
-          "date": "2026-07-24",
-          "time": "00:43",
-          "type": "功能更新",
-          "title": "add Oat UI Studio entry to Web Components dropdown menu",
-          "scope": "",
-          "message": "feat: add Oat UI Studio entry to Web Components dropdown menu"
         }
       ]
     }
