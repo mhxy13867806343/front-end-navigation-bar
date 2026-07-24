@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T01:14:51.800Z",
+  "generatedAt": "2026-07-24T01:40:10.504Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "eacdcf84a3eae49c811c7e6cdf635449aa266857",
+          "shortHash": "eacdcf8",
+          "date": "2026-07-24",
+          "time": "09:14",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "eaf73e9f6911d911b59a95581ad570e1939d2c0c",
           "shortHash": "eaf73e9",
@@ -293,21 +303,6 @@
           "title": "extract shared CSS and JS helpers for HTML5 web games",
           "scope": "",
           "message": "refactor: extract shared CSS and JS helpers for HTML5 web games"
-        }
-      ]
-    },
-    {
-      "date": "2026-07-23",
-      "items": [
-        {
-          "hash": "a078da32f77be17b49c33d4bd4b7433665bee8d6",
-          "shortHash": "a078da3",
-          "date": "2026-07-23",
-          "time": "22:40",
-          "type": "功能更新",
-          "title": "Oat UI showcase, Juejin avatar stack & modals, LOLM sticky headers, and global utilities refactoring",
-          "scope": "",
-          "message": "feat: Oat UI showcase, Juejin avatar stack & modals, LOLM sticky headers, and global utilities refactoring"
         }
       ]
     }

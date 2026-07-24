@@ -125,6 +125,16 @@ test('Cart Showcase and Animation Showcase provide 100 carts and 63,353 animatio
   assert.match(animSource, /generate63kAnims/)
 })
 
+test('Version polling is configured for production app initialization with Element Plus UI dialog', () => {
+  const versionPollingSource = readFileSync(new URL('../src/utils/versionPolling.ts', import.meta.url), 'utf8')
+  const mainSource = readFileSync(new URL('../src/kglobal/main.ts', import.meta.url), 'utf8')
+
+  assert.match(mainSource, /initVersionPolling\(\)/)
+  assert.match(versionPollingSource, /createVersionPolling/)
+  assert.match(versionPollingSource, /import\.meta\.env\.PROD/)
+  assert.match(versionPollingSource, /ElMessageBox\.confirm/)
+})
+
 test('RunCode page includes editor input output and run controls', () => {
   const runCodeSource = readFileSync(new URL('../src/views/runcode/index.vue', import.meta.url), 'utf8')
 
