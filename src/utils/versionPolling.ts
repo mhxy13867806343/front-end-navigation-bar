@@ -49,14 +49,14 @@ export function initVersionPolling() {
     createVersionPolling({
       vcType: 'versionJson',
       versionFileUrl,
-      pollingInterval: 30 * 1000, // 每 30 秒自动轮询一次 version.json 随机版本号
+      pollingInterval: 15 * 1000, // 缩短为 15 秒轮询一次，加速线上检测
       silentPageVisibility: true,
       onUpdate: (_self: VersionPolling, info?: any) => {
         const newVersion = info?.version || info?.versionFlag || info?.randomVersion || info?.randomCode || 'latest'
         triggerVersionNotice(newVersion)
       }
     })
-    console.log(`[version-polling] 随机版本 JSON 检测已启动 (target: ${versionFileUrl})`)
+    console.log(`[version-polling] 随机版本 JSON 实时检测已启动 (target: ${versionFileUrl})`)
   } catch (err) {
     console.warn('[version-polling] 初始化异常:', err)
   }

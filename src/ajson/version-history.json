@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T01:54:58.489Z",
+  "generatedAt": "2026-07-24T02:08:34.771Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "e1ca35837ff5a82013fe3daa623c04ff3312f773",
+          "shortHash": "e1ca358",
+          "date": "2026-07-24",
+          "time": "09:55",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "203372dcf85f14e7d3337833780bc08ee199286e",
           "shortHash": "203372d",
@@ -293,16 +303,6 @@
           "title": "implement Oat UI interactive update notice modal, new page creation modal, confirm dialogs, right drawer, and oat studio view",
           "scope": "",
           "message": "feat: implement Oat UI interactive update notice modal, new page creation modal, confirm dialogs, right drawer, and oat studio view"
-        },
-        {
-          "hash": "9bb06bdd655be09cce9a3876fb7db81c50e68f5f",
-          "shortHash": "9bb06bd",
-          "date": "2026-07-24",
-          "time": "00:28",
-          "type": "功能更新",
-          "title": "copy jQuery and jQuery-WEUI libraries to public/js and public/css for upcoming features",
-          "scope": "",
-          "message": "feat: copy jQuery and jQuery-WEUI libraries to public/js and public/css for upcoming features"
         }
       ]
     }
