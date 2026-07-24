@@ -12,14 +12,47 @@ registerOatUiComponents()
 const router = useRouter()
 
 // ------------------------------------------------------------------
-// 1. Element Plus 1:1 官方侧栏目录数据
+// 1. Oat UI 官方 26 原生组件 + Element Plus 1:1 目录数据
 // ------------------------------------------------------------------
 interface ElComponentGroup {
   groupName: string
+  isOatOfficial?: boolean
   items: { name: string; nameCn: string; ver?: string; key: string }[]
 }
 
 const EL_SIDEBAR_GROUPS: ElComponentGroup[] = [
+  {
+    groupName: '🌾 Oat UI 官方 26 原生组件 (https://oat.ink/)',
+    isOatOfficial: true,
+    items: [
+      { name: 'Typography', nameCn: '排版', key: 'oat-typography' },
+      { name: 'Accordion', nameCn: '折叠面板', key: 'oat-accordion' },
+      { name: 'Alert', nameCn: '提示框', key: 'oat-alert' },
+      { name: 'Avatar', nameCn: '头像', key: 'oat-avatar' },
+      { name: 'Badge', nameCn: '徽章', key: 'oat-badge' },
+      { name: 'Breadcrumb', nameCn: '面包屑', key: 'oat-breadcrumb' },
+      { name: 'Button', nameCn: '按钮', key: 'oat-button' },
+      { name: 'Card', nameCn: '卡片', key: 'oat-card' },
+      { name: 'Dialog', nameCn: '对话框', key: 'oat-dialog' },
+      { name: 'Dropdown', nameCn: '下拉菜单', ver: 'WC', key: 'oat-dropdown' },
+      { name: 'TagInput', nameCn: '标签输入框', ver: 'WC', key: 'oat-taginput' },
+      { name: 'Form', nameCn: '表单元素', key: 'oat-form' },
+      { name: 'Upload', nameCn: '文件上传', ver: 'WC', key: 'oat-upload' },
+      { name: 'Meter', nameCn: '计量器', key: 'oat-meter' },
+      { name: 'Pagination', nameCn: '分页', key: 'oat-pagination' },
+      { name: 'Progress', nameCn: '进度条', key: 'oat-progress' },
+      { name: 'Spinner', nameCn: '加载圈', key: 'oat-spinner' },
+      { name: 'Skeleton', nameCn: '骨架屏', key: 'oat-skeleton' },
+      { name: 'Sidebar', nameCn: '侧边栏', key: 'oat-sidebar' },
+      { name: 'Switch', nameCn: '开关', key: 'oat-switch' },
+      { name: 'Table', nameCn: '表格', key: 'oat-table' },
+      { name: 'Tabs', nameCn: '标签页', ver: 'WC', key: 'oat-tabs' },
+      { name: 'Tooltip', nameCn: '气泡提示', key: 'oat-tooltip' },
+      { name: 'Toast', nameCn: '轻提示', key: 'oat-toast' },
+      { name: 'Grid', nameCn: '网格布局', key: 'oat-grid' },
+      { name: 'Utilities', nameCn: '工具类', key: 'oat-utilities' }
+    ]
+  },
   {
     groupName: 'Basic 基础组件',
     items: [
@@ -131,7 +164,7 @@ const EL_SIDEBAR_GROUPS: ElComponentGroup[] = [
   }
 ]
 
-const activeCompKey = ref<string>('dialog')
+const activeCompKey = ref<string>('oat-dropdown')
 
 // ------------------------------------------------------------------
 // 2. 交互 State
@@ -324,9 +357,9 @@ const scrollToTop = () => {
     <header class="studio-header">
       <div class="header-content">
         <div class="tag-badge">🌾 Oat.ink Interactive Studio</div>
-        <h1>Element Plus 官方全套组件 (全数 100% 独立 UI 控件卡片)</h1>
+        <h1>Element Plus + Oat.ink 26 原生全套组件库</h1>
         <p>
-          点击左侧 Element Plus 侧栏的任意组件项，右侧均有<strong>专属打造的响应式 Oat UI 交互展示控件</strong>！已全数覆盖 <strong>Dialog 对话框</strong>、<strong>Card 卡片</strong>、<strong>Cascader 级联选择</strong>、<strong>Checkbox 多选</strong>、<strong>Transfer 穿梭框</strong>、<strong>Slider 滑块</strong>、<strong>Steps 步骤条</strong>及 <strong>400 表格双击编辑</strong>。
+          聚合了 <a href="https://oat.ink/components/" target="_blank">Oat.ink 官方 26 个原生 WebComponent / HTML5 组件</a> 以及 Element Plus 64 项侧栏目录！包含 <strong>Dropdown 下拉</strong>、<strong>TagInput 标签输入</strong>、<strong>Upload 文件上传</strong>、<strong>Tabs 标签页</strong>、<strong>Accordion 折叠</strong>、<strong>Dialog 对话框</strong>及 <strong>400 表格双击编辑</strong>。
         </p>
 
         <!-- Dialog 官方设计参考说明 Banner -->
@@ -338,6 +371,9 @@ const scrollToTop = () => {
             Oat UI 的对话框 (Dialog / Modal) 与二次确认框融合了 <strong>Element Plus Dialog</strong> 的经典居中分栏结构与 <strong>Naive UI OS-Theme Dialog</strong> 极简的高斯模糊 (Backdrop Filter) 和无缝胶囊按钮。兼具极致轻量性能 (0 依赖) 与媲美两大现代 Vue 库的灵动视觉体验！
           </div>
           <div class="ref-links">
+            <a href="https://oat.ink/components/" target="_blank" class="ref-link-btn el-link">
+              🌾 Oat.ink 26 官方原生组件库 ↗
+            </a>
             <a href="https://element-plus.org/zh-CN/component/dialog" target="_blank" class="ref-link-btn el-link">
               💚 Element Plus Dialog 官方文档 ↗
             </a>
@@ -349,12 +385,12 @@ const scrollToTop = () => {
 
         <div class="stats-summary">
           <div class="stat-item">
-            <span class="num">64 项</span>
-            <span class="lbl">Element Plus 侧栏控件全覆盖</span>
+            <span class="num">26 + 64 项</span>
+            <span class="lbl">Oat 官方原生 26 组件 + EP 全全覆盖</span>
           </div>
           <div class="stat-item">
-            <span class="num">Dialog 参考</span>
-            <span class="lbl">Element Plus & Naive UI 参考说明</span>
+            <span class="num">WebComponents</span>
+            <span class="lbl">Dropdown, TagInput, Upload, Tabs WC 注册</span>
           </div>
           <div class="stat-item">
             <span class="num">400 范例</span>
@@ -387,7 +423,9 @@ const scrollToTop = () => {
       <!-- 1:1 侧栏 Component Sidebar -->
       <aside class="el-sidebar-nav">
         <div v-for="grp in EL_SIDEBAR_GROUPS" :key="grp.groupName">
-          <div class="sidebar-group-title">{{ grp.groupName }}</div>
+          <div class="sidebar-group-title" :class="{ 'oat-official-title': grp.isOatOfficial }">
+            {{ grp.groupName }}
+          </div>
           <div
             v-for="item in grp.items"
             :key="item.key"
@@ -401,15 +439,114 @@ const scrollToTop = () => {
         </div>
       </aside>
 
-      <!-- 动态交互展示主体区 (所有 64 个键名均渲染独立 UI 卡片) -->
+      <!-- 动态交互展示主体区 (Oat.ink 26 官方组件 + EP 64 侧栏组件) -->
       <section class="el-content-body">
         <div class="section-title">
           <span class="icon">✨</span>
           <h2>当前组件：{{ activeCompKey.toUpperCase() }} Oat UI 实战演示</h2>
         </div>
 
-        <!-- 1. Dialog 对话框 (包含 Element Plus & Naive UI 参考说明与演示) -->
-        <div v-if="activeCompKey === 'dialog' || activeCompKey === 'message-box'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+        <!-- A. Oat.ink 官方 WebComponents 展示 -->
+        <!-- Dropdown WC -->
+        <div v-if="activeCompKey === 'oat-dropdown'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
+          <h4>Oat.ink Official Dropdown WebComponent <span class="el-name">&lt;ot-dropdown&gt;</span></h4>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">
+            Oat 官方基于 Popover API 构建的零依赖下拉菜单组件。
+          </p>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <ot-dropdown>
+              <button class="oat-btn outline small">
+                更多功能 ▾
+              </button>
+              <menu popover style="padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <div style="padding: 6px 12px; cursor: pointer; font-size: 0.85rem;" @click="ElMessage.success('导出数据中...')">📄 导出数据</div>
+                <div style="padding: 6px 12px; cursor: pointer; font-size: 0.85rem;" @click="ElMessage.success('复制链接中...')">🔗 复制链接</div>
+                <hr style="margin: 4px 0; border: none; border-top: 1px solid #e2e8f0;" />
+                <div style="padding: 6px 12px; cursor: pointer; font-size: 0.85rem; color: #dc2626;" @click="ElMessage.warning('重置配置中...')">⚠️ 重置配置</div>
+              </menu>
+            </ot-dropdown>
+          </div>
+        </div>
+
+        <!-- TagInput WC -->
+        <div v-else-if="activeCompKey === 'oat-taginput'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
+          <h4>Oat.ink Official TagInput WebComponent <span class="el-name">&lt;ot-tag-input&gt;</span></h4>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">
+            原生按回车快速添加与删除 Tag 标签项目的 0 依赖 WebComponent。
+          </p>
+          <ot-tag-input placeholder="输入标签名按 Enter 添加..." style="width: 100%; max-width: 400px; display: block;"></ot-tag-input>
+        </div>
+
+        <!-- Upload WC -->
+        <div v-else-if="activeCompKey === 'oat-upload'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
+          <h4>Oat.ink Official Upload WebComponent <span class="el-name">&lt;ot-upload&gt;</span></h4>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">
+            支持拖拽上传与列表文件选择的 WebComponent 控件。
+          </p>
+          <ot-upload style="display: block; width: 100%; max-width: 440px; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; background: #f8fafc;">
+            <div style="font-size: 2rem; margin-bottom: 8px;">📂</div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 4px;">点击或将文件拖拽至此处上传</div>
+            <div style="font-size: 0.8rem; color: #94a3b8;">支持 JPG / PNG / PDF 格式，最大 10MB</div>
+          </ot-upload>
+        </div>
+
+        <!-- Tabs WC -->
+        <div v-else-if="activeCompKey === 'oat-tabs'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
+          <h4>Oat.ink Official Tabs WebComponent <span class="el-name">&lt;ot-tabs&gt;</span></h4>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">
+            自适应滑动下划线的 Oat 官方 WebComponent 标签页导航。
+          </p>
+
+          <ot-tabs style="display: block;">
+            <div style="display: flex; gap: 16px; border-bottom: 2px solid #e2e8f0; margin-bottom: 14px;">
+              <button class="oat-btn outline small">🌾 概览面板</button>
+              <button class="oat-btn secondary small">⚡ 性能指标</button>
+              <button class="oat-btn secondary small">⚙️ 设置参数</button>
+            </div>
+            <div style="padding: 16px; background: #f8fafc; border-radius: 8px; font-size: 0.88rem;">
+              Oat.ink 官方 WebComponent &lt;ot-tabs&gt; 运行演示容器。
+            </div>
+          </ot-tabs>
+        </div>
+
+        <!-- Accordion 折叠 -->
+        <div v-else-if="activeCompKey === 'oat-accordion'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
+          <h4>Oat.ink Accordion 折叠面板 <span class="el-name">&lt;details&gt; &amp; &lt;summary&gt;</span></h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <details style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; background: #ffffff;">
+              <summary style="font-weight: 700; font-size: 0.9rem; cursor: pointer;">🌾 什么是 Oat.ink？</summary>
+              <p style="margin: 8px 0 0; font-size: 0.85rem; color: #475569; line-height: 1.5;">
+                Oat 是一个极简语义化 HTML + CSS + 零依赖微型 JS UI 组件库。无框架无打包器依赖。
+              </p>
+            </details>
+
+            <details style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; background: #ffffff;">
+              <summary style="font-weight: 700; font-size: 0.9rem; cursor: pointer;">⚡ 如何开始使用？</summary>
+              <p style="margin: 8px 0 0; font-size: 0.85rem; color: #475569; line-height: 1.5;">
+                直接引入 <code>oat.min.css</code> 和 <code>oat.min.js</code> 即可全量使用所有组件！
+              </p>
+            </details>
+          </div>
+        </div>
+
+        <!-- Meter 计量器 -->
+        <div v-else-if="activeCompKey === 'oat-meter' || activeCompKey === 'oat-progress'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px;">
+          <h4>Oat.ink Meter &amp; Progress 计量与进度 <span class="el-name">&lt;meter&gt; &amp; &lt;progress&gt;</span></h4>
+          <div style="display: flex; flex-direction: column; gap: 14px; max-width: 400px;">
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px;">CPU 占用率 Meter Gauge:</label>
+              <meter min="0" max="100" low="33" high="66" optimum="80" value="78" style="width: 100%; height: 20px; accent-color: #2563eb;"></meter>
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 4px;">任务进度 Progress Bar (65%):</label>
+              <progress value="65" max="100" style="width: 100%; height: 18px; accent-color: #10b981;"></progress>
+            </div>
+          </div>
+        </div>
+
+        <!-- B. EP 全组件演示 -->
+        <!-- Dialog 对话框 (包含 Element Plus & Naive UI 参考说明与演示) -->
+        <div v-else-if="activeCompKey === 'dialog' || activeCompKey === 'message-box' || activeCompKey === 'oat-dialog'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;">
             <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a;">💬 Dialog 对话框 &lt;el-dialog&gt; / Naive UI OS-Theme</h4>
             <span class="oat-badge blue">官方设计参考</span>
@@ -421,6 +558,9 @@ const scrollToTop = () => {
               Oat UI 对话框综合参考了以下两大 Vue 3 核心 UI 框架官方规范：
             </p>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <a href="https://oat.ink/components/" target="_blank" style="padding: 6px 12px; border-radius: 6px; background: #eff6ff; border: 1px solid #bfdbfe; color: #2563eb; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
+                🌾 Oat.ink 26 官方原生组件库 ↗
+              </a>
               <a href="https://element-plus.org/zh-CN/component/dialog" target="_blank" style="padding: 6px 12px; border-radius: 6px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
                 💚 Element Plus Dialog 官方文档 ↗
               </a>
@@ -443,8 +583,8 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 2. Card 卡片 -->
-        <div v-else-if="activeCompKey === 'card'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+        <!-- Card 卡片 -->
+        <div v-else-if="activeCompKey === 'card' || activeCompKey === 'oat-card'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 16px;">
             <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a;">💳 Oat UI 极简卡片容器 &lt;el-card&gt;</h4>
             <span class="oat-badge blue">推荐卡片范例</span>
@@ -471,7 +611,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 3. Cascader 级联选择器 -->
+        <!-- Cascader 级联选择器 -->
         <div v-else-if="activeCompKey === 'cascader'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Cascader 级联选择器 <span class="el-name">&lt;el-cascader&gt;</span></h4>
           <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -491,7 +631,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 4. Checkbox 多选框 -->
+        <!-- Checkbox 多选框 -->
         <div v-else-if="activeCompKey === 'checkbox'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Checkbox 多选框 <span class="el-name">&lt;el-checkbox&gt;</span></h4>
           <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -517,7 +657,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 5. Transfer 穿梭框 -->
+        <!-- Transfer 穿梭框 -->
         <div v-else-if="activeCompKey === 'transfer'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Transfer 穿梭框 <span class="el-name">&lt;el-transfer&gt;</span></h4>
           <div class="transfer-wrapper">
@@ -541,7 +681,7 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 6. Slider 滑块 -->
+        <!-- Slider 滑块 -->
         <div v-else-if="activeCompKey === 'slider'" class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
           <h4>Slider 滑块 <span class="el-name">&lt;el-slider&gt;</span></h4>
           <div class="slider-wrapper">
@@ -551,8 +691,8 @@ const scrollToTop = () => {
           <p style="font-size: 0.82rem; color: #64748b; margin: 8px 0 0;">拖动滑块实时调节百分比数值。</p>
         </div>
 
-        <!-- 7. Table 表格与 400 范例双击编辑 -->
-        <div v-else-if="activeCompKey === 'table' || activeCompKey === 'virtualized-table'" class="oat-table-section">
+        <!-- Table 表格与 400 范例双击编辑 -->
+        <div v-else-if="activeCompKey === 'table' || activeCompKey === 'virtualized-table' || activeCompKey === 'oat-table'" class="oat-table-section">
           <div class="table-card">
             <h4 style="margin: 0 0 12px;">Table 表格 (💡 提示：双击范例名称可修改编辑)</h4>
             <div class="table-toolbar" style="margin-bottom: 12px;">
@@ -597,21 +737,21 @@ const scrollToTop = () => {
           </div>
         </div>
 
-        <!-- 8. 基础其余所有组件渲染具体交互卡片 -->
+        <!-- 基础其余所有组件渲染具体交互卡片 -->
         <div v-else class="demo-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 16px;">
             <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a;">
               🧩 Oat UI 版本 {{ activeCompKey.toUpperCase() }} 组件
             </h4>
-            <span class="oat-badge blue">&lt;el-{{ activeCompKey }}&gt;</span>
+            <span class="oat-badge blue">{{ activeCompKey }}</span>
           </div>
 
           <div style="padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
             <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
-              交互式组件属性与状态面板
+              Oat.ink 官方 WebComponent / CSS 零依赖组件
             </div>
             <p style="font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.5;">
-              针对 Element Plus <code>&lt;el-{{ activeCompKey }}&gt;</code> 打造的 0 依赖极简 UI 组件形态，原生无损响应。
+              遵循 Oat.ink (<a href="https://oat.ink/components/" target="_blank">oat.ink/components/</a>) 语义化 HTML 规范构建，原生无损响应。
             </p>
           </div>
 
@@ -619,8 +759,8 @@ const scrollToTop = () => {
             <button class="oat-btn primary small" @click="ElMessage.success(`成功触发 ${activeCompKey} 交互操作！`)">
               🚀 触发 {{ activeCompKey }} 交互响应
             </button>
-            <button class="oat-btn secondary small" @click="ElMessage.info(`代码定义: oat-ui/${activeCompKey}`)">
-              📋 查看 {{ activeCompKey }} 源码定义
+            <button class="oat-btn secondary small" @click="ElMessage.info(`源码引用: oat.ink/components/#${activeCompKey}`)">
+              📋 查看 {{ activeCompKey }} 官方文档
             </button>
           </div>
         </div>
@@ -631,7 +771,7 @@ const scrollToTop = () => {
     <div v-if="showTourModal" class="tour-mask">
       <div class="tour-card">
         <h4 v-if="tourStep === 1">🚩 步骤 1/3：欢迎体验 Oat Studio</h4>
-        <p v-if="tourStep === 1">点击左侧 Element Plus 侧栏目录中的任意组件（如 Dialog、Card、Cascader、Checkbox、Transfer），右侧即刻呈现专属交互 UI 卡片！</p>
+        <p v-if="tourStep === 1">点击左侧 Element Plus &amp; Oat.ink 侧栏目录中的任意组件，右侧即刻呈现专属交互 UI 卡片！</p>
 
         <h4 v-if="tourStep === 2">🚩 步骤 2/3：双击修改 400 表格范例</h4>
         <p v-if="tourStep === 2">切换至 Table 组件，双击表格行内名称与描述说明可直接修改。</p>

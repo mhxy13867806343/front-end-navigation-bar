@@ -21,7 +21,7 @@
 
 ## ✨ 功能特性
 
-- **🌾 Oat UI Studio 实战演练中心** (`/oat-studio`)：1:1 还原 Element Plus 官方 64 项组件侧栏目录。内置对话框 (Dialog / Modal) 融入 **Element Plus Dialog** 居中布局与 **Naive UI OS-Theme Dialog** 极简高斯模糊遮罩；包含 **Transfer 穿梭框**、**Slider 滑块**、**Scrollbar 滚动条**、**Steps 步骤条**、**Rate 评分**，以及 400 个全量范例记录并支持**单元格双击行内即时编辑**。
+- **🌾 Oat UI Studio 实战演练中心** (`/oat-studio`)：集成 [Oat.ink 官方 26 项原生 WebComponents / CSS 组件](https://oat.ink/components/) (Dropdown, TagInput, Upload, Tabs WC) 与 Element Plus 官方 64 项组件侧栏目录。内置对话框 (Dialog / Modal) 融入 **Element Plus Dialog** 居中布局与 **Naive UI OS-Theme Dialog** 极简高斯模糊遮罩；包含 **Transfer 穿梭框**、**Slider 滑块**、**Scrollbar 滚动条**、**Steps 步骤条**、**Rate 评分**，以及 400 个全量范例记录并支持**单元格双击行内即时编辑**。
 - **🧡 小米官方商城 & 购物车结算** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：基于 27万+ 行本地 JSON (`src/shop-json/xiaomi-shop.json`) 渲染，内置持久化 `cartStore`、侧边抽屉购物车 (`CartDrawer.vue`) 与全屏购物车页面 (`/xiaomi-shop/cart`)，包含地址选择、优惠券兑换（`MI888` 减 50）、全选删除与**微信支付、支付宝、云闪付、信用卡 24 期免息**的在线模拟支付与订单流转。
 - **🔐 权限管理与控制中心** (`/permission`)：内置 4 大 RBAC 角色（超级管理员、运维、运营、访客）实时切换、按钮级指令鉴权（`v-permission`）、路由访问矩阵、JWT Token 报文解析，以及**HTTP 状态码（200 / 401 / 402 / 403 / 404 / 405 / 500）一键直接跳过去展示**。
 - **📜 实时系统安全与操作日志中心** (`/logs`)：实时捕获全局 API 响应 HTTP 状态码、RBAC 拦截事件与异常 Stack Trace，支持状态码点击联动跳转、多级别筛选、关键字搜寻与离线 CSV 导出。
@@ -33,7 +33,7 @@
 
 ## 🆕 近期更新
 
-- 🌾 **新增 Oat UI Studio 演示中心** (`/oat-studio`)：1:1 对标 Element Plus 64 项侧栏，加入 Element Plus Dialog 与 Naive UI OS-Theme Dialog 设计参考规范，提供 400 表格双击编辑、Cascader 级联、Checkbox 多选、Transfer 穿梭、Slider 滑块等全量 0 依赖 UI 卡片。
+- 🌾 **新增 Oat UI Studio 演示中心** (`/oat-studio`)：集成 Oat.ink 26 项官方原生 WebComponent 库（Dropdown, TagInput, Upload, Tabs）及 Element Plus 64 项侧栏，加入 Element Plus Dialog 与 Naive UI OS-Theme Dialog 设计参考规范，提供 400 表格双击编辑、Cascader 级联、Checkbox 多选、Transfer 穿梭、Slider 滑块等全量 0 依赖 UI 卡片。
 
 - 🧡 **新增小米官方商城 & 多通道收银台** (`/xiaomi-shop`)：本地由 `src/shop-json/xiaomi-shop.json`（276,530 行数据）驱动，商品详情页支持规格选购、微信/支付宝/云闪付在线支付与订单推送。
 - 🔐 **新增权限控制中心** (`/permission`)：支持超级管理员/运维/运营/访客角色一键切换，按钮指令鉴权演示，以及输入任意 HTTP 状态码（如 200, 401, 500）直接跳过去展示。

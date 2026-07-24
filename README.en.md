@@ -21,7 +21,7 @@ This project is no longer actively updated. The current live demo and existing f
 
 ## ✨ Features
 
-- **🌾 Oat UI Studio (`/oat-studio`)**: 1:1 Element Plus 64-item Component Sidebar directory. Features Oat Dialog / Modal design inspired by **Element Plus Dialog** layout and **Naive UI OS-Theme Dialog** backdrop filter backdrop. Includes 400 examples dataset with double-click inline cell editing.
+- **🌾 Oat UI Studio (`/oat-studio`)**: Integrates [Oat.ink 26 official WebComponents / CSS components](https://oat.ink/components/) (Dropdown, TagInput, Upload, Tabs WC) with Element Plus 64-item Component Sidebar directory. Features Oat Dialog / Modal design inspired by **Element Plus Dialog** layout and **Naive UI OS-Theme Dialog** backdrop filter backdrop. Includes 400 examples dataset with double-click inline cell editing.
 - **API Toolbox**: Built-in collection of commonly used APIs
 - **Theme Switching**: One-click dark/light theme toggle with local persistence
 - **Custom Layout**: Adjustable grid columns (persisted locally), collapsible sidebar
@@ -29,7 +29,7 @@ This project is no longer actively updated. The current live demo and existing f
 
 ## 🆕 Recent Updates
 
-- 🌾 **Added Oat UI Studio (`/oat-studio`)**: 1:1 Element Plus 64-item sidebar directory, Element Plus & Naive UI OS-Theme Dialog reference banner, 400 examples dataset with double-click inline editing, Cascader, Checkbox, Transfer, Slider, and custom interactive UI cards.
+- 🌾 **Added Oat UI Studio (`/oat-studio`)**: Integrates Oat.ink 26 official WebComponent library (Dropdown, TagInput, Upload, Tabs) and Element Plus 64-item sidebar directory, Element Plus & Naive UI OS-Theme Dialog reference banner, 400 examples dataset with double-click inline editing, Cascader, Checkbox, Transfer, Slider, and custom interactive UI cards.
 
 - Added the `/bilibili-live` page with on-demand live data loading, dynamic Bilibili live areas, sub-area filters, and recommend / popular / latest tabs.
 - Fixed LOLM China server data in local and online environments: local development uses the Vite proxy, production uses a read-only wrapped JSON request, and the toolbox table now scrolls through the full returned hero list.

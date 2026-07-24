@@ -187,6 +187,13 @@
       &:first-child {
         margin-top: 0;
       }
+
+      &.oat-official-title {
+        color: #2563eb;
+        background: #eff6ff;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
     }
 
     .sidebar-item {
