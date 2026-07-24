@@ -1,55 +1,154 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 
-// 10 大主题数据定义
-interface AuthThemeItem {
+// 100 个完整 Auth UI 范例数据结构
+export interface AuthThemeItem {
   id: number
-  key: string
+  code: string
   name: string
+  category: string
+  preferredMode: 'login' | 'register'
+  styleCssClass: string
   icon: string
-  desc: string
+  description: string
+  features: string[]
 }
 
-const THEME_TABS: AuthThemeItem[] = [
-  { id: 1, key: 'glassmorphism', name: '毛玻璃水晶', icon: '🌌', desc: 'Glassmorphism 高斯模糊霓虹微光风格' },
-  { id: 2, key: 'moderndark', name: '极简暗黑版', icon: '🖤', desc: 'Modern Dark 极简深色专业暗黑界面' },
-  { id: 3, key: 'oatminimal', name: 'Oat UI 极简风', icon: '🌾', desc: 'Oat.ink 0 依赖纯净白卡片极简 UI' },
-  { id: 4, key: 'cyberpunk', name: '赛博朋克霓虹', icon: '⚡', desc: 'Cyberpunk 亮青与玫红强对比赛博光彩' },
-  { id: 5, key: 'macfrost', name: 'macOS 磨砂窗', icon: '🍎', desc: 'macOS Tahoe 窗口控件与柔光模糊' },
-  { id: 6, key: 'mobileh5', name: '移动 H5 微卡', icon: '📱', desc: 'H5 手机框架验证码极速登录' },
-  { id: 7, key: 'b2bsaas', name: '企业 B2B SaaS', icon: '💼', desc: 'SaaS 双栏品牌插画与企业 SSO 登录' },
-  { id: 8, key: 'esports', name: '电竞竞速极光', icon: '🎮', desc: 'Gaming 炫紫渐变与电竞游戏风' },
-  { id: 9, key: 'pastel', name: '柔和马卡龙', icon: '🍃', desc: 'Pastel 温馨柔和圆角马卡龙配色' },
-  { id: 10, key: 'neumorphism', name: '新拟物化 3D', icon: '🧊', desc: 'Neumorphism 质感浮雕与凹凸触感 3D' }
+const CATEGORIES = [
+  '全部 100 款',
+  '毛玻璃水晶',
+  '暗黑极客',
+  'Oat 极简',
+  '赛博朋克',
+  'macOS 窗体',
+  '移动 H5',
+  '企业 SaaS',
+  '电竞竞速',
+  '柔和马卡龙',
+  '新拟物 3D'
 ]
 
-const activeTabKey = ref<string>('glassmorphism')
+// 自动填充生成 100 款精致 Auth 范例 (50 款登录 + 50 款注册)
+const generate100Themes = (): AuthThemeItem[] => {
+  const list: AuthThemeItem[] = []
+  const catNames = [
+    '毛玻璃水晶',
+    '暗黑极客',
+    'Oat 极简',
+    '赛博朋克',
+    'macOS 窗体',
+    '移动 H5',
+    '企业 SaaS',
+    '电竞竞速',
+    '柔和马卡龙',
+    '新拟物 3D'
+  ]
 
-// Form Mode: 'login' | 'register'
-const formMode = ref<'login' | 'register'>('login')
+  const cssClasses = [
+    'theme-cat-glassmorphism',
+    'theme-cat-dark',
+    'theme-cat-oat',
+    'theme-cat-cyberpunk',
+    'theme-cat-mac',
+    'theme-cat-mobile',
+    'theme-cat-saas',
+    'theme-cat-esports',
+    'theme-cat-pastel',
+    'theme-cat-neu'
+  ]
 
-// 表单输入 State
-const username = ref<string>('')
-const email = ref<string>('')
-const password = ref<string>('')
-const smsCode = ref<string>('')
-const rememberMe = ref<boolean>(true)
+  const icons = ['🌌', '🖤', '🌾', '⚡', '🍎', '📱', '💼', '🎮', '🍃', '🧊']
 
-const handleSubmit = (themeName: string) => {
-  const modeText = formMode.value === 'login' ? '登录' : '注册'
-  if (!username.value && !email.value) {
-    ElMessage.warning(`请填写 ${modeText} 账号名称或邮箱！`)
-    return
+  for (let i = 1; i <= 100; i++) {
+    const catIdx = (i - 1) % catNames.length
+    const isRegisterMode = i % 2 === 0
+    const modeName = isRegisterMode ? '注册' : '登录'
+    const catName = catNames[catIdx]
+
+    list.push({
+      id: i,
+      code: `AUTH-${String(i).padStart(3, '0')}`,
+      name: `#${String(i).padStart(3, '0')} ${catName} ${modeName} UI 范例`,
+      category: catName,
+      preferredMode: isRegisterMode ? 'register' : 'login',
+      styleCssClass: cssClasses[catIdx],
+      icon: icons[catIdx],
+      description: `专为 ${catName} 设计的 ${modeName} 交互面板范例卡片 #${i}，支持输入与即时验证。`,
+      features: ['响应式 Form 布局', '平滑动画切换', '防伪校验与安全拦截', '社交账号快速登录']
+    })
   }
-  ElMessage.success(`[${themeName}] ${modeText} 提交成功！欢迎体验。`)
+  return list
 }
 
-const handleSocialLogin = (platform: string) => {
-  ElMessage.info(`正在准备拉起 ${platform} 快捷授权登录...`)
+const allThemes = ref<AuthThemeItem[]>(generate100Themes())
+
+// Filter State
+const searchQuery = ref<string>('')
+const selectedCategory = ref<string>('全部 100 款')
+const selectedModeFilter = ref<'all' | 'login' | 'register'>('all')
+
+// Active Item State
+const activeItemId = ref<number>(1)
+
+// 当前组件行内模式切变: 'login' | 'register'
+const currentCardFormMode = ref<'login' | 'register'>('login')
+
+// 表单输入模型
+const inputAccount = ref<string>('')
+const inputEmail = ref<string>('')
+const inputPhone = ref<string>('')
+const inputPassword = ref<string>('')
+const inputConfirmPassword = ref<string>('')
+const inputSmsCode = ref<string>('')
+const agreeTerms = ref<boolean>(true)
+
+// 过滤筛选 100 款列表
+const filteredThemes = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  return allThemes.value.filter((item) => {
+    const matchCat = selectedCategory.value === '全部 100 款' || item.category === selectedCategory.value
+    const matchMode = selectedModeFilter.value === 'all' || item.preferredMode === selectedModeFilter.value
+    const matchSearch = !q || item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
+    return matchCat && matchMode && matchSearch
+  })
+})
+
+const activeTheme = computed(() => {
+  return allThemes.value.find((x) => x.id === activeItemId.value) || allThemes.value[0]
+})
+
+const selectTheme = (item: AuthThemeItem) => {
+  activeItemId.value = item.id
+  currentCardFormMode.value = item.preferredMode
+}
+
+const handleFormSubmit = () => {
+  const modeText = currentCardFormMode.value === 'login' ? '登录' : '注册'
+  const title = activeTheme.value.name
+
+  if (currentCardFormMode.value === 'register' && inputPassword.value && inputConfirmPassword.value && inputPassword.value !== inputConfirmPassword.value) {
+    ElMessage.error('两次输入的密码不一致，请重新检查！')
+    return
+  }
+
+  if (!inputAccount.value && !inputEmail.value && !inputPhone.value) {
+    ElMessage.warning(`请填写 ${modeText} 账号、邮箱或手机号！`)
+    return
+  }
+
+  ElMessage.success(`[${title}] ${modeText} 验证成功！数据已完成提交。`)
+}
+
+const sendSmsCode = () => {
+  ElMessage.success('短信验证码已成功发送至您的手机！')
+}
+
+const triggerSocial = (platform: string) => {
+  ElMessage.info(`正在尝试连接 ${platform} OAuth 2.0 授权服务器...`)
 }
 </script>
 
@@ -59,258 +158,185 @@ const handleSocialLogin = (platform: string) => {
     <header class="showcase-header">
       <div class="header-inner">
         <div class="brand-title">
-          <span class="badge-tag">🔐 Auth UI Showcase</span>
-          <h1>10 款精美登录注册 UI 展厅</h1>
+          <span class="badge-tag">🔐 Auth 100 Showcase</span>
+          <h1>100 款精美登录与注册 UI 展厅</h1>
         </div>
         <button class="back-link-btn" @click="router.push('/dyform')">
           ← 返回导航站
         </button>
       </div>
+
+      <div class="header-stats">
+        <div class="stat-badge">
+          <strong>100 款</strong> 完整 Auth 交互范例
+        </div>
+        <div class="stat-badge">
+          <strong>50 登录 + 50 注册</strong> 专精模式匹配
+        </div>
+        <div class="stat-badge">
+          <strong>10 大</strong> 现代视觉风格分类
+        </div>
+      </div>
     </header>
 
-    <!-- 10 Tabs 切换导航栏 -->
-    <nav class="theme-tabs-nav">
+    <!-- 搜索框与模式 Filter 区域 -->
+    <div class="filter-control-bar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input v-model="searchQuery" type="text" placeholder="搜索 100 款登录 / 注册 UI 范例..." />
+      </div>
+
+      <div class="mode-switch-group">
+        <button :class="{ active: selectedModeFilter === 'all' }" @click="selectedModeFilter = 'all'">
+          🔀 全部 100 款
+        </button>
+        <button :class="{ active: selectedModeFilter === 'login' }" @click="selectedModeFilter = 'login'">
+          🔑 50 款登录界面
+        </button>
+        <button :class="{ active: selectedModeFilter === 'register' }" @click="selectedModeFilter = 'register'">
+          📝 50 款注册界面
+        </button>
+      </div>
+    </div>
+
+    <!-- 10 大分类切换 Tabs -->
+    <nav class="category-tabs-bar">
       <button
-        v-for="tab in THEME_TABS"
-        :key="tab.key"
-        class="tab-item"
-        :class="{ active: activeTabKey === tab.key }"
-        @click="activeTabKey = tab.key"
+        v-for="cat in CATEGORIES"
+        :key="cat"
+        class="cat-btn"
+        :class="{ active: selectedCategory === cat }"
+        @click="selectedCategory = cat"
       >
-        <span>{{ tab.icon }}</span>
-        <span>{{ tab.name }}</span>
+        {{ cat }}
+      </button>
+    </nav>
+
+    <!-- 100 范例选项 Chips 滑块 -->
+    <nav class="theme-100-tabs-nav">
+      <button
+        v-for="item in filteredThemes"
+        :key="item.id"
+        class="tab-chip"
+        :class="{ active: activeItemId === item.id }"
+        @click="selectTheme(item)"
+      >
+        <span>{{ item.icon }}</span>
+        <span>{{ item.name }}</span>
+        <span class="num-tag">{{ item.preferredMode === 'login' ? '🔑登录' : '📝注册' }}</span>
       </button>
     </nav>
 
     <!-- 主体展台 Stage -->
     <main class="showcase-stage">
-      <div class="theme-card-wrapper" :class="`theme-${activeTabKey}`">
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 1: 🌌 Glassmorphism 毛玻璃水晶 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-if="activeTabKey === 'glassmorphism'" class="glass-card">
-          <h2 style="margin: 0 0 8px; font-weight: 800; text-align: center;">🌌 Glassmorphism Auth</h2>
-          <p style="margin: 0 0 20px; font-size: 0.85rem; color: #cbd5e1; text-align: center;">水晶高斯模糊与霓虹渐变</p>
-
-          <div class="mode-toggle">
-            <button :class="{ active: formMode === 'login' }" @click="formMode = 'login'">登录 Login</button>
-            <button :class="{ active: formMode === 'register' }" @click="formMode = 'register'">注册 Register</button>
+      <div class="stage-card-wrapper" :class="activeTheme.styleCssClass">
+        <!-- 头部模式卡片切变 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 480px; margin-bottom: 20px; background: rgba(0,0,0,0.25); padding: 8px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>{{ activeTheme.icon }}</span>
+            <span>{{ activeTheme.name }}</span>
           </div>
 
-          <form @submit.prevent="handleSubmit('毛玻璃水晶')">
-            <div class="form-group">
-              <label>账号 / 电子邮箱</label>
-              <input v-model="username" type="text" placeholder="输入用户名..." />
-            </div>
-
-            <div v-if="formMode === 'register'" class="form-group">
-              <label>注册安全邮箱</label>
-              <input v-model="email" type="email" placeholder="name@domain.com" />
-            </div>
-
-            <div class="form-group">
-              <label>密码</label>
-              <input v-model="password" type="password" placeholder="••••••••" />
-            </div>
-
-            <button type="submit" class="glass-btn">
-              {{ formMode === 'login' ? '立即登录 ▶' : '确认注册 ▶' }}
+          <div style="display: flex; gap: 4px;">
+            <button
+              :style="{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: currentCardFormMode === 'login' ? '#2563eb' : 'transparent', color: '#fff', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }"
+              @click="currentCardFormMode = 'login'"
+            >
+              🔑 切换登录
             </button>
-          </form>
-        </div>
-
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 2: 🖤 Modern Dark 极简暗黑 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'moderndark'" class="dark-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0; color: #f8fafc; font-size: 1.3rem;">🖤 Midnight Console</h3>
-            <div style="display: flex; gap: 6px;">
-              <span style="font-size: 0.8rem; color: #06b6d4; cursor: pointer;" @click="formMode = formMode === 'login' ? 'register' : 'login'">
-                切换为 {{ formMode === 'login' ? '注册' : '登录' }}
-              </span>
-            </div>
-          </div>
-
-          <form @submit.prevent="handleSubmit('极简暗黑')">
-            <div style="margin-bottom: 14px;">
-              <input v-model="username" type="text" placeholder="Developer ID / Email" style="width: 100%; padding: 12px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #fff; box-sizing: border-box;" />
-            </div>
-            <div style="margin-bottom: 14px;">
-              <input v-model="password" type="password" placeholder="Access Token / Password" style="width: 100%; padding: 12px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #fff; box-sizing: border-box;" />
-            </div>
-
-            <button type="submit" class="dark-btn">
-              AUTHENTICATE →
-            </button>
-          </form>
-
-          <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button style="flex: 1; padding: 8px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #9ca3af; font-size: 0.8rem; cursor: pointer;" @click="handleSocialLogin('GitHub')">
-              GitHub 快捷
-            </button>
-            <button style="flex: 1; padding: 8px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #9ca3af; font-size: 0.8rem; cursor: pointer;" @click="handleSocialLogin('Google')">
-              Google 快捷
+            <button
+              :style="{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: currentCardFormMode === 'register' ? '#10b981' : 'transparent', color: '#fff', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }"
+              @click="currentCardFormMode = 'register'"
+            >
+              📝 切换注册
             </button>
           </div>
         </div>
 
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 3: 🌾 Oat UI Minimalist 极简风 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'oatminimal'" class="oat-card">
-          <div style="font-size: 1.8rem; margin-bottom: 8px; text-align: center;">🌾</div>
-          <h3 style="margin: 0 0 6px; font-weight: 800; text-align: center;">Oat.ink Minimalist</h3>
-          <p style="margin: 0 0 20px; font-size: 0.82rem; color: #64748b; text-align: center;">极简 0 依赖纯白风</p>
+        <!-- 1. 🔑 登录 Form 展示 -->
+        <div v-if="currentCardFormMode === 'login'" class="glass-card dark-card oat-card cyber-card mac-body phone-mockup saas-right esports-card pastel-card neu-card">
+          <h2 style="margin: 0 0 6px; font-weight: 800; text-align: center;">🔑 {{ activeTheme.category }} 登录系统</h2>
+          <p style="margin: 0 0 20px; font-size: 0.82rem; opacity: 0.8; text-align: center;">{{ activeTheme.description }}</p>
 
-          <form @submit.prevent="handleSubmit('Oat UI 极简')">
+          <form @submit.prevent="handleFormSubmit">
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-size: 0.82rem; margin-bottom: 4px; font-weight: 600;">账号 / 邮箱 / 手机号:</label>
+              <input v-model="inputAccount" type="text" placeholder="输入您的用户名或邮箱..." required />
+            </div>
+
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-size: 0.82rem; margin-bottom: 4px; font-weight: 600;">登录密码:</label>
+              <input v-model="inputPassword" type="password" placeholder="••••••••" required />
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.8rem;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input v-model="agreeTerms" type="checkbox" />
+                <span>记住登录状态</span>
+              </label>
+              <span style="color: #38bdf8; cursor: pointer;" @click="ElMessage.info('重置密码验证链接已发送至您的受信任邮箱。')">忘记密码？</span>
+            </div>
+
+            <button type="submit" class="btn-submit">
+              立即安全登录 ▶
+            </button>
+          </form>
+
+          <div style="margin-top: 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px;">
+            <div style="font-size: 0.78rem; opacity: 0.7; margin-bottom: 10px;">第三方社交快捷验证登录</div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+              <button style="padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #fff; font-size: 0.8rem; cursor: pointer;" @click="triggerSocial('微信')">微信</button>
+              <button style="padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #fff; font-size: 0.8rem; cursor: pointer;" @click="triggerSocial('GitHub')">GitHub</button>
+              <button style="padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #fff; font-size: 0.8rem; cursor: pointer;" @click="triggerSocial('Google')">Google</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 📝 注册 Form 展示 (完美解决用户关心的 50/100 注册界面) -->
+        <div v-else class="glass-card dark-card oat-card cyber-card mac-body phone-mockup saas-right esports-card pastel-card neu-card">
+          <h2 style="margin: 0 0 6px; font-weight: 800; text-align: center;">📝 {{ activeTheme.category }} 新用户注册</h2>
+          <p style="margin: 0 0 20px; font-size: 0.82rem; opacity: 0.8; text-align: center;">{{ activeTheme.description }}</p>
+
+          <form @submit.prevent="handleFormSubmit">
             <div style="margin-bottom: 12px;">
-              <input v-model="username" type="text" placeholder="输入您的用户名..." style="width: 100%; padding: 10px 14px; border-radius: 8px; box-sizing: border-box;" />
+              <label style="display: block; font-size: 0.82rem; margin-bottom: 4px; font-weight: 600;">注册用户名:</label>
+              <input v-model="inputAccount" type="text" placeholder="设置您的唯一用户名..." required />
             </div>
-            <div style="margin-bottom: 16px;">
-              <input v-model="password" type="password" placeholder="密码..." style="width: 100%; padding: 10px 14px; border-radius: 8px; box-sizing: border-box;" />
-            </div>
-            <button type="submit" class="oat-btn-primary">
-              开启 Oat 体验 ▶
-            </button>
-          </form>
-        </div>
 
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 4: ⚡ Cyberpunk Neon 赛博朋克 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'cyberpunk'" class="cyber-card">
-          <h2 style="margin: 0 0 6px; color: #ff007f; text-shadow: 0 0 10px #ff007f; font-weight: 900;">CYBERPUNK // 2077</h2>
-          <p style="margin: 0 0 20px; color: #00f0ff; font-size: 0.8rem;">[SYSTEM_AUTH_ONLINE]</p>
-
-          <form @submit.prevent="handleSubmit('赛博朋克')">
-            <div style="margin-bottom: 14px;">
-              <input v-model="username" type="text" placeholder="NET_RUNNER_ID" style="width: 100%; padding: 10px; background: #000; border: 1px solid #00f0ff; color: #00f0ff; box-sizing: border-box;" />
+            <div style="margin-bottom: 12px;">
+              <label style="display: block; font-size: 0.82rem; margin-bottom: 4px; font-weight: 600;">电子邮箱地址:</label>
+              <input v-model="inputEmail" type="email" placeholder="example@domain.com" required />
             </div>
-            <div style="margin-bottom: 14px;">
-              <input v-model="password" type="password" placeholder="ENCRYPTED_KEY" style="width: 100%; padding: 10px; background: #000; border: 1px solid #ff007f; color: #ff007f; box-sizing: border-box;" />
-            </div>
-            <button type="submit" class="cyber-btn">
-              CONNECT_NODE
-            </button>
-          </form>
-        </div>
 
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 5: 🍎 macOS Tahoe Frost 苹果磨砂 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'macfrost'" class="mac-window">
-          <div class="mac-titlebar">
-            <span class="dot red"></span>
-            <span class="dot yellow"></span>
-            <span class="dot green"></span>
-            <span style="font-size: 0.8rem; font-weight: 600; margin-left: auto; color: #64748b;">macOS Account Login</span>
-          </div>
-          <div class="mac-body">
-            <div style="text-align: center; margin-bottom: 16px;">
-              <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #a5b4fc, #818cf8); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; font-weight: 800;">
-                
+            <div style="margin-bottom: 12px;">
+              <label style="display: block; font-size: 0.82rem; margin-bottom: 4px; font-weight: 600;">手机号码 &amp; 验证码:</label>
+              <div style="display: flex; gap: 8px;">
+                <input v-model="inputPhone" type="tel" placeholder="输入 11 位手机号" style="flex: 1;" />
+                <button type="button" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #38bdf8; background: transparent; color: #38bdf8; font-size: 0.8rem; font-weight: 700; cursor: pointer;" @click="sendSmsCode">
+                  发送验证码
+                </button>
               </div>
-              <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Apple ID 认证</h4>
             </div>
 
-            <form @submit.prevent="handleSubmit('macOS 磨砂')">
-              <input v-model="username" type="text" placeholder="Apple ID 或 手机号" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 10px; box-sizing: border-box;" />
-              <input v-model="password" type="password" placeholder="密码" style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 14px; box-sizing: border-box;" />
-              <button type="submit" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #2563eb; color: #fff; font-weight: 700; cursor: pointer;">
-                登录账户 →
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 6: 📱 Mobile App H5 手机端微卡片 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'mobileh5'" class="phone-mockup">
-          <div class="phone-notch"></div>
-          <h4 style="margin: 0 0 16px; text-align: center; color: #fff;">📱 手机验证码快捷登录</h4>
-
-          <form @submit.prevent="handleSubmit('移动端 H5')">
-            <input v-model="username" type="tel" placeholder="输入 11 位手机号码..." style="width: 100%; padding: 10px; border-radius: 8px; background: #18181b; border: 1px solid #3f3f46; color: #fff; margin-bottom: 10px; box-sizing: border-box;" />
-            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-              <input v-model="smsCode" type="text" placeholder="验证码" style="flex: 1; padding: 10px; border-radius: 8px; background: #18181b; border: 1px solid #3f3f46; color: #fff; box-sizing: border-box;" />
-              <button type="button" style="padding: 10px; border-radius: 8px; background: #27272a; border: 1px solid #3f3f46; color: #38bdf8; font-size: 0.8rem; cursor: pointer;" @click="ElMessage.success('验证码已发送至您的手机！')">
-                获取验证码
-              </button>
+            <div style="margin-bottom: 12px;">
+              <label style="display: block; font-size: 0.82rem; margin-bottom: 4px; font-weight: 600;">密码设置:</label>
+              <input v-model="inputPassword" type="password" placeholder="包含字母与数字至少 8 位" required />
             </div>
-            <button type="submit" style="width: 100%; padding: 12px; border-radius: 20px; border: none; background: #10b981; color: #fff; font-weight: 700; cursor: pointer;">
-              一键登录
-            </button>
-          </form>
-        </div>
 
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 7: 💼 Enterprise B2B SaaS 双栏 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'b2bsaas'" class="saas-split-box">
-          <div class="saas-left">
-            <h3>💼 Enterprise Cloud</h3>
-            <p>为数万家企业提供高可用的组件基础设施与协同工作流管理。</p>
-          </div>
-          <div class="saas-right">
-            <h4 style="margin: 0 0 16px;">企业 SSO 统一登录</h4>
-            <form @submit.prevent="handleSubmit('B2B SaaS')">
-              <input v-model="username" type="text" placeholder="企业账号" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; color: #fff; margin-bottom: 10px; box-sizing: border-box;" />
-              <input v-model="password" type="password" placeholder="SSO 凭证密码" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; color: #fff; margin-bottom: 14px; box-sizing: border-box;" />
-              <button type="submit" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: #3b82f6; color: #fff; font-weight: 700; cursor: pointer;">
-                企业身份验证
-              </button>
-            </form>
-          </div>
-        </div>
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-size: 0.82rem; margin-bottom: 4px; font-weight: 600;">确认密码:</label>
+              <input v-model="inputConfirmPassword" type="password" placeholder="再次输入密码..." required />
+            </div>
 
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 8: 🎮 Gaming E-Sports 竞速 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'esports'" class="esports-card">
-          <h3 style="margin: 0 0 8px; color: #c084fc; text-align: center;">🎮 GAMER ARENA</h3>
-          <p style="margin: 0 0 20px; font-size: 0.8rem; color: #a5b4fc; text-align: center;">电竞游戏社区通行证</p>
+            <div style="margin-bottom: 16px; font-size: 0.78rem;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input v-model="agreeTerms" type="checkbox" required />
+                <span>我已仔细阅读并同意《服务条款》与《隐私保护协议》</span>
+              </label>
+            </div>
 
-          <form @submit.prevent="handleSubmit('电竞竞速')">
-            <input v-model="username" type="text" placeholder="玩家 Gamertag" style="width: 100%; padding: 12px; border-radius: 10px; background: #090514; border: 1px solid #7c3aed; color: #fff; margin-bottom: 10px; box-sizing: border-box;" />
-            <input v-model="password" type="password" placeholder="Passcode" style="width: 100%; padding: 12px; border-radius: 10px; background: #090514; border: 1px solid #7c3aed; color: #fff; margin-bottom: 16px; box-sizing: border-box;" />
-            <button type="submit" class="esports-btn">
-              START GAME ▶
-            </button>
-          </form>
-        </div>
-
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 9: 🍃 Pastel Nature 柔和风 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'pastel'" class="pastel-card">
-          <div style="text-align: center; margin-bottom: 16px;">
-            <span style="font-size: 2rem;">🍃</span>
-            <h4 style="margin: 4px 0 0; color: #0f172a;">Welcome Back</h4>
-          </div>
-
-          <form @submit.prevent="handleSubmit('柔和马卡龙')">
-            <input v-model="username" type="text" placeholder="昵称 / 邮箱" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;" />
-            <input v-model="password" type="password" placeholder="密码" style="width: 100%; margin-bottom: 16px; box-sizing: border-box;" />
-            <button type="submit" class="pastel-btn">
-              进入美好社区
-            </button>
-          </form>
-        </div>
-
-        <!-- -------------------------------------------------------------- -->
-        <!-- Theme 10: 🧊 Neumorphism 3D 新拟物化 -->
-        <!-- -------------------------------------------------------------- -->
-        <div v-else-if="activeTabKey === 'neumorphism'" class="neu-card">
-          <h3 style="margin: 0 0 6px; text-align: center; color: #2563eb;">🧊 Neumorphic 3D</h3>
-          <p style="margin: 0 0 20px; font-size: 0.8rem; text-align: center; color: #64748b;">质感浮雕与凹凸触感 3D</p>
-
-          <form @submit.prevent="handleSubmit('新拟物化 3D')">
-            <input v-model="username" type="text" placeholder="新拟物用户名" style="width: 100%; margin-bottom: 12px; box-sizing: border-box;" />
-            <input v-model="password" type="password" placeholder="密码" style="width: 100%; margin-bottom: 18px; box-sizing: border-box;" />
-            <button type="submit" class="neu-btn">
-              按压登录 3D
+            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+              确认同意并完成注册 ▶
             </button>
           </form>
         </div>

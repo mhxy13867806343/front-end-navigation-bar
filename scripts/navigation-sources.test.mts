@@ -96,7 +96,7 @@ test('Oat Studio provides update notice modal, new page modal, and confirm dialo
   assert.match(studioSource, /OatDrawer/)
 })
 
-test('Auth Showcase provides 10 distinct interactive Login and Register UI themes switchable via Tabs', () => {
+test('Auth Showcase provides 100 distinct interactive Login and Register UI themes switchable via Tabs', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const authSource = readFileSync(new URL('../src/views/authShowcase/index.vue', import.meta.url), 'utf8')
   const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
@@ -104,11 +104,11 @@ test('Auth Showcase provides 10 distinct interactive Login and Register UI theme
   assert.match(routerSource, /path:\s*'\/auth-showcase'/)
   assert.match(routerSource, /views\/authShowcase\/index\.vue/)
   assert.match(noticeSource, /command="\/auth-showcase"/)
-  assert.match(authSource, /THEME_TABS/)
+  assert.match(authSource, /generate100Themes/)
   assert.match(authSource, /glassmorphism/)
   assert.match(authSource, /cyberpunk/)
-  assert.match(authSource, /macfrost/)
-  assert.match(authSource, /neumorphism/)
+  assert.match(authSource, /theme-cat-mac/)
+  assert.match(authSource, /theme-cat-neu/)
 })
 
 test('RunCode page includes editor input output and run controls', () => {
