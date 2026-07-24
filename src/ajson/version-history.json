@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T02:29:46.277Z",
+  "generatedAt": "2026-07-24T02:40:00.926Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "afb5d64e43dae7954ee55f1def9fa2fad9e8e136",
+          "shortHash": "afb5d64",
+          "date": "2026-07-24",
+          "time": "10:29",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "e3bb716b877c6d1558abe03f6a086d943f3a7284",
           "shortHash": "e3bb716",
@@ -293,16 +303,6 @@
           "title": "add double-click editable table cells, real-time form validation, tree view, date/month pickers, and cascader in Oat Studio",
           "scope": "",
           "message": "feat: add double-click editable table cells, real-time form validation, tree view, date/month pickers, and cascader in Oat Studio"
-        },
-        {
-          "hash": "acdaeda495ee7476c1c3598a01cbdfa4f44831e2",
-          "shortHash": "acdaeda",
-          "date": "2026-07-24",
-          "time": "00:46",
-          "type": "功能更新",
-          "title": "add 400 Oat UI component and table examples dataset with filtering, column sorting, and pagination in Oat Studio",
-          "scope": "",
-          "message": "feat: add 400 Oat UI component and table examples dataset with filtering, column sorting, and pagination in Oat Studio"
         }
       ]
     }

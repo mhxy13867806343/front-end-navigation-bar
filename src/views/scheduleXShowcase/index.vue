@@ -9,7 +9,7 @@ const router = useRouter()
 export interface CalendarEvent {
   id: number
   title: string
-  category: '工作' | '会议' | '学习' | '生活' | '娱乐'
+  category: string
   startTime: string
   endTime: string
   dayIndex: number // 0:周一 ~ 6:周日
@@ -21,23 +21,35 @@ export interface CalendarEvent {
 const currentView = ref<'day' | 'week' | 'month' | 'agenda'>('week')
 const isDarkMode = ref<boolean>(true)
 const selectedCategory = ref<string>('全部')
-const isAddEventOpen = ref<boolean>(false)
+const isModalOpen = ref<boolean>(false)
+const isEditMode = ref<boolean>(false)
+const editingEventId = ref<number | null>(null)
 
-// New Event Form State
-const newTitle = ref<string>('')
-const newCategory = ref<'工作' | '会议' | '学习' | '生活' | '娱乐'>('工作')
-const newDayIndex = ref<number>(0)
-const newStartTime = ref<string>('10:00')
-const newEndTime = ref<string>('11:30')
-const newLocation = ref<string>('大会议室 A')
+// Custom Categories List (最大 20 个，每个最多 5 字符)
+const categories = ref<string[]>(['工作', '会议', '学习', '生活', '娱乐'])
+const customCategoryInput = ref<string>('')
+const showCustomCategoryInput = ref<boolean>(false)
 
-const categoryColors: Record<string, string> = {
-  '工作': '#38bdf8',
-  '会议': '#c084fc',
-  '学习': '#10b981',
-  '生活': '#f59e0b',
-  '娱乐': '#ec4899'
+const palette = [
+  '#38bdf8', '#c084fc', '#10b981', '#f59e0b', '#ec4899',
+  '#06b6d4', '#8b5cf6', '#ef4444', '#14b8a6', '#f97316',
+  '#6366f1', '#a855f7', '#84cc16', '#eab308', '#f43f5e',
+  '#0284c7', '#7c3aed', '#059669', '#d97706', '#db2777'
+]
+
+const getCategoryColor = (catName: string) => {
+  const idx = categories.value.indexOf(catName)
+  if (idx !== -1) return palette[idx % palette.length]
+  return '#38bdf8'
 }
+
+// Form State
+const formTitle = ref<string>('')
+const formCategory = ref<string>('工作')
+const formDayIndex = ref<number>(0)
+const formStartTime = ref<string>('10:00')
+const formEndTime = ref<string>('11:30')
+const formLocation = ref<string>('大会议室 A')
 
 const weekDays = [
   { name: '周一 (7/27)', lunar: '六月十四' },
@@ -64,24 +76,95 @@ const filteredEvents = computed(() => {
   })
 })
 
-const addEvent = () => {
-  if (!newTitle.value.trim()) {
+// 添加自定义分类 (带 20 个数量限制与 5 字符长度校验)
+const addCustomCategory = () => {
+  const val = customCategoryInput.value.trim()
+  if (!val) {
+    ElMessage.warning('请输入自定义分类名称！')
+    return
+  }
+  if (val.length > 5) {
+    ElMessage.warning('分类名称最多为 5 个字符！')
+    return
+  }
+  if (categories.value.length >= 20) {
+    ElMessage.warning('分类上限为 20 个！已无法再添加新分类。')
+    return
+  }
+  if (categories.value.includes(val)) {
+    ElMessage.warning('该分类已存在！')
+    return
+  }
+
+  categories.value.push(val)
+  formCategory.value = val
+  customCategoryInput.value = ''
+  showCustomCategoryInput.value = false
+  ElMessage.success(`成功新增自定义分类【${val}】！`)
+}
+
+// 1. 双击空白槽位触发新增
+const handleSlotDblClick = (dayIdx: number) => {
+  isEditMode.value = false
+  editingEventId.value = null
+  formTitle.value = ''
+  formDayIndex.value = dayIdx
+  formStartTime.value = '10:00'
+  formEndTime.value = '11:30'
+  formLocation.value = '在线会议室'
+  isModalOpen.value = true
+  ElMessage.info(`💡 已双击【${weekDays[dayIdx].name}】单元格唤起新建日程窗口`)
+}
+
+// 2. 单击日程卡片触发编辑/修改
+const openEditModal = (ev: CalendarEvent) => {
+  isEditMode.value = true
+  editingEventId.value = ev.id
+  formTitle.value = ev.title
+  formCategory.value = ev.category
+  formDayIndex.value = ev.dayIndex
+  formStartTime.value = ev.startTime
+  formEndTime.value = ev.endTime
+  formLocation.value = ev.location
+  isModalOpen.value = true
+}
+
+// 保存日程 (新增 / 修改)
+const saveEvent = () => {
+  if (!formTitle.value.trim()) {
     ElMessage.warning('请输入日程名称！')
     return
   }
-  events.value.push({
-    id: Date.now(),
-    title: newTitle.value,
-    category: newCategory.value,
-    startTime: newStartTime.value,
-    endTime: newEndTime.value,
-    dayIndex: newDayIndex.value,
-    color: categoryColors[newCategory.value] || '#38bdf8',
-    location: newLocation.value
-  })
-  isAddEventOpen.value = false
-  newTitle.value = ''
-  ElMessage.success('Schedule-X 日程创建成功！')
+
+  if (isEditMode.value && editingEventId.value !== null) {
+    // 修改逻辑
+    const target = events.value.find(x => x.id === editingEventId.value)
+    if (target) {
+      target.title = formTitle.value
+      target.category = formCategory.value
+      target.dayIndex = formDayIndex.value
+      target.startTime = formStartTime.value
+      target.endTime = formEndTime.value
+      target.location = formLocation.value
+      target.color = getCategoryColor(formCategory.value)
+    }
+    ElMessage.success('Schedule-X 日程修改已保存！')
+  } else {
+    // 新增逻辑
+    events.value.push({
+      id: Date.now(),
+      title: formTitle.value,
+      category: formCategory.value,
+      startTime: formStartTime.value,
+      endTime: formEndTime.value,
+      dayIndex: formDayIndex.value,
+      color: getCategoryColor(formCategory.value),
+      location: formLocation.value
+    })
+    ElMessage.success('Schedule-X 新日程创建成功！')
+  }
+
+  isModalOpen.value = false
 }
 
 const deleteEvent = (id: number) => {
@@ -110,15 +193,15 @@ const deleteEvent = (id: number) => {
 
       <div style="max-width: 1280px; margin: 20px auto 0; display: flex; gap: 12px; flex-wrap: wrap;">
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
-          <strong>Temporal API 引擎</strong> 高性能多视图（日/周/月/日程清单）
+          <strong>💡 交互操作说明</strong> 双击空白格子新建日程 / 单击日程卡片可查看详情并编辑修改
         </div>
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
-          <strong>中国农历与节气</strong> 暗黑高斯模糊与分类标签
+          <strong>🏷️ 分类约束规则</strong> 支持自定义分类，上限 20 个，单个分类名称最多 5 个字符
         </div>
       </div>
     </header>
 
-    <!-- Toolbar 视图与控制栏 -->
+    <!-- Toolbar 视图与分类控制栏 -->
     <div style="max-width: 1280px; margin: 24px auto 16px; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
       <!-- Views Switcher -->
       <div style="display: flex; background: rgba(30,41,59,0.8); padding: 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
@@ -127,14 +210,29 @@ const deleteEvent = (id: number) => {
         </button>
       </div>
 
-      <!-- Filter Tags & Add Event -->
+      <!-- Filter Tags & Custom Category Input -->
       <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <span style="font-size: 0.8rem; color: #94a3b8;">分类过滤:</span>
-        <button v-for="cat in ['全部', '工作', '会议', '学习', '生活', '娱乐']" :key="cat" style="padding: 4px 10px; border-radius: 14px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" :style="{ background: selectedCategory === cat ? '#10b981' : 'rgba(255,255,255,0.06)', color: selectedCategory === cat ? '#0f172a' : '#cbd5e1', border: '1px solid rgba(255,255,255,0.1)' }" @click="selectedCategory = cat">
+        <span style="font-size: 0.8rem; color: #94a3b8;">分类过滤 ({{ categories.length }}/20):</span>
+        
+        <button style="padding: 4px 10px; border-radius: 14px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" :style="{ background: selectedCategory === '全部' ? '#10b981' : 'rgba(255,255,255,0.06)', color: selectedCategory === '全部' ? '#0f172a' : '#cbd5e1', border: '1px solid rgba(255,255,255,0.1)' }" @click="selectedCategory = '全部'">
+          全部
+        </button>
+
+        <button v-for="cat in categories" :key="cat" style="padding: 4px 10px; border-radius: 14px; font-size: 0.78rem; font-weight: 600; cursor: pointer;" :style="{ background: selectedCategory === cat ? getCategoryColor(cat) : 'rgba(255,255,255,0.06)', color: selectedCategory === cat ? '#0f172a' : '#cbd5e1', border: '1px solid rgba(255,255,255,0.1)' }" @click="selectedCategory = cat">
           {{ cat }}
         </button>
 
-        <button style="padding: 8px 16px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: 800; font-size: 0.84rem; cursor: pointer; margin-left: 12px;" @click="isAddEventOpen = true">
+        <!-- 自定义分类添加 -->
+        <div v-if="showCustomCategoryInput" style="display: flex; gap: 4px;">
+          <input v-model="customCategoryInput" type="text" maxlength="5" placeholder="最多5字" style="width: 80px; padding: 2px 8px; border-radius: 10px; border: 1px solid #38bdf8; background: #0f172a; color: #fff; font-size: 0.76rem;" />
+          <button style="padding: 2px 8px; border-radius: 8px; border: none; background: #38bdf8; color: #0f172a; font-size: 0.76rem; font-weight: 800; cursor: pointer;" @click="addCustomCategory">保存</button>
+          <button style="padding: 2px 6px; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: #fff; font-size: 0.76rem; cursor: pointer;" @click="showCustomCategoryInput = false">✕</button>
+        </div>
+        <button v-else style="padding: 4px 10px; border-radius: 14px; font-size: 0.78rem; font-weight: 700; border: 1px dashed #38bdf8; background: transparent; color: #38bdf8; cursor: pointer;" @click="showCustomCategoryInput = true">
+          ＋ 分类 ({{ categories.length }}/20)
+        </button>
+
+        <button style="padding: 8px 16px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: 800; font-size: 0.84rem; cursor: pointer; margin-left: 12px;" @click="handleSlotDblClick(0)">
           ＋ 新建日程
         </button>
       </div>
@@ -142,7 +240,7 @@ const deleteEvent = (id: number) => {
 
     <!-- Calendar Stage -->
     <main style="max-width: 1280px; margin: 0 auto; padding: 0 24px;">
-      <!-- Week View 周视图 -->
+      <!-- Week View 周视图 (支持双击空白新增 / 单击卡片修改) -->
       <div v-if="currentView === 'week'" style="background: rgba(30,41,59,0.7); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px); overflow-x: auto;">
         <div style="display: grid; grid-template-columns: repeat(7, minmax(140px, 1fr)); border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(15,23,42,0.8);">
           <div v-for="(day, idx) in weekDays" :key="idx" style="padding: 14px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06);">
@@ -151,30 +249,47 @@ const deleteEvent = (id: number) => {
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(7, minmax(140px, 1fr)); min-height: 480px;">
-          <div v-for="(day, dayIdx) in weekDays" :key="dayIdx" style="border-right: 1px solid rgba(255,255,255,0.06); padding: 10px; position: relative;">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(140px, 1fr)); min-height: 520px;">
+          <div
+            v-for="(day, dayIdx) in weekDays"
+            :key="dayIdx"
+            style="border-right: 1px solid rgba(255,255,255,0.06); padding: 10px; position: relative; cursor: cell;"
+            title="双击空白区域在此日期创建新日程"
+            @dblclick.self="handleSlotDblClick(dayIdx)"
+          >
+            <!-- 双击提示背景标签 -->
+            <div style="position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.25); pointer-events: none;">
+              [ 双击此列空白处新增 ]
+            </div>
+
+            <!-- 实例日程卡片 (单击修改) -->
             <div
               v-for="ev in filteredEvents.filter(x => x.dayIndex === dayIdx)"
               :key="ev.id"
               :style="{ background: ev.color, color: '#0f172a' }"
-              style="padding: 8px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative;"
+              style="padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; cursor: pointer; transition: transform 0.15s;"
+              title="单击查看详情或编辑修改"
+              @click.stop="openEditModal(ev)"
             >
               <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <span>{{ ev.startTime }} - {{ ev.endTime }}</span>
                 <button style="border: none; background: transparent; color: #0f172a; font-weight: 900; cursor: pointer; font-size: 0.78rem;" @click.stop="deleteEvent(ev.id)">✕</button>
               </div>
-              <div style="margin-top: 4px; font-size: 0.86rem; font-weight: 800;">{{ ev.title }}</div>
-              <div style="font-size: 0.74rem; opacity: 0.8; margin-top: 2px;">📍 {{ ev.location }}</div>
+              <div style="margin-top: 4px; font-size: 0.88rem; font-weight: 800;">{{ ev.title }}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <span style="font-size: 0.74rem; opacity: 0.85;">📍 {{ ev.location }}</span>
+                <span style="background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 6px; font-size: 0.7rem;">✏️ 点击修改</span>
+              </div>
               <span v-if="ev.lunarBadge" style="display: inline-block; background: rgba(0,0,0,0.2); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-top: 4px;">{{ ev.lunarBadge }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Agenda View 日程清单 -->
+      <!-- Agenda View 日程清单 (单击支持修改) -->
       <div v-else style="background: rgba(30,41,59,0.7); border-radius: 20px; padding: 24px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px);">
         <h3 style="margin: 0 0 16px; font-size: 1.1rem; color: #38bdf8;">📋 Schedule-X 全部日程清单 ({{ filteredEvents.length }} 项)</h3>
-        <div v-for="ev in filteredEvents" :key="ev.id" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: rgba(15,23,42,0.6); border-radius: 12px; margin-bottom: 10px; border-left: 4px solid;" :style="{ borderLeftColor: ev.color }">
+        <div v-for="ev in filteredEvents" :key="ev.id" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: rgba(15,23,42,0.6); border-radius: 12px; margin-bottom: 10px; border-left: 4px solid; cursor: pointer;" :style="{ borderLeftColor: ev.color }" @click="openEditModal(ev)">
           <div>
             <div style="display: flex; gap: 8px; align-items: center;">
               <span style="font-weight: 800; font-size: 0.94rem; color: #fff;">{{ ev.title }}</span>
@@ -184,46 +299,65 @@ const deleteEvent = (id: number) => {
               ⏰ {{ weekDays[ev.dayIndex]?.name }} {{ ev.startTime }} - {{ ev.endTime }} | 📍 {{ ev.location }}
             </div>
           </div>
-          <button style="padding: 6px 12px; border-radius: 8px; border: 1px solid #ef4444; background: transparent; color: #ef4444; font-size: 0.78rem; cursor: pointer;" @click="deleteEvent(ev.id)">
-            删除日程
-          </button>
+          <div style="display: flex; gap: 8px;" @click.stop>
+            <button style="padding: 6px 12px; border-radius: 8px; border: 1px solid #38bdf8; background: transparent; color: #38bdf8; font-size: 0.78rem; cursor: pointer;" @click="openEditModal(ev)">编辑修改</button>
+            <button style="padding: 6px 12px; border-radius: 8px; border: 1px solid #ef4444; background: transparent; color: #ef4444; font-size: 0.78rem; cursor: pointer;" @click="deleteEvent(ev.id)">删除</button>
+          </div>
         </div>
       </div>
     </main>
 
-    <!-- Modal 新建日程对话框 -->
-    <div v-if="isAddEventOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 100;">
-      <div style="background: #1e293b; border-radius: 20px; padding: 28px; width: 420px; border: 1px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
-        <h3 style="margin: 0 0 16px; font-size: 1.1rem; color: #38bdf8;">＋ 新建 Schedule-X 日程</h3>
+    <!-- Modal 新建 / 查看修改日程对话框 -->
+    <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 100;">
+      <div style="background: #1e293b; border-radius: 20px; padding: 28px; width: 440px; border: 1px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
+        <h3 style="margin: 0 0 16px; font-size: 1.1rem; color: #38bdf8;">
+          {{ isEditMode ? '✏️ 查看详情与修改 Schedule-X 日程' : '＋ 新建 Schedule-X 日程' }}
+        </h3>
         
         <div style="margin-bottom: 12px;">
           <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px;">日程名称</label>
-          <input v-model="newTitle" type="text" placeholder="输入日程名称..." style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;" />
+          <input v-model="formTitle" type="text" placeholder="输入日程名称..." style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;" />
         </div>
 
         <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px;">日程分类</label>
-          <select v-model="newCategory" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;">
-            <option value="工作">工作</option>
-            <option value="会议">会议</option>
-            <option value="学习">学习</option>
-            <option value="生活">生活</option>
-            <option value="娱乐">娱乐</option>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="font-size: 0.8rem; color: #94a3b8;">日程分类 (当前可用 {{ categories.length }}/20)</label>
+          </div>
+          <select v-model="formCategory" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;">
+            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
           </select>
         </div>
 
-        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
           <div style="flex: 1;">
             <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px;">星期选择</label>
-            <select v-model.number="newDayIndex" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;">
+            <select v-model.number="formDayIndex" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;">
               <option v-for="(day, idx) in weekDays" :key="idx" :value="idx">{{ day.name }}</option>
             </select>
           </div>
         </div>
 
+        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px;">开始时间</label>
+            <input v-model="formStartTime" type="text" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;" />
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px;">结束时间</label>
+            <input v-model="formEndTime" type="text" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;" />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px;">活动地点</label>
+          <input v-model="formLocation" type="text" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.86rem;" />
+        </div>
+
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
-          <button style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; cursor: pointer;" @click="isAddEventOpen = false">取消</button>
-          <button style="padding: 8px 16px; border-radius: 8px; border: none; background: #38bdf8; color: #0f172a; font-weight: 800; cursor: pointer;" @click="addEvent">保存日程</button>
+          <button style="padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; cursor: pointer;" @click="isModalOpen = false">取消</button>
+          <button style="padding: 8px 16px; border-radius: 8px; border: none; background: #38bdf8; color: #0f172a; font-weight: 800; cursor: pointer;" @click="saveEvent">
+            {{ isEditMode ? '保存修改' : '确认创建' }}
+          </button>
         </div>
       </div>
     </div>
