@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T01:40:10.504Z",
+  "generatedAt": "2026-07-24T01:48:35.976Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "ac31dd2a02061b0789f31de972547e96c5322394",
+          "shortHash": "ac31dd2",
+          "date": "2026-07-24",
+          "time": "09:40",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "eacdcf84a3eae49c811c7e6cdf635449aa266857",
           "shortHash": "eacdcf8",
@@ -293,16 +303,6 @@
           "title": "extract inline styles and scripts into dedicated public css and js files for 1942, doraemon, and goldsun",
           "scope": "",
           "message": "refactor: extract inline styles and scripts into dedicated public css and js files for 1942, doraemon, and goldsun"
-        },
-        {
-          "hash": "8acf473bdedf7282e1828127873bfc714c57959c",
-          "shortHash": "8acf473",
-          "date": "2026-07-24",
-          "time": "00:15",
-          "type": "代码重构",
-          "title": "extract shared CSS and JS helpers for HTML5 web games",
-          "scope": "",
-          "message": "refactor: extract shared CSS and JS helpers for HTML5 web games"
         }
       ]
     }

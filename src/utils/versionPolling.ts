@@ -2,50 +2,59 @@ import { createVersionPolling, type VersionPolling } from 'version-polling'
 import { ElMessageBox, ElNotification } from 'element-plus'
 
 /**
- * 生产环境下自动启动版本轮询检测 (version-polling)
+ * 触发 Element Plus 版本更新提示对话框 (符合用户要求，替代原 alert 写法)
+ */
+export function triggerVersionNotice(newVersion: string = 'v' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-build') {
+  ElMessageBox.confirm(
+    `检测到系统已发布最新版本 (${newVersion})，请刷新页面以加载最新资源！`,
+    '🚀 发现新版本',
+    {
+      confirmButtonText: '立即刷新',
+      cancelButtonText: '暂不刷新',
+      type: 'warning',
+      customClass: 'version-update-box',
+      closeOnClickModal: false,
+      closeOnPressEscape: false
+    }
+  )
+    .then(() => {
+      window.location.reload()
+    })
+    .catch(() => {
+      ElNotification({
+        title: '更新已暂缓',
+        message: '您当前仍在运行旧版缓存，建议抽空刷新页面以体验最新功能。',
+        type: 'info',
+        duration: 5000
+      })
+    })
+}
+
+// 挂载至全局 window 便于控制台及组件随时测试验证
+if (typeof window !== 'undefined') {
+  ;(window as any).__triggerVersionUpdateNotice = triggerVersionNotice
+}
+
+/**
+ * 自动启动版本轮询检测 (version-polling)
  * 当检测到 index.html 或静态 Chunk 发生变动时，弹出 Element Plus UI 组件提示用户刷新
  */
 export function initVersionPolling() {
-  // 限制仅在生产环境生效
-  if (!import.meta.env.PROD) return
+  const isProd = import.meta.env.PROD
+  const htmlFileUrl = (import.meta.env.BASE_URL || '/') + 'index.html'
 
   try {
     createVersionPolling({
-      pollingInterval: 60 * 1000, // 每 60 秒自动轮询一次 index.html 标头与 ChunkHash
+      htmlFileUrl,
+      pollingInterval: 30 * 1000, // 每 30 秒自动轮询一次 index.html 标头与 ChunkHash
       silentPageVisibility: true,
-      onUpdate: (self: VersionPolling, info?: any) => {
-        const newVersion = info?.version || info?.versionFlag || ''
-        
-        // 替代原有的 alert(`发现新版本 ${newVersion}，请刷新页面以加载最新资源`)，改用 Element Plus 提示弹窗
-        ElMessageBox.confirm(
-          `检测到系统已发布最新版本 ${newVersion ? `(${newVersion})` : ''}，请刷新页面以加载最新资源！`,
-          '🚀 发现新版本',
-          {
-            confirmButtonText: '立即刷新',
-            cancelButtonText: '暂不刷新',
-            type: 'warning',
-            customClass: 'version-update-box',
-            closeOnClickModal: false,
-            closeOnPressEscape: false
-          }
-        )
-          .then(() => {
-            if (typeof self?.onRefresh === 'function') {
-              self.onRefresh()
-            }
-            window.location.reload()
-          })
-          .catch(() => {
-            ElNotification({
-              title: '更新已暂缓',
-              message: '您当前仍在运行旧版缓存，建议抽空刷新页面以体验最新功能。',
-              type: 'info',
-              duration: 5000
-            })
-          })
+      onUpdate: (_self: VersionPolling, info?: any) => {
+        const newVersion = info?.version || info?.versionFlag || 'latest'
+        triggerVersionNotice(newVersion)
       }
     })
+    console.log(`[version-polling] 版本检测服务已启动 (PROD: ${isProd}, target: ${htmlFileUrl})`)
   } catch (err) {
-    console.warn('[version-polling] 初始化失败:', err)
+    console.warn('[version-polling] 初始化异常:', err)
   }
 }

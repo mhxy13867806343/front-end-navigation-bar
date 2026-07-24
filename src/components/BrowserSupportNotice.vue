@@ -19,9 +19,13 @@ const goToOatUi = (): void => {
 const goToPage = (path: string): void => {
   router.push(path)
 }
+import { triggerVersionNotice } from '../utils/versionPolling'
+
 const handleCommand = (command: string): void => {
   if (command === 'openDialog') {
     dialogVisible.value = true
+  } else if (command === 'triggerVersionCheck') {
+    triggerVersionNotice()
   } else if (command.startsWith('http://') || command.startsWith('https://')) {
     window.open(command, '_blank')
   } else {
@@ -312,7 +316,8 @@ onUnmounted((): void => {
             <el-dropdown-item command="/auth-showcase">🔐 100 万款登录注册 UI 展厅</el-dropdown-item>
             <el-dropdown-item command="/cart-showcase">🛒 100 款购物车 UI 展厅</el-dropdown-item>
             <el-dropdown-item command="/animation-showcase">✨ 63,353 款 CSS/JS 动画特效展厅</el-dropdown-item>
-            <el-dropdown-item divided command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
+            <el-dropdown-item divided command="triggerVersionCheck">🚀 模拟测试版本更新检测 (Element Plus UI)</el-dropdown-item>
+            <el-dropdown-item command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
             <el-dropdown-item command="https://www.ruanyifeng.com/blog/2019/08/web_components.html">📰 阮一峰 Web Components 教程</el-dropdown-item>
             <el-dropdown-item command="https://oat.ink/usage/">🌾 Oat UI 官方 Usage 文档</el-dropdown-item>
             <el-dropdown-item command="https://oat.ink/demo/">🧪 Oat UI Kitchensink Live Demo</el-dropdown-item>
