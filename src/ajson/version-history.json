@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T01:48:35.976Z",
+  "generatedAt": "2026-07-24T01:54:58.489Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "203372dcf85f14e7d3337833780bc08ee199286e",
+          "shortHash": "203372d",
+          "date": "2026-07-24",
+          "time": "09:48",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "ac31dd2a02061b0789f31de972547e96c5322394",
           "shortHash": "ac31dd2",
@@ -293,16 +303,6 @@
           "title": "copy jQuery and jQuery-WEUI libraries to public/js and public/css for upcoming features",
           "scope": "",
           "message": "feat: copy jQuery and jQuery-WEUI libraries to public/js and public/css for upcoming features"
-        },
-        {
-          "hash": "2eb00dda9a2ade8394e5a4d2af96f690e97227bd",
-          "shortHash": "2eb00dd",
-          "date": "2026-07-24",
-          "time": "00:20",
-          "type": "代码重构",
-          "title": "extract inline styles and scripts into dedicated public css and js files for 1942, doraemon, and goldsun",
-          "scope": "",
-          "message": "refactor: extract inline styles and scripts into dedicated public css and js files for 1942, doraemon, and goldsun"
         }
       ]
     }

@@ -1,0 +1,37 @@
+{
+  "version": "v1.0.105129",
+  "randomVersion": "v1.0.105129",
+  "randomCode": "VER-983921",
+  "buildTime": "2026-07-24T01:54:58.358Z",
+  "timestamp": 1784858098359,
+  "history": [
+    {
+      "version": "v1.0.105129",
+      "randomVersion": "v1.0.105129",
+      "randomCode": "VER-983921",
+      "buildTime": "2026-07-24T01:54:58.358Z",
+      "timestamp": 1784858098359
+    },
+    {
+      "version": "v1.3.693622",
+      "randomVersion": "v1.3.693622",
+      "randomCode": "VER-867591",
+      "buildTime": "2026-07-24T01:54:10.859Z",
+      "timestamp": 1784858050860
+    },
+    {
+      "version": "v1.0.284668",
+      "randomVersion": "v1.0.284668",
+      "randomCode": "VER-695468",
+      "buildTime": "2026-07-24T01:54:10.805Z",
+      "timestamp": 1784858050805
+    },
+    {
+      "version": "v1.4.247457",
+      "randomVersion": "v1.3.525236",
+      "randomCode": "VER-666775",
+      "buildTime": "2026-07-24T01:53:36.288Z",
+      "timestamp": 1784858016289
+    }
+  ]
+}

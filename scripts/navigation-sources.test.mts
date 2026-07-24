@@ -132,6 +132,7 @@ test('Version polling is configured for production app initialization with Eleme
   assert.match(mainSource, /initVersionPolling\(\)/)
   assert.match(versionPollingSource, /createVersionPolling/)
   assert.match(versionPollingSource, /import\.meta\.env\.PROD/)
+  assert.match(versionPollingSource, /vcType:\s*'versionJson'/)
   assert.match(versionPollingSource, /ElMessageBox\.confirm/)
 })
 
