@@ -178,6 +178,16 @@ const routes = [
     component: () => import('../views/authShowcase/index.vue')
   },
   {
+    path: '/cart-showcase',
+    name: 'CartShowcase',
+    component: () => import('../views/cartShowcase/index.vue')
+  },
+  {
+    path: '/animation-showcase',
+    name: 'AnimationShowcase',
+    component: () => import('../views/animationShowcase/index.vue')
+  },
+  {
     path: '/200',
     name: 'Page200',
     component: () => import('../views/error/200.vue')

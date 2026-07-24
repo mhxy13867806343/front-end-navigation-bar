@@ -111,6 +111,20 @@ test('Auth Showcase provides 1,000,000 distinct interactive Login and Register U
   assert.match(authSource, /theme-cat-neu/)
 })
 
+test('Cart Showcase and Animation Showcase provide 100 carts and 63,353 animations with dropdown entries', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const cartSource = readFileSync(new URL('../src/views/cartShowcase/index.vue', import.meta.url), 'utf8')
+  const animSource = readFileSync(new URL('../src/views/animationShowcase/index.vue', import.meta.url), 'utf8')
+  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /path:\s*'\/cart-showcase'/)
+  assert.match(routerSource, /path:\s*'\/animation-showcase'/)
+  assert.match(noticeSource, /command="\/cart-showcase"/)
+  assert.match(noticeSource, /command="\/animation-showcase"/)
+  assert.match(cartSource, /generate100Carts/)
+  assert.match(animSource, /generate63kAnims/)
+})
+
 test('RunCode page includes editor input output and run controls', () => {
   const runCodeSource = readFileSync(new URL('../src/views/runcode/index.vue', import.meta.url), 'utf8')
 
