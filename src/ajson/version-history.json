@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T02:40:00.926Z",
+  "generatedAt": "2026-07-24T02:44:51.852Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "04d786bfe271c21c232c9bdd2b4040f195bb6740",
+          "shortHash": "04d786b",
+          "date": "2026-07-24",
+          "time": "10:40",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "afb5d64e43dae7954ee55f1def9fa2fad9e8e136",
           "shortHash": "afb5d64",
@@ -293,16 +303,6 @@
           "title": "implement full Element Plus component suite (Basic, Form, Data, Navigation, Feedback) with Oat UI in Oat Studio",
           "scope": "",
           "message": "feat: implement full Element Plus component suite (Basic, Form, Data, Navigation, Feedback) with Oat UI in Oat Studio"
-        },
-        {
-          "hash": "8e833d6630ed6715b932bd3f2bca3484d43e77f1",
-          "shortHash": "8e833d6",
-          "date": "2026-07-24",
-          "time": "00:50",
-          "type": "功能更新",
-          "title": "add double-click editable table cells, real-time form validation, tree view, date/month pickers, and cascader in Oat Studio",
-          "scope": "",
-          "message": "feat: add double-click editable table cells, real-time form validation, tree view, date/month pickers, and cascader in Oat Studio"
         }
       ]
     }

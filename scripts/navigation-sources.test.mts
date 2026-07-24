@@ -131,6 +131,18 @@ test('Cart Showcase and Animation Showcase provide 100 carts and 63,353 animatio
   assert.match(animSource, /generate63kAnims/)
 })
 
+test('Centralized storage keys constants and universal LocalStorage utility are provided', () => {
+  const storageKeysSource = readFileSync(new URL('../src/constants/storageKeys.ts', import.meta.url), 'utf8')
+  const storageUtilSource = readFileSync(new URL('../src/utils/storage.ts', import.meta.url), 'utf8')
+  const scheduleSource = readFileSync(new URL('../src/views/scheduleXShowcase/index.vue', import.meta.url), 'utf8')
+
+  assert.match(storageKeysSource, /SCHEDULE_X_EVENTS/)
+  assert.match(storageKeysSource, /SCHEDULE_X_CATEGORIES/)
+  assert.match(storageUtilSource, /class LocalStorageUtil/)
+  assert.match(scheduleSource, /storage\.getItem/)
+  assert.match(scheduleSource, /STORAGE_KEYS\.SCHEDULE_X_EVENTS/)
+})
+
 test('Version polling is configured for production app initialization with Element Plus UI dialog', () => {
   const versionPollingSource = readFileSync(new URL('../src/utils/versionPolling.ts', import.meta.url), 'utf8')
   const mainSource = readFileSync(new URL('../src/kglobal/main.ts', import.meta.url), 'utf8')

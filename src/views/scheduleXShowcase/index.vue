@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { storage, STORAGE_KEYS } from '../../utils/storage'
 
 const router = useRouter()
 
@@ -25,8 +26,32 @@ const isModalOpen = ref<boolean>(false)
 const isEditMode = ref<boolean>(false)
 const editingEventId = ref<number | null>(null)
 
-// Custom Categories List (最大 20 个，每个最多 5 字符)
-const categories = ref<string[]>(['工作', '会议', '学习', '生活', '娱乐'])
+// 默认兜底分类
+const DEFAULT_CATEGORIES = ['工作', '会议', '学习', '生活', '娱乐']
+
+// 默认兜底日程
+const DEFAULT_EVENTS: CalendarEvent[] = [
+  { id: 1, title: 'Schedule-X v4.6 架构评审会议', category: '工作', startTime: '09:00', endTime: '10:30', dayIndex: 0, color: '#38bdf8', location: '线上 Zoom 401', lunarBadge: '宜立券' },
+  { id: 2, title: 'HooksVue AI 工具箱需求对齐', category: '会议', startTime: '14:00', endTime: '15:30', dayIndex: 1, color: '#c084fc', location: '创客大厦 B座 808' },
+  { id: 3, title: 'Temporal API & Motion 深度研讨', category: '学习', startTime: '11:00', endTime: '12:30', dayIndex: 2, color: '#10b981', location: '图书馆三楼' },
+  { id: 4, title: '周末建军节团建聚餐', category: '娱乐', startTime: '18:00', endTime: '21:00', dayIndex: 5, color: '#ec4899', location: '海鲜自助餐厅', lunarBadge: '建军节' },
+  { id: 5, title: 'Vue 3.5 响应式引擎精读', category: '学习', startTime: '16:00', endTime: '17:30', dayIndex: 3, color: '#10b981', location: '个人工作台' },
+  { id: 6, title: '周五团队 Code Review', category: '工作', startTime: '15:00', endTime: '16:30', dayIndex: 4, color: '#38bdf8', location: '研发二部' }
+]
+
+// 从通用缓存模块读取初始化数据
+const categories = ref<string[]>(storage.getItem(STORAGE_KEYS.SCHEDULE_X_CATEGORIES, DEFAULT_CATEGORIES))
+const events = ref<CalendarEvent[]>(storage.getItem(STORAGE_KEYS.SCHEDULE_X_EVENTS, DEFAULT_EVENTS))
+
+// 自动持久化写入本地缓存
+watch(events, (newVal) => {
+  storage.setItem(STORAGE_KEYS.SCHEDULE_X_EVENTS, newVal)
+}, { deep: true })
+
+watch(categories, (newVal) => {
+  storage.setItem(STORAGE_KEYS.SCHEDULE_X_CATEGORIES, newVal)
+}, { deep: true })
+
 const customCategoryInput = ref<string>('')
 const showCustomCategoryInput = ref<boolean>(false)
 
@@ -61,15 +86,6 @@ const weekDays = [
   { name: '周日 (8/02)', lunar: '六月二十' }
 ]
 
-const events = ref<CalendarEvent[]>([
-  { id: 1, title: 'Schedule-X v4.6 架构评审会议', category: '工作', startTime: '09:00', endTime: '10:30', dayIndex: 0, color: '#38bdf8', location: '线上 Zoom 401', lunarBadge: '宜立券' },
-  { id: 2, title: 'HooksVue AI 工具箱需求对齐', category: '会议', startTime: '14:00', endTime: '15:30', dayIndex: 1, color: '#c084fc', location: '创客大厦 B座 808' },
-  { id: 3, title: 'Temporal API & Motion 深度研讨', category: '学习', startTime: '11:00', endTime: '12:30', dayIndex: 2, color: '#10b981', location: '图书馆三楼' },
-  { id: 4, title: '周末建军节团建聚餐', category: '娱乐', startTime: '18:00', endTime: '21:00', dayIndex: 5, color: '#ec4899', location: '海鲜自助餐厅', lunarBadge: '建军节' },
-  { id: 5, title: 'Vue 3.5 响应式引擎精读', category: '学习', startTime: '16:00', endTime: '17:30', dayIndex: 3, color: '#10b981', location: '个人工作台' },
-  { id: 6, title: '周五团队 Code Review', category: '工作', startTime: '15:00', endTime: '16:30', dayIndex: 4, color: '#38bdf8', location: '研发二部' }
-])
-
 const filteredEvents = computed(() => {
   return events.value.filter(item => {
     return selectedCategory.value === '全部' || item.category === selectedCategory.value
@@ -100,7 +116,7 @@ const addCustomCategory = () => {
   formCategory.value = val
   customCategoryInput.value = ''
   showCustomCategoryInput.value = false
-  ElMessage.success(`成功新增自定义分类【${val}】！`)
+  ElMessage.success(`成功新增自定义分类【${val}】，已同步持久化到本地缓存！`)
 }
 
 // 1. 双击空白槽位触发新增
@@ -148,7 +164,7 @@ const saveEvent = () => {
       target.location = formLocation.value
       target.color = getCategoryColor(formCategory.value)
     }
-    ElMessage.success('Schedule-X 日程修改已保存！')
+    ElMessage.success('Schedule-X 日程修改已保存并同步缓存！')
   } else {
     // 新增逻辑
     events.value.push({
@@ -161,7 +177,7 @@ const saveEvent = () => {
       color: getCategoryColor(formCategory.value),
       location: formLocation.value
     })
-    ElMessage.success('Schedule-X 新日程创建成功！')
+    ElMessage.success('Schedule-X 新日程创建成功并同步缓存！')
   }
 
   isModalOpen.value = false
@@ -169,7 +185,17 @@ const saveEvent = () => {
 
 const deleteEvent = (id: number) => {
   events.value = events.value.filter(x => x.id !== id)
-  ElMessage.info('已从 Schedule-X 日历中移除该日程。')
+  ElMessage.info('已从 Schedule-X 日历中移除该日程并更新缓存。')
+}
+
+// 重置缓存为初始状态
+const resetStorage = () => {
+  storage.removeItem(STORAGE_KEYS.SCHEDULE_X_EVENTS)
+  storage.removeItem(STORAGE_KEYS.SCHEDULE_X_CATEGORIES)
+  events.value = [...DEFAULT_EVENTS]
+  categories.value = [...DEFAULT_CATEGORIES]
+  selectedCategory.value = '全部'
+  ElMessage.success('已清空本地修改，恢复默认示范日程数据。')
 }
 </script>
 
@@ -180,20 +206,25 @@ const deleteEvent = (id: number) => {
       <div style="max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
           <span style="display: inline-block; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.3); margin-bottom: 8px;">
-            📅 Schedule-X v4.6 Engine
+            📅 Schedule-X v4.6 Engine &amp; LocalStorage
           </span>
           <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; background: linear-gradient(135deg, #38bdf8 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
             Schedule-X v4.6 现代前端日历调度组件
           </h1>
         </div>
-        <button style="padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #e2e8f0; font-weight: 700; font-size: 0.88rem; cursor: pointer;" @click="router.push('/dyform')">
-          ← 返回导航站
-        </button>
+        <div style="display: flex; gap: 10px;">
+          <button style="padding: 10px 14px; border-radius: 10px; border: 1px solid #ef4444; background: transparent; color: #ef4444; font-weight: 700; font-size: 0.84rem; cursor: pointer;" @click="resetStorage">
+            🔄 重置默认缓存
+          </button>
+          <button style="padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #e2e8f0; font-weight: 700; font-size: 0.88rem; cursor: pointer;" @click="router.push('/dyform')">
+            ← 返回导航站
+          </button>
+        </div>
       </div>
 
       <div style="max-width: 1280px; margin: 20px auto 0; display: flex; gap: 12px; flex-wrap: wrap;">
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
-          <strong>💡 交互操作说明</strong> 双击空白格子新建日程 / 单击日程卡片可查看详情并编辑修改
+          <strong>💾 本地持久化缓存已开启</strong> 所有新增、编辑与分类自定义均自动保存至 LocalStorage (`HOOKSVUE_SCHEDULE_X_EVENTS_V1`)
         </div>
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
           <strong>🏷️ 分类约束规则</strong> 支持自定义分类，上限 20 个，单个分类名称最多 5 个字符
