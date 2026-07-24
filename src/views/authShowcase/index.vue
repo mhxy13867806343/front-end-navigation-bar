@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 
-// 20,000 个 Auth UI 范例数据结构
+// 1,000,000 个 (100万) Auth UI 范例数据结构
 export interface AuthThemeItem {
   id: number
   code: string
@@ -19,7 +19,7 @@ export interface AuthThemeItem {
 }
 
 const CATEGORIES = [
-  '全部 20,000 款',
+  '全部 1,000,000 款',
   '毛玻璃水晶', '暗黑极客', 'Oat 极简', '赛博朋克', 'macOS 窗体',
   '移动 H5', '企业 SaaS', '电竞竞速', '柔和马卡龙', '新拟物 3D',
   '极光渐变', '极简纸感', '极客双因子', '极速一键', '扁平插画',
@@ -75,20 +75,20 @@ const createThemeItem = (i: number): AuthThemeItem => {
 
   return {
     id: i,
-    code: `AUTH-${String(i).padStart(5, '0')}`,
-    name: `#${String(i).padStart(5, '0')} ${catName} ${modeName} UI 范例`,
+    code: `AUTH-${String(i).padStart(6, '0')}`,
+    name: `#${String(i).padStart(6, '0')} ${catName} ${modeName} UI 范例`,
     category: catName,
     preferredMode: isRegisterMode ? 'register' : 'login',
     styleCssClass: cssClasses[catIdx],
     icon: icons[catIdx],
-    description: `20,000 范例库中专为 ${catName} 打造的 ${modeName} 交互面板范例卡片 #${i}，支持表单即时验证。`,
-    features: ['20k 级虚拟索引', '每页 10 项展示', '防伪校验与安全拦截', '社交账号一键极速登录']
+    description: `1,000,000 范例库中专为 ${catName} 打造的 ${modeName} 交互面板范例卡片 #${i}，支持表单即时验证。`,
+    features: ['100w 级虚拟索引', '一页展示 10 项', '防伪校验与安全拦截', '社交账号一键极速登录']
   }
 }
 
-// 精确生成 20,000 范例数据集
-const TOTAL_COUNT = 20000
-const generate20kThemes = (): AuthThemeItem[] => {
+// 1,000,000 范例数据集
+const TOTAL_COUNT = 1000000
+const generate100wThemes = (): AuthThemeItem[] => {
   const list: AuthThemeItem[] = new Array(TOTAL_COUNT)
   for (let i = 1; i <= TOTAL_COUNT; i++) {
     list[i - 1] = createThemeItem(i)
@@ -96,14 +96,14 @@ const generate20kThemes = (): AuthThemeItem[] => {
   return list
 }
 
-const allThemes = ref<AuthThemeItem[]>(generate20kThemes())
+const allThemes = ref<AuthThemeItem[]>(generate100wThemes())
 
 // Filter State
 const searchQuery = ref<string>('')
-const selectedCategory = ref<string>('全部 20,000 款')
+const selectedCategory = ref<string>('全部 1,000,000 款')
 const selectedModeFilter = ref<'all' | 'login' | 'register'>('all')
 
-// 分页与跳转 State (一页展示 10 个，20,000 条共 2,000 页)
+// 分页与跳转 State (一页展示 10 个，1,000,000 条共 100,000 页)
 const currentPage = ref<number>(1)
 const pageSize = ref<number>(10)
 const jumpPageInput = ref<number | null>(null)
@@ -124,11 +124,11 @@ const inputConfirmPassword = ref<string>('')
 const inputSmsCode = ref<string>('')
 const agreeTerms = ref<boolean>(true)
 
-// 过滤筛选 20,000 款列表
+// 过滤筛选 1,000,000 款列表
 const filteredThemes = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   return allThemes.value.filter((item) => {
-    const matchCat = selectedCategory.value === '全部 20,000 款' || item.category === selectedCategory.value
+    const matchCat = selectedCategory.value === '全部 1,000,000 款' || item.category === selectedCategory.value
     const matchMode = selectedModeFilter.value === 'all' || item.preferredMode === selectedModeFilter.value
     const matchSearch = !q || item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
     return matchCat && matchMode && matchSearch
@@ -179,7 +179,7 @@ const jumpToItemId = () => {
         currentPage.value = Math.floor(idxInFiltered / pageSize.value) + 1
       }
       selectTheme(targetItem)
-      ElMessage.success(`已直接定位至范例 #${String(targetItem.id).padStart(5, '0')}！`)
+      ElMessage.success(`已直接定位至范例 #${String(targetItem.id).padStart(6, '0')}！`)
     }
   } else {
     ElMessage.warning(`请输入 1 至 ${TOTAL_COUNT} 之间的有效范例 ID！`)
@@ -218,8 +218,8 @@ const triggerSocial = (platform: string) => {
     <header class="showcase-header">
       <div class="header-inner">
         <div class="brand-title">
-          <span class="badge-tag">🔐 Auth 20,000 Showcase</span>
-          <h1>20,000 款精美登录与注册 UI 展厅</h1>
+          <span class="badge-tag">🔐 Auth 1,000,000 Showcase</span>
+          <h1>1,000,000 款精美登录与注册 UI 展厅</h1>
         </div>
         <button class="back-link-btn" @click="router.push('/dyform')">
           ← 返回导航站
@@ -228,10 +228,10 @@ const triggerSocial = (platform: string) => {
 
       <div class="header-stats">
         <div class="stat-badge">
-          <strong>20,000 款</strong> Auth 交互范例全景库
+          <strong>1,000,000 款</strong> 100 万 Auth 范例全景库
         </div>
         <div class="stat-badge">
-          <strong>10,000 登录 + 10,000 注册</strong> 专精模式匹配
+          <strong>500,000 登录 + 500,000 注册</strong> 专精模式匹配
         </div>
         <div class="stat-badge">
           <strong>50 大</strong> 现代视觉风格与行业分类
@@ -243,33 +243,33 @@ const triggerSocial = (platform: string) => {
     <div class="filter-control-bar">
       <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input v-model="searchQuery" type="text" placeholder="搜索 20,000 款登录 / 注册 UI 范例..." @input="currentPage = 1" />
+        <input v-model="searchQuery" type="text" placeholder="搜索 1,000,000 款登录 / 注册 UI 范例..." @input="currentPage = 1" />
       </div>
 
       <!-- 快速跳转 ID / 页码 -->
       <div style="display: flex; gap: 8px; align-items: center;">
         <div style="display: flex; gap: 4px; align-items: center; background: rgba(30,41,59,0.8); padding: 4px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
           <span style="font-size: 0.8rem; color: #94a3b8;">跳转 ID:</span>
-          <input v-model.number="jumpIdInput" type="number" placeholder="1-20000" style="width: 80px; padding: 4px 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.8rem;" @keyup.enter="jumpToItemId" />
+          <input v-model.number="jumpIdInput" type="number" placeholder="1-1000000" style="width: 90px; padding: 4px 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.8rem;" @keyup.enter="jumpToItemId" />
           <button class="cat-btn" style="padding: 4px 8px; font-size: 0.78rem;" @click="jumpToItemId">GO</button>
         </div>
 
         <div style="display: flex; gap: 4px; align-items: center; background: rgba(30,41,59,0.8); padding: 4px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
           <span style="font-size: 0.8rem; color: #94a3b8;">页码:</span>
-          <input v-model.number="jumpPageInput" type="number" placeholder="1-2000" style="width: 70px; padding: 4px 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.8rem;" @keyup.enter="jumpToPageNumber" />
+          <input v-model.number="jumpPageInput" type="number" placeholder="1-100000" style="width: 80px; padding: 4px 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.8rem;" @keyup.enter="jumpToPageNumber" />
           <button class="cat-btn" style="padding: 4px 8px; font-size: 0.78rem;" @click="jumpToPageNumber">跳转</button>
         </div>
       </div>
 
       <div class="mode-switch-group">
         <button :class="{ active: selectedModeFilter === 'all' }" @click="selectedModeFilter = 'all'; currentPage = 1">
-          🔀 全部 2 万款
+          🔀 全部 100 万款
         </button>
         <button :class="{ active: selectedModeFilter === 'login' }" @click="selectedModeFilter = 'login'; currentPage = 1">
-          🔑 1 万款登录
+          🔑 50 万款登录
         </button>
         <button :class="{ active: selectedModeFilter === 'register' }" @click="selectedModeFilter = 'register'; currentPage = 1">
-          📝 1 万款注册
+          📝 50 万款注册
         </button>
       </div>
     </div>
@@ -287,7 +287,7 @@ const triggerSocial = (platform: string) => {
       </button>
     </nav>
 
-    <!-- 20000 范例选项 Chips 滑块与分页器 (每页 10 项) -->
+    <!-- 1,000,000 范例选项 Chips 滑块与分页器 (每页 10 项) -->
     <div style="max-width: 1280px; margin: 0 auto 10px; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <span style="font-size: 0.82rem; color: #94a3b8;">显示第 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredThemes.length) }} 项 (共 {{ filteredThemes.length.toLocaleString() }} 项)</span>
       <div style="display: flex; gap: 6px; align-items: center;">
@@ -376,7 +376,7 @@ const triggerSocial = (platform: string) => {
           </div>
         </div>
 
-        <!-- 2. 📝 注册 Form 展示 (满足 10,000 款专精注册界面) -->
+        <!-- 2. 📝 注册 Form 展示 (满足 500,000 款专精注册界面) -->
         <div v-else class="glass-card dark-card oat-card cyber-card mac-body phone-mockup saas-right esports-card pastel-card neu-card">
           <h2 style="margin: 0 0 6px; font-weight: 800; text-align: center;">📝 {{ activeTheme.category }} 新用户注册</h2>
           <p style="margin: 0 0 20px; font-size: 0.82rem; opacity: 0.8; text-align: center;">{{ activeTheme.description }}</p>
