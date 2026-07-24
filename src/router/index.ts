@@ -158,6 +158,31 @@ const routes = [
     component: () => import('../views/threeShowcase/chinaMap3d.vue')
   },
   {
+    path: '/mapcn-showcase',
+    name: 'MapcnShowcase',
+    component: () => import('../views/mapcnShowcase/index.vue')
+  },
+  {
+    path: '/antv-s2-examples',
+    name: 'AntvS2Examples',
+    component: () => import('../views/antvS2Examples/index.vue')
+  },
+  {
+    path: '/antv-g6-examples',
+    name: 'AntvG6Examples',
+    component: () => import('../views/antvG6Examples/index.vue')
+  },
+  {
+    path: '/antv-f2-examples',
+    name: 'AntvF2Examples',
+    component: () => import('../views/antvF2Examples/index.vue')
+  },
+  {
+    path: '/antv-l7-examples',
+    name: 'AntvL7Examples',
+    component: () => import('../views/antvL7Examples/index.vue')
+  },
+  {
     path: '/feature',
     name: 'Feature',
     component: () => import('../views/feature/index.vue')

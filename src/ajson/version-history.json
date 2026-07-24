@@ -1,9 +1,29 @@
 {
-  "generatedAt": "2026-07-24T03:14:21.942Z",
+  "generatedAt": "2026-07-24T04:14:40.173Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "3f42bce6f8a4f1787d7fcd6fa6acad6beac1cd34",
+          "shortHash": "3f42bce",
+          "date": "2026-07-24",
+          "time": "11:17",
+          "type": "功能更新",
+          "title": "add Docker CLI and Portainer GUI deployment configuration files",
+          "scope": "",
+          "message": "feat: add Docker CLI and Portainer GUI deployment configuration files"
+        },
+        {
+          "hash": "0a857826052888778644823a7836c3f28e712f00",
+          "shortHash": "0a85782",
+          "date": "2026-07-24",
+          "time": "11:14",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "e49e8d08b8672009e8814da74e02ea7542519f6a",
           "shortHash": "e49e8d0",
@@ -283,26 +303,6 @@
           "title": "add Element Plus and Naive UI OS-Theme Dialog reference banner and documentation in Oat Studio",
           "scope": "",
           "message": "feat: add Element Plus and Naive UI OS-Theme Dialog reference banner and documentation in Oat Studio"
-        },
-        {
-          "hash": "1ae8ef75e9c0a501eee27a7b811f008883573297",
-          "shortHash": "1ae8ef7",
-          "date": "2026-07-24",
-          "time": "01:02",
-          "type": "功能更新",
-          "title": "add dedicated Oat UI interactive card for Card (<el-card>) component in Oat Studio",
-          "scope": "",
-          "message": "feat: add dedicated Oat UI interactive card for Card (<el-card>) component in Oat Studio"
-        },
-        {
-          "hash": "a3fd4b14b61a54a97f5a766df4ac27dac7b42d4f",
-          "shortHash": "a3fd4b1",
-          "date": "2026-07-24",
-          "time": "00:58",
-          "type": "功能更新",
-          "title": "add dedicated interactive UI cards for Cascader, Checkbox, Autocomplete, Input Tag, OTP, Mention, and all individual components in Oat Studio",
-          "scope": "",
-          "message": "feat: add dedicated interactive UI cards for Cascader, Checkbox, Autocomplete, Input Tag, OTP, Mention, and all individual components in Oat Studio"
         }
       ]
     }
