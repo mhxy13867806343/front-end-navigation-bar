@@ -6,7 +6,9 @@
 
 ## 📌 维护状态
 
-本项目持续积极维护更新中，已重构支持 SCSS 样式架构、工具函数/Hooks 抽离、可视化天气与 API 接口数据看板。
+> **📢 【项目归档与停更通知】**
+> 本项目所有功能特性、UI 展厅（WebComponents, Oat UI, 100万登录注册, 100款购物车, 6.3万特效, Motion for Vue, Schedule-X 日历, Three.js 3D 地图, Docker 双方案部署及源码复制中心等）均已**全部完成并上线**。
+> 即日起，**本项目暂停后续功能性更新**。如有自定义扩展需求，欢迎自由 **Fork** 本仓库，或在 Issues / Discussions 中交流讨论！
 
 ## 🌐 在线预览
 
@@ -156,4 +158,4 @@ npm run test:games
 
 ## 📄 License
 
-MIT
+本项目基于 [MIT License](./LICENSE) 协议开源。欢迎自由 Fork、学习交流或二次开发！

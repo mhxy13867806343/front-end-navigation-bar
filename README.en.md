@@ -6,18 +6,19 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 
 ## 📌 Maintenance Status
 
-This project is no longer actively updated. The current live demo and existing features are kept as-is, with no planned new features, API sync work, or maintenance for third-party data-source availability.
+> **📢 【Project Archive & Notice】**
+> All planned features, UI Showcases (WebComponents, Oat UI, 1.0M Auth UI, 100 Shopping Carts, 63k Animations, Motion for Vue, Schedule-X Calendar, Three.js 3D Map, Docker Dual Deployment, Source Code Inspector) are **fully implemented**.
+> Development is now paused. Feel free to **Fork** this repository for custom modifications, or open an Issue / Discussion!
 
 ## 🌐 Live Demo
 
-- 🌾 **Oat UI Studio Demo**: [https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio)
+- 🐳 **Docker CLI & GUI Deployment**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/docker-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/docker-showcase)
+- 💻 **Source Code Inspector & Copy Center**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/source-code](https://mhxy13867806343.github.io/front-end-navigation-bar/#/source-code)
+- 📅 **Schedule-X Drag & Drop Calendar**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/schedule-x](https://mhxy13867806343.github.io/front-end-navigation-bar/#/schedule-x)
+- ⚡ **Motion for Vue 50+ Showcase**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase)
+- 🗺️ **Three.js 3D Map Designer**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map](https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map)
+- 🌾 **Oat UI Studio Demo**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio)
 - 🏠 **Home**: [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
-- 🧡 **Xiaomi Official Shop**: [https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
-- 🛒 **Xiaomi Shopping Cart**: [https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart)
-- 🔐 **Permission Control Center**: [https://mhxy13867806343.github.io/front-end-navigation-bar/permission](https://mhxy13867806343.github.io/front-end-navigation-bar/permission)
-- 📜 **Security Audit Logs**: [https://mhxy13867806343.github.io/front-end-navigation-bar/logs](https://mhxy13867806343.github.io/front-end-navigation-bar/logs)
-- 🚫 **500 / 404 / 401 Error Pages**: [https://mhxy13867806343.github.io/front-end-navigation-bar/500](https://mhxy13867806343.github.io/front-end-navigation-bar/500)
-- 🌦️ **Weather Forecast**: [https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
 
 ## ✨ Features
 
@@ -114,4 +115,4 @@ npm run test:games
 
 ## 📄 License
 
-MIT
+This project is open-sourced under the [MIT License](./LICENSE). Feel free to fork, study, or modify!

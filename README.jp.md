@@ -6,18 +6,19 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 
 ## 📌 メンテナンス状況
 
-このプロジェクトは継続的な更新を終了しました。現在のオンラインデモと既存機能のみをそのまま保持し、新機能追加、API 同期、第三者データソースの可用性維持は予定していません。
+> **📢 【プロジェクトアーカイブと更新停止のお知らせ】**
+> すべての機能（WebComponents、Oat UI、100万件ログイン登録UI、100件カート、6.3万アニメーション、Motion for Vue、Schedule-X カレンダー、Three.js 3D マップ、Docker デュアルデプロイ、ソースコード表示センター）が**すべて完成しました**。
+> 今後の機能更新は停止いたします。カスタマイズが必要な場合は、リポジトリの **Fork** や Issues / Discussions でのご自由な議論をお待ちしております！
 
 ## 🌐 オンラインデモ
 
-- 🌾 **Oat UI スタジオ演習センター**：[https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/oat-studio)
-- 🏠 **ホーム**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
-- 🧡 **Xiaomi 公式ショップ**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop)
-- 🛒 **Xiaomi ショッピングカート**：[https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart](https://mhxy13867806343.github.io/front-end-navigation-bar/xiaomi-shop/cart)
-- 🔐 **権限管理コントロールセンター**：[https://mhxy13867806343.github.io/front-end-navigation-bar/permission](https://mhxy13867806343.github.io/front-end-navigation-bar/permission)
-- 📜 **システムセキュリティ監査ログ**：[https://mhxy13867806343.github.io/front-end-navigation-bar/logs](https://mhxy13867806343.github.io/front-end-navigation-bar/logs)
-- 🚫 **500 / 404 / 401 エラーページ**：[https://mhxy13867806343.github.io/front-end-navigation-bar/500](https://mhxy13867806343.github.io/front-end-navigation-bar/500)
-- 🌦️ **天気予報ビジュアル**：[https://mhxy13867806343.github.io/front-end-navigation-bar/weather](https://mhxy13867806343.github.io/front-end-navigation-bar/weather)
+- 🐳 **Docker デュアルデプロイ**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/docker-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/docker-showcase)
+- 💻 **ソースコード閲覧・0-ms コピーセンター**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/source-code](https://mhxy13867806343.github.io/front-end-navigation-bar/#/source-code)
+- 📅 **Schedule-X ドラッグ＆ドロップカレンダー**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/schedule-x](https://mhxy13867806343.github.io/front-end-navigation-bar/#/schedule-x)
+- ⚡ **Motion for Vue 50+ 展示**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase)
+- 🗺️ **Three.js 3D 地図デザイナー**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map](https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map)
+- 🌾 **Oat UI スタジオ演習センター**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio)
+- 🏠 **ホーム**: [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 
 ## ✨ 主な機能
 
@@ -130,6 +131,6 @@ npm run test:games
 └── vite.config.ts
 ```
 
-## 📄 ライセンス
+## 📄 License
 
-MIT
+当プロジェクトは [MIT License](./LICENSE) に基づいてオープンソースとして公開されています。Fork や二次開発ご自由にご活用ください！

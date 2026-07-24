@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T04:14:40.173Z",
+  "generatedAt": "2026-07-24T09:52:11.824Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "ecc8c5ec48dcf2e355c58a870b320fa10765f242",
+          "shortHash": "ecc8c5e",
+          "date": "2026-07-24",
+          "time": "12:14",
+          "type": "功能更新",
+          "title": "add AntV (F2/G6/L7/S2) examples, MapCN showcase, DyForm designer, and new FC games (SnowBros/Bingo75/TMNT)",
+          "scope": "",
+          "message": "feat: add AntV (F2/G6/L7/S2) examples, MapCN showcase, DyForm designer, and new FC games (SnowBros/Bingo75/TMNT)"
+        },
         {
           "hash": "3f42bce6f8a4f1787d7fcd6fa6acad6beac1cd34",
           "shortHash": "3f42bce",
@@ -293,16 +303,6 @@
           "title": "update README.md, README.en.md, and README.jp.md with Oat UI Studio online preview links and Dialog design reference guidelines",
           "scope": "",
           "message": "docs: update README.md, README.en.md, and README.jp.md with Oat UI Studio online preview links and Dialog design reference guidelines"
-        },
-        {
-          "hash": "580b70e9918a4a23936559a92acaf16b8a10a7a7",
-          "shortHash": "580b70e",
-          "date": "2026-07-24",
-          "time": "01:06",
-          "type": "功能更新",
-          "title": "add Element Plus and Naive UI OS-Theme Dialog reference banner and documentation in Oat Studio",
-          "scope": "",
-          "message": "feat: add Element Plus and Naive UI OS-Theme Dialog reference banner and documentation in Oat Studio"
         }
       ]
     }
