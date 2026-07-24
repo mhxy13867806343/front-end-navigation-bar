@@ -1,10 +1,17 @@
 {
-  "version": "v1.1.791312",
-  "randomVersion": "v1.1.791312",
-  "randomCode": "VER-333101",
-  "buildTime": "2026-07-24T02:08:34.655Z",
-  "timestamp": 1784858914655,
+  "version": "v1.8.986113",
+  "randomVersion": "v1.8.986113",
+  "randomCode": "VER-963400",
+  "buildTime": "2026-07-24T02:26:40.751Z",
+  "timestamp": 1784860000752,
   "history": [
+    {
+      "version": "v1.8.986113",
+      "randomVersion": "v1.8.986113",
+      "randomCode": "VER-963400",
+      "buildTime": "2026-07-24T02:26:40.751Z",
+      "timestamp": 1784860000752
+    },
     {
       "version": "v1.1.791312",
       "randomVersion": "v1.1.791312",

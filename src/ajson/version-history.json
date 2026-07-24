@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T02:08:34.771Z",
+  "generatedAt": "2026-07-24T02:26:40.872Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "29f24dfb16f5adcc27129e50dcba93409b2a93ba",
+          "shortHash": "29f24df",
+          "date": "2026-07-24",
+          "time": "10:08",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "e1ca35837ff5a82013fe3daa623c04ff3312f773",
           "shortHash": "e1ca358",
@@ -293,16 +303,6 @@
           "title": "add Oat UI Studio entry to Web Components dropdown menu",
           "scope": "",
           "message": "feat: add Oat UI Studio entry to Web Components dropdown menu"
-        },
-        {
-          "hash": "f4a3b02b9564b6b7031aef0dffe32e1c8e8f40e5",
-          "shortHash": "f4a3b02",
-          "date": "2026-07-24",
-          "time": "00:41",
-          "type": "功能更新",
-          "title": "implement Oat UI interactive update notice modal, new page creation modal, confirm dialogs, right drawer, and oat studio view",
-          "scope": "",
-          "message": "feat: implement Oat UI interactive update notice modal, new page creation modal, confirm dialogs, right drawer, and oat studio view"
         }
       ]
     }

@@ -188,6 +188,16 @@ const routes = [
     component: () => import('../views/animationShowcase/index.vue')
   },
   {
+    path: '/motion-showcase',
+    name: 'MotionShowcase',
+    component: () => import('../views/motionShowcase/index.vue')
+  },
+  {
+    path: '/schedule-x',
+    name: 'ScheduleXShowcase',
+    component: () => import('../views/scheduleXShowcase/index.vue')
+  },
+  {
     path: '/200',
     name: 'Page200',
     component: () => import('../views/error/200.vue')
