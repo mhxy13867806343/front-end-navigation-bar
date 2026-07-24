@@ -1,0 +1,36 @@
+# 方案二：可视化 (GUI) Portainer + 导航站一键集成编排 docker-compose.gui.yml
+version: '3.8'
+
+services:
+  # 前端导航站容器
+  nav-bar-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nav-bar-gui-app
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - gui-nav-net
+
+  # 可视化 Docker 管理面板 Portainer CE (访问地址: http://localhost:9000)
+  portainer-gui:
+    image: portainer/portainer-ce:latest
+    container_name: portainer-gui-console
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - gui-nav-net
+
+volumes:
+  portainer_data:
+
+networks:
+  gui-nav-net:
+    driver: bridge

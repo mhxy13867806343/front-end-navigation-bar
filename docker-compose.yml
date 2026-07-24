@@ -1,0 +1,23 @@
+# 方案一：命令行 (CLI) 一键部署 docker-compose.yml
+version: '3.8'
+
+services:
+  nav-bar-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nav-bar-cli-app
+    restart: always
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - nav-net
+
+networks:
+  nav-net:
+    driver: bridge
