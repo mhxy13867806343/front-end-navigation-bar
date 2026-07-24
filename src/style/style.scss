@@ -1267,8 +1267,8 @@ body {
   }
 
   .header-right-actions {
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    flex-wrap: nowrap;
+    justify-content: center;
     gap: 10px;
   }
 
@@ -1399,7 +1399,7 @@ body {
   padding: 6px 8px;
   box-sizing: border-box;
   border-radius: 999px;
-  overflow: hidden;
+  overflow: visible;
   background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
@@ -1411,6 +1411,11 @@ body {
   transition:
     opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.header-right-actions .el-dropdown {
+  flex: 0 0 132px;
+  min-width: 0;
 }
 
 .header-actions.actions-open .header-right-actions {

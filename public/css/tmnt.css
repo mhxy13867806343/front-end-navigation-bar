@@ -1,0 +1,155 @@
+/* ===== 激龟快打 专属样式 ===== */
+/* 强制暗色：oat 用 light-dark() 变量，color-scheme:dark 自动切暗色主题 */
+:root { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #1b2a4a 0%, #0b1020 60%, #070b16 100%);
+  color: #e6edf6;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app.card {
+  max-width: 860px;
+  margin: 14px auto;
+  padding: 14px 16px 18px;
+  background: rgba(17, 24, 39, 0.72);
+  border: 1px solid #2a3550;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  backdrop-filter: blur(6px);
+}
+
+/* 顶部栏 */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: #1f2a44; color: #cfe0ff; border: 1px solid #2f3e63;
+}
+.badge.brand { background: #14306b; color: #d6e6ff; }
+.ghost-btn, .primary-btn {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 10px; padding: 7px 14px;
+  border: 1px solid #34507f; background: #1c2a47; color: #dbe7ff; transition: .15s;
+}
+.ghost-btn:hover, .primary-btn:hover { background: #26395f; }
+.primary-btn { background: #1d4ed8; border-color: #3b82f6; color: #fff; }
+.primary-btn:hover { background: #2563eb; }
+
+/* HUD */
+#hud { display: flex; align-items: stretch; gap: 10px; margin-bottom: 8px; }
+.hud-side { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.hud-side.right { align-items: flex-end; }
+.fighter-name { font-size: 13px; font-weight: 700; color: #aebfe0; letter-spacing: .5px; }
+.hp-track {
+  position: relative; height: 16px; width: 100%;
+  background: #0c1426; border: 1px solid #33415f; border-radius: 8px; overflow: hidden;
+}
+.hp-fill {
+  position: absolute; inset: 0 auto 0 0; height: 100%; width: 100%;
+  background: linear-gradient(90deg, #34d399, #10b981); border-radius: 8px 0 0 8px;
+  transition: width .12s linear;
+}
+.hp-fill.enemy { left: auto; right: 0; background: linear-gradient(270deg, #f87171, #ef4444); border-radius: 0 8px 8px 0; }
+.hp-ghost { /* 受击后残留（即将扣减的）红条 */ position: absolute; inset: 0 auto 0 0; height: 100%; width: 100%; background: #fbbf24; opacity: .55; transition: width .35s ease .1s; }
+.hp-fill.enemy + .hp-ghost, .hud-side.right .hp-ghost { left: auto; right: 0; }
+.round-pips { display: flex; gap: 5px; }
+.hud-side.right .round-pips { flex-direction: row-reverse; }
+.pip { width: 12px; height: 12px; border-radius: 50%; background: #243049; border: 1px solid #3a4a6b; }
+.pip.on { background: #facc15; border-color: #fde68a; box-shadow: 0 0 8px #facc15aa; }
+
+.hud-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 64px; }
+.timer { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; color: #f8fafc; text-shadow: 0 2px 8px #000; line-height: 1; }
+.combo { font-size: 14px; font-weight: 800; color: #fbbf24; height: 18px; text-shadow: 0 1px 4px #000; }
+
+/* 舞台 */
+#stageWrap { position: relative; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #2a3550; background: #060a14; }
+#stage { display: block; width: 100%; height: auto; image-rendering: pixelated; touch-action: none; }
+.round-banner {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 54px; font-weight: 900; color: #fff; text-shadow: 0 4px 18px #000, 0 0 26px #38bdf8;
+  opacity: 0; pointer-events: none; letter-spacing: 4px;
+}
+.round-banner.show { animation: bannerPop 1.1s ease forwards; }
+@keyframes bannerPop {
+  0% { opacity: 0; transform: scale(.6); }
+  20% { opacity: 1; transform: scale(1.05); }
+  75% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+/* 提示 */
+.hint { margin: 10px 2px 0; font-size: 12px; color: #8aa0c8; line-height: 1.6; }
+
+/* ===== 移动端虚拟方向键 ===== */
+.touch-controls { display: none; margin-top: 12px; justify-content: space-between; align-items: flex-end; gap: 12px; user-select: none; }
+body.touch .touch-controls { display: flex; }
+.dpad { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); gap: 6px; }
+.dpad .tup    { grid-area: 1 / 2; }
+.dpad .tleft  { grid-area: 2 / 1; }
+.dpad .tdown  { grid-area: 3 / 2; }
+.dpad .tright { grid-area: 2 / 3; }
+.actions { display: grid; grid-template-columns: repeat(2, 64px); grid-template-rows: repeat(2, 56px); gap: 8px; }
+.tbtn {
+  font: inherit; font-weight: 800; font-size: 18px; color: #eaf2ff; cursor: pointer;
+  background: #1c2a47; border: 1px solid #3a4a6b; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  touch-action: none; transition: transform .05s, background .1s; line-height: 1.1;
+}
+.tbtn small { font-size: 10px; font-weight: 600; color: #9fb4dc; }
+.tbtn:active { transform: scale(.92); background: #2a3f66; }
+.tbtn.act.punch { background: #14532d; border-color: #34d399; }
+.tbtn.act.kick { background: #7c2d12; border-color: #fb923c; }
+.tbtn.act.special { background: #3b0764; border-color: #c084fc; }
+.tbtn.act.throw { background: #7f1d1d; border-color: #f87171; }
+
+/* ===== jQuery UI 对话框暗色皮肤（结构/图标仍由 jquery-ui.css 提供） ===== */
+.ui-dialog { border-radius: 14px !important; border: 1px solid #34507f !important; background: #0f172a !important; box-shadow: 0 24px 70px rgba(0,0,0,.6) !important; }
+.ui-dialog .ui-dialog-titlebar { background: #15233f !important; color: #dbe7ff !important; border: none !important; border-bottom: 1px solid #2a3550 !important; border-radius: 14px 14px 0 0 !important; }
+.ui-dialog .ui-dialog-content { color: #e6edf6 !important; background: #0f172a !important; }
+.ui-dialog .ui-dialog-title { font-weight: 800; }
+.ui-dialog .ui-dialog-titlebar-close { filter: invert(1) brightness(1.4); }
+/* 遮罩层：暗色半透明，让后方舞台隐约可见 */
+.ui-widget-overlay { background: #000510 !important; opacity: .55 !important; }
+/* 确保对话框在窗口内居中 */
+.ui-dialog { left: 50% !important; transform: translateX(-50%); margin-top: 12vh !important; }
+.oat-dialog .dlg-lead { font-size: 15px; color: #cdd9f0; margin: 4px 0 14px; }
+.oat-dialog .dlg-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.oat-dialog .dlg-note { font-size: 12px; color: #8aa0c8; margin-top: 12px; }
+.oat-dialog .howto { margin-top: 12px; font-size: 13px; color: #b9c7e6; }
+.oat-dialog .howto ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.8; }
+.hidden { display: none !important; }
+
+/* 选人卡片网格 */
+.char-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.char-card {
+  cursor: pointer; border: 1px solid #2f3e63; border-radius: 12px; padding: 12px;
+  background: #131e36; transition: .15s; text-align: center;
+}
+.char-card:hover, .char-card.sel { border-color: #38bdf8; background: #15294a; box-shadow: 0 0 0 2px #38bdf855; }
+.char-card .c-emoji { font-size: 34px; }
+.char-card .c-name { font-weight: 800; margin: 4px 0 2px; color: #eaf2ff; }
+.char-card .c-tag { font-size: 12px; color: #9fb4dc; }
+.char-card .c-stat { font-size: 11px; color: #7f93bb; margin-top: 6px; display: flex; justify-content: space-between; }
+.char-card .c-bar { height: 5px; border-radius: 3px; background: #243049; margin-top: 2px; overflow: hidden; }
+.char-card .c-bar > i { display: block; height: 100%; background: #38bdf8; }
+
+/* 比分弹窗文字 */
+.dlg-lead b { color: #facc15; }
+
+/* 小屏适配 */
+@media (max-width: 560px) {
+  #app.card { margin: 6px; padding: 10px; border-radius: 12px; }
+  .timer { font-size: 24px; }
+  .round-banner { font-size: 38px; }
+  .dpad { grid-template-columns: repeat(3, 48px); grid-template-rows: repeat(3, 48px); }
+  .actions { grid-template-columns: repeat(2, 56px); grid-template-rows: repeat(2, 50px); }
+}

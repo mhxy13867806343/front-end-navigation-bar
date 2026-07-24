@@ -111,6 +111,30 @@ const items: FeatureItem[] = [
     link: 'goldsun.html',
     external: true
   },
+  {
+    name: '雪人兄弟 Snow Bros',
+    desc: 'FC 经典动作复刻，喷雪冻敌→推滚雪球连杀→踩雪球弹跳上高台，支持双人',
+    logo: '⛄',
+    category: 'games',
+    link: 'snowbros.html',
+    external: true
+  },
+  {
+    name: '75 宾果 75 Bingo',
+    desc: 'Sachen《75宾果》复刻，1–4 张牌连线派彩，连击倍率+风险下注，攒到目标即胜',
+    logo: '🎯',
+    category: 'games',
+    link: 'bingo75.html',
+    external: true
+  },
+  {
+    name: '激龟快打 TMNT',
+    desc: '科乐美 NES《激龟快打》复刻，1v1 忍者神龟格斗：拳/踢/必杀/投技/防御，回合制+CPU，支持 PC 与移动端',
+    logo: '🐢',
+    category: 'games',
+    link: 'tmnt.html',
+    external: true
+  },
   { name: '推箱子', desc: '经典推箱子游戏，支持多个关卡', logo: '🎲', category: 'games', type: 'game' },
   { name: '接水果游戏', desc: '接住水果得分，小心炸弹！', logo: '🧺', category: 'games', type: 'fruitgame' },
   { name: '贪吃蛇大作战', desc: '经典贪吃蛇，挑战你的最高分', logo: '🐍', category: 'games', type: 'snake' },

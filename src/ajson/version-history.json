@@ -1,313 +1,313 @@
 {
-  "generatedAt": "2026-07-23T09:53:09.551Z",
+  "generatedAt": "2026-07-24T01:14:51.800Z",
   "groups": [
     {
-      "date": "2026-07-23",
+      "date": "2026-07-24",
       "items": [
         {
-          "hash": "e591849e53809c05179b2f05deec084691add623",
-          "shortHash": "e591849",
-          "date": "2026-07-23",
-          "time": "17:44",
+          "hash": "eaf73e9f6911d911b59a95581ad570e1939d2c0c",
+          "shortHash": "eaf73e9",
+          "date": "2026-07-24",
+          "time": "08:58",
           "type": "功能更新",
-          "title": "add Xiaomi Shop interactive Cart Drawer and full-page Cart view with checkout payment flow",
+          "title": "integrate Animate.css official standards (bounce, flash, rubberBand, flip, lightSpeed, etc.) and Juejin CSS/JS animations into Animation Showcase",
           "scope": "",
-          "message": "feat: add Xiaomi Shop interactive Cart Drawer and full-page Cart view with checkout payment flow"
+          "message": "feat: integrate Animate.css official standards (bounce, flash, rubberBand, flip, lightSpeed, etc.) and Juejin CSS/JS animations into Animation Showcase"
         },
         {
-          "hash": "0cd07ed0c69258d54b7bab5132f2972797270e20",
-          "shortHash": "0cd07ed",
-          "date": "2026-07-23",
-          "time": "17:42",
-          "type": "问题修复",
-          "title": "match xiaomi-shop subroutes in App.vue isFlashRoute calculation",
+          "hash": "20150e43d4dfe5919e96fb5d43bff903b25e5de0",
+          "shortHash": "20150e4",
+          "date": "2026-07-24",
+          "time": "08:55",
+          "type": "功能更新",
+          "title": "optimize Animation Showcase to render unique CSS keyframes, Hue gradients, and code snippets for every single item ID",
           "scope": "",
-          "message": "fix: match xiaomi-shop subroutes in App.vue isFlashRoute calculation"
+          "message": "feat: optimize Animation Showcase to render unique CSS keyframes, Hue gradients, and code snippets for every single item ID"
         },
         {
-          "hash": "e5c6bf66c850d604831cd1a751d3df6b519a7e1d",
-          "shortHash": "e5c6bf6",
-          "date": "2026-07-23",
-          "time": "17:39",
+          "hash": "6ff9d23cb86d5681061ee945f51b49abaa8dfe10",
+          "shortHash": "6ff9d23",
+          "date": "2026-07-24",
+          "time": "08:53",
+          "type": "功能更新",
+          "title": "enhance Cart Showcase with 10 distinct UI container layouts and Animation Showcase with real CSS keyframe animations, update documentation",
+          "scope": "",
+          "message": "feat: enhance Cart Showcase with 10 distinct UI container layouts and Animation Showcase with real CSS keyframe animations, update documentation"
+        },
+        {
+          "hash": "629a07eb976edad1e7d8a831f30a8247104dd409",
+          "shortHash": "629a07e",
+          "date": "2026-07-24",
+          "time": "08:50",
+          "type": "功能更新",
+          "title": "add 100 Shopping Cart UI Showcase and 63,353 CSS/JS Animation Effects Showcase to Web Components menu",
+          "scope": "",
+          "message": "feat: add 100 Shopping Cart UI Showcase and 63,353 CSS/JS Animation Effects Showcase to Web Components menu"
+        },
+        {
+          "hash": "5a5a5e0c1a5fec06713c207b2a600152e18e6b6c",
+          "shortHash": "5a5a5e0",
+          "date": "2026-07-24",
+          "time": "08:46",
+          "type": "功能更新",
+          "title": "set Auth Showcase dataset count to 1,000,000 (1 Million) Auth UI themes with 10 items per page pagination",
+          "scope": "",
+          "message": "feat: set Auth Showcase dataset count to 1,000,000 (1 Million) Auth UI themes with 10 items per page pagination"
+        },
+        {
+          "hash": "2918f0159e9b211f8cfa5e4951040995e7ba9492",
+          "shortHash": "2918f01",
+          "date": "2026-07-24",
+          "time": "08:45",
+          "type": "功能更新",
+          "title": "adjust Auth Showcase dataset to 20,000 Auth UI themes with exactly 10 items per page pagination",
+          "scope": "",
+          "message": "feat: adjust Auth Showcase dataset to 20,000 Auth UI themes with exactly 10 items per page pagination"
+        },
+        {
+          "hash": "b01922507f232a32a327bf4449b69225cb68dad9",
+          "shortHash": "b019225",
+          "date": "2026-07-24",
+          "time": "08:42",
+          "type": "功能更新",
+          "title": "expand Auth Showcase dataset to 1,000,000 (1 Million) total Auth UI themes (500k Login + 500k Register) with 50 categories, ID jump, pagination, and search",
+          "scope": "",
+          "message": "feat: expand Auth Showcase dataset to 1,000,000 (1 Million) total Auth UI themes (500k Login + 500k Register) with 50 categories, ID jump, pagination, and search"
+        },
+        {
+          "hash": "e542d4c6cf35c65c68ddb2652191deb190dcd1f5",
+          "shortHash": "e542d4c",
+          "date": "2026-07-24",
+          "time": "08:41",
+          "type": "功能更新",
+          "title": "expand Auth Showcase dataset to 100,000 total Auth UI themes (50,000 Login + 50,000 Register) with 50 categories, ID jump, pagination, and search",
+          "scope": "",
+          "message": "feat: expand Auth Showcase dataset to 100,000 total Auth UI themes (50,000 Login + 50,000 Register) with 50 categories, ID jump, pagination, and search"
+        },
+        {
+          "hash": "6a1375e0ca2413b4077337e0b21a73d72a1d25ac",
+          "shortHash": "6a1375e",
+          "date": "2026-07-24",
+          "time": "08:39",
+          "type": "功能更新",
+          "title": "expand Auth Showcase dataset to 500 total Auth UI themes (250 Login + 250 Register) with 20 categories, pagination, and search",
+          "scope": "",
+          "message": "feat: expand Auth Showcase dataset to 500 total Auth UI themes (250 Login + 250 Register) with 20 categories, pagination, and search"
+        },
+        {
+          "hash": "bc4bd9111671b00defe3e82149ee9e531cd83469",
+          "shortHash": "bc4bd91",
+          "date": "2026-07-24",
+          "time": "08:34",
+          "type": "功能更新",
+          "title": "expand Auth Showcase to 100 total Auth UI themes (50 Login + 50 Register) with mode filter and search",
+          "scope": "",
+          "message": "feat: expand Auth Showcase to 100 total Auth UI themes (50 Login + 50 Register) with mode filter and search"
+        },
+        {
+          "hash": "c2b9482bfe13dbd6780d6d91bb2ed495278713fa",
+          "shortHash": "c2b9482",
+          "date": "2026-07-24",
+          "time": "08:21",
+          "type": "功能更新",
+          "title": "add 10 Login & Register UI Showcase view under WebComponents dropdown menu with 10 interactive themes and tab switching",
+          "scope": "",
+          "message": "feat: add 10 Login & Register UI Showcase view under WebComponents dropdown menu with 10 interactive themes and tab switching"
+        },
+        {
+          "hash": "06ae8c99283a91c07fdc228f07293f9b5661a3e2",
+          "shortHash": "06ae8c9",
+          "date": "2026-07-24",
+          "time": "08:16",
+          "type": "功能更新",
+          "title": "bind explicit interactive Oat UI cards for all oat-* prefixed component keys (oat-switch, oat-alert, oat-button, oat-dialog, etc.) in Oat Studio",
+          "scope": "",
+          "message": "feat: bind explicit interactive Oat UI cards for all oat-* prefixed component keys (oat-switch, oat-alert, oat-button, oat-dialog, etc.) in Oat Studio"
+        },
+        {
+          "hash": "99ef2394642621f7114ffa7f6de06e8bb3ec63dd",
+          "shortHash": "99ef239",
+          "date": "2026-07-24",
+          "time": "08:13",
+          "type": "功能更新",
+          "title": "add dedicated interactive UI cards for Select, Avatar, Badge, Breadcrumb, Form, and Input components in Oat Studio",
+          "scope": "",
+          "message": "feat: add dedicated interactive UI cards for Select, Avatar, Badge, Breadcrumb, Form, and Input components in Oat Studio"
+        },
+        {
+          "hash": "56536f6980b62eb30bf54766861a8422ed169f41",
+          "shortHash": "56536f6",
+          "date": "2026-07-24",
+          "time": "08:10",
+          "type": "功能更新",
+          "title": "integrate Oat.ink 26 official native components into Oat Studio and update multi-language README docs",
+          "scope": "",
+          "message": "feat: integrate Oat.ink 26 official native components into Oat Studio and update multi-language README docs"
+        },
+        {
+          "hash": "afdb72dd397e0852fcd7cebdb36e50461d6968b9",
+          "shortHash": "afdb72d",
+          "date": "2026-07-24",
+          "time": "01:08",
+          "type": "文档更新",
+          "title": "update README.md, README.en.md, and README.jp.md with Oat UI Studio online preview links and Dialog design reference guidelines",
+          "scope": "",
+          "message": "docs: update README.md, README.en.md, and README.jp.md with Oat UI Studio online preview links and Dialog design reference guidelines"
+        },
+        {
+          "hash": "580b70e9918a4a23936559a92acaf16b8a10a7a7",
+          "shortHash": "580b70e",
+          "date": "2026-07-24",
+          "time": "01:06",
+          "type": "功能更新",
+          "title": "add Element Plus and Naive UI OS-Theme Dialog reference banner and documentation in Oat Studio",
+          "scope": "",
+          "message": "feat: add Element Plus and Naive UI OS-Theme Dialog reference banner and documentation in Oat Studio"
+        },
+        {
+          "hash": "1ae8ef75e9c0a501eee27a7b811f008883573297",
+          "shortHash": "1ae8ef7",
+          "date": "2026-07-24",
+          "time": "01:02",
+          "type": "功能更新",
+          "title": "add dedicated Oat UI interactive card for Card (<el-card>) component in Oat Studio",
+          "scope": "",
+          "message": "feat: add dedicated Oat UI interactive card for Card (<el-card>) component in Oat Studio"
+        },
+        {
+          "hash": "a3fd4b14b61a54a97f5a766df4ac27dac7b42d4f",
+          "shortHash": "a3fd4b1",
+          "date": "2026-07-24",
+          "time": "00:58",
+          "type": "功能更新",
+          "title": "add dedicated interactive UI cards for Cascader, Checkbox, Autocomplete, Input Tag, OTP, Mention, and all individual components in Oat Studio",
+          "scope": "",
+          "message": "feat: add dedicated interactive UI cards for Cascader, Checkbox, Autocomplete, Input Tag, OTP, Mention, and all individual components in Oat Studio"
+        },
+        {
+          "hash": "9bd0b93af9480aa3800aa7787823b5ef636d490b",
+          "shortHash": "9bd0b93",
+          "date": "2026-07-24",
+          "time": "00:57",
+          "type": "功能更新",
+          "title": "add rich interactive Oat UI controls for Checkbox, Steps, Tabs, Popconfirm, Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, and TimePicker",
+          "scope": "",
+          "message": "feat: add rich interactive Oat UI controls for Checkbox, Steps, Tabs, Popconfirm, Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, and TimePicker"
+        },
+        {
+          "hash": "ce1e4e169e905d4349b5640d810302b4dbf186f5",
+          "shortHash": "ce1e4e1",
+          "date": "2026-07-24",
+          "time": "00:57",
+          "type": "功能更新",
+          "title": "implement interactive Oat UI demonstrations for all Element Plus sidebar components (Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, TimePicker, Splitter, Table)",
+          "scope": "",
+          "message": "feat: implement interactive Oat UI demonstrations for all Element Plus sidebar components (Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, TimePicker, Splitter, Table)"
+        },
+        {
+          "hash": "70789031027b0c0851f909e5bafa1b80f0c13a73",
+          "shortHash": "7078903",
+          "date": "2026-07-24",
+          "time": "00:54",
+          "type": "功能更新",
+          "title": "add 1:1 Element Plus component sidebar directory (Tour, Watermark, Splitter, OTP, Tag, Calendar) with Oat UI",
+          "scope": "",
+          "message": "feat: add 1:1 Element Plus component sidebar directory (Tour, Watermark, Splitter, OTP, Tag, Calendar) with Oat UI"
+        },
+        {
+          "hash": "80e986f7f15eed7c19d19d35b8417c08303bf790",
+          "shortHash": "80e986f",
+          "date": "2026-07-24",
+          "time": "00:51",
+          "type": "功能更新",
+          "title": "implement full Element Plus component suite (Basic, Form, Data, Navigation, Feedback) with Oat UI in Oat Studio",
+          "scope": "",
+          "message": "feat: implement full Element Plus component suite (Basic, Form, Data, Navigation, Feedback) with Oat UI in Oat Studio"
+        },
+        {
+          "hash": "8e833d6630ed6715b932bd3f2bca3484d43e77f1",
+          "shortHash": "8e833d6",
+          "date": "2026-07-24",
+          "time": "00:50",
+          "type": "功能更新",
+          "title": "add double-click editable table cells, real-time form validation, tree view, date/month pickers, and cascader in Oat Studio",
+          "scope": "",
+          "message": "feat: add double-click editable table cells, real-time form validation, tree view, date/month pickers, and cascader in Oat Studio"
+        },
+        {
+          "hash": "acdaeda495ee7476c1c3598a01cbdfa4f44831e2",
+          "shortHash": "acdaeda",
+          "date": "2026-07-24",
+          "time": "00:46",
+          "type": "功能更新",
+          "title": "add 400 Oat UI component and table examples dataset with filtering, column sorting, and pagination in Oat Studio",
+          "scope": "",
+          "message": "feat: add 400 Oat UI component and table examples dataset with filtering, column sorting, and pagination in Oat Studio"
+        },
+        {
+          "hash": "aea4c80f7aee89ca3f0c1e19812116721c685f2d",
+          "shortHash": "aea4c80",
+          "date": "2026-07-24",
+          "time": "00:43",
+          "type": "功能更新",
+          "title": "add Oat UI Studio entry to Web Components dropdown menu",
+          "scope": "",
+          "message": "feat: add Oat UI Studio entry to Web Components dropdown menu"
+        },
+        {
+          "hash": "f4a3b02b9564b6b7031aef0dffe32e1c8e8f40e5",
+          "shortHash": "f4a3b02",
+          "date": "2026-07-24",
+          "time": "00:41",
+          "type": "功能更新",
+          "title": "implement Oat UI interactive update notice modal, new page creation modal, confirm dialogs, right drawer, and oat studio view",
+          "scope": "",
+          "message": "feat: implement Oat UI interactive update notice modal, new page creation modal, confirm dialogs, right drawer, and oat studio view"
+        },
+        {
+          "hash": "9bb06bdd655be09cce9a3876fb7db81c50e68f5f",
+          "shortHash": "9bb06bd",
+          "date": "2026-07-24",
+          "time": "00:28",
+          "type": "功能更新",
+          "title": "copy jQuery and jQuery-WEUI libraries to public/js and public/css for upcoming features",
+          "scope": "",
+          "message": "feat: copy jQuery and jQuery-WEUI libraries to public/js and public/css for upcoming features"
+        },
+        {
+          "hash": "2eb00dda9a2ade8394e5a4d2af96f690e97227bd",
+          "shortHash": "2eb00dd",
+          "date": "2026-07-24",
+          "time": "00:20",
           "type": "代码重构",
-          "title": "restructure top notice bar buttons using Element Plus Dropdown component",
+          "title": "extract inline styles and scripts into dedicated public css and js files for 1942, doraemon, and goldsun",
           "scope": "",
-          "message": "refactor: restructure top notice bar buttons using Element Plus Dropdown component"
+          "message": "refactor: extract inline styles and scripts into dedicated public css and js files for 1942, doraemon, and goldsun"
         },
         {
-          "hash": "a57161caac8c82e5f3a3f7c41f18a67fcc0daaa7",
-          "shortHash": "a57161c",
-          "date": "2026-07-23",
-          "time": "17:37",
-          "type": "功能更新",
-          "title": "add Xiaomi Shop navigation buttons to header actions and top notice bar",
+          "hash": "8acf473bdedf7282e1828127873bfc714c57959c",
+          "shortHash": "8acf473",
+          "date": "2026-07-24",
+          "time": "00:15",
+          "type": "代码重构",
+          "title": "extract shared CSS and JS helpers for HTML5 web games",
           "scope": "",
-          "message": "feat: add Xiaomi Shop navigation buttons to header actions and top notice bar"
-        },
-        {
-          "hash": "b7f7130bcb1dfe3f9dfdd20f342e8f58c2a5a37a",
-          "shortHash": "b7f7130",
-          "date": "2026-07-23",
-          "time": "17:33",
-          "type": "功能更新",
-          "title": "add Xiaomi Shop with 270k+ JSON data, Error/Status pages (200/401/402/403/404/405/500), Permission RBAC center, and Audit Logs",
-          "scope": "",
-          "message": "feat: add Xiaomi Shop with 270k+ JSON data, Error/Status pages (200/401/402/403/404/405/500), Permission RBAC center, and Audit Logs"
-        },
-        {
-          "hash": "4791124a64c68a93895bfbb81fa16fa119231237",
-          "shortHash": "4791124",
-          "date": "2026-07-23",
-          "time": "16:52",
-          "type": "问题修复",
-          "title": "improve live data pages and docs",
-          "scope": "",
-          "message": "fix: improve live data pages and docs"
-        },
-        {
-          "hash": "f70d8b07d500fdb020a36178fca15e5e8f1864bf",
-          "shortHash": "f70d8b0",
-          "date": "2026-07-23",
-          "time": "15:00",
-          "type": "问题修复",
-          "title": "correct Tencent API endpoint URL in App.ts & add Dan 4 fallback mapping for dynamic position switching",
-          "scope": "lolm",
-          "message": "fix(lolm): correct Tencent API endpoint URL in App.ts & add Dan 4 fallback mapping for dynamic position switching"
-        },
-        {
-          "hash": "74aec24fedaf49fdc6375eef0c0fb90fd3311c3f",
-          "shortHash": "74aec24",
-          "date": "2026-07-23",
-          "time": "14:48",
-          "type": "功能更新",
-          "title": "add LOLM Wild Rift CN server hero rank page (/lolm) and Smart Toolbox tab",
-          "scope": "lolm",
-          "message": "feat(lolm): add LOLM Wild Rift CN server hero rank page (/lolm) and Smart Toolbox tab"
-        },
-        {
-          "hash": "b9187ea64d5ce8f8658e9be1ee29c6bc4872e356",
-          "shortHash": "b9187ea",
-          "date": "2026-07-23",
-          "time": "14:37",
-          "type": "问题修复",
-          "title": "preserve query results and state seamlessly across mode switches and button clicks",
-          "scope": "idcard",
-          "message": "fix(idcard): preserve query results and state seamlessly across mode switches and button clicks"
-        },
-        {
-          "hash": "25963b44eac9c1f74b97641b5fbd591b0224995e",
-          "shortHash": "25963b4",
-          "date": "2026-07-23",
-          "time": "14:32",
-          "type": "功能更新",
-          "title": "add ID card info query & 15-to-18 upgrade tab into Smart Toolbox dialog in App.vue",
-          "scope": "idcard",
-          "message": "feat(idcard): add ID card info query & 15-to-18 upgrade tab into Smart Toolbox dialog in App.vue"
-        },
-        {
-          "hash": "2077d33a7743dc474691a2730e2405630f901749",
-          "shortHash": "2077d33",
-          "date": "2026-07-23",
-          "time": "14:21",
-          "type": "功能更新",
-          "title": "mount Constellation Horoscope Query (✨ 星座运势) directly into Smart Toolbox tabs dialog in App.vue",
-          "scope": "toolbox",
-          "message": "feat(toolbox): mount Constellation Horoscope Query (✨ 星座运势) directly into Smart Toolbox tabs dialog in App.vue"
-        },
-        {
-          "hash": "a769812fe460197aa6bfd4bfea6598f6dc77a997",
-          "shortHash": "a769812",
-          "date": "2026-07-23",
-          "time": "14:13",
-          "type": "功能更新",
-          "title": "add Constellation Horoscope Query page (/star) powered by ALAPI with full period tabs and fallbacks",
-          "scope": "star",
-          "message": "feat(star): add Constellation Horoscope Query page (/star) powered by ALAPI with full period tabs and fallbacks"
-        },
-        {
-          "hash": "f7f37448e89f141a61de5792f9f417c004a997e3",
-          "shortHash": "f7f3744",
-          "date": "2026-07-23",
-          "time": "13:33",
-          "type": "问题修复",
-          "title": "add production Jina reader & fallback dataset to resolve 0/0/0 parser error, and add onActivated + route watcher for page switching",
-          "scope": "helloworld",
-          "message": "fix(helloworld): add production Jina reader & fallback dataset to resolve 0/0/0 parser error, and add onActivated + route watcher for page switching"
-        },
-        {
-          "hash": "522c5952e9173859be11c378a13f4243f010d24a",
-          "shortHash": "522c595",
-          "date": "2026-07-23",
-          "time": "12:20",
-          "type": "问题修复",
-          "title": "remove allorigins.win proxy from the request pool",
-          "scope": "bilibili-live",
-          "message": "fix(bilibili-live): remove allorigins.win proxy from the request pool"
-        },
-        {
-          "hash": "542d25f31e3c480742c69e7932e052ccc7ac061e",
-          "shortHash": "542d25f",
-          "date": "2026-07-23",
-          "time": "12:13",
-          "type": "问题修复",
-          "title": "introduce resilient multi-proxy fallback list (corsproxy.io -> allorigins -> codetabs) to prevent 408 request timeouts",
-          "scope": "bilibili-live",
-          "message": "fix(bilibili-live): introduce resilient multi-proxy fallback list (corsproxy.io -> allorigins -> codetabs) to prevent 408 request timeouts"
-        },
-        {
-          "hash": "7451b8fb552576b81406dc55287f40439e5762b4",
-          "shortHash": "7451b8f",
-          "date": "2026-07-23",
-          "time": "12:06",
-          "type": "问题修复",
-          "title": "bypass CORS and referer blocks in production via JSONP and CORS proxy, and add local movieRatings fallbacks",
-          "scope": "bilibili, uapis",
-          "message": "fix(bilibili, uapis): bypass CORS and referer blocks in production via JSONP and CORS proxy, and add local movieRatings fallbacks"
-        },
-        {
-          "hash": "9f0631f9211301429b4e9e27399052b09be11b15",
-          "shortHash": "9f0631f",
-          "date": "2026-07-23",
-          "time": "02:06",
-          "type": "功能更新",
-          "title": "add Bilibili Live page, optimize Bilibili Trending badges/CDN, add music player toggle settings, and integrate Naive UI back-to-top",
-          "scope": "",
-          "message": "feat: add Bilibili Live page, optimize Bilibili Trending badges/CDN, add music player toggle settings, and integrate Naive UI back-to-top"
+          "message": "refactor: extract shared CSS and JS helpers for HTML5 web games"
         }
       ]
     },
     {
-      "date": "2026-07-22",
+      "date": "2026-07-23",
       "items": [
         {
-          "hash": "754b859e08291df98e43c81a491a56444f36e3d8",
-          "shortHash": "754b859",
-          "date": "2026-07-22",
-          "time": "22:38",
-          "type": "问题修复",
-          "title": "hide arrow when icon is missing",
-          "scope": "bilibili-trending",
-          "message": "fix(bilibili-trending): hide arrow when icon is missing"
-        },
-        {
-          "hash": "554b2b0f82a1aca0c368492a685da8f937164be1",
-          "shortHash": "554b2b0",
-          "date": "2026-07-22",
-          "time": "22:34",
-          "type": "问题修复",
-          "title": "only show badge when word_type is not 8 (plain)",
-          "scope": "bilibili-trending",
-          "message": "fix(bilibili-trending): only show badge when word_type is not 8 (plain)"
-        },
-        {
-          "hash": "373cbb9dc09c78222224c7e0b5f1e6063b6b5986",
-          "shortHash": "373cbb9",
-          "date": "2026-07-22",
-          "time": "22:32",
-          "type": "问题修复",
-          "title": "fix CDN icon loading with referrerpolicy, https upgrade, and fallback text badge",
-          "scope": "bilibili-trending",
-          "message": "fix(bilibili-trending): fix CDN icon loading with referrerpolicy, https upgrade, and fallback text badge"
-        },
-        {
-          "hash": "81b56d5f1a0395fdb2c55d56610d30773ddf9b40",
-          "shortHash": "81b56d5",
-          "date": "2026-07-22",
-          "time": "22:28",
+          "hash": "a078da32f77be17b49c33d4bd4b7433665bee8d6",
+          "shortHash": "a078da3",
+          "date": "2026-07-23",
+          "time": "22:40",
           "type": "功能更新",
-          "title": "add Bilibili search trending ranking page (/bilibili-trending) with 1:1 dark theme UI",
+          "title": "Oat UI showcase, Juejin avatar stack & modals, LOLM sticky headers, and global utilities refactoring",
           "scope": "",
-          "message": "feat: add Bilibili search trending ranking page (/bilibili-trending) with 1:1 dark theme UI"
-        },
-        {
-          "hash": "a2f0237f10aa1145a8714e78c1734c7949094807",
-          "shortHash": "a2f0237",
-          "date": "2026-07-22",
-          "time": "22:20",
-          "type": "功能更新",
-          "title": "add QQ Mailme badge link to header navbar and GitHub CN page",
-          "scope": "",
-          "message": "feat: add QQ Mailme badge link to header navbar and GitHub CN page"
-        },
-        {
-          "hash": "595c13ab8592ef393aed7e6d1c183b7b8b915f38",
-          "shortHash": "595c13a",
-          "date": "2026-07-22",
-          "time": "22:12",
-          "type": "问题修复",
-          "title": "resolve proxy prefix collision 404 error, add /api-github-cn-backend endpoint, and integrate Naive UI load-more button",
-          "scope": "github-cn",
-          "message": "fix(github-cn): resolve proxy prefix collision 404 error, add /api-github-cn-backend endpoint, and integrate Naive UI load-more button"
-        },
-        {
-          "hash": "dde8277047f547cda43df5d2784a8067177fee62",
-          "shortHash": "dde8277",
-          "date": "2026-07-22",
-          "time": "21:51",
-          "type": "问题修复",
-          "title": "add live API fetch on filter change, fix dropdown item switching for sub-resource tabs, and highlight active item",
-          "scope": "github-cn",
-          "message": "fix(github-cn): add live API fetch on filter change, fix dropdown item switching for sub-resource tabs, and highlight active item"
-        },
-        {
-          "hash": "9bcfd99d63ed3a6e1fe74b345fe6517c60b3d5d3",
-          "shortHash": "9bcfd99",
-          "date": "2026-07-22",
-          "time": "21:35",
-          "type": "功能更新",
-          "title": "add GitHub CN page (/github-cn) with trends, ranking, weekly, collections, active filter, and dark theme UI",
-          "scope": "",
-          "message": "feat: add GitHub CN page (/github-cn) with trends, ranking, weekly, collections, active filter, and dark theme UI"
-        },
-        {
-          "hash": "d8b627bb703f9452bf22cd47fa648c7eec724535",
-          "shortHash": "d8b627b",
-          "date": "2026-07-22",
-          "time": "21:15",
-          "type": "功能更新",
-          "title": "add sitehome blog posts feed with #p3 / #p100 URL hash routing, top highlights banner, and empty state notice",
-          "scope": "cnblogs",
-          "message": "feat(cnblogs): add sitehome blog posts feed with #p3 / #p100 URL hash routing, top highlights banner, and empty state notice"
-        },
-        {
-          "hash": "35d0bd6b36f696e9ebcf0d12bd8f169f0748022d",
-          "shortHash": "35d0bd6",
-          "date": "2026-07-22",
-          "time": "21:09",
-          "type": "功能更新",
-          "title": "place top pagination bar in location 1 under filter tags and above news list",
-          "scope": "cnblogs",
-          "message": "feat(cnblogs): place top pagination bar in location 1 under filter tags and above news list"
-        },
-        {
-          "hash": "e1a75725ba6d6826c3d38291f32a9ae47a48685c",
-          "shortHash": "e1a7572",
-          "date": "2026-07-22",
-          "time": "21:04",
-          "type": "功能更新",
-          "title": "add page pagination bar and exact URL request mappings for /n/page/X/, /n/recommend?page=X, and /n/digg?type=X&page=X",
-          "scope": "cnblogs",
-          "message": "feat(cnblogs): add page pagination bar and exact URL request mappings for /n/page/X/, /n/recommend?page=X, and /n/digg?type=X&page=X"
-        },
-        {
-          "hash": "7ca9b20436ff6544a2b975d29aa05bc5b9d309f5",
-          "shortHash": "7ca9b20",
-          "date": "2026-07-22",
-          "time": "21:00",
-          "type": "功能更新",
-          "title": "add Cnblogs News page (/cnblogs) with latest, recommend, and hot (today/yesterday/week/month) tabs, proxy endpoint, search filter, and detail drawer",
-          "scope": "",
-          "message": "feat: add Cnblogs News page (/cnblogs) with latest, recommend, and hot (today/yesterday/week/month) tabs, proxy endpoint, search filter, and detail drawer"
-        },
-        {
-          "hash": "56cd8374789f3148d5dbf7c0c77d099934668cf1",
-          "shortHash": "56cd837",
-          "date": "2026-07-22",
-          "time": "20:44",
-          "type": "问题修复",
-          "title": "re-align grid panels into 3 equal-height columns to completely remove vertical empty gaps",
-          "scope": "big-screen",
-          "message": "fix(big-screen): re-align grid panels into 3 equal-height columns to completely remove vertical empty gaps"
+          "message": "feat: Oat UI showcase, Juejin avatar stack & modals, LOLM sticky headers, and global utilities refactoring"
         }
       ]
     }
