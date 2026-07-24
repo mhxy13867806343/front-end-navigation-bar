@@ -68,6 +68,53 @@ const getCategoryColor = (catName: string) => {
   return '#38bdf8'
 }
 
+// 拖拽相关状态
+const draggingEvent = ref<CalendarEvent | null>(null)
+const dragOverDayIndex = ref<number | null>(null)
+
+const handleDragStart = (ev: CalendarEvent, e: DragEvent) => {
+  draggingEvent.value = ev
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(ev.id))
+  }
+}
+
+const handleDragOver = (dayIdx: number, e: DragEvent) => {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  dragOverDayIndex.value = dayIdx
+}
+
+const handleDragLeave = (dayIdx: number) => {
+  if (dragOverDayIndex.value === dayIdx) {
+    dragOverDayIndex.value = null
+  }
+}
+
+const handleDrop = (targetDayIdx: number, e: DragEvent) => {
+  e.preventDefault()
+  dragOverDayIndex.value = null
+
+  if (!draggingEvent.value) return
+
+  const ev = draggingEvent.value
+  if (ev.dayIndex !== targetDayIdx) {
+    const oldDayName = weekDays[ev.dayIndex]?.name || ''
+    ev.dayIndex = targetDayIdx
+    const newDayName = weekDays[targetDayIdx]?.name || ''
+
+    // 重新更新数组触发响应式
+    events.value = [...events.value]
+
+    ElMessage.success(`🚚 已成功将日程【${ev.title}】从 ${oldDayName} 拖拽移动至 ${newDayName}！`)
+  }
+
+  draggingEvent.value = null
+}
+
 // Form State
 const formTitle = ref<string>('')
 const formCategory = ref<string>('工作')
@@ -206,7 +253,7 @@ const resetStorage = () => {
       <div style="max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
           <span style="display: inline-block; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.3); margin-bottom: 8px;">
-            📅 Schedule-X v4.6 Engine &amp; LocalStorage
+            📅 Schedule-X v4.6 Engine &amp; Drag-and-Drop
           </span>
           <h1 style="font-size: 1.8rem; font-weight: 800; margin: 0; background: linear-gradient(135deg, #38bdf8 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
             Schedule-X v4.6 现代前端日历调度组件
@@ -224,10 +271,10 @@ const resetStorage = () => {
 
       <div style="max-width: 1280px; margin: 20px auto 0; display: flex; gap: 12px; flex-wrap: wrap;">
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
-          <strong>💾 本地持久化缓存已开启</strong> 所有新增、编辑与分类自定义均自动保存至 LocalStorage (`HOOKSVUE_SCHEDULE_X_EVENTS_V1`)
+          <strong>🖐️ 跨天拖拽排期支持</strong> 按住日程卡片即可拖拽至任意日期列，自动持久化更新
         </div>
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
-          <strong>🏷️ 分类约束规则</strong> 支持自定义分类，上限 20 个，单个分类名称最多 5 个字符
+          <strong>💾 本地持久化缓存已开启</strong> 所有新增、拖拽与分类修改均自动保存至 LocalStorage
         </div>
       </div>
     </header>
@@ -271,7 +318,7 @@ const resetStorage = () => {
 
     <!-- Calendar Stage -->
     <main style="max-width: 1280px; margin: 0 auto; padding: 0 24px;">
-      <!-- Week View 周视图 (支持双击空白新增 / 单击卡片修改) -->
+      <!-- Week View 周视图 (支持按住拖拽 / 跨列 Drop / 双击空白新增 / 单击卡片修改) -->
       <div v-if="currentView === 'week'" style="background: rgba(30,41,59,0.7); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(12px); overflow-x: auto;">
         <div style="display: grid; grid-template-columns: repeat(7, minmax(140px, 1fr)); border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(15,23,42,0.8);">
           <div v-for="(day, idx) in weekDays" :key="idx" style="padding: 14px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06);">
@@ -284,32 +331,38 @@ const resetStorage = () => {
           <div
             v-for="(day, dayIdx) in weekDays"
             :key="dayIdx"
-            style="border-right: 1px solid rgba(255,255,255,0.06); padding: 10px; position: relative; cursor: cell;"
-            title="双击空白区域在此日期创建新日程"
+            style="border-right: 1px solid rgba(255,255,255,0.06); padding: 10px; position: relative; cursor: cell; transition: background 0.2s;"
+            :style="{ background: dragOverDayIndex === dayIdx ? 'rgba(56, 189, 248, 0.15)' : 'transparent' }"
+            title="按住日程卡片可拖拽移至本列，双击空白区域在此日期创建新日程"
             @dblclick.self="handleSlotDblClick(dayIdx)"
+            @dragover="handleDragOver(dayIdx, $event)"
+            @dragleave="handleDragLeave(dayIdx)"
+            @drop="handleDrop(dayIdx, $event)"
           >
-            <!-- 双击提示背景标签 -->
+            <!-- 双击与拖拽提示背景标签 -->
             <div style="position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.25); pointer-events: none;">
-              [ 双击此列空白处新增 ]
+              [ 拖拽卡片放置于此 / 双击新增 ]
             </div>
 
-            <!-- 实例日程卡片 (单击修改) -->
+            <!-- 实例日程卡片 (按住拖拽与单击修改) -->
             <div
               v-for="ev in filteredEvents.filter(x => x.dayIndex === dayIdx)"
               :key="ev.id"
-              :style="{ background: ev.color, color: '#0f172a' }"
-              style="padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; cursor: pointer; transition: transform 0.15s;"
-              title="单击查看详情或编辑修改"
+              draggable="true"
+              :style="{ background: ev.color, color: '#0f172a', opacity: draggingEvent?.id === ev.id ? 0.4 : 1 }"
+              style="padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.3); position: relative; cursor: grab; transition: transform 0.15s, opacity 0.15s;"
+              title="按住鼠标左键可拖拽移动至其它日期列；单击查看详情或编辑"
+              @dragstart="handleDragStart(ev, $event)"
               @click.stop="openEditModal(ev)"
             >
               <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <span>{{ ev.startTime }} - {{ ev.endTime }}</span>
+                <span>🖐️ {{ ev.startTime }} - {{ ev.endTime }}</span>
                 <button style="border: none; background: transparent; color: #0f172a; font-weight: 900; cursor: pointer; font-size: 0.78rem;" @click.stop="deleteEvent(ev.id)">✕</button>
               </div>
               <div style="margin-top: 4px; font-size: 0.88rem; font-weight: 800;">{{ ev.title }}</div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                 <span style="font-size: 0.74rem; opacity: 0.85;">📍 {{ ev.location }}</span>
-                <span style="background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 6px; font-size: 0.7rem;">✏️ 点击修改</span>
+                <span style="background: rgba(0,0,0,0.15); padding: 1px 6px; border-radius: 6px; font-size: 0.7rem;">🖐️ 可拖拽</span>
               </div>
               <span v-if="ev.lunarBadge" style="display: inline-block; background: rgba(0,0,0,0.2); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-top: 4px;">{{ ev.lunarBadge }}</span>
             </div>

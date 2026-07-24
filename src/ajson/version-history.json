@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T02:44:51.852Z",
+  "generatedAt": "2026-07-24T02:46:30.668Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "1aec485a5676768b2857e193e16899025f57895e",
+          "shortHash": "1aec485",
+          "date": "2026-07-24",
+          "time": "10:45",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "04d786bfe271c21c232c9bdd2b4040f195bb6740",
           "shortHash": "04d786b",
@@ -293,16 +303,6 @@
           "title": "add 1:1 Element Plus component sidebar directory (Tour, Watermark, Splitter, OTP, Tag, Calendar) with Oat UI",
           "scope": "",
           "message": "feat: add 1:1 Element Plus component sidebar directory (Tour, Watermark, Splitter, OTP, Tag, Calendar) with Oat UI"
-        },
-        {
-          "hash": "80e986f7f15eed7c19d19d35b8417c08303bf790",
-          "shortHash": "80e986f",
-          "date": "2026-07-24",
-          "time": "00:51",
-          "type": "功能更新",
-          "title": "implement full Element Plus component suite (Basic, Form, Data, Navigation, Feedback) with Oat UI in Oat Studio",
-          "scope": "",
-          "message": "feat: implement full Element Plus component suite (Basic, Form, Data, Navigation, Feedback) with Oat UI in Oat Studio"
         }
       ]
     }
