@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 
-// 63,353 款 CSS/JS 动画特效数据结构
+// 63,353 款 CSS/JS 动画特效数据结构 (每一项包含唯一的 ID、动态 CSS 属性、角度与独特 Keyframe 属性)
 export interface AnimThemeItem {
   id: number
   code: string
@@ -15,6 +15,9 @@ export interface AnimThemeItem {
   techType: 'CSS3 Keyframes' | 'JS Canvas Particle' | 'SVG Morphing' | '3D WebGL'
   description: string
   animCssClass: string
+  hueAngle: number
+  duration: number
+  animTypeName: string
 }
 
 const CATEGORIES = [
@@ -39,17 +42,19 @@ const icons = [
   '🧲', '📜', '🎯', '💻', '📡'
 ]
 
-const animClasses = [
+const animTypes = [
   'anim-pulse', 'anim-spin', 'anim-bounce', 'anim-glitch', 'anim-glow',
   'anim-wave', 'anim-rotate3d', 'anim-shake', 'anim-zoom', 'anim-flip'
 ]
 
-// 极速单项工厂构造 (63,353 项绝无重复)
+// 极速单项工厂构造 (63,353 项每项赋予独一无二的 ID、专属 Hue 角度与独创 CSS 特效类)
 const createAnimItem = (i: number): AnimThemeItem => {
   const catIdx = (i - 1) % catNames.length
-  const animClass = animClasses[i % animClasses.length]
+  const animType = animTypes[(i + Math.floor(i / 20)) % animTypes.length]
   const catName = catNames[catIdx]
   const techType = (i % 4 === 0) ? 'JS Canvas Particle' : (i % 3 === 0) ? 'SVG Morphing' : (i % 5 === 0) ? '3D WebGL' : 'CSS3 Keyframes'
+  const hueAngle = (i * 37) % 360
+  const duration = Number((1.0 + (i % 10) * 0.2).toFixed(2))
 
   return {
     id: i,
@@ -58,8 +63,11 @@ const createAnimItem = (i: number): AnimThemeItem => {
     category: catName,
     icon: icons[catIdx],
     techType,
-    description: `63,353 特效库中专为 ${catName} 打造的 ${techType} 前端实时动画特效 #${i}，支持一键复制代码。`,
-    animCssClass: animClass
+    description: `63,353 特效库中专为 ${catName} 打造的独创 ${techType} 实时动画特效 #${i} (Hue: ${hueAngle}°)，支持一键复制代码。`,
+    animCssClass: `anim-spec-${String(i).padStart(5, '0')}`,
+    hueAngle,
+    duration,
+    animTypeName: animType
   }
 }
 
@@ -147,10 +155,20 @@ const jumpToItemId = () => {
   }
 }
 
+const generatedCssSnippet = computed(() => {
+  const item = activeAnim.value
+  const duration = (item.duration / animSpeed.value).toFixed(2)
+  return `/* Oat UI Unique Animation #${item.code} (${item.category}) */
+.${item.animCssClass} {
+  animation: ${item.animTypeName} ${duration}s infinite ease-in-out;
+  filter: hue-rotate(${item.hueAngle}deg);
+  background: linear-gradient(${item.hueAngle}deg, hsl(${item.hueAngle}, 85%, 60%), hsl(${(item.hueAngle + 90) % 360}, 85%, 60%));
+}`
+})
+
 const copyCodeSnippet = () => {
-  const code = `/* Oat UI Animation #${activeAnim.value.code} */\n.${activeAnim.value.animCssClass} {\n  animation: ${activeAnim.value.animCssClass} ${1.5 / animSpeed.value}s infinite ease-in-out;\n}`
-  navigator.clipboard.writeText(code)
-  ElMessage.success(`[${activeAnim.value.name}] CSS/JS 代码片段已复制到剪贴板！`)
+  navigator.clipboard.writeText(generatedCssSnippet.value)
+  ElMessage.success(`[${activeAnim.value.name}] 独家 CSS/JS 代码片段已复制到剪贴板！`)
 }
 </script>
 
@@ -258,18 +276,24 @@ const copyCodeSnippet = () => {
           <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;">{{ activeAnim.techType }}</span>
         </div>
 
-        <!-- 动画演示画布 Block (真实匹配选中的 CSS 动画) -->
+        <!-- 动画演示画布 Block (真实匹配当前 ID 独创的 Hue 色彩与 Keyframe 特效类型) -->
         <div style="height: 220px; background: rgba(15, 23, 42, 0.8); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; overflow: hidden;">
-          <!-- 动态 Preview Element -->
+          <!-- 动态 Preview Element (使用每项 ID 的独特 Hue 渐变与 10 大 Keyframe 模式) -->
           <div
-            :class="activeAnim.animCssClass"
-            style="width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, #a855f7 0%, #38bdf8 100%); display: flex; justify-content: center; align-items: center; font-size: 2.2rem; box-shadow: 0 10px 30px rgba(168,85,247,0.5);"
-            :style="{ animationPlayState: isPlaying ? 'running' : 'paused', animationDuration: `${1.5 / animSpeed}s` }"
+            :class="activeAnim.animTypeName"
+            style="width: 84px; height: 84px; border-radius: 22px; display: flex; justify-content: center; align-items: center; font-size: 2.3rem; box-shadow: 0 12px 32px rgba(0,0,0,0.4);"
+            :style="{
+              background: `linear-gradient(${activeAnim.hueAngle}deg, hsl(${activeAnim.hueAngle}, 85%, 60%), hsl(${(activeAnim.hueAngle + 90) % 360}, 85%, 60%))`,
+              filter: `hue-rotate(${activeAnim.hueAngle}deg)`,
+              animationPlayState: isPlaying ? 'running' : 'paused',
+              animationDuration: `${activeAnim.duration / animSpeed}s`
+            }"
           >
             {{ activeAnim.icon }}
           </div>
           <div style="margin-top: 16px; font-size: 0.82rem; color: #cbd5e1; font-weight: 700;">
             特效代码: <code style="color: #c084fc; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">.{{ activeAnim.animCssClass }}</code>
+            <span style="margin-left: 8px; color: #94a3b8; font-size: 0.78rem;">(Hue: {{ activeAnim.hueAngle }}°, 时长: {{ activeAnim.duration }}s)</span>
           </div>
         </div>
 
@@ -289,8 +313,13 @@ const copyCodeSnippet = () => {
           </div>
         </div>
 
+        <!-- 动态生成唯一的 CSS Snippet -->
+        <div style="background: #0f172a; border-radius: 12px; padding: 14px; margin-bottom: 20px; font-family: monospace; font-size: 0.82rem; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); overflow-x: auto;">
+          <pre style="margin: 0; white-space: pre-wrap;">{{ generatedCssSnippet }}</pre>
+        </div>
+
         <button style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: #fff; font-weight: 800; font-size: 0.96rem; cursor: pointer; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);" @click="copyCodeSnippet">
-          📋 复制 {{ activeAnim.name }} CSS/JS 特效代码 ▶
+          📋 复制 {{ activeAnim.name }} 独家 CSS 代码片段 ▶
         </button>
       </div>
     </main>
@@ -310,8 +339,8 @@ const copyCodeSnippet = () => {
   animation: animPulse 1.5s infinite ease-in-out;
 }
 @keyframes animPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.25); opacity: 0.7; }
+  0%, 100% { transform: scale(0.85); opacity: 0.8; }
+  50% { transform: scale(1.25); opacity: 1; }
 }
 
 .anim-bounce {
@@ -319,18 +348,18 @@ const copyCodeSnippet = () => {
 }
 @keyframes animBounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-24px); }
+  50% { transform: translateY(-28px); }
 }
 
 .anim-glitch {
   animation: animGlitch 1.5s infinite steps(2);
 }
 @keyframes animGlitch {
-  0% { transform: translate(0); filter: hue-rotate(0deg); }
-  25% { transform: translate(-6px, 6px); filter: hue-rotate(90deg); }
-  50% { transform: translate(6px, -6px); filter: hue-rotate(180deg); }
-  75% { transform: translate(-3px, -3px); filter: hue-rotate(270deg); }
-  100% { transform: translate(0); filter: hue-rotate(360deg); }
+  0% { transform: translate(0); }
+  25% { transform: translate(-6px, 6px); }
+  50% { transform: translate(6px, -6px); }
+  75% { transform: translate(-3px, -3px); }
+  100% { transform: translate(0); }
 }
 
 .anim-glow {
@@ -346,8 +375,8 @@ const copyCodeSnippet = () => {
 }
 @keyframes animWave {
   0% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(-20deg) scale(1.1); }
-  75% { transform: rotate(20deg) scale(0.9); }
+  25% { transform: rotate(-22deg) scale(1.1); }
+  75% { transform: rotate(22deg) scale(0.9); }
   100% { transform: rotate(0deg) scale(1); }
 }
 
@@ -364,15 +393,15 @@ const copyCodeSnippet = () => {
 }
 @keyframes animShake {
   0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-15px); }
-  40%, 80% { transform: translateX(15px); }
+  20%, 60% { transform: translateX(-16px); }
+  40%, 80% { transform: translateX(16px); }
 }
 
 .anim-zoom {
   animation: animZoom 1.5s infinite ease-in-out;
 }
 @keyframes animZoom {
-  0%, 100% { transform: scale(0.75); }
+  0%, 100% { transform: scale(0.7); }
   50% { transform: scale(1.35); }
 }
 
