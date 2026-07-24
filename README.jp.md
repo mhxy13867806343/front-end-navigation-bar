@@ -21,6 +21,9 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 
 ## ✨ 主な機能
 
+- **🔐 100万件ログイン・会員登録 UI 展示** (`/auth-showcase`)：100万件（ログイン50万件＋会員登録50万件）のインタラクティブ UI、50のテーマカテゴリ、10件/ページのページネーションとIDジャンプ機能に対応。
+- **🛒 100件ショッピングカート UI 展示** (`/cart-showcase`)：100件の重複なしショッピングカート UI。10種類の独自UIレイアウト（Glassmorphism、3D Neumorphism、Cyberpunk、B2B、Mobile H5、macOS 等）とリアルタイム価格計算・クーポン適用に対応。
+- **✨ 63,353件 CSS/JS アニメーションエフェクト展示** (`/animation-showcase`)：63,353件の完全な重複なしアニメーションエフェクト。20のカテゴリ、リアルタイムプレビュー、再生/一時停止、倍速調整、コードコピーに対応。
 - **🌾 Oat UI Studio (`/oat-studio`)**：[Oat.ink 公式 26 項コンポーネント](https://oat.ink/components/) (Dropdown, TagInput, Upload, Tabs WC) と Element Plus 64 項のコンポーネントディレクトリを集成。**Element Plus Dialog** と **Naive UI OS-Theme Dialog** 的設計仕様を融合。400 件のサンプルデータとダブルクリックによるインライン編集に対応。
 - **🧡 Xiaomi 公式ショップ＆カート決済** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：27万行超の JSON データ (`public/shop-json/xiaomi-shop.json`) で駆動、`cartStore` 永続化、サイド引き出しカート (`CartDrawer.vue`)、フルスクリーンカート画面 (`/xiaomi-shop/cart`)、住所選択、クーポン適用（`MI888` 割引）および WeChat / Alipay 決済に対応。
 - **🔐 権限管理コントロールセンター** (`/permission`)：4 つの RBAC 役割（スーパー管理者、インフラ、運用、ゲスト）の切り替え、ディレクティブ権限 (`v-permission`)、JWT デコード確認、HTTP ステータスコード直接ジャンプに対応。

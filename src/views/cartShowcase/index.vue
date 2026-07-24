@@ -11,6 +11,7 @@ export interface CartThemeItem {
   code: string
   name: string
   category: string
+  styleCssClass: string
   icon: string
   description: string
   features: string[]
@@ -44,6 +45,19 @@ const catNames = [
   'macOS 冰霜玻璃购物车'
 ]
 
+const cssClasses = [
+  'cart-style-glass',
+  'cart-style-neu',
+  'cart-style-b2b',
+  'cart-style-onetap',
+  'cart-style-mobile',
+  'cart-style-cyber',
+  'cart-style-oat',
+  'cart-style-pastel',
+  'cart-style-game',
+  'cart-style-mac'
+]
+
 const icons = ['🛒', '💳', '📦', '⚡', '📱', '🌌', '🌾', '🍃', '🎮', '🍎']
 
 const generate100Carts = (): CartThemeItem[] => {
@@ -56,8 +70,9 @@ const generate100Carts = (): CartThemeItem[] => {
       code: `CART-${String(i).padStart(3, '0')}`,
       name: `#${String(i).padStart(3, '0')} ${catName} 范例`,
       category: catName,
+      styleCssClass: cssClasses[catIdx],
       icon: icons[catIdx],
-      description: `专为 ${catName} 打造的精美交互购物车卡片 #${i}，支持商品增减、优惠券核销与实时价格计息。`,
+      description: `专为 ${catName} 打造的独立视觉交互购物车卡片 #${i}，支持商品增减、优惠券核销与实时价格计息。`,
       features: ['动态数量加减', '优惠码实时抵扣', '全选/反选批量结算', '防失误一键清除'],
       discountRate: (i % 3 === 0) ? 0.85 : 0.95
     })
@@ -213,7 +228,7 @@ const handleCheckout = () => {
           <strong>100 款</strong> 独立购物车界面卡片
         </div>
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
-          <strong>10 大</strong> 现代电商与 B2B 购物车视觉风格
+          <strong>10 大</strong> 独家 UI 视觉容器 (毛玻璃/新拟物/赛博/B2B/macOS 等)
         </div>
         <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 10px; font-size: 0.84rem;">
           <strong>实时价格核算</strong> 优惠码核销与数量自增自减
@@ -279,9 +294,158 @@ const handleCheckout = () => {
       </button>
     </nav>
 
-    <!-- Stage 卡片 -->
+    <!-- Stage 独家视觉容器 -->
     <main style="max-width: 800px; margin: 0 auto; padding: 0 24px;">
-      <div style="background: rgba(30, 41, 59, 0.7); border-radius: 20px; padding: 28px; border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(12px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+      <!-- 1. 悬浮侧滑微购物车 (Glass float drawer) -->
+      <div v-if="activeCart.styleCssClass === 'cart-style-glass'" style="background: rgba(30, 41, 59, 0.7); border-radius: 20px; padding: 28px; border: 1px solid rgba(56, 189, 248, 0.4); backdrop-filter: blur(16px); box-shadow: 0 20px 40px rgba(56, 189, 248, 0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.5rem;">🌌 {{ activeCart.icon }}</span>
+            <div>
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #38bdf8;">[毛玻璃悬浮] {{ activeCart.name }}</h3>
+              <p style="margin: 4px 0 0; font-size: 0.8rem; color: #94a3b8;">{{ activeCart.description }}</p>
+            </div>
+          </div>
+          <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;">{{ activeCart.category }}</span>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <div v-for="prod in cartItems" :key="prod.id" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(56, 189, 248, 0.2);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.4rem;">{{ prod.image }}</span>
+              <div>
+                <div style="font-size: 0.88rem; font-weight: 700; color: #f1f5f9;">{{ prod.name }}</div>
+                <div style="font-size: 0.8rem; color: #38bdf8; font-weight: 600;">¥{{ prod.price }}</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(56,189,248,0.3); background: rgba(56,189,248,0.1); color: #fff; font-weight: 700; cursor: pointer;" @click="updateItemCount(prod.id, -1)">-</button>
+              <span style="font-size: 0.88rem; font-weight: 700; min-width: 20px; text-align: center;">{{ prod.count }}</span>
+              <button style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(56,189,248,0.3); background: rgba(56,189,248,0.1); color: #fff; font-weight: 700; cursor: pointer;" @click="updateItemCount(prod.id, 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <input v-model="couponCode" type="text" placeholder="输入优惠码 (如: OATVIP)" style="flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid #38bdf8; background: #0f172a; color: #fff; font-size: 0.84rem;" />
+          <button style="padding: 10px 18px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: 800; font-size: 0.84rem; cursor: pointer;" @click="applyCoupon">核销优惠</button>
+        </div>
+
+        <div style="background: rgba(15, 23, 42, 0.8); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(56, 189, 248, 0.2);">
+          <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; color: #fff;">
+            <span>应付总计:</span>
+            <span style="color: #38bdf8;">¥{{ totalPrice.toLocaleString() }}</span>
+          </div>
+        </div>
+
+        <button style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%); color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer;" @click="handleCheckout">
+          毛玻璃一键结算 ▶ (¥{{ totalPrice.toLocaleString() }})
+        </button>
+      </div>
+
+      <!-- 2. 3D 新拟物结算卡片 (Neumorphism 3D) -->
+      <div v-else-if="activeCart.styleCssClass === 'cart-style-neu'" style="background: #1e293b; border-radius: 24px; padding: 30px; box-shadow: 12px 12px 24px #151d2a, -12px -12px 24px #27354c; border: 1px solid #29384d;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #e2e8f0;">🧊 [新拟物 3D] {{ activeCart.name }}</h3>
+          <span style="background: #151d2a; color: #94a3b8; padding: 6px 12px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; box-shadow: inset 2px 2px 5px #0f172a, inset -2px -2px 5px #27354c;">{{ activeCart.category }}</span>
+        </div>
+
+        <div v-for="prod in cartItems" :key="prod.id" style="padding: 14px; background: #192231; border-radius: 16px; margin-bottom: 12px; box-shadow: inset 3px 3px 6px #101621, inset -3px -3px 6px #222e41; display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.4rem;">{{ prod.image }}</span>
+            <div style="font-weight: 700; color: #f1f5f9;">{{ prod.name }} (¥{{ prod.price }})</div>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button style="width: 30px; height: 30px; border-radius: 8px; border: none; background: #1e293b; color: #fff; font-weight: 700; box-shadow: 2px 2px 4px #121924, -2px -2px 4px #2a3952; cursor: pointer;" @click="updateItemCount(prod.id, -1)">-</button>
+            <span style="font-weight: 700; padding: 0 6px;">{{ prod.count }}</span>
+            <button style="width: 30px; height: 30px; border-radius: 8px; border: none; background: #1e293b; color: #fff; font-weight: 700; box-shadow: 2px 2px 4px #121924, -2px -2px 4px #2a3952; cursor: pointer;" @click="updateItemCount(prod.id, 1)">+</button>
+          </div>
+        </div>
+
+        <button style="width: 100%; margin-top: 10px; padding: 14px; border-radius: 16px; border: none; background: #1e293b; color: #38bdf8; font-weight: 800; font-size: 1rem; box-shadow: 6px 6px 12px #121924, -6px -6px 12px #2a3952; cursor: pointer;" @click="handleCheckout">
+          3D 按压完成结算 (¥{{ totalPrice.toLocaleString() }})
+        </button>
+      </div>
+
+      <!-- 3. 赛博霓虹电竞购物车 (Cyberpunk Neon) -->
+      <div v-else-if="activeCart.styleCssClass === 'cart-style-cyber'" style="background: #09090b; border: 2px solid #00f0ff; border-radius: 12px; padding: 26px; box-shadow: 0 0 20px rgba(0,240,255,0.4); font-family: monospace;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ff0055; padding-bottom: 12px; margin-bottom: 16px;">
+          <h3 style="margin: 0; color: #00f0ff; font-weight: 900; font-size: 1.2rem;">⚡ CYBER_CART [{{ activeCart.code }}]</h3>
+          <span style="background: #ff0055; color: #fff; padding: 2px 8px; font-weight: 800; font-size: 0.78rem;">NEON PROTOCOL</span>
+        </div>
+
+        <div v-for="prod in cartItems" :key="prod.id" style="background: rgba(0,240,255,0.05); border: 1px solid #00f0ff; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: #ff0055; font-weight: 800;">&gt; {{ prod.name }} x{{ prod.count }}</span>
+          <span style="color: #00f0ff; font-weight: 900;">¥{{ prod.price * prod.count }}</span>
+        </div>
+
+        <button style="width: 100%; padding: 14px; background: linear-gradient(90deg, #ff0055 0%, #00f0ff 100%); border: none; color: #000; font-weight: 900; font-size: 1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;" @click="handleCheckout">
+          ⚡ EXECUTE CYBER CHECKOUT (¥{{ totalPrice.toLocaleString() }})
+        </button>
+      </div>
+
+      <!-- 4. B2B 阶梯价购物车 (B2B Wholesale Grid) -->
+      <div v-else-if="activeCart.styleCssClass === 'cart-style-b2b'" style="background: #0f172a; border-radius: 14px; padding: 24px; border: 1px solid #334155;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+          <h3 style="margin: 0; color: #38bdf8; font-weight: 800;">📦 [B2B 批发] {{ activeCart.name }}</h3>
+          <span style="background: #1e293b; color: #cbd5e1; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem;">阶梯折扣核算中</span>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 0.84rem;">
+          <thead>
+            <tr style="background: #1e293b; color: #94a3b8; text-align: left;">
+              <th style="padding: 8px;">商品名称</th>
+              <th style="padding: 8px;">单价</th>
+              <th style="padding: 8px;">采购量</th>
+              <th style="padding: 8px;">小计</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="prod in cartItems" :key="prod.id" style="border-bottom: 1px solid #334155;">
+              <td style="padding: 8px; color: #fff;">{{ prod.name }}</td>
+              <td style="padding: 8px; color: #38bdf8;">¥{{ prod.price }}</td>
+              <td style="padding: 8px; color: #fff;">{{ prod.count }} 件</td>
+              <td style="padding: 8px; color: #10b981; font-weight: 700;">¥{{ prod.price * prod.count }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: #2563eb; color: #fff; font-weight: 800; cursor: pointer;" @click="handleCheckout">
+          提交 B2B 采购订单 ▶ (¥{{ totalPrice.toLocaleString() }})
+        </button>
+      </div>
+
+      <!-- 5. 移动 H5 吸底购物车 (Mobile H5 Sheet) -->
+      <div v-else-if="activeCart.styleCssClass === 'cart-style-mobile'" style="max-width: 380px; margin: 0 auto; background: #000; border-radius: 36px; padding: 20px 16px; border: 8px solid #1e293b; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
+        <div style="text-align: center; font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px;">📱 H5 Mobile Simulator</div>
+        <div v-for="prod in cartItems" :key="prod.id" style="background: #18181b; padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 0.82rem; font-weight: 700; color: #fff;">{{ prod.name }}</div>
+          <div style="color: #38bdf8; font-weight: 800; font-size: 0.82rem;">¥{{ prod.price * prod.count }}</div>
+        </div>
+        <button style="width: 100%; padding: 12px; border-radius: 20px; border: none; background: #ef4444; color: #fff; font-weight: 800; font-size: 0.9rem; margin-top: 10px; cursor: pointer;" @click="handleCheckout">
+          📱 移动端吸底付款 (¥{{ totalPrice.toLocaleString() }})
+        </button>
+      </div>
+
+      <!-- 6. macOS 冰霜玻璃购物车 (macOS Tahoe Glass) -->
+      <div v-else-if="activeCart.styleCssClass === 'cart-style-mac'" style="background: rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(20px); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+        <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444;"></span>
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b;"></span>
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></span>
+        </div>
+        <h3 style="margin: 0 0 16px; font-size: 1.1rem; font-weight: 800; color: #fff;">🍎 [macOS Tahoe] {{ activeCart.name }}</h3>
+        <div v-for="prod in cartItems" :key="prod.id" style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; color: #fff;">
+          <span>{{ prod.name }}</span>
+          <span style="font-weight: 700; color: #38bdf8;">¥{{ prod.price * prod.count }}</span>
+        </div>
+        <button style="width: 100%; margin-top: 12px; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: #fff; font-weight: 800; cursor: pointer;" @click="handleCheckout">
+          macOS 窗口一键支付 (¥{{ totalPrice.toLocaleString() }})
+        </button>
+      </div>
+
+      <!-- 默认标准响应式通用容器 (Oat Minimal, Pastel, Game, OneTap) -->
+      <div v-else style="background: rgba(30, 41, 59, 0.7); border-radius: 20px; padding: 28px; border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(12px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.5rem;">{{ activeCart.icon }}</span>
@@ -293,7 +457,6 @@ const handleCheckout = () => {
           <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;">{{ activeCart.category }}</span>
         </div>
 
-        <!-- 购物车商品列表 -->
         <div style="margin-bottom: 20px;">
           <div v-for="prod in cartItems" :key="prod.id" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.06);">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -303,8 +466,6 @@ const handleCheckout = () => {
                 <div style="font-size: 0.8rem; color: #38bdf8; font-weight: 600;">¥{{ prod.price }}</div>
               </div>
             </div>
-
-            <!-- 数量 Stepper -->
             <div style="display: flex; align-items: center; gap: 8px;">
               <button style="width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-weight: 700; cursor: pointer;" @click="updateItemCount(prod.id, -1)">-</button>
               <span style="font-size: 0.88rem; font-weight: 700; min-width: 20px; text-align: center;">{{ prod.count }}</span>
@@ -313,31 +474,19 @@ const handleCheckout = () => {
           </div>
         </div>
 
-        <!-- 优惠码输入 -->
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
           <input v-model="couponCode" type="text" placeholder="输入优惠码 (如: OATVIP)" style="flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.84rem;" />
-          <button style="padding: 10px 18px; border-radius: 10px; border: none; background: #6366f1; color: #fff; font-weight: 700; font-size: 0.84rem; cursor: pointer;" @click="applyCoupon">
-            核销优惠
-          </button>
+          <button style="padding: 10px 18px; border-radius: 10px; border: none; background: #6366f1; color: #fff; font-weight: 700; font-size: 0.84rem; cursor: pointer;" @click="applyCoupon">核销优惠</button>
         </div>
 
-        <!-- 结算汇总明细 -->
         <div style="background: rgba(15, 23, 42, 0.8); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08);">
-          <div style="display: flex; justify-content: space-between; font-size: 0.84rem; color: #94a3b8; margin-bottom: 8px;">
-            <span>商品小计:</span>
-            <span>¥{{ subtotalPrice.toLocaleString() }}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.84rem; color: #10b981; margin-bottom: 12px;">
-            <span>优惠抵扣折扣 (OATVIP):</span>
-            <span>-¥{{ discountAmount.toLocaleString() }}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; color: #fff; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 10px;">
+          <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; color: #fff;">
             <span>应付总计:</span>
             <span style="color: #38bdf8;">¥{{ totalPrice.toLocaleString() }}</span>
           </div>
         </div>
 
-        <button style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%); color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 16px rgba(56, 189, 248, 0.4);" @click="handleCheckout">
+        <button style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%); color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer;" @click="handleCheckout">
           立即安全结算 ▶ (¥{{ totalPrice.toLocaleString() }})
         </button>
       </div>

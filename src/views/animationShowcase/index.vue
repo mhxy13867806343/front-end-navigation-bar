@@ -148,7 +148,7 @@ const jumpToItemId = () => {
 }
 
 const copyCodeSnippet = () => {
-  const code = `/* Oat UI Animation #${activeAnim.value.code} */\n@keyframes ${activeAnim.value.animCssClass} {\n  0% { transform: scale(1) rotate(0deg); opacity: 0.8; }\n  50% { transform: scale(1.15) rotate(180deg); opacity: 1; }\n  100% { transform: scale(1) rotate(360deg); opacity: 0.8; }\n}`
+  const code = `/* Oat UI Animation #${activeAnim.value.code} */\n.${activeAnim.value.animCssClass} {\n  animation: ${activeAnim.value.animCssClass} ${1.5 / animSpeed.value}s infinite ease-in-out;\n}`
   navigator.clipboard.writeText(code)
   ElMessage.success(`[${activeAnim.value.name}] CSS/JS 代码片段已复制到剪贴板！`)
 }
@@ -258,12 +258,13 @@ const copyCodeSnippet = () => {
           <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;">{{ activeAnim.techType }}</span>
         </div>
 
-        <!-- 动画演示画布 Block -->
+        <!-- 动画演示画布 Block (真实匹配选中的 CSS 动画) -->
         <div style="height: 220px; background: rgba(15, 23, 42, 0.8); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; overflow: hidden;">
           <!-- 动态 Preview Element -->
           <div
-            style="width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, #a855f7 0%, #38bdf8 100%); display: flex; justify-content: center; align-items: center; font-size: 2.2rem; box-shadow: 0 10px 30px rgba(168,85,247,0.5); transition: transform 0.3s ease;"
-            :style="{ animation: isPlaying ? `spin 3s infinite linear` : 'none', animationDuration: `${3 / animSpeed}s` }"
+            :class="activeAnim.animCssClass"
+            style="width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, #a855f7 0%, #38bdf8 100%); display: flex; justify-content: center; align-items: center; font-size: 2.2rem; box-shadow: 0 10px 30px rgba(168,85,247,0.5);"
+            :style="{ animationPlayState: isPlaying ? 'running' : 'paused', animationDuration: `${1.5 / animSpeed}s` }"
           >
             {{ activeAnim.icon }}
           </div>
@@ -297,9 +298,89 @@ const copyCodeSnippet = () => {
 </template>
 
 <style scoped>
-@keyframes spin {
-  from { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.15); }
-  to { transform: rotate(360deg) scale(1); }
+.anim-spin {
+  animation: animSpin 1.5s infinite linear;
+}
+@keyframes animSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.anim-pulse {
+  animation: animPulse 1.5s infinite ease-in-out;
+}
+@keyframes animPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.7; }
+}
+
+.anim-bounce {
+  animation: animBounce 1.5s infinite ease-in-out;
+}
+@keyframes animBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-24px); }
+}
+
+.anim-glitch {
+  animation: animGlitch 1.5s infinite steps(2);
+}
+@keyframes animGlitch {
+  0% { transform: translate(0); filter: hue-rotate(0deg); }
+  25% { transform: translate(-6px, 6px); filter: hue-rotate(90deg); }
+  50% { transform: translate(6px, -6px); filter: hue-rotate(180deg); }
+  75% { transform: translate(-3px, -3px); filter: hue-rotate(270deg); }
+  100% { transform: translate(0); filter: hue-rotate(360deg); }
+}
+
+.anim-glow {
+  animation: animGlow 1.5s infinite alternate ease-in-out;
+}
+@keyframes animGlow {
+  0% { box-shadow: 0 0 10px #c084fc, 0 0 20px #c084fc; transform: scale(1); }
+  100% { box-shadow: 0 0 35px #38bdf8, 0 0 70px #38bdf8; transform: scale(1.1); }
+}
+
+.anim-wave {
+  animation: animWave 1.5s infinite ease-in-out;
+}
+@keyframes animWave {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-20deg) scale(1.1); }
+  75% { transform: rotate(20deg) scale(0.9); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.anim-rotate3d {
+  animation: animRotate3d 2s infinite linear;
+}
+@keyframes animRotate3d {
+  0% { transform: perspective(400deg) rotateY(0deg); }
+  100% { transform: perspective(400deg) rotateY(360deg); }
+}
+
+.anim-shake {
+  animation: animShake 1.2s infinite ease-in-out;
+}
+@keyframes animShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-15px); }
+  40%, 80% { transform: translateX(15px); }
+}
+
+.anim-zoom {
+  animation: animZoom 1.5s infinite ease-in-out;
+}
+@keyframes animZoom {
+  0%, 100% { transform: scale(0.75); }
+  50% { transform: scale(1.35); }
+}
+
+.anim-flip {
+  animation: animFlip 2s infinite linear;
+}
+@keyframes animFlip {
+  0% { transform: perspective(400deg) rotateX(0deg); }
+  100% { transform: perspective(400deg) rotateX(360deg); }
 }
 </style>

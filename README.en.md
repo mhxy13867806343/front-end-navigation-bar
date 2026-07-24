@@ -21,6 +21,9 @@ This project is no longer actively updated. The current live demo and existing f
 
 ## ✨ Features
 
+- **🔐 1,000,000 Auth UI Showcase (`/auth-showcase`)**: Features 1,000,000 interactive Auth UI designs (500k Login + 500k Register) across 50 categories with 10-item-per-page pagination and ID jumping.
+- **🛒 100 Cart UI Showcase (`/cart-showcase`)**: 100 distinct shopping cart UI themes across 10 container layouts (Glassmorphism, 3D Neumorphism, Cyberpunk Neon, B2B Grid, Mobile H5 Sheet, macOS Window).
+- **✨ 63,353 Animation Effects Showcase (`/animation-showcase`)**: 63,353 unique CSS/JS animation effect demos across 20 categories with live keyframe animation preview, speed controls, and code snippet copying.
 - **🌾 Oat UI Studio (`/oat-studio`)**: Integrates [Oat.ink 26 official WebComponents / CSS components](https://oat.ink/components/) (Dropdown, TagInput, Upload, Tabs WC) with Element Plus 64-item Component Sidebar directory. Features Oat Dialog / Modal design inspired by **Element Plus Dialog** layout and **Naive UI OS-Theme Dialog** backdrop filter backdrop. Includes 400 examples dataset with double-click inline cell editing.
 - **API Toolbox**: Built-in collection of commonly used APIs
 - **Theme Switching**: One-click dark/light theme toggle with local persistence

@@ -21,7 +21,9 @@
 
 ## ✨ 功能特性
 
-- **🔐 10 款精美登录注册 UI 展厅** (`/auth-showcase`)：新增在顶栏「🧩 Web组件与库」下拉菜单中！包含 **毛玻璃水晶**、**极简暗黑**、**Oat UI 纯净风**、**赛博朋克霓虹**、**macOS 磨砂窗**、**移动 H5 微卡片**、**企业 B2B SaaS 双栏**、**电竞竞速极光**、**柔和马卡龙** 与 **新拟物化 3D** 等 10 款不同主题风格的登录注册交互界面，支持 10 Tabs 即时切换与登录/注册模式切变。
+- **🔐 100 万款登录注册 UI 展厅** (`/auth-showcase`)：位于顶栏「🧩 Web组件与库」下拉菜单中！支持 100 万款（50万登录 + 50万注册）交互界面，包含毛玻璃、暗黑极客、Oat UI 极简、赛博朋克、macOS Tahoe 磨砂窗、移动 H5、企业 SaaS、电竞极光、马卡龙与新拟物 3D 等 50 大主题场景，支持 6 位数 ID 精确定位、2,000 页平滑翻页（一页 10 项）与登录/注册模式切变。
+- **🛒 100 款购物车 UI 展厅** (`/cart-showcase`)：位于顶栏「🧩 Web组件与库」下拉菜单中！提供 100 款绝不重复的购物车界面与 10 大独家 UI 容器 layout（毛玻璃悬浮、3D 新拟物按压、赛博霓虹电竞、B2B 阶梯价表格、移动 H5 吸底框、macOS 窗口），支持商品数量增减、优惠券抵扣 (核销 `OATVIP` 享 85 折)、全选汇总与实时订单结算。
+- **✨ 63,353 款 CSS/JS 动画特效展厅** (`/animation-showcase`)：位于顶栏「🧩 Web组件与库」下拉菜单中！包含 63,353 款绝无重复的前端 CSS/JS 动态特效（20 大分类），提供真实 Keyframe 动画预览 Canvas 舞台、播放/暂停/0.5x~2.0x 倍速调控，以及一键复制完整 CSS/JS Keyframes 代码。
 - **🌾 Oat UI Studio 实战演练中心** (`/oat-studio`)：集成 [Oat.ink 官方 26 项原生 WebComponents / CSS 组件](https://oat.ink/components/) (Dropdown, TagInput, Upload, Tabs WC) 与 Element Plus 官方 64 项组件侧栏目录。内置对话框 (Dialog / Modal) 融入 **Element Plus Dialog** 居中布局与 **Naive UI OS-Theme Dialog** 极简高斯模糊遮罩；包含 **Transfer 穿梭框**、**Slider 滑块**、**Scrollbar 滚动条**、**Steps 步骤条**、**Rate 评分**，以及 400 个全量范例记录并支持**单元格双击行内即时编辑**。
 - **🧡 小米官方商城 & 购物车结算** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：基于 27万+ 行本地 JSON (`src/shop-json/xiaomi-shop.json`) 渲染，内置持久化 `cartStore`、侧边抽屉购物车 (`CartDrawer.vue`) 与全屏购物车页面 (`/xiaomi-shop/cart`)，包含地址选择、优惠券兑换（`MI888` 减 50）、全选删除与**微信支付、支付宝、云闪付、信用卡 24 期免息**的在线模拟支付与订单流转。
 - **🔐 权限管理与控制中心** (`/permission`)：内置 4 大 RBAC 角色（超级管理员、运维、运营、访客）实时切换、按钮级指令鉴权（`v-permission`）、路由访问矩阵、JWT Token 报文解析，以及**HTTP 状态码（200 / 401 / 402 / 403 / 404 / 405 / 500）一键直接跳过去展示**。
