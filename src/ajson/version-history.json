@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T03:07:31.183Z",
+  "generatedAt": "2026-07-24T03:11:05.419Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "d16d7a431e5f5921e31c3c491edfd07245afeec1",
+          "shortHash": "d16d7a4",
+          "date": "2026-07-24",
+          "time": "11:07",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "cff3ffbe0b78878c597c70f040aededbbb9d60b1",
           "shortHash": "cff3ffb",
@@ -293,16 +303,6 @@
           "title": "add rich interactive Oat UI controls for Checkbox, Steps, Tabs, Popconfirm, Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, and TimePicker",
           "scope": "",
           "message": "feat: add rich interactive Oat UI controls for Checkbox, Steps, Tabs, Popconfirm, Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, and TimePicker"
-        },
-        {
-          "hash": "ce1e4e169e905d4349b5640d810302b4dbf186f5",
-          "shortHash": "ce1e4e1",
-          "date": "2026-07-24",
-          "time": "00:57",
-          "type": "功能更新",
-          "title": "implement interactive Oat UI demonstrations for all Element Plus sidebar components (Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, TimePicker, Splitter, Table)",
-          "scope": "",
-          "message": "feat: implement interactive Oat UI demonstrations for all Element Plus sidebar components (Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, TimePicker, Splitter, Table)"
         }
       ]
     }
