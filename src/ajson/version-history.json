@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-24T03:11:05.419Z",
+  "generatedAt": "2026-07-24T03:14:21.942Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "e49e8d08b8672009e8814da74e02ea7542519f6a",
+          "shortHash": "e49e8d0",
+          "date": "2026-07-24",
+          "time": "11:11",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "d16d7a431e5f5921e31c3c491edfd07245afeec1",
           "shortHash": "d16d7a4",
@@ -293,16 +303,6 @@
           "title": "add dedicated interactive UI cards for Cascader, Checkbox, Autocomplete, Input Tag, OTP, Mention, and all individual components in Oat Studio",
           "scope": "",
           "message": "feat: add dedicated interactive UI cards for Cascader, Checkbox, Autocomplete, Input Tag, OTP, Mention, and all individual components in Oat Studio"
-        },
-        {
-          "hash": "9bd0b93af9480aa3800aa7787823b5ef636d490b",
-          "shortHash": "9bd0b93",
-          "date": "2026-07-24",
-          "time": "00:57",
-          "type": "功能更新",
-          "title": "add rich interactive Oat UI controls for Checkbox, Steps, Tabs, Popconfirm, Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, and TimePicker",
-          "scope": "",
-          "message": "feat: add rich interactive Oat UI controls for Checkbox, Steps, Tabs, Popconfirm, Transfer, Slider, Scrollbar, Radio, Rate, Select, Switch, and TimePicker"
         }
       ]
     }

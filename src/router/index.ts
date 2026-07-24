@@ -208,6 +208,11 @@ const routes = [
     component: () => import('../views/sourceCode/index.vue')
   },
   {
+    path: '/docker-showcase',
+    name: 'DockerShowcase',
+    component: () => import('../views/dockerShowcase/index.vue')
+  },
+  {
     path: '/200',
     name: 'Page200',
     component: () => import('../views/error/200.vue')
