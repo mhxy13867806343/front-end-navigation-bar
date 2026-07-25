@@ -68,6 +68,11 @@ const routes = [
     component: () => import('../views/juejinTheme/index.vue')
   },
   {
+    path: '/juejin-course',
+    name: 'JuejinCourse',
+    component: () => import('../views/juejinCourse/index.vue')
+  },
+  {
     path: '/wechat-featured',
     name: 'WechatFeatured',
     component: () => import('../views/wechatFeatured/index.vue')

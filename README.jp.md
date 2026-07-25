@@ -18,6 +18,7 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 - ⚡ **Motion for Vue 50+ 展示**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase)
 - 🗺️ **Three.js 3D 地図デザイナー**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map](https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map)
 - 🌾 **Oat UI スタジオ演習センター**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio)
+- 📘 **掘金小冊コース**: [https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course](https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course)
 - 🏠 **ホーム**: [https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
 
 ## ✨ 主な機能
@@ -30,10 +31,13 @@ Vue 3 + Vite で構築されたフロントエンド AI ツールナビゲーシ
 - **🔐 権限管理コントロールセンター** (`/permission`)：4 つの RBAC 役割（スーパー管理者、インフラ、運用、ゲスト）の切り替え、ディレクティブ権限 (`v-permission`)、JWT デコード確認、HTTP ステータスコード直接ジャンプに対応。
 - **📜 システム監査ログ** (`/logs`)：API ステータスコード、セキュリティブロック、スタックトレースをリアルタイムで追跡し CSV 出力に対応。
 - **🚫 HTTP ステータスコード＆エラー画面** (`/200`, `/401`, `/402`, `/403`, `/404`, `/405`, `/500`)：ワンクリック自動修復機能付きのインタラクティブなステータス画面。
+- **📘 掘金小冊コースページ** (`/juejin-course`)：掘金の小冊コース一覧とカテゴリを同期し、最新／人気／価格ソート、VIP コース絞り込み、キーワード検索、作者ページ遷移、詳細ページ遷移、活動割引価格、カウントダウン、書籍単位の VIP バッジに対応。
 - **🚀 ワンクリックデプロイスクリプト**：内蔵シェルツール `scripts/deploy_update.sh` (`npm run deploy`) でローカルビルド、Git ステージング、コミット、GitHub 自動デプロイを実行。
 
 ## 🆕 最近の更新
 
+- 📘 **掘金小冊コースページを追加** (`/juejin-course`)：掘金コースデータを表示し、カテゴリ、価格ソート、VIP 絞り込み、割引カウントダウン、活動割引価格、作者ページ、コース詳細リンクに対応しました。
+- 🧩 **上部の「Web Components & Libraries」メニューを分類化**：新規ページ、コンポーネントと UI、アニメーションとスケジュール、地図とグラフ、開発ツール、ドキュメントを分けて表示します。
 - 🌾 **Oat UI Studio (`/oat-studio`) を追加**：Oat.ink 公式 26 項 WebComponent ライブラリ (Dropdown, TagInput, Upload, Tabs) および Element Plus 64 項コンポーネントサイドバー、Element Plus Dialog および Naive UI OS-Theme Dialog 公式設計バナー、400 件の表ダブルクリック編集機能を追加しました。
 
 - 🧡 **Xiaomi 公式ショップ＆ショッピングカートを追加** (`/xiaomi-shop`, `/xiaomi-shop/cart`)：27万行超の JSON データ、永続化カート引き出し、インタラクティブ決済に対応しました。

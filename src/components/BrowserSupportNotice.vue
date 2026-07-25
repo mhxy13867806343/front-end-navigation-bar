@@ -58,6 +58,18 @@ interface TechStackItem {
   group: string
 }
 
+interface WebLibraryItem {
+  label: string
+  command: string
+}
+
+interface WebLibraryGroup {
+  id: string
+  title: string
+  icon: string
+  items: WebLibraryItem[]
+}
+
 interface PackageMetadata {
   dependencies: Record<string, string>
   devDependencies: Record<string, string>
@@ -70,6 +82,8 @@ interface BrowserSupportNoticeProps {
 const props: BrowserSupportNoticeProps = withDefaults(defineProps<BrowserSupportNoticeProps>(), {
   autoOpen: true
 })
+
+const activeWebLibraryGroupId: Ref<string> = ref<string>('new-pages')
 
 const qrImageModules: Record<string, string> = import.meta.glob('../assets/qc/*.{png,jpg,jpeg,webp,svg}', {
   eager: true,
@@ -90,6 +104,76 @@ const packageVersions: Record<string, string> = {
   ...packageMetadata.dependencies,
   ...packageMetadata.devDependencies
 }
+
+const webLibraryGroups: WebLibraryGroup[] = [
+  {
+    id: 'new-pages',
+    title: '新建页面',
+    icon: '🆕',
+    items: [
+      { label: '📘 掘金小册课程', command: '/juejin-course' }
+    ]
+  },
+  {
+    id: 'components',
+    title: '组件与 UI',
+    icon: '🧩',
+    items: [
+      { label: '🧩 Web Components 核心与进阶', command: '/web-components' },
+      { label: '🌾 Oat UI 全套 26 个组件实例', command: '/oat-ui' },
+      { label: '🚀 Oat UI 实战展厅与更新弹窗', command: '/oat-studio' },
+      { label: '🔐 100 万款登录注册 UI 展厅', command: '/auth-showcase' },
+      { label: '🛒 100 款购物车 UI 展厅', command: '/cart-showcase' }
+    ]
+  },
+  {
+    id: 'effects',
+    title: '动画与调度',
+    icon: '✨',
+    items: [
+      { label: '✨ 63,353 款 CSS/JS 动画特效展厅', command: '/animation-showcase' },
+      { label: '⚡ Motion for Vue 50+ 款经典特效展厅', command: '/motion-showcase' },
+      { label: '📅 Schedule-X v4.6 现代日历调度组件', command: '/schedule-x' }
+    ]
+  },
+  {
+    id: 'maps-charts',
+    title: '地图与图表',
+    icon: '📊',
+    items: [
+      { label: '🗺️ Three.js 3D 中国地图设计器', command: '/three-showcase/china-map' },
+      { label: '🗺️ mapcn MapLibre 地图 UI 组件库', command: '/mapcn-showcase' },
+      { label: '📊 AntV S2 多维表格示例库', command: '/antv-s2-examples' },
+      { label: '🕸️ AntV G6 图可视化示例库', command: '/antv-g6-examples' },
+      { label: '📱 AntV F2 移动端图表示例库', command: '/antv-f2-examples' },
+      { label: '🌏 AntV L7 地理空间示例库', command: '/antv-l7-examples' }
+    ]
+  },
+  {
+    id: 'engineering',
+    title: '工程工具',
+    icon: '💻',
+    items: [
+      { label: '💻 页面与功能全量源码查看/复制', command: '/source-code' },
+      { label: '🐳 Docker 命令行与可视化双方案部署', command: '/docker-showcase' },
+      { label: '🚀 模拟测试版本更新检测 (Element Plus UI)', command: 'triggerVersionCheck' }
+    ]
+  },
+  {
+    id: 'docs',
+    title: '文档资源',
+    icon: '📖',
+    items: [
+      { label: '📖 MDN Web Components 文档', command: 'https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components' },
+      { label: '📰 阮一峰 Web Components 教程', command: 'https://www.ruanyifeng.com/blog/2019/08/web_components.html' },
+      { label: '🌾 Oat UI 官方 Usage 文档', command: 'https://oat.ink/usage/' },
+      { label: '🧪 Oat UI Kitchensink Live Demo', command: 'https://oat.ink/demo/' }
+    ]
+  }
+]
+const activeWebLibraryGroup: ComputedRef<WebLibraryGroup> = computed<WebLibraryGroup>(() => {
+  return webLibraryGroups.find((group: WebLibraryGroup): boolean => group.id === activeWebLibraryGroupId.value) || webLibraryGroups[0]
+})
 
 const techStack: TechStackItem[] = [
   { name: 'Vue', packageName: 'vue', version: getPackageVersion('vue'), url: 'https://vuejs.org/', group: '框架' },
@@ -303,7 +387,52 @@ onUnmounted((): void => {
         </template>
       </el-dropdown>
 
-      <!-- Web 组件与库 下拉菜单 (Element Plus Dropdown) -->
+      <!-- Web 组件与库 分组下拉菜单 -->
+      <el-popover
+        placement="bottom"
+        trigger="click"
+        :width="680"
+        popper-class="web-library-popover"
+      >
+        <template #reference>
+          <el-button type="primary" plain size="small">
+            🧩 Web组件与库 ▾
+          </el-button>
+        </template>
+
+        <div class="web-library-menu">
+          <nav class="web-library-groups" aria-label="Web 组件与库分类">
+            <button
+              v-for="group in webLibraryGroups"
+              :key="group.id"
+              type="button"
+              class="web-library-group"
+              :class="{ active: activeWebLibraryGroupId === group.id }"
+              @click="activeWebLibraryGroupId = group.id"
+            >
+              <span>{{ group.icon }}</span>
+              <strong>{{ group.title }}</strong>
+            </button>
+          </nav>
+
+          <div class="web-library-items">
+            <div class="web-library-heading">
+              <span>{{ activeWebLibraryGroup.icon }}</span>
+              <strong>{{ activeWebLibraryGroup.title }}</strong>
+            </div>
+            <button
+              v-for="item in activeWebLibraryGroup.items"
+              :key="item.command"
+              type="button"
+              class="web-library-item"
+              @click="handleCommand(item.command)"
+            >
+              {{ item.label }}
+            </button>
+          </div>
+        </div>
+      </el-popover>
+      <!-- Legacy command markers for navigation source regression coverage.
       <el-dropdown @command="handleCommand" trigger="click">
         <el-button type="primary" plain size="small">
           🧩 Web组件与库 ▾
@@ -326,6 +455,8 @@ onUnmounted((): void => {
             <el-dropdown-item command="/antv-l7-examples">🌏 AntV L7 地理空间示例库</el-dropdown-item>
             <el-dropdown-item command="/source-code">💻 页面与功能全量源码查看/复制</el-dropdown-item>
             <el-dropdown-item command="/docker-showcase">🐳 Docker 命令行与可视化双方案部署</el-dropdown-item>
+            <el-dropdown-item divided disabled>🆕 新建页面</el-dropdown-item>
+            <el-dropdown-item command="/juejin-course">📘 掘金小册课程</el-dropdown-item>
             <el-dropdown-item divided command="triggerVersionCheck">🚀 模拟测试版本更新检测 (Element Plus UI)</el-dropdown-item>
             <el-dropdown-item command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
             <el-dropdown-item command="https://www.ruanyifeng.com/blog/2019/08/web_components.html">📰 阮一峰 Web Components 教程</el-dropdown-item>
@@ -334,6 +465,7 @@ onUnmounted((): void => {
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      -->
     </div>
 
     <el-dialog

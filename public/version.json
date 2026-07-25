@@ -1,10 +1,80 @@
 {
-  "version": "v1.2.212444",
-  "randomVersion": "v1.2.212444",
-  "randomCode": "VER-662199",
-  "buildTime": "2026-07-24T09:52:11.689Z",
-  "timestamp": 1784886731690,
+  "version": "v1.7.987681",
+  "randomVersion": "v1.7.987681",
+  "randomCode": "VER-149094",
+  "buildTime": "2026-07-25T04:20:08.849Z",
+  "timestamp": 1784953208849,
   "history": [
+    {
+      "version": "v1.7.987681",
+      "randomVersion": "v1.7.987681",
+      "randomCode": "VER-149094",
+      "buildTime": "2026-07-25T04:20:08.849Z",
+      "timestamp": 1784953208849
+    },
+    {
+      "version": "v1.7.368945",
+      "randomVersion": "v1.7.368945",
+      "randomCode": "VER-768452",
+      "buildTime": "2026-07-25T04:16:44.235Z",
+      "timestamp": 1784953004236
+    },
+    {
+      "version": "v1.5.872266",
+      "randomVersion": "v1.5.872266",
+      "randomCode": "VER-304513",
+      "buildTime": "2026-07-25T04:15:33.295Z",
+      "timestamp": 1784952933295
+    },
+    {
+      "version": "v1.5.757248",
+      "randomVersion": "v1.5.757248",
+      "randomCode": "VER-966986",
+      "buildTime": "2026-07-25T04:06:01.859Z",
+      "timestamp": 1784952361860
+    },
+    {
+      "version": "v1.9.526297",
+      "randomVersion": "v1.9.526297",
+      "randomCode": "VER-416303",
+      "buildTime": "2026-07-25T03:55:16.918Z",
+      "timestamp": 1784951716918
+    },
+    {
+      "version": "v1.7.410877",
+      "randomVersion": "v1.7.410877",
+      "randomCode": "VER-807165",
+      "buildTime": "2026-07-25T03:52:02.843Z",
+      "timestamp": 1784951522844
+    },
+    {
+      "version": "v1.5.339943",
+      "randomVersion": "v1.5.339943",
+      "randomCode": "VER-609687",
+      "buildTime": "2026-07-25T03:44:25.302Z",
+      "timestamp": 1784951065303
+    },
+    {
+      "version": "v1.0.116082",
+      "randomVersion": "v1.0.116082",
+      "randomCode": "VER-632598",
+      "buildTime": "2026-07-25T03:43:24.146Z",
+      "timestamp": 1784951004147
+    },
+    {
+      "version": "v1.3.999583",
+      "randomVersion": "v1.3.999583",
+      "randomCode": "VER-422774",
+      "buildTime": "2026-07-25T03:35:51.071Z",
+      "timestamp": 1784950551071
+    },
+    {
+      "version": "v1.4.280387",
+      "randomVersion": "v1.4.280387",
+      "randomCode": "VER-134841",
+      "buildTime": "2026-07-25T03:28:13.149Z",
+      "timestamp": 1784950093150
+    },
     {
       "version": "v1.2.212444",
       "randomVersion": "v1.2.212444",

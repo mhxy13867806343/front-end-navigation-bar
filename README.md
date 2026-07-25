@@ -18,6 +18,7 @@
 - ⚡ **Motion for Vue 50+ 特效展厅**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/motion-showcase)
 - 🗺️ **Three.js 3D 中国地图设计器**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map](https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map)
 - 🌾 **Oat UI 交互演练中心**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio)
+- 📘 **掘金小册课程**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course](https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course)
 - 🗺️ **MapCN 地图可视化展厅**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/mapcn-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/mapcn-showcase)
 - 📊 **AntV 可视化示例展厅 (F2/G6/L7/S2)**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/antv-g6-examples](https://mhxy13867806343.github.io/front-end-navigation-bar/#/antv-g6-examples)
 - 📝 **动态表单设计器 (DyForm)**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/dyform](https://mhxy13867806343.github.io/front-end-navigation-bar/#/dyform)
@@ -42,6 +43,7 @@
 - **🔐 权限管理与控制中心** (`/permission`)：内置 4 大 RBAC 角色（超级管理员、运维、运营、访客）实时切换、按钮级指令鉴权（`v-permission`）、路由访问矩阵、JWT Token 报文解析，以及**HTTP 状态码（200 / 401 / 402 / 403 / 404 / 405 / 500）一键直接跳过去展示**。
 - **📜 实时系统安全与操作日志中心** (`/logs`)：实时捕获全局 API 响应 HTTP 状态码、RBAC 拦截事件与异常 Stack Trace，支持状态码点击联动跳转、多级别筛选、关键字搜寻与离线 CSV 导出。
 - **🚫 完整 HTTP 状态码与异常页面集** (`/200`, `/401`, `/402`, `/403`, `/404`, `/405`, `/500`)：覆盖 200 OK 正常鉴权、401 未授权、402 付费订阅、403 禁止访问防火墙、404 迷失寻路、405 谓词受限、500 服务崩溃与一键自动修复。
+- **📘 掘金小册课程页** (`/juejin-course`)：接入掘金小册课程列表与分类接口，支持全部/最新/热销/价格排序、VIP 课程筛选、关键词搜索、作者主页跳转、课程详情跳转，并按掘金活动折扣展示价格、倒计时与书籍级 VIP 标识。
 - **AI 工具导航**：侧边栏分类 + 子分类导航，覆盖 AI 聊天、写作、绘画、编程、开发平台等数十个分类
 - **📜 名人名言与智慧语录**：联动 ALAPI 分类与语录接口，提供主题类型筛选、换一句刷新、一键复制及金句收藏库
 - **🌦️ 实时天气可视化**：集成 ALAPI 天气数据，支持实况、7 天柱状图、40 天折线图 (ECharts) 及天气指数
@@ -53,6 +55,8 @@
 
 ## 🆕 近期更新
 
+- 📘 **新增掘金小册课程页** (`/juejin-course`)：同步掘金课程中心数据，支持课程分类、价格排序、VIP 筛选、活动倒计时、活动折扣价、作者主页跳转与课程详情跳转。
+- 🧩 **重组顶部「Web组件与库」菜单**：将新建页面、组件与 UI、动画与调度、地图与图表、工程工具、文档资源拆成分组面板，新页面统一放入「新建页面」分类展示。
 - 🗺️ **新增 MapCN 地图可视化展厅** (`/mapcn-showcase`)：中国地图交互设计器，支持底图样式切换、图层叠加（路况/车队/热力/边界）、缩放与暗黑模式。
 - 📊 **新增 AntV 可视化示例展厅** (`/antv-f2-examples`、`/antv-g6-examples`、`/antv-l7-examples`、`/antv-s2-examples`)：聚合 AntV F2/G6/L7/S2 官方示例，支持搜索、分类与一键复制链接。
 - 📝 **新增动态表单设计器** (`/dyform`)：拖拽式 DynamicFormDesigner，集成音乐开关与 Element Plus Dialog 信息面板。

@@ -1,9 +1,29 @@
 {
-  "generatedAt": "2026-07-24T09:52:11.824Z",
+  "generatedAt": "2026-07-25T04:20:08.964Z",
   "groups": [
     {
       "date": "2026-07-24",
       "items": [
+        {
+          "hash": "b68f399ecc9364cddd5211a8ac8cf75a739adebb",
+          "shortHash": "b68f399",
+          "date": "2026-07-24",
+          "time": "17:52",
+          "type": "文档更新",
+          "title": "add MIT LICENSE file",
+          "scope": "",
+          "message": "docs: add MIT LICENSE file"
+        },
+        {
+          "hash": "67a52fa057f15ccf997608b26a6f54ef275214a7",
+          "shortHash": "67a52fa",
+          "date": "2026-07-24",
+          "time": "17:52",
+          "type": "功能更新",
+          "title": "update site assets, Xiaomi shop data, and navigation bar",
+          "scope": "",
+          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
+        },
         {
           "hash": "ecc8c5ec48dcf2e355c58a870b320fa10765f242",
           "shortHash": "ecc8c5e",
@@ -283,26 +303,6 @@
           "title": "add dedicated interactive UI cards for Select, Avatar, Badge, Breadcrumb, Form, and Input components in Oat Studio",
           "scope": "",
           "message": "feat: add dedicated interactive UI cards for Select, Avatar, Badge, Breadcrumb, Form, and Input components in Oat Studio"
-        },
-        {
-          "hash": "56536f6980b62eb30bf54766861a8422ed169f41",
-          "shortHash": "56536f6",
-          "date": "2026-07-24",
-          "time": "08:10",
-          "type": "功能更新",
-          "title": "integrate Oat.ink 26 official native components into Oat Studio and update multi-language README docs",
-          "scope": "",
-          "message": "feat: integrate Oat.ink 26 official native components into Oat Studio and update multi-language README docs"
-        },
-        {
-          "hash": "afdb72dd397e0852fcd7cebdb36e50461d6968b9",
-          "shortHash": "afdb72d",
-          "date": "2026-07-24",
-          "time": "01:08",
-          "type": "文档更新",
-          "title": "update README.md, README.en.md, and README.jp.md with Oat UI Studio online preview links and Dialog design reference guidelines",
-          "scope": "",
-          "message": "docs: update README.md, README.en.md, and README.jp.md with Oat UI Studio online preview links and Dialog design reference guidelines"
         }
       ]
     }
