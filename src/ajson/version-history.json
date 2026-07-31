@@ -1,6 +1,21 @@
 {
-  "generatedAt": "2026-07-31T05:52:35.030Z",
+  "generatedAt": "2026-07-31T07:19:24.292Z",
   "groups": [
+    {
+      "date": "2026-07-31",
+      "items": [
+        {
+          "hash": "c2cca8a5c46ed1e09611902e267fca31fe492a9f",
+          "shortHash": "c2cca8a",
+          "date": "2026-07-31",
+          "time": "13:53",
+          "type": "功能更新",
+          "title": "add internal news hub pages",
+          "scope": "",
+          "message": "feat: add internal news hub pages"
+        }
+      ]
+    },
     {
       "date": "2026-07-25",
       "items": [
@@ -298,16 +313,6 @@
           "title": "add 10 Login & Register UI Showcase view under WebComponents dropdown menu with 10 interactive themes and tab switching",
           "scope": "",
           "message": "feat: add 10 Login & Register UI Showcase view under WebComponents dropdown menu with 10 interactive themes and tab switching"
-        },
-        {
-          "hash": "06ae8c99283a91c07fdc228f07293f9b5661a3e2",
-          "shortHash": "06ae8c9",
-          "date": "2026-07-24",
-          "time": "08:16",
-          "type": "功能更新",
-          "title": "bind explicit interactive Oat UI cards for all oat-* prefixed component keys (oat-switch, oat-alert, oat-button, oat-dialog, etc.) in Oat Studio",
-          "scope": "",
-          "message": "feat: bind explicit interactive Oat UI cards for all oat-* prefixed component keys (oat-switch, oat-alert, oat-button, oat-dialog, etc.) in Oat Studio"
         }
       ]
     }

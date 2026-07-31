@@ -14,7 +14,11 @@ export const STORAGE_KEYS = {
   /** Oat UI 拖拽编排预设 */
   OAT_STUDIO_PRESETS: 'HOOKSVUE_OAT_STUDIO_PRESETS',
   /** BOSS 直聘页面最近选择城市 */
-  BOSS_SELECTED_CITY: 'HOOKSVUE_BOSS_SELECTED_CITY_V2'
+  BOSS_SELECTED_CITY: 'HOOKSVUE_BOSS_SELECTED_CITY_V2',
+  /** 独立页面收藏记录 */
+  PAGE_FAVORITES: 'HOOKSVUE_PAGE_FAVORITES_V1',
+  /** 记录缓存展示页卡片收藏 */
+  RECORD_CACHE_FAVORITES: 'HOOKSVUE_RECORD_CACHE_FAVORITES_V1'
 } as const
 
 export type StorageKeyType = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS] | string

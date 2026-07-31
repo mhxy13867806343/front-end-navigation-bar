@@ -19,7 +19,7 @@
 - 🗺️ **Three.js 3D 中国地图设计器**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map](https://mhxy13867806343.github.io/front-end-navigation-bar/#/three-showcase/china-map)
 - 🌾 **Oat UI 交互演练中心**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio](https://mhxy13867806343.github.io/front-end-navigation-bar/#/oat-studio)
 - 📘 **掘金小册课程**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course](https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course)
-- 🧭 **资讯聚合新页面**：[AI 资源](https://mhxy13867806343.github.io/front-end-navigation-bar/#/ai-xxx/ai-column) / [煎蛋](https://mhxy13867806343.github.io/front-end-navigation-bar/#/jandan) / [TopHub](https://mhxy13867806343.github.io/front-end-navigation-bar/#/tophub) / [IT之家](https://mhxy13867806343.github.io/front-end-navigation-bar/#/ithome) / [虎嗅](https://mhxy13867806343.github.io/front-end-navigation-bar/#/huxiu) / [GitHub 开源聚合](https://mhxy13867806343.github.io/front-end-navigation-bar/#/github)
+- 🧭 **资讯聚合新页面**：[AI 资源](https://mhxy13867806343.github.io/front-end-navigation-bar/#/ai-xxx/ai-column) / [煎蛋](https://mhxy13867806343.github.io/front-end-navigation-bar/#/jandan) / [TopHub](https://mhxy13867806343.github.io/front-end-navigation-bar/#/tophub) / [IT之家](https://mhxy13867806343.github.io/front-end-navigation-bar/#/ithome) / [虎嗅](https://mhxy13867806343.github.io/front-end-navigation-bar/#/huxiu) / [GitHub 开源聚合](https://mhxy13867806343.github.io/front-end-navigation-bar/#/github) / [记录缓存展示](https://mhxy13867806343.github.io/front-end-navigation-bar/#/records-cache)
 - 🗺️ **MapCN 地图可视化展厅**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/mapcn-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/mapcn-showcase)
 - 📊 **AntV 可视化示例展厅 (F2/G6/L7/S2)**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/antv-g6-examples](https://mhxy13867806343.github.io/front-end-navigation-bar/#/antv-g6-examples)
 - 📝 **动态表单设计器 (DyForm)**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/dyform](https://mhxy13867806343.github.io/front-end-navigation-bar/#/dyform)
@@ -46,6 +46,7 @@
 - **🚫 完整 HTTP 状态码与异常页面集** (`/200`, `/401`, `/402`, `/403`, `/404`, `/405`, `/500`)：覆盖 200 OK 正常鉴权、401 未授权、402 付费订阅、403 禁止访问防火墙、404 迷失寻路、405 谓词受限、500 服务崩溃与一键自动修复。
 - **📘 掘金小册课程页** (`/juejin-course`)：接入掘金小册课程列表与分类接口，支持全部/最新/热销/价格排序、VIP 课程筛选、关键词搜索、作者主页跳转、课程详情跳转，并按掘金活动折扣展示价格、倒计时与书籍级 VIP 标识。
 - **🧭 内部资讯聚合页**：新增 `/ai-xxx/:section`、`/jandan`、`/tophub`、`/ithome`、`/huxiu`、`/github`，将 AI 教程资源、煎蛋、TopHub、IT之家、虎嗅 24 小时、GitCN/Githot/HelloGitHub 收进内部页面，支持真实 loading、分页禁用、分类锁定与图片代理兜底。
+- **♡ 记录缓存展示页** (`/records-cache`)：统一展示页面入口、收藏记录、localStorage 历史与构建缓存，支持云标签、双列卡片、中转访问和收藏/取消收藏。
 - **AI 工具导航**：侧边栏分类 + 子分类导航，覆盖 AI 聊天、写作、绘画、编程、开发平台等数十个分类
 - **📜 名人名言与智慧语录**：联动 ALAPI 分类与语录接口，提供主题类型筛选、换一句刷新、一键复制及金句收藏库
 - **🌦️ 实时天气可视化**：集成 ALAPI 天气数据，支持实况、7 天柱状图、40 天折线图 (ECharts) 及天气指数
@@ -58,6 +59,7 @@
 ## 🆕 近期更新
 
 - 🧭 **新增资讯聚合内部页**：`/ai-xxx/:section`、`/jandan`、`/tophub`、`/ithome`、`/huxiu`、`/github` 已接入导航；新增页面在加载时展示显式 loading，数据返回前禁用刷新、分类和分页按钮。
+- ♡ **新增记录缓存展示页**：`/records-cache` 以云标签和双列卡片汇总页面入口、收藏、历史记录与缓存索引，所有独立页面顶部新增收藏/取消收藏按钮。
 - 🧷 **修复分页与图片体验**：虎嗅分页改为动态显示当前页及邻近页；IT之家、煎蛋、TopHub、GitHub 聚合页统一锁定加载态；HelloGitHub 图片通过本地代理加载，失败时显示占位卡片，并支持“更早”展开 1-95 期。
 - 📘 **新增掘金小册课程页** (`/juejin-course`)：同步掘金课程中心数据，支持课程分类、价格排序、VIP 筛选、活动倒计时、活动折扣价、作者主页跳转与课程详情跳转。
 - 🧩 **重组顶部「Web组件与库」菜单**：将新建页面、组件与 UI、动画与调度、地图与图表、工程工具、文档资源拆成分组面板，新页面统一放入「新建页面」分类展示。

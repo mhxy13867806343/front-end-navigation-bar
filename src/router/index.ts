@@ -43,6 +43,11 @@ const routes = [
     component: () => import('../views/toolbox/index.vue')
   },
   {
+    path: '/records-cache',
+    name: 'RecordsCache',
+    component: () => import('../views/recordsCache/index.vue')
+  },
+  {
     path: '/h5/:ticket',
     name: 'H5DesktopLink',
     component: () => import('../views/h5DesktopLink/index.vue')

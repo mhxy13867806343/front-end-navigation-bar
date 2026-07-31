@@ -119,6 +119,7 @@ const webLibraryGroups: WebLibraryGroup[] = [
       { label: '📰 IT之家', command: '/ithome' },
       { label: '🐯 虎嗅24小时', command: '/huxiu' },
       { label: '🐙 GitHub开源聚合', command: '/github' },
+      { label: '♡ 记录缓存展示', command: '/records-cache' },
       { label: '💼 BOSS直聘杭州首页', command: '/boss-zhipin-hangzhou' },
       { label: '🗺️ BOSS直聘地图找工作', command: '/boss-zhipin-hangzhou-map' }
     ]
@@ -473,6 +474,7 @@ onUnmounted((): void => {
             <el-dropdown-item command="/ithome">📰 IT之家</el-dropdown-item>
             <el-dropdown-item command="/huxiu">🐯 虎嗅24小时</el-dropdown-item>
             <el-dropdown-item command="/github">🐙 GitHub开源聚合</el-dropdown-item>
+            <el-dropdown-item command="/records-cache">♡ 记录缓存展示</el-dropdown-item>
             <el-dropdown-item command="/boss-zhipin-hangzhou">💼 BOSS直聘杭州首页</el-dropdown-item>
             <el-dropdown-item command="/boss-zhipin-hangzhou-map">🗺️ BOSS直聘地图找工作</el-dropdown-item>
             <el-dropdown-item divided command="triggerVersionCheck">🚀 模拟测试版本更新检测 (Element Plus UI)</el-dropdown-item>

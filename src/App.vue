@@ -86,12 +86,14 @@ import {
 
 import { useRoute, useRouter } from 'vue-router'
 import { Loading, Timer } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
 import type { CityInfo, CityLetterMap, CascaderNode, CurrentWeather, WeatherForecast } from './types/app'
 import chinaCitiesAz from './ajson/china-cities-az.json'
 import chinaCascaderOptions from './ajson/china-cascader-options.json'
 import versionHistoryData from './ajson/version-history.json'
+import { STORAGE_KEYS } from '@/constants/storageKeys'
 
 const route = useRoute()
 const router = useRouter()
@@ -113,13 +115,106 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/records-cache', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
 const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isFlashRoute = computed<boolean>(() => !isDyFormRoute.value && !isBigScreenRoute.value)
 const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
 const isAiArticlesRoute = computed<boolean>(() => route.path === '/ai-xxx' || route.path.startsWith('/ai-xxx/'))
 const isHeaderActionsOpen = ref(false)
+
+interface PageFavoriteItem {
+  title: string
+  path: string
+  timestamp: number
+}
+
+const pageFavorites = ref<Record<string, PageFavoriteItem>>({})
+const PAGE_FAVORITES_CHANGE_EVENT = 'hooksvue-page-favorites-change'
+const routeFavoriteTitleMap: Record<string, string> = {
+  '/flash': '闪存页面',
+  '/aicoding': 'AI Coding',
+  '/helloworld': 'Hello World',
+  '/juejin-theme': '掘金主题榜',
+  '/juejin-course': '掘金小册课程',
+  '/juejin-clubs': '掘金圈子广场',
+  '/juejin-signin': '掘金每日签到',
+  '/jandan': '煎蛋页面',
+  '/tophub': '今日热榜 TopHub',
+  '/ithome': 'IT之家',
+  '/huxiu': '虎嗅24小时',
+  '/github': 'GitHub开源聚合',
+  '/ai-xxx': 'AI教程资源',
+  '/boss-zhipin-hangzhou': 'BOSS直聘杭州',
+  '/boss-zhipin-hangzhou-map': 'BOSS直聘地图找工作',
+  '/wechat-featured': '微信精选',
+  '/runcode': '运行代码',
+  '/toolbox': '工具集合',
+  '/records-cache': '记录缓存展示',
+  '/weather': '天气查询',
+  '/api-center': 'API中心',
+  '/h5': 'H5 页面',
+  '/mingyan': '名人名言收藏库',
+  '/cocoloop': 'Cocoloop',
+  '/cnblogs': '博客园',
+  '/github-cn': 'GitHub中文社区',
+  '/bilibili-trending': 'B站热门',
+  '/bilibili-live': 'B站直播',
+  '/three-showcase': 'Three.js 展示',
+  '/mapcn-showcase': 'MapCN 展示',
+  '/feature': '功能页面',
+  '/web-components': 'Web Components',
+  '/oat-ui': 'Oat UI',
+  '/oat-studio': 'Oat Studio',
+  '/xiaomi-shop': '小米商城'
+}
+
+function readPageFavorites(): Record<string, PageFavoriteItem> {
+  if (typeof window === 'undefined') return {}
+  try {
+    return JSON.parse(window.localStorage.getItem(STORAGE_KEYS.PAGE_FAVORITES) || '{}') as Record<string, PageFavoriteItem>
+  } catch {
+    return {}
+  }
+}
+
+function loadPageFavorites(): void {
+  pageFavorites.value = readPageFavorites()
+}
+
+function savePageFavorites(value: Record<string, PageFavoriteItem>): void {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(STORAGE_KEYS.PAGE_FAVORITES, JSON.stringify(value))
+  window.dispatchEvent(new CustomEvent(PAGE_FAVORITES_CHANGE_EVENT))
+}
+
+const currentRouteFavoriteTitle = computed<string>(() => {
+  const path = route.path
+  const matchedPath = Object.keys(routeFavoriteTitleMap)
+    .sort((left: string, right: string): number => right.length - left.length)
+    .find((routePath: string): boolean => path === routePath || path.startsWith(`${routePath}/`))
+  return matchedPath ? routeFavoriteTitleMap[matchedPath] : path
+})
+
+const isCurrentRouteFavorite = computed<boolean>(() => Boolean(pageFavorites.value[route.path]))
+
+function toggleCurrentRouteFavorite(): void {
+  const path = route.path
+  const next = { ...pageFavorites.value }
+  if (next[path]) {
+    delete next[path]
+    ElMessage({ message: `已取消收藏页面：${currentRouteFavoriteTitle.value}`, type: 'info', duration: 1200 })
+  } else {
+    next[path] = {
+      title: currentRouteFavoriteTitle.value,
+      path,
+      timestamp: Date.now()
+    }
+    ElMessage({ message: `已收藏页面：${currentRouteFavoriteTitle.value}`, type: 'success', duration: 1200 })
+  }
+  pageFavorites.value = next
+  savePageFavorites(next)
+}
 
 interface DrawerCloudLink {
   name: string
@@ -337,8 +432,10 @@ const openCommitOnGithub = (hash: string): void => {
 }
 
 onMounted((): void => {
+  loadPageFavorites()
   syncRouteCategory()
   syncAlapiPlayerVisible()
+  window.addEventListener(PAGE_FAVORITES_CHANGE_EVENT, loadPageFavorites)
   window.addEventListener(ALAPI_PLAYER_VISIBILITY_CHANGE_EVENT, handleAlapiPlayerVisibilityChange)
   if (isDyFormRoute.value && localStorage.getItem(VERSION_HISTORY_SEEN_KEY) !== '1') {
     showVersionHistoryDialog.value = true
@@ -346,6 +443,7 @@ onMounted((): void => {
 })
 
 onUnmounted((): void => {
+  window.removeEventListener(PAGE_FAVORITES_CHANGE_EVENT, loadPageFavorites)
   window.removeEventListener(ALAPI_PLAYER_VISIBILITY_CHANGE_EVENT, handleAlapiPlayerVisibilityChange)
 })
 
@@ -368,6 +466,7 @@ const goAiCoding = (): Promise<void | Error> => router.push('/aicoding')
 const goHelloWorld = (): Promise<void | Error> => router.push('/helloworld')
 const goJuejinTheme = (): Promise<void | Error> => router.push('/juejin-theme')
 const goToolbox = (): Promise<void | Error> => router.push('/toolbox')
+const goRecordsCache = (): Promise<void | Error> => router.push('/records-cache')
 const CONTACT_EMAIL = '869710179@qq.com'
 const QQ_MAILME_URL = 'http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=uYGPgI6IiYiOgPnIyJfa1tQ'
 const openGoldPriceToolbox = async (): Promise<void | Error> => {
@@ -407,6 +506,9 @@ const handleQuickActionCommand = async (command: string): Promise<void> => {
       break
     case 'like-history':
       openLikeHistory()
+      break
+    case 'records-cache':
+      await goRecordsCache()
       break
     case 'control-center':
       showDrawer.value = true
@@ -870,6 +972,11 @@ watch(isDarkMode, () => {
               <span>工具集合</span>
               <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
             </div>
+            <div class="popover-tool-item" @click="goRecordsCache">
+              <span class="tool-icon">♡</span>
+              <span>记录缓存</span>
+              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
+            </div>
           </div>
         </el-popover>
       </div>
@@ -993,6 +1100,7 @@ watch(isDarkMode, () => {
                   <el-dropdown-item command="qq-mailme">QQ 邮我</el-dropdown-item>
                   <el-dropdown-item divided command="third-party">第三方页面集</el-dropdown-item>
                   <el-dropdown-item command="like-history">历史爱心</el-dropdown-item>
+                  <el-dropdown-item command="records-cache">记录缓存</el-dropdown-item>
                   <el-dropdown-item command="control-center">控制中心</el-dropdown-item>
                   <el-dropdown-item command="feature">功能页面</el-dropdown-item>
                   <el-dropdown-item command="xiaomi-shop">小米商城</el-dropdown-item>
@@ -3064,6 +3172,16 @@ watch(isDarkMode, () => {
     <div v-if="isFlashRoute" class="route-view-layer">
       <div class="route-view-bar">
         <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
+        <button
+          type="button"
+          class="route-page-favorite"
+          :class="{ active: isCurrentRouteFavorite }"
+          :title="isCurrentRouteFavorite ? '取消收藏当前页面' : '收藏当前页面'"
+          @click="toggleCurrentRouteFavorite"
+        >
+          <span class="route-page-favorite-icon">{{ isCurrentRouteFavorite ? '♥' : '♡' }}</span>
+          <span>{{ isCurrentRouteFavorite ? '取消收藏' : '收藏页面' }}</span>
+        </button>
       </div>
       <router-view />
       <n-back-top
