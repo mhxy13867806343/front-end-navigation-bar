@@ -13,7 +13,7 @@ import { ElMessage } from 'element-plus'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-type RecordKind = 'page' | 'live-cache' | 'local-cache' | 'history'
+type RecordKind = 'page' | 'live-cache' | 'local-cache' | 'history' | 'content-favorite'
 
 interface RecordEntry {
   id: string
@@ -41,6 +41,16 @@ interface RecordFavoriteEntry {
   timestamp: number
 }
 
+interface ContentItemFavoriteEntry {
+  title: string
+  source: string
+  url: string
+  summary: string
+  image?: string
+  timestamp: number
+  tags: string[]
+}
+
 interface VersionHistoryData {
   generatedAt: string
   groups: Array<{
@@ -54,6 +64,7 @@ const isRefreshing = ref<boolean>(true)
 const localCacheEntries = ref<RecordEntry[]>([])
 const pageFavorites = ref<Record<string, PageFavoriteEntry>>({})
 const recordFavorites = ref<Record<string, RecordFavoriteEntry>>({})
+const contentItemFavorites = ref<Record<string, ContentItemFavoriteEntry>>({})
 let refreshTimer: number | null = null
 
 const pageEntries: RecordEntry[] = [
@@ -94,7 +105,8 @@ const storageKeyLabels: Record<string, string> = {
   pinyin_convert_history: '拼音转换历史',
   doutu_search_history: '表情包搜索历史',
   [STORAGE_KEYS.PAGE_FAVORITES]: '独立页面收藏',
-  [STORAGE_KEYS.RECORD_CACHE_FAVORITES]: '记录缓存卡片收藏'
+  [STORAGE_KEYS.RECORD_CACHE_FAVORITES]: '记录缓存卡片收藏',
+  [STORAGE_KEYS.CONTENT_ITEM_FAVORITES]: '列表内容收藏'
 }
 
 const keyRouteHints: Array<[RegExp, string]> = [
@@ -178,6 +190,7 @@ function saveJsonObject<T>(key: string, value: Record<string, T>): void {
 function loadFavorites(): void {
   pageFavorites.value = readJsonObject<PageFavoriteEntry>(STORAGE_KEYS.PAGE_FAVORITES)
   recordFavorites.value = readJsonObject<RecordFavoriteEntry>(STORAGE_KEYS.RECORD_CACHE_FAVORITES)
+  contentItemFavorites.value = readJsonObject<ContentItemFavoriteEntry>(STORAGE_KEYS.CONTENT_ITEM_FAVORITES)
 }
 
 function isPageFavorite(entry: RecordEntry): boolean {
@@ -257,8 +270,25 @@ const pageFavoriteEntries = computed<RecordEntry[]>(() => {
     }))
 })
 
+const contentFavoriteEntries = computed<RecordEntry[]>(() => {
+  return Object.entries(contentItemFavorites.value)
+    .sort(([, left]: [string, ContentItemFavoriteEntry], [, right]: [string, ContentItemFavoriteEntry]): number => right.timestamp - left.timestamp)
+    .map(([id, favorite]: [string, ContentItemFavoriteEntry]): RecordEntry => ({
+      id: `content-${id}`,
+      kind: 'content-favorite',
+      title: favorite.title,
+      subtitle: favorite.source,
+      desc: favorite.summary || '已收藏的列表内容，可直接中转访问。',
+      url: favorite.url,
+      count: 1,
+      updatedAt: new Date(favorite.timestamp).toLocaleString(),
+      tags: ['内容收藏', ...favorite.tags]
+    }))
+})
+
 const allEntries = computed<RecordEntry[]>(() => [
   ...pageFavoriteEntries.value,
+  ...contentFavoriteEntries.value,
   ...pageEntries,
   ...liveCacheEntries,
   ...localCacheEntries.value,
@@ -278,7 +308,7 @@ const stats = computed(() => ({
   pages: pageEntries.length,
   liveCaches: liveCacheEntries.length,
   localCaches: localCacheEntries.value.length,
-  favorites: Object.keys(pageFavorites.value).length + Object.keys(recordFavorites.value).length
+  favorites: Object.keys(pageFavorites.value).length + Object.keys(recordFavorites.value).length + Object.keys(contentItemFavorites.value).length
 }))
 
 function openEntry(entry: RecordEntry): void {
@@ -327,6 +357,7 @@ onMounted(() => {
   runRecordRefresh(false)
   window.addEventListener('storage', handleExternalRecordChange)
   window.addEventListener('hooksvue-page-favorites-change', handleExternalRecordChange)
+  window.addEventListener('hooksvue-content-favorites-change', handleExternalRecordChange)
 })
 
 onUnmounted(() => {
@@ -335,6 +366,7 @@ onUnmounted(() => {
   }
   window.removeEventListener('storage', handleExternalRecordChange)
   window.removeEventListener('hooksvue-page-favorites-change', handleExternalRecordChange)
+  window.removeEventListener('hooksvue-content-favorites-change', handleExternalRecordChange)
 })
 </script>
 

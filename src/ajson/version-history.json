@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-31T07:19:24.292Z",
+  "generatedAt": "2026-07-31T07:26:57.035Z",
   "groups": [
     {
       "date": "2026-07-31",
       "items": [
+        {
+          "hash": "6344bf440cc3eb8d97d1c92b4645fa5125b0f51f",
+          "shortHash": "6344bf4",
+          "date": "2026-07-31",
+          "time": "15:22",
+          "type": "功能更新",
+          "title": "add records cache favorites page",
+          "scope": "",
+          "message": "feat: add records cache favorites page"
+        },
         {
           "hash": "c2cca8a5c46ed1e09611902e267fca31fe492a9f",
           "shortHash": "c2cca8a",
@@ -303,16 +313,6 @@
           "title": "expand Auth Showcase to 100 total Auth UI themes (50 Login + 50 Register) with mode filter and search",
           "scope": "",
           "message": "feat: expand Auth Showcase to 100 total Auth UI themes (50 Login + 50 Register) with mode filter and search"
-        },
-        {
-          "hash": "c2b9482bfe13dbd6780d6d91bb2ed495278713fa",
-          "shortHash": "c2b9482",
-          "date": "2026-07-24",
-          "time": "08:21",
-          "type": "功能更新",
-          "title": "add 10 Login & Register UI Showcase view under WebComponents dropdown menu with 10 interactive themes and tab switching",
-          "scope": "",
-          "message": "feat: add 10 Login & Register UI Showcase view under WebComponents dropdown menu with 10 interactive themes and tab switching"
         }
       ]
     }

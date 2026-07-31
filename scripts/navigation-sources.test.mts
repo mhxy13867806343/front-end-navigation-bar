@@ -542,6 +542,7 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(noticeSource, /command="\/records-cache">♡ 记录缓存展示/)
   assert.match(storageKeysSource, /PAGE_FAVORITES: 'HOOKSVUE_PAGE_FAVORITES_V1'/)
   assert.match(storageKeysSource, /RECORD_CACHE_FAVORITES: 'HOOKSVUE_RECORD_CACHE_FAVORITES_V1'/)
+  assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
 
   assert.match(pageSource, /class="cloud-panel"/)
   assert.match(pageSource, /class="records-grid"/)
@@ -549,12 +550,32 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(pageSource, /record-heart/)
   assert.match(pageSource, /togglePageFavorite/)
   assert.match(pageSource, /toggleRecordFavorite/)
+  assert.match(pageSource, /CONTENT_ITEM_FAVORITES/)
+  assert.match(pageSource, /contentFavoriteEntries/)
   assert.match(pageSource, /buildLiveDataUrl\(JUEJIN_COURSE_CACHE_FILE\)/)
   assert.match(pageSource, /window\.localStorage\.length/)
   assert.match(pageSource, /中转进入/)
   assert.match(pageSource, /isRefreshing/)
   assert.match(pageSource, /正在加载记录缓存/)
   assert.match(pageSource, /:disabled="isRefreshing"/)
+})
+
+test('Juejin theme cards provide item-level favorite controls saved into content favorites', () => {
+  const storageKeysSource = readFileSync(new URL('../src/constants/storageKeys.ts', import.meta.url), 'utf8')
+  const pageSource = readFileSync(new URL('../src/views/juejinTheme/index.vue', import.meta.url), 'utf8')
+  const styleSource = readFileSync(new URL('../src/views/juejinTheme/css/index.scss', import.meta.url), 'utf8')
+
+  assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
+  assert.match(pageSource, /STORAGE_KEYS\.CONTENT_ITEM_FAVORITES/)
+  assert.match(pageSource, /theme-card-favorite/)
+  assert.match(pageSource, /toggleThemeFavorite\(item\)/)
+  assert.match(pageSource, /isThemeFavorite\(item\)/)
+  assert.match(pageSource, /juejin-theme:\$\{item\.id\}/)
+  assert.match(pageSource, /hooksvue-content-favorites-change/)
+  assert.match(pageSource, /source: '掘金热门主题'/)
+  assert.match(styleSource, /\.theme-card-favorite/)
+  assert.match(styleSource, /\.theme-card\.favorited/)
+  assert.match(styleSource, /right:\s*24px/)
 })
 
 test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {

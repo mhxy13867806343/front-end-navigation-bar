@@ -55,9 +55,20 @@
           v-for="(item, index) in themes"
           :key="item.id"
           class="theme-card"
+          :class="{ favorited: isThemeFavorite(item) }"
           :style="{ animationDelay: `${index * 40}ms` }"
           @click="openThemeTopic(item)"
         >
+          <button
+            type="button"
+            class="theme-card-favorite"
+            :class="{ active: isThemeFavorite(item) }"
+            :title="isThemeFavorite(item) ? '取消收藏这个主题' : '收藏这个主题'"
+            @click.stop="toggleThemeFavorite(item)"
+          >
+            <span>{{ isThemeFavorite(item) ? '♥' : '♡' }}</span>
+          </button>
+
           <!-- 排名 -->
           <div class="card-rank" :class="rankClass(index)">
             {{ index + 1 }}
@@ -271,8 +282,10 @@ import { requestJson } from '@/utils/request'
 import { requestJinaText } from '@/utils/jinaReader'
 import { copyToClipboard } from '@/utils/clipboard'
 import { DEFAULT_AVATAR, handleAvatarImgError } from '@/utils/avatar'
+import { STORAGE_KEYS } from '@/constants/storageKeys'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
 import { Search, Loading } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import {
   API_BASE,
   mapTheme,
@@ -292,6 +305,16 @@ interface UserDetailField {
   value: string
 }
 
+interface ContentItemFavorite {
+  title: string
+  source: string
+  url: string
+  summary: string
+  image?: string
+  timestamp: number
+  tags: string[]
+}
+
 const keyword = ref<string>('')
 const themes = ref<ThemeItem[]>([])
 const cursor = ref<string>('0')
@@ -299,12 +322,69 @@ const hasMore = ref<boolean>(true)
 const loading = ref<boolean>(false)
 const error = ref<string>('')
 const isProd: boolean = import.meta.env.PROD
+const contentItemFavorites = ref<Record<string, ContentItemFavorite>>({})
+const CONTENT_FAVORITES_CHANGE_EVENT = 'hooksvue-content-favorites-change'
 
 const userModalVisible = ref<boolean>(false)
 const selectedUser = ref<ThemeRecentUser | null>(null)
 
 const moreUsersModalVisible = ref<boolean>(false)
 const selectedThemeForUsers = ref<ThemeItem | null>(null)
+
+function readContentFavorites(): Record<string, ContentItemFavorite> {
+  if (typeof window === 'undefined') return {}
+  try {
+    return JSON.parse(window.localStorage.getItem(STORAGE_KEYS.CONTENT_ITEM_FAVORITES) || '{}') as Record<string, ContentItemFavorite>
+  } catch {
+    return {}
+  }
+}
+
+function saveContentFavorites(value: Record<string, ContentItemFavorite>): void {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(STORAGE_KEYS.CONTENT_ITEM_FAVORITES, JSON.stringify(value))
+  window.dispatchEvent(new CustomEvent(CONTENT_FAVORITES_CHANGE_EVENT))
+}
+
+function loadContentFavorites(): void {
+  contentItemFavorites.value = readContentFavorites()
+}
+
+function themeFavoriteKey(item: ThemeItem): string {
+  return `juejin-theme:${item.id}`
+}
+
+function buildThemeTopicUrl(item: ThemeItem): string {
+  return (item.brief && item.brief.startsWith('http'))
+    ? item.brief
+    : `https://juejin.cn/pin/topic/${item.id}`
+}
+
+function isThemeFavorite(item: ThemeItem): boolean {
+  return Boolean(contentItemFavorites.value[themeFavoriteKey(item)])
+}
+
+function toggleThemeFavorite(item: ThemeItem): void {
+  const key = themeFavoriteKey(item)
+  const next = { ...contentItemFavorites.value }
+  if (next[key]) {
+    delete next[key]
+    ElMessage({ message: `已取消收藏主题：${item.name}`, type: 'info', duration: 1200 })
+  } else {
+    next[key] = {
+      title: item.name,
+      source: '掘金热门主题',
+      url: buildThemeTopicUrl(item),
+      summary: item.brief || '暂无描述',
+      image: item.cover || undefined,
+      timestamp: Date.now(),
+      tags: ['掘金', '热门主题', item.isRec ? '推荐' : '主题', item.isLottery ? '抽奖' : '收藏'].filter(Boolean)
+    }
+    ElMessage({ message: `已收藏主题：${item.name}`, type: 'success', duration: 1200 })
+  }
+  contentItemFavorites.value = next
+  saveContentFavorites(next)
+}
 
 function openMoreUsersModal(item: ThemeItem): void {
   selectedThemeForUsers.value = item
@@ -471,10 +551,7 @@ const selectedUserFields = computed<UserDetailField[]>(() => {
 })
 
 function openThemeTopic(item: ThemeItem): void {
-  const targetUrl = (item.brief && item.brief.startsWith('http'))
-    ? item.brief
-    : `https://juejin.cn/pin/topic/${item.id}`
-  window.open(targetUrl, '_blank')
+  window.open(buildThemeTopicUrl(item), '_blank')
 }
 
 function showUserDetailModal(u: ThemeRecentUser): void {
@@ -496,7 +573,13 @@ const totalUsers = computed<string>(() =>
 )
 
 onMounted((): void => {
+  loadContentFavorites()
+  window.addEventListener(CONTENT_FAVORITES_CHANGE_EVENT, loadContentFavorites)
   fetchThemes(true)
+})
+
+onUnmounted((): void => {
+  window.removeEventListener(CONTENT_FAVORITES_CHANGE_EVENT, loadContentFavorites)
 })
 
 async function fetchThemes(reset: boolean = false): Promise<void> {

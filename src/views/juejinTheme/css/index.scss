@@ -120,6 +120,7 @@
   gap: 14px;
 }
 .theme-card {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 16px;
@@ -132,11 +133,45 @@
   opacity: 0;
   cursor: pointer;
 }
+.theme-card.favorited {
+  border-color: rgba(255,102,153,0.42);
+  background: rgba(255,102,153,0.08);
+}
 .theme-card:hover {
   background: rgba(255,255,255,0.08);
   border-color: rgba(78,205,196,0.3);
   transform: translateX(6px);
   box-shadow: 0 8px 32px rgba(78,205,196,0.1);
+}
+.theme-card-favorite {
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255,102,153,0.5);
+  border-radius: 999px;
+  color: #ff6699;
+  background: rgba(12, 10, 28, 0.72);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.theme-card-favorite:hover {
+  border-color: #ff6699;
+  color: #fff;
+  background: rgba(255,102,153,0.24);
+}
+.theme-card-favorite.active {
+  border-color: #ff4d79;
+  color: #fff;
+  background: #ff4d79;
+  box-shadow: 0 0 0 7px rgba(255,77,121,0.18);
 }
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(12px); }
@@ -204,6 +239,7 @@
 .card-body {
   flex: 1;
   min-width: 0;
+  padding-right: 64px;
 }
 .card-title-row {
   display: flex;
@@ -705,6 +741,14 @@
   .theme-card {
     flex-wrap: wrap;
     padding: 16px;
+  }
+  .theme-card-favorite {
+    top: 16px;
+    right: 16px;
+    transform: none;
+  }
+  .card-body {
+    padding-right: 0;
   }
   .card-cover {
     width: 60px;
