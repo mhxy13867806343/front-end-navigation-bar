@@ -2027,7 +2027,7 @@ onMounted(async () => {
                 <div style="font-size: 13px; color: #94a3b8;">部首：{{ item.radical || '-' }} | 笔画：{{ item.strokes || '-' }}</div>
               </div>
             </div>
-            <div style="font-size: 14px; color: #cbd5e1; line-height: 1.6; margin-bottom: 16px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+            <div class="word-card-summary">
               {{ item.explanation || item.more || '暂无释义' }}
             </div>
             <el-button type="primary" size="medium" style="width: 100%; font-weight: 600;" @click="openWordDetail(item)">
@@ -2309,7 +2309,7 @@ onMounted(async () => {
                 <div style="font-size: 17px; font-weight: 800; color: #f8fafc; line-height: 1.5; margin-bottom: 10px;">
                   {{ item.title }}
                 </div>
-                <div style="font-size: 13px; color: #94a3b8; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 12px;">
+                <div class="hanfu-card-summary">
                   {{ item.desc || '暂无描述' }}
                 </div>
                 <div style="font-size: 12px; color: #64748b;">📅 {{ item.ctime }}</div>

@@ -1,3 +1,5 @@
+@import '../../style/mixins.scss';
+
 .app-store-container {
   display: flex;
   flex-direction: column;
@@ -177,8 +179,15 @@
   z-index: 2;
 }
 
+.app-card-share {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  z-index: 2;
+}
+
 .app-store-card .app-details-col {
-  padding-right: 34px;
+  padding-right: 42px;
 }
 
 .app-store-card:hover {
@@ -232,9 +241,7 @@
   font-weight: 800;
   color: var(--text-color);
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis;
 }
 
 .platform-icons {
@@ -255,10 +262,7 @@
   color: var(--text-secondary);
   line-height: 1.45;
   margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  @include line-clamp(2);
   height: 32px;
 }
 

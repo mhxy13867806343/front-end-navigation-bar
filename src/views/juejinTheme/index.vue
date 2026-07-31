@@ -68,6 +68,11 @@
           >
             <span>{{ isThemeFavorite(item) ? '♥' : '♡' }}</span>
           </button>
+          <ShareButton
+            class="theme-card-share"
+            size="compact"
+            :payload="themeSharePayload(item)"
+          />
 
           <!-- 排名 -->
           <div class="card-rank" :class="rankClass(index)">
@@ -284,6 +289,8 @@ import { copyToClipboard } from '@/utils/clipboard'
 import { DEFAULT_AVATAR, handleAvatarImgError } from '@/utils/avatar'
 import { STORAGE_KEYS } from '@/constants/storageKeys'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { Search, Loading } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -358,6 +365,19 @@ function buildThemeTopicUrl(item: ThemeItem): string {
   return (item.brief && item.brief.startsWith('http'))
     ? item.brief
     : `https://juejin.cn/pin/topic/${item.id}`
+}
+
+function themeSharePayload(item: ThemeItem): SharePayload {
+  return {
+    id: themeFavoriteKey(item),
+    title: item.name,
+    url: buildThemeTopicUrl(item),
+    description: item.brief || '暂无描述',
+    image: item.cover || undefined,
+    source: '掘金热门主题',
+    tags: ['掘金', '热门主题', item.isRec ? '推荐' : '主题', item.isLottery ? '抽奖' : '分享'].filter(Boolean),
+    type: 'item'
+  }
 }
 
 function isThemeFavorite(item: ThemeItem): boolean {

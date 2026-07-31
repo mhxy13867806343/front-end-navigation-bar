@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 
 interface MomentTab {
@@ -160,6 +162,19 @@ function toggleHuxiuFavorite(item: MomentItem): void {
   })
 }
 
+function huxiuSharePayload(item: MomentItem): SharePayload {
+  return {
+    id: `huxiu:moment:${item.link || item.author + item.time}`,
+    title: item.content.slice(0, 42) || item.author,
+    url: item.link || buildSourceUrl(),
+    description: item.content,
+    image: item.avatar || undefined,
+    source: `虎嗅24小时 · ${activeTab.value.label}`,
+    tags: ['虎嗅24小时', activeTab.value.label, item.author].filter(Boolean),
+    type: 'item'
+  }
+}
+
 onMounted((): void => {
   void fetchMoments()
 })
@@ -228,6 +243,11 @@ onMounted((): void => {
           :title="isContentItemFavorite(huxiuFavoriteKey(item)) ? '取消收藏动态' : '收藏动态'"
           @toggle="toggleHuxiuFavorite(item)"
         />
+        <ShareButton
+          class="moment-share"
+          size="compact"
+          :payload="huxiuSharePayload(item)"
+        />
         <a class="avatar" :href="item.profile" target="_blank" rel="noopener noreferrer">
           <img :src="item.avatar" :alt="item.author" loading="lazy">
         </a>
@@ -247,7 +267,9 @@ onMounted((): void => {
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../../style/mixins.scss';
+
 .huxiu-page {
   min-height: 100vh;
   padding: 28px;
@@ -388,6 +410,12 @@ button:disabled {
   right: 20px;
 }
 
+.moment-share {
+  position: absolute;
+  top: 66px;
+  right: 20px;
+}
+
 .avatar img {
   width: 64px;
   height: 64px;
@@ -397,7 +425,7 @@ button:disabled {
 
 .moment-top {
   justify-content: space-between;
-  padding-right: 46px;
+  padding-right: 56px;
 }
 
 .moment-top a,
@@ -417,6 +445,7 @@ button:disabled {
   margin: 20px 0 28px;
   font-size: 18px;
   line-height: 1.9;
+  @include line-clamp(3);
 }
 
 .moment-footer {

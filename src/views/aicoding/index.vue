@@ -92,6 +92,11 @@
               :title="isContentItemFavorite(rankFavoriteKey(item)) ? '取消收藏榜单项' : '收藏榜单项'"
               @toggle="toggleRankFavorite(item)"
             />
+            <ShareButton
+              class="rank-share"
+              size="compact"
+              :payload="rankSharePayload(item)"
+            />
             <strong v-if="item.metricValue" class="hot-rank">
               <span v-if="item.metricIcon">{{ item.metricIcon }}</span>
               {{ item.metricValue }}
@@ -108,8 +113,10 @@
 <script setup lang="ts">
 import type { ComputedRef, Ref } from 'vue'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestJson } from '@/utils/request'
 import { requestJinaJson } from '@/utils/jinaReader'
 import {
@@ -637,6 +644,19 @@ function toggleRankFavorite(item: RankItem): void {
     image: item.avatar || undefined,
     tags: ['掘金热榜', activeNav.value.title, activeCategoryLabel.value].filter(Boolean)
   })
+}
+
+function rankSharePayload(item: RankItem): SharePayload {
+  return {
+    id: rankFavoriteKey(item),
+    title: item.title,
+    url: item.url,
+    description: item.description || item.stats.map((stat: RankStat): string => `${stat.value} ${stat.label}`).join(' · '),
+    image: item.avatar || undefined,
+    source: `掘金热榜 · ${activeNav.value.title}`,
+    tags: ['掘金热榜', activeNav.value.title, activeCategoryLabel.value].filter(Boolean),
+    type: 'item'
+  }
 }
 
 async function handleRefresh(): Promise<void> {

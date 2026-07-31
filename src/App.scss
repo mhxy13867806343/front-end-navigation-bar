@@ -748,6 +748,7 @@
 }
 
 .route-page-favorite {
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -788,6 +789,14 @@
   border-radius: 50%;
   font-size: 18px;
   line-height: 1;
+}
+
+.route-page-share {
+  margin-left: auto;
+}
+
+.route-page-favorite + .route-page-share {
+  margin-left: 0;
 }
 
 .route-back-top {

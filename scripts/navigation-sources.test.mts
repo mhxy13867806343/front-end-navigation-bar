@@ -536,18 +536,26 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(appSource, /case 'records-cache':/)
   assert.match(appSource, /goRecordsCache/)
   assert.match(appSource, /route-page-favorite/)
+  assert.match(appSource, /isRouteFavoriteVisible/)
+  assert.match(appSource, /!\['\/records-cache',\s*'\/share-records'\]\.includes\(route\.path\)/)
+  assert.match(appSource, /route-page-share/)
+  assert.match(appSource, /currentRouteSharePayload/)
   assert.match(appSource, /STORAGE_KEYS\.PAGE_FAVORITES/)
   assert.match(appStyleSource, /\.route-page-favorite/)
+  assert.match(appStyleSource, /\.route-page-share/)
   assert.match(noticeSource, /command:\s*'\/records-cache'/)
   assert.match(noticeSource, /command="\/records-cache">♡ 记录缓存展示/)
   assert.match(storageKeysSource, /PAGE_FAVORITES: 'HOOKSVUE_PAGE_FAVORITES_V1'/)
   assert.match(storageKeysSource, /RECORD_CACHE_FAVORITES: 'HOOKSVUE_RECORD_CACHE_FAVORITES_V1'/)
   assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
+  assert.match(storageKeysSource, /SHARE_RECORDS: 'HOOKSVUE_SHARE_RECORDS_V1'/)
 
   assert.match(pageSource, /class="cloud-panel"/)
   assert.match(pageSource, /class="records-grid"/)
   assert.match(pageSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
   assert.match(pageSource, /record-heart/)
+  assert.match(pageSource, /ShareButton/)
+  assert.match(pageSource, /recordSharePayload/)
   assert.match(pageSource, /ElMessageBox\.confirm/)
   assert.match(pageSource, /confirmFavoriteRemoval/)
   assert.match(pageSource, /togglePageFavorite/)
@@ -569,8 +577,8 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(pageSource, /:disabled="isRefreshing"/)
   assert.match(pageSource, /:title="`\$\{tag\.title\} \(\$\{tag\.count\} 条\)`"/)
   assert.match(pageSource, /max-width:\s*3em/)
-  assert.match(pageSource, /text-overflow:\s*ellipsis/)
-  assert.match(pageSource, /white-space:\s*nowrap/)
+  assert.match(pageSource, /@include text-ellipsis/)
+  assert.match(pageSource, /@include line-clamp\(2\)/)
 })
 
 test('Juejin theme cards provide item-level favorite controls saved into content favorites', () => {
@@ -581,6 +589,8 @@ test('Juejin theme cards provide item-level favorite controls saved into content
   assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
   assert.match(pageSource, /STORAGE_KEYS\.CONTENT_ITEM_FAVORITES/)
   assert.match(pageSource, /theme-card-favorite/)
+  assert.match(pageSource, /ShareButton/)
+  assert.match(pageSource, /themeSharePayload/)
   assert.match(pageSource, /ElMessageBox\.confirm/)
   assert.match(pageSource, /toggleThemeFavorite\(item\)/)
   assert.match(pageSource, /isThemeFavorite\(item\)/)
@@ -589,6 +599,8 @@ test('Juejin theme cards provide item-level favorite controls saved into content
   assert.match(pageSource, /source: '掘金热门主题'/)
   assert.match(styleSource, /\.theme-card-favorite/)
   assert.match(styleSource, /\.theme-card\.favorited/)
+  assert.match(styleSource, /\.theme-card-share/)
+  assert.match(styleSource, /@include line-clamp\(2\)/)
   assert.match(styleSource, /right:\s*24px/)
 })
 
@@ -620,11 +632,81 @@ test('new internal list pages share item-level content favorite buttons', () => 
     assert.match(source, /ContentFavoriteButton/)
     assert.match(source, /useContentItemFavorites/)
     assert.match(source, /toggleContentItemFavorite/)
+    assert.match(source, /ShareButton/)
+    assert.match(source, /SharePayload/)
   }
 
   assert.match(readFileSync(new URL('../src/views/tophub/index.vue', import.meta.url), 'utf8'), /board-item-favorite/)
+  assert.match(readFileSync(new URL('../src/views/tophub/index.vue', import.meta.url), 'utf8'), /tophubItemSharePayload/)
   assert.match(readFileSync(new URL('../src/views/jandan/index.vue', import.meta.url), 'utf8'), /feed-card-favorite/)
+  assert.match(readFileSync(new URL('../src/views/jandan/index.vue', import.meta.url), 'utf8'), /jandanSharePayload/)
   assert.match(readFileSync(new URL('../src/views/helloworld/index.vue', import.meta.url), 'utf8'), /hello-list-favorite/)
+  assert.match(readFileSync(new URL('../src/views/helloworld/index.vue', import.meta.url), 'utf8'), /helloArticleSharePayload/)
+})
+
+test('share records page and shared share button use social share hooks', () => {
+  const packageSource = readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const storageKeysSource = readFileSync(new URL('../src/constants/storageKeys.ts', import.meta.url), 'utf8')
+  const composableSource = readFileSync(new URL('../src/composables/useShareRecords.ts', import.meta.url), 'utf8')
+  const buttonSource = readFileSync(new URL('../src/components/ShareButton.vue', import.meta.url), 'utf8')
+  const pageSource = readFileSync(new URL('../src/views/shareRecords/index.vue', import.meta.url), 'utf8')
+
+  assert.match(packageSource, /"social-share\.js":/)
+  assert.match(routerSource, /path:\s*'\/share-records'[\s\S]*?name:\s*'ShareRecords'/)
+  assert.match(appSource, /case 'share-records':/)
+  assert.match(appSource, /route-page-share/)
+  assert.match(appSource, /!\['\/records-cache',\s*'\/share-records'\]\.includes\(route\.path\)/)
+  assert.match(storageKeysSource, /SHARE_RECORDS: 'HOOKSVUE_SHARE_RECORDS_V1'/)
+  assert.match(composableSource, /SHARE_RECORDS_CHANGE_EVENT/)
+  assert.match(composableSource, /buildShareUrl/)
+  assert.match(composableSource, /recordShare/)
+  assert.match(composableSource, /copyShareLink/)
+  assert.match(buttonSource, /social-share\.js/)
+  assert.match(buttonSource, /window\.socialShare/)
+  assert.match(buttonSource, /recordShare\(props\.payload\)/)
+  assert.match(pageSource, /class="share-records-page"/)
+  assert.match(pageSource, /class="cloud-panel"/)
+  assert.match(pageSource, /class="records-grid"/)
+  assert.match(pageSource, /max-width:\s*3em/)
+  assert.match(pageSource, /@include text-ellipsis/)
+  assert.match(pageSource, /@include line-clamp\(2\)/)
+  assert.doesNotMatch(pageSource, /record-heart/)
+})
+
+test('line clamp styles are centralized through the shared SCSS mixin', () => {
+  const mixinsSource = readFileSync(new URL('../src/style/mixins.scss', import.meta.url), 'utf8')
+  const files = [
+    '../src/style/style.scss',
+    '../src/components/css/ApiToolbox.scss',
+    '../src/components/css/AiArticlesList.scss',
+    '../src/components/css/AiAppStore.scss',
+    '../src/components/css/AiNewsTimeline.scss',
+    '../src/views/aicoding/css/index.scss',
+    '../src/views/bilibiliTrending/css/index.scss',
+    '../src/views/cnblogs/css/index.scss',
+    '../src/views/cocoloop/css/index.scss',
+    '../src/views/githubCn/css/index.scss',
+    '../src/views/helloworld/css/index.scss',
+    '../src/views/jandan/index.vue',
+    '../src/views/juejinCourse/index.vue',
+    '../src/views/juejinTheme/css/index.scss',
+    '../src/views/mingyan/index.vue',
+    '../src/views/mingyan/css/index.scss',
+    '../src/views/recordsCache/index.vue',
+    '../src/views/shareRecords/index.vue'
+  ]
+
+  assert.match(mixinsSource, /@mixin line-clamp\(\$lines:\s*2\)/)
+  assert.match(mixinsSource, /@mixin text-ellipsis/)
+
+  for (const filePath of files) {
+    const source = readFileSync(new URL(filePath, import.meta.url), 'utf8')
+    assert.doesNotMatch(source, /display:\s*-webkit-box/)
+    assert.doesNotMatch(source, /-webkit-line-clamp:\s*\d/)
+    assert.doesNotMatch(source, /-webkit-box-orient:\s*vertical/)
+  }
 })
 
 test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {

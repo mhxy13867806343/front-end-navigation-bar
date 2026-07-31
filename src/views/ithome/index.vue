@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 
 interface IthomeSection {
@@ -225,6 +227,19 @@ function toggleIthomeItemFavorite(item: IthomeItem): void {
   })
 }
 
+function ithomeItemSharePayload(item: IthomeItem): SharePayload {
+  return {
+    id: ithomeItemFavoriteKey(item),
+    title: item.title,
+    url: item.link || toSourceUrl(activeSection.value.path),
+    description: item.summary || item.date || '暂无摘要',
+    image: item.image || undefined,
+    source: `IT之家 · ${activeSection.value.label}`,
+    tags: ['IT之家', activeSection.value.label, ...item.tags].filter(Boolean),
+    type: 'item'
+  }
+}
+
 function ithomeRankFavoriteKey(rank: IthomeRank): string {
   return `ithome:rank:${rank.link || rank.title}`
 }
@@ -238,6 +253,18 @@ function toggleIthomeRankFavorite(rank: IthomeRank): void {
     summary: 'IT资讯热榜日榜内容',
     tags: ['IT之家', '热榜']
   })
+}
+
+function ithomeRankSharePayload(rank: IthomeRank): SharePayload {
+  return {
+    id: ithomeRankFavoriteKey(rank),
+    title: rank.title,
+    url: rank.link || toSourceUrl('/'),
+    description: 'IT资讯热榜日榜内容',
+    source: 'IT之家 · IT资讯热榜',
+    tags: ['IT之家', '热榜'],
+    type: 'item'
+  }
 }
 
 onMounted((): void => {
@@ -318,6 +345,11 @@ onMounted((): void => {
             :title="isContentItemFavorite(ithomeItemFavoriteKey(item)) ? '取消收藏新闻' : '收藏新闻'"
             @toggle="toggleIthomeItemFavorite(item)"
           />
+          <ShareButton
+            class="news-card-share"
+            size="compact"
+            :payload="ithomeItemSharePayload(item)"
+          />
         </article>
       </div>
 
@@ -337,6 +369,11 @@ onMounted((): void => {
               :title="isContentItemFavorite(ithomeRankFavoriteKey(rank)) ? '取消收藏热榜' : '收藏热榜'"
               @toggle="toggleIthomeRankFavorite(rank)"
             />
+            <ShareButton
+              class="rank-item-share"
+              size="compact"
+              :payload="ithomeRankSharePayload(rank)"
+            />
           </li>
         </ol>
       </aside>
@@ -344,7 +381,9 @@ onMounted((): void => {
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../../style/mixins.scss';
+
 .ithome-page {
   min-height: 100vh;
   padding: 28px;
@@ -470,12 +509,13 @@ button:disabled {
 .news-card {
   position: relative;
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr) 42px;
+  grid-template-columns: 160px minmax(0, 1fr) 42px 42px;
   gap: 20px;
   padding: 16px;
 }
 
-.news-card-favorite {
+.news-card-favorite,
+.news-card-share {
   align-self: center;
   justify-self: end;
 }
@@ -497,6 +537,7 @@ button:disabled {
 .news-body p {
   margin: 12px 0;
   line-height: 1.8;
+  @include line-clamp(2);
 }
 
 .meta-row {
@@ -528,12 +569,13 @@ button:disabled {
 
 .rank-panel li {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 34px;
+  grid-template-columns: 28px minmax(0, 1fr) 34px 34px;
   gap: 10px;
   align-items: start;
 }
 
-.rank-item-favorite {
+.rank-item-favorite,
+.rank-item-share {
   justify-self: end;
 }
 

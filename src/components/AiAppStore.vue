@@ -2,7 +2,9 @@
 
 import fallbackAppsData from '../utlis/daily_ai_apps.json'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 
 interface AiAppItem {
@@ -60,6 +62,19 @@ function toggleAppFavorite(app: AiAppItem): void {
     image: app.icon || undefined,
     tags: ['AI应用集', app.tag, app.android ? 'Android' : '', app.ios ? 'iOS' : ''].filter(Boolean)
   })
+}
+
+function appSharePayload(app: AiAppItem): SharePayload {
+  return {
+    id: appFavoriteKey(app),
+    title: app.title,
+    url: app.link || 'https://ai-bot.cn/ai-app-store/',
+    description: app.desc || '暂无详细描述',
+    image: app.icon || undefined,
+    source: 'AI应用集',
+    tags: ['AI应用集', app.tag, app.android ? 'Android' : '', app.ios ? 'iOS' : ''].filter(Boolean),
+    type: 'item'
+  }
 }
 
 // Browser DOM parser for real-time live content
@@ -300,6 +315,11 @@ onUnmounted(() => {
                 :active="isContentItemFavorite(appFavoriteKey(app))"
                 :title="isContentItemFavorite(appFavoriteKey(app)) ? '取消收藏应用' : '收藏应用'"
                 @toggle="toggleAppFavorite(app)"
+              />
+              <ShareButton
+                class="app-card-share"
+                size="compact"
+                :payload="appSharePayload(app)"
               />
               <!-- Left side icon -->
               <div class="app-icon-wrapper">

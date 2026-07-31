@@ -3,7 +3,9 @@
 import dailyNewsData from '../utlis/daily_ai_news.json'
 import wechatFeaturedArticles from '../ajson/wechat-featured-articles.json'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestJson, requestText } from '@/utils/request'
 
 type NewsSource = 'aiBot' | 'ithome' | 'wechat'
@@ -111,6 +113,22 @@ function toggleNewsFavorite(item: NewsItem): void {
     image: item.image,
     tags: ['每日AI资讯', item.source, ...(item.tags || [])].filter(Boolean)
   })
+}
+
+function newsSharePayload(item: NewsItem): SharePayload {
+  const url = activeSource.value === 'wechat' && item.slug
+    ? `${import.meta.env.BASE_URL}wechat-featured?article=${encodeURIComponent(item.slug)}`
+    : item.link
+  return {
+    id: newsFavoriteKey(item),
+    title: item.title,
+    url,
+    description: item.desc || '暂无摘要',
+    image: item.image,
+    source: pageTitle.value.replace(/^[^A-Za-z0-9\u4e00-\u9fa5]+/, ''),
+    tags: ['每日AI资讯', item.source, ...(item.tags || [])].filter(Boolean),
+    type: 'item'
+  }
 }
 
 const parseAiBotNewsHtml = (htmlText: string): NewsDay[] => {
@@ -467,6 +485,11 @@ onUnmounted(() => {
                 :active="isContentItemFavorite(newsFavoriteKey(item))"
                 :title="isContentItemFavorite(newsFavoriteKey(item)) ? '取消收藏资讯' : '收藏资讯'"
                 @toggle="toggleNewsFavorite(item)"
+              />
+              <ShareButton
+                class="news-card-share"
+                size="compact"
+                :payload="newsSharePayload(item)"
               />
               <div class="card-inner-header">
                 <h3 class="news-title-link">

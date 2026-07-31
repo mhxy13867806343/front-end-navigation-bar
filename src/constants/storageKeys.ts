@@ -20,7 +20,9 @@ export const STORAGE_KEYS = {
   /** 记录缓存展示页卡片收藏 */
   RECORD_CACHE_FAVORITES: 'HOOKSVUE_RECORD_CACHE_FAVORITES_V1',
   /** 页面列表内容项收藏记录 */
-  CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'
+  CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1',
+  /** 页面与列表项分享点击记录 */
+  SHARE_RECORDS: 'HOOKSVUE_SHARE_RECORDS_V1'
 } as const
 
 export type StorageKeyType = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS] | string

@@ -48,6 +48,11 @@ const routes = [
     component: () => import('../views/recordsCache/index.vue')
   },
   {
+    path: '/share-records',
+    name: 'ShareRecords',
+    component: () => import('../views/shareRecords/index.vue')
+  },
+  {
     path: '/h5/:ticket',
     name: 'H5DesktopLink',
     component: () => import('../views/h5DesktopLink/index.vue')

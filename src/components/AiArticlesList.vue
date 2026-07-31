@@ -7,7 +7,9 @@ import fallbackEncyclopedia from '../utlis/daily_ai_encyclopedia.json'
 import fallbackHallOfFame from '../utlis/daily_ai_hall_of_fame.json'
 import fallbackResearch from '../utlis/daily_ai_research.json'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 
 type ArticleType = 'tutorials' | 'column' | 'qa' | 'encyclopedia' | 'hall_of_fame' | 'research'
@@ -113,6 +115,19 @@ function toggleArticleFavorite(item: ArticleItem): void {
     image: item.thumbnail || undefined,
     tags: ['AI教程资源', pageMeta[props.type].title, item.category].filter(Boolean)
   })
+}
+
+function articleSharePayload(item: ArticleItem): SharePayload {
+  return {
+    id: articleFavoriteKey(item),
+    title: item.title,
+    url: item.link || pageMeta[props.type].url,
+    description: item.desc || pageMeta[props.type].subtitle,
+    image: item.thumbnail || undefined,
+    source: pageMeta[props.type].title.replace(/^[^A-Za-z0-9\u4e00-\u9fa5]+/, ''),
+    tags: ['AI教程资源', pageMeta[props.type].title, item.category].filter(Boolean),
+    type: 'item'
+  }
 }
 
 // Browser DOM parser for dynamic list compilation
@@ -297,6 +312,11 @@ onUnmounted(() => {
               :active="isContentItemFavorite(articleFavoriteKey(item))"
               :title="isContentItemFavorite(articleFavoriteKey(item)) ? '取消收藏文章' : '收藏文章'"
               @toggle="toggleArticleFavorite(item)"
+            />
+            <ShareButton
+              class="article-card-share"
+              size="compact"
+              :payload="articleSharePayload(item)"
             />
             <!-- Poster left -->
             <div class="article-poster-wrap">

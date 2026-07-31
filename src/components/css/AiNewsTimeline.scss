@@ -143,8 +143,15 @@
   z-index: 2;
 }
 
+.news-card-share {
+  position: absolute;
+  top: 54px;
+  right: 14px;
+  z-index: 2;
+}
+
 .news-item-card .card-inner-header {
-  padding-right: 38px;
+  padding-right: 46px;
 }
 
 .news-item-card:hover {

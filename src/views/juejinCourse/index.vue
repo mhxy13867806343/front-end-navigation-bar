@@ -606,6 +606,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+@import '../../style/mixins.scss';
+
 .juejin-course-page {
   min-height: 100vh;
   padding: 26px;
@@ -1035,15 +1037,12 @@ onUnmounted(() => {
 }
 
 .course-summary {
-  display: -webkit-box;
   min-height: 72px;
   margin: 0;
-  overflow: hidden;
   color: #5f6f87;
   font-size: 14px;
   line-height: 1.7;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  @include line-clamp(3);
 }
 
 .author-line {

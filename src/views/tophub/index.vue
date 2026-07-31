@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 
 type TopHubSectionType = 'home' | 'category' | 'calendar'
@@ -473,6 +475,19 @@ function toggleTopHubItemFavorite(board: TopHubBoard, item: TopHubItem): void {
   })
 }
 
+function tophubItemSharePayload(board: TopHubBoard, item: TopHubItem): SharePayload {
+  return {
+    id: tophubItemFavoriteKey(board, item),
+    title: item.title,
+    url: item.link || buildSectionSourceUrl(),
+    description: [board.title, board.subtitle, item.extra].filter(Boolean).join(' · ') || activeSection.value.intro,
+    image: board.icon || undefined,
+    source: `TopHub · ${board.title}`,
+    tags: ['TopHub', activeSection.value.name, board.title].filter(Boolean),
+    type: 'item'
+  }
+}
+
 function tophubCalendarFavoriteKey(event: TopHubCalendarEvent): string {
   return `tophub:calendar:${event.id}`
 }
@@ -486,6 +501,18 @@ function toggleTopHubCalendarFavorite(event: TopHubCalendarEvent): void {
     summary: activeSection.value.intro,
     tags: ['TopHub', '热点日历']
   })
+}
+
+function tophubCalendarSharePayload(event: TopHubCalendarEvent): SharePayload {
+  return {
+    id: tophubCalendarFavoriteKey(event),
+    title: event.title,
+    url: 'https://tophub.today/calendar',
+    description: activeSection.value.intro,
+    source: 'TopHub · 热点日历',
+    tags: ['TopHub', '热点日历'],
+    type: 'item'
+  }
 }
 
 onMounted(() => {
@@ -571,6 +598,11 @@ onBeforeUnmount(() => {
                 :title="isContentItemFavorite(tophubCalendarFavoriteKey(event)) ? '取消收藏事件' : '收藏事件'"
                 @toggle="toggleTopHubCalendarFavorite(event)"
               />
+              <ShareButton
+                class="calendar-share"
+                size="compact"
+                :payload="tophubCalendarSharePayload(event)"
+              />
               {{ event.title }}
             </div>
           </div>
@@ -608,6 +640,11 @@ onBeforeUnmount(() => {
                   :active="isContentItemFavorite(tophubItemFavoriteKey(board, item))"
                   :title="isContentItemFavorite(tophubItemFavoriteKey(board, item)) ? '取消收藏热榜项' : '收藏热榜项'"
                   @toggle="toggleTopHubItemFavorite(board, item)"
+                />
+                <ShareButton
+                  class="board-item-share"
+                  size="compact"
+                  :payload="tophubItemSharePayload(board, item)"
                 />
               </div>
             </div>
@@ -647,6 +684,8 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+@import '../../style/mixins.scss';
+
 .tophub-page {
   min-height: 100%;
   padding: 20px;
@@ -859,25 +898,21 @@ button:hover:not(:disabled),
 
 .board-name h2 {
   margin: 0;
-  overflow: hidden;
   font-size: 17px;
   font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis;
 }
 
 .board-card-header strong {
   display: block;
   max-width: 120px;
-  overflow: hidden;
   border-bottom: 2px solid var(--text-secondary);
   padding-bottom: 10px;
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 900;
   text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis;
 }
 
 .board-card-list {
@@ -889,7 +924,7 @@ button:hover:not(:disabled),
 
 .board-card-item {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto 34px;
+  grid-template-columns: 28px minmax(0, 1fr) auto 34px 34px;
   align-items: start;
   gap: 10px;
   min-height: 29px;
@@ -901,6 +936,10 @@ button:hover:not(:disabled),
 }
 
 .board-item-favorite {
+  justify-self: end;
+}
+
+.board-item-share {
   justify-self: end;
 }
 
@@ -978,21 +1017,18 @@ button:hover:not(:disabled),
 }
 
 .title {
-  overflow: hidden;
   font-weight: 700;
   line-height: 1.45;
-  text-overflow: ellipsis;
   word-break: break-word;
+  @include line-clamp(2);
 }
 
 .extra {
   max-width: 76px;
-  overflow: hidden;
   color: var(--text-secondary);
   font-size: 12px;
   text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis;
 }
 
 .calendar-grid {
@@ -1002,7 +1038,8 @@ button:hover:not(:disabled),
 }
 
 .calendar-event {
-  display: flex;
+  display: grid;
+  grid-template-columns: 34px 34px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   min-height: 44px;

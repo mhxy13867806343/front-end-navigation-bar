@@ -66,6 +66,11 @@
               :title="isContentItemFavorite(helloworldFavoriteKey('article', item.url, item.title)) ? '取消收藏文章' : '收藏文章'"
               @toggle="toggleHelloArticleFavorite(item)"
             />
+            <ShareButton
+              class="hello-list-share"
+              size="compact"
+              :payload="helloArticleSharePayload(item)"
+            />
             <img v-if="item.cover" class="cover" :src="item.cover" alt="" loading="lazy" />
           </li>
         </ul>
@@ -84,6 +89,11 @@
               :active="isContentItemFavorite(helloworldFavoriteKey('author', item.url, item.name))"
               :title="isContentItemFavorite(helloworldFavoriteKey('author', item.url, item.name)) ? '取消收藏作者' : '收藏作者'"
               @toggle="toggleHelloAuthorFavorite(item)"
+            />
+            <ShareButton
+              class="hello-list-share"
+              size="compact"
+              :payload="helloAuthorSharePayload(item)"
             />
             <img v-if="item.avatar" class="avatar" :src="item.avatar" alt="" loading="lazy" />
           </li>
@@ -105,6 +115,11 @@
               :active="isContentItemFavorite(helloworldFavoriteKey('lesson', item.url, item.title))"
               :title="isContentItemFavorite(helloworldFavoriteKey('lesson', item.url, item.title)) ? '取消收藏课程' : '收藏课程'"
               @toggle="toggleHelloLessonFavorite(item)"
+            />
+            <ShareButton
+              class="hello-list-share"
+              size="compact"
+              :payload="helloLessonSharePayload(item)"
             />
             <img v-if="item.cover" class="cover" :src="item.cover" alt="" loading="lazy" />
           </li>
@@ -139,7 +154,9 @@
 import { ref, computed, onMounted, onActivated, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 import $ from 'jquery'
 import {
@@ -283,6 +300,45 @@ function toggleHelloLessonFavorite(item: HelloLesson): void {
     image: item.cover || undefined,
     tags: ['HelloWorld', '课程']
   })
+}
+
+function helloArticleSharePayload(item: HelloArticle): SharePayload {
+  return {
+    id: helloworldFavoriteKey('article', item.url, item.title),
+    title: item.title,
+    url: item.url,
+    description: item.brief || `${item.author} · ${item.time}`,
+    image: item.cover || undefined,
+    source: 'HelloWorld 文章',
+    tags: ['HelloWorld', '文章', item.author].filter(Boolean),
+    type: 'item'
+  }
+}
+
+function helloAuthorSharePayload(item: HelloAuthor): SharePayload {
+  return {
+    id: helloworldFavoriteKey('author', item.url, item.name),
+    title: item.name,
+    url: item.url,
+    description: item.job || '暂无职位信息',
+    image: item.avatar || undefined,
+    source: 'HelloWorld 作者榜',
+    tags: ['HelloWorld', '作者'],
+    type: 'item'
+  }
+}
+
+function helloLessonSharePayload(item: HelloLesson): SharePayload {
+  return {
+    id: helloworldFavoriteKey('lesson', item.url, item.title),
+    title: item.title,
+    url: item.url,
+    description: [item.price, item.learnCount].filter(Boolean).join(' · ') || '课程内容',
+    image: item.cover || undefined,
+    source: 'HelloWorld 推荐课程',
+    tags: ['HelloWorld', '课程'],
+    type: 'item'
+  }
 }
 
 function parseHomeHtml(html: string): ParsedHomeData {

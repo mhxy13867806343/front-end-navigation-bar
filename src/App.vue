@@ -11,6 +11,8 @@ import ApiToolbox from './components/ApiToolbox.vue'
 import BrowserSupportNotice from './components/BrowserSupportNotice.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
 import RefreshCountdownButton from './components/RefreshCountdownButton.vue'
+import ShareButton from './components/ShareButton.vue'
+import type { SharePayload } from './composables/useShareRecords'
 import { NBackTop } from 'naive-ui'
 
 const {
@@ -115,7 +117,7 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/records-cache', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/records-cache', '/share-records', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
 const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isFlashRoute = computed<boolean>(() => !isDyFormRoute.value && !isBigScreenRoute.value)
@@ -151,6 +153,7 @@ const routeFavoriteTitleMap: Record<string, string> = {
   '/runcode': '运行代码',
   '/toolbox': '工具集合',
   '/records-cache': '记录缓存展示',
+  '/share-records': '分享记录展示',
   '/weather': '天气查询',
   '/api-center': 'API中心',
   '/h5': 'H5 页面',
@@ -197,6 +200,16 @@ const currentRouteFavoriteTitle = computed<string>(() => {
 })
 
 const isCurrentRouteFavorite = computed<boolean>(() => Boolean(pageFavorites.value[route.path]))
+const isRouteFavoriteVisible = computed<boolean>(() => !['/records-cache', '/share-records'].includes(route.path))
+const currentRouteSharePayload = computed<SharePayload>(() => ({
+  id: `page:${route.path}`,
+  title: currentRouteFavoriteTitle.value,
+  url: route.fullPath,
+  description: `分享 HOOKSVUE 导航页面：${currentRouteFavoriteTitle.value}`,
+  source: 'HOOKSVUE 页面',
+  tags: ['页面分享', currentRouteFavoriteTitle.value],
+  type: 'page'
+}))
 
 async function confirmFavoriteRemoval(title: string): Promise<boolean> {
   try {
@@ -526,6 +539,9 @@ const handleQuickActionCommand = async (command: string): Promise<void> => {
       break
     case 'records-cache':
       await goRecordsCache()
+      break
+    case 'share-records':
+      await router.push('/share-records')
       break
     case 'control-center':
       showDrawer.value = true
@@ -1118,6 +1134,7 @@ watch(isDarkMode, () => {
                   <el-dropdown-item divided command="third-party">第三方页面集</el-dropdown-item>
                   <el-dropdown-item command="like-history">历史爱心</el-dropdown-item>
                   <el-dropdown-item command="records-cache">记录缓存</el-dropdown-item>
+                  <el-dropdown-item command="share-records">分享记录</el-dropdown-item>
                   <el-dropdown-item command="control-center">控制中心</el-dropdown-item>
                   <el-dropdown-item command="feature">功能页面</el-dropdown-item>
                   <el-dropdown-item command="xiaomi-shop">小米商城</el-dropdown-item>
@@ -3190,6 +3207,7 @@ watch(isDarkMode, () => {
       <div class="route-view-bar">
         <el-button size="small" @click="backFromFlash">← 返回导航站</el-button>
         <button
+          v-if="isRouteFavoriteVisible"
           type="button"
           class="route-page-favorite"
           :class="{ active: isCurrentRouteFavorite }"
@@ -3199,6 +3217,11 @@ watch(isDarkMode, () => {
           <span class="route-page-favorite-icon">{{ isCurrentRouteFavorite ? '♥' : '♡' }}</span>
           <span>{{ isCurrentRouteFavorite ? '取消收藏' : '收藏页面' }}</span>
         </button>
+        <ShareButton
+          class="route-page-share"
+          :payload="currentRouteSharePayload"
+          label="分享页面"
+        />
       </div>
       <router-view />
       <n-back-top

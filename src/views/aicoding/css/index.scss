@@ -1,3 +1,5 @@
+@import '../../../style/mixins.scss';
+
 .juejin-hot-page {
   min-height: 100%;
   background:
@@ -93,9 +95,7 @@
 }
 
 .nav-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis;
 }
 
 .nav-arrow {
@@ -172,7 +172,7 @@
 
 .rank-item {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 42px 140px;
+  grid-template-columns: 42px minmax(0, 1fr) 42px 42px 140px;
   align-items: center;
   gap: 18px;
   min-height: 92px;
@@ -180,6 +180,10 @@
 }
 
 .rank-favorite {
+  justify-self: end;
+}
+
+.rank-share {
   justify-self: end;
 }
 
@@ -204,14 +208,12 @@
 
 .rank-title {
   display: block;
-  overflow: hidden;
   color: #d8dde7;
   font-size: 17px;
   font-weight: 800;
   line-height: 1.5;
   text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis;
 }
 
 .rank-title:hover {
@@ -219,14 +221,11 @@
 }
 
 .rank-desc {
-  display: -webkit-box;
-  overflow: hidden;
   margin: 5px 0 0;
   color: #8a919f;
   font-size: 13px;
   line-height: 1.5;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  @include line-clamp(2);
 }
 
 .rank-meta {

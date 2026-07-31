@@ -428,3 +428,18 @@
     max-height: 2500px;
   }
 }
+
+.word-card-summary {
+  margin-bottom: 16px;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.6;
+  @include line-clamp(2);
+}
+
+.hanfu-card-summary {
+  margin-bottom: 12px;
+  color: #94a3b8;
+  font-size: 13px;
+  @include line-clamp(2);
+}

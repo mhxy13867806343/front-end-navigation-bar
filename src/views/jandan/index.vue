@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 
 type JandanSectionType = 'home' | 'comments' | 'commentList' | 'forum'
@@ -489,6 +491,19 @@ function toggleJandanFavorite(item: JandanFeedItem): void {
   })
 }
 
+function jandanSharePayload(item: JandanFeedItem): SharePayload {
+  return {
+    id: jandanFavoriteKey(item),
+    title: item.title,
+    url: item.link || buildSourceUrl(),
+    description: item.desc || [item.author, item.score].filter(Boolean).join(' · '),
+    image: item.image || undefined,
+    source: `煎蛋 · ${activeSection.value.name}`,
+    tags: ['煎蛋', activeSection.value.name, item.author].filter(Boolean),
+    type: 'item'
+  }
+}
+
 onMounted(() => {
   currentPage.value = activeSection.value.type === 'comments' ? 0 : 1
   void loadJandan()
@@ -541,6 +556,11 @@ onMounted(() => {
               :title="isContentItemFavorite(jandanFavoriteKey(item)) ? '取消收藏这条内容' : '收藏这条内容'"
               @toggle="toggleJandanFavorite(item)"
             />
+            <ShareButton
+              class="feed-card-share"
+              size="compact"
+              :payload="jandanSharePayload(item)"
+            />
             <img v-if="item.image" :src="item.image" alt="" loading="lazy">
             <div class="feed-card-body">
               <h2>{{ item.title }}</h2>
@@ -579,6 +599,8 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@import '../../style/mixins.scss';
+
 .jandan-page {
   min-height: 100%;
   padding: 20px;
@@ -772,28 +794,29 @@ button:hover:not(:disabled),
   z-index: 2;
 }
 
+.feed-card-share {
+  position: absolute;
+  top: 52px;
+  right: 10px;
+  z-index: 2;
+}
+
 .feed-card h2 {
-  display: -webkit-box;
   margin: 0;
-  overflow: hidden;
   color: var(--text-color);
   font-size: 15px;
   line-height: 1.45;
   word-break: break-word;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  @include line-clamp(2);
 }
 
 .feed-card p {
-  display: -webkit-box;
   margin: 0;
-  overflow: hidden;
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.55;
   word-break: break-word;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  @include line-clamp(2);
 }
 
 .feed-meta {

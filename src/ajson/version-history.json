@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-31T08:16:26.425Z",
+  "generatedAt": "2026-07-31T09:04:10.540Z",
   "groups": [
     {
       "date": "2026-07-31",
       "items": [
+        {
+          "hash": "876d688203f5591ca66cc35698024dce7a4efa93",
+          "shortHash": "876d688",
+          "date": "2026-07-31",
+          "time": "16:19",
+          "type": "问题修复",
+          "title": "tighten records cache tags",
+          "scope": "",
+          "message": "fix: tighten records cache tags"
+        },
         {
           "hash": "d466ccff1898c0c083c5a37709d7675f03471779",
           "shortHash": "d466ccf",
@@ -303,16 +313,6 @@
           "title": "expand Auth Showcase dataset to 1,000,000 (1 Million) total Auth UI themes (500k Login + 500k Register) with 50 categories, ID jump, pagination, and search",
           "scope": "",
           "message": "feat: expand Auth Showcase dataset to 1,000,000 (1 Million) total Auth UI themes (500k Login + 500k Register) with 50 categories, ID jump, pagination, and search"
-        },
-        {
-          "hash": "e542d4c6cf35c65c68ddb2652191deb190dcd1f5",
-          "shortHash": "e542d4c",
-          "date": "2026-07-24",
-          "time": "08:41",
-          "type": "功能更新",
-          "title": "expand Auth Showcase dataset to 100,000 total Auth UI themes (50,000 Login + 50,000 Register) with 50 categories, ID jump, pagination, and search",
-          "scope": "",
-          "message": "feat: expand Auth Showcase dataset to 100,000 total Auth UI themes (50,000 Login + 50,000 Register) with 50 categories, ID jump, pagination, and search"
         }
       ]
     }

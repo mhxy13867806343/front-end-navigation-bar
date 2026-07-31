@@ -8,6 +8,8 @@ import {
   buildLiveDataUrl
 } from '@/constants/liveData'
 import { STORAGE_KEYS } from '@/constants/storageKeys'
+import ShareButton from '@/components/ShareButton.vue'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
@@ -398,6 +400,18 @@ function openRawCache(entry: RecordEntry): void {
   window.open(entry.url, '_blank', 'noopener,noreferrer')
 }
 
+function recordSharePayload(entry: RecordEntry): SharePayload {
+  return {
+    id: `records-cache:${entry.id}`,
+    title: entry.title,
+    url: entry.route || entry.url || '/records-cache',
+    description: entry.desc || entry.subtitle,
+    source: `记录缓存 · ${entry.kind}`,
+    tags: ['记录缓存', entry.kind, ...entry.tags].filter(Boolean),
+    type: 'item'
+  }
+}
+
 function runRecordRefresh(showToast: boolean): void {
   if (typeof window === 'undefined') return
   isRefreshing.value = true
@@ -502,6 +516,11 @@ onUnmounted(() => {
         >
           <span>{{ isEntryFavorite(entry) ? '♥' : '♡' }}</span>
         </button>
+        <ShareButton
+          class="record-share"
+          size="compact"
+          :payload="recordSharePayload(entry)"
+        />
 
         <div class="record-topline">
           <span class="record-kind">{{ entry.kind }}</span>
@@ -523,6 +542,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
+@import '../../style/mixins.scss';
+
 .records-cache-page {
   min-height: 100%;
   padding: 24px;
@@ -677,9 +698,7 @@ h1 {
   display: block;
   min-width: 0;
   max-width: 3em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis;
 }
 
 .cloud-tag:hover {
@@ -745,6 +764,12 @@ h1 {
   box-shadow: 0 0 0 6px rgba(244, 63, 94, 0.16);
 }
 
+.record-share {
+  position: absolute;
+  top: 64px;
+  right: 16px;
+}
+
 .record-topline {
   display: flex;
   gap: 10px;
@@ -764,6 +789,7 @@ h1 {
   font-size: 25px;
   line-height: 1.22;
   letter-spacing: 0;
+  @include line-clamp(2);
 }
 
 .record-subtitle,
@@ -782,6 +808,7 @@ h1 {
 .record-desc {
   margin-top: 12px;
   min-height: 54px;
+  @include line-clamp(2);
 }
 
 .record-tags {

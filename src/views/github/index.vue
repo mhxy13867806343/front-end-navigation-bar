@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
+import type { SharePayload } from '@/composables/useShareRecords'
 import { requestText } from '@/utils/request'
 import { resolveApiUrl } from '@/utils/resolveApiUrl'
 
@@ -398,6 +400,30 @@ function toggleGitcnFavorite(project: GitcnProject): void {
   })
 }
 
+function gitcnSharePayload(project: GitcnProject): SharePayload {
+  return {
+    id: gitcnFavoriteKey(project),
+    title: project.fullName,
+    url: project.link,
+    description: project.summary || '源站没有返回项目摘要。',
+    source: `GitHub聚合 · ${activeSource.value.label}`,
+    tags: ['GitHub', activeSource.value.label, project.language, ...project.tags].filter(Boolean),
+    type: 'item'
+  }
+}
+
+function archiveSharePayload(entry: ArchiveEntry): SharePayload {
+  return {
+    id: `github:githot:${entry.type}:${entry.date}`,
+    title: `Githot ${entry.label}`,
+    url: entry.link,
+    description: `${entry.label} GitHub ${archiveTypes.find((type) => type.id === entry.type)?.label || '趋势快照'}`,
+    source: 'Githot 历史归档',
+    tags: ['GitHub', 'Githot', entry.type, entry.date],
+    type: 'item'
+  }
+}
+
 function helloGithubFavoriteKey(item: HelloGithubItem): string {
   return `github:hellogithub:${activeHelloMode.value}:${activeIssue.value}:${activeCategory.value}:${item.link || item.title}`
 }
@@ -412,6 +438,19 @@ function toggleHelloGithubFavorite(item: HelloGithubItem): void {
     image: item.image || undefined,
     tags: ['GitHub', 'HelloGitHub', activeHelloMode.value === 'category' ? activeCategory.value : `第${activeIssue.value}期`]
   })
+}
+
+function helloGithubSharePayload(item: HelloGithubItem): SharePayload {
+  return {
+    id: helloGithubFavoriteKey(item),
+    title: item.title,
+    url: item.link || buildHelloGithubSourceUrl(),
+    description: item.summary || 'HelloGitHub 月刊项目卡片',
+    image: item.image || undefined,
+    source: 'HelloGitHub 月刊',
+    tags: ['GitHub', 'HelloGitHub', activeHelloMode.value === 'category' ? activeCategory.value : `第${activeIssue.value}期`],
+    type: 'item'
+  }
 }
 
 onMounted((): void => {
@@ -495,6 +534,11 @@ onMounted((): void => {
           :title="isContentItemFavorite(gitcnFavoriteKey(project)) ? '取消收藏项目' : '收藏项目'"
           @toggle="toggleGitcnFavorite(project)"
         />
+        <ShareButton
+          class="github-card-share"
+          size="compact"
+          :payload="gitcnSharePayload(project)"
+        />
       </article>
     </section>
 
@@ -512,15 +556,23 @@ onMounted((): void => {
         </button>
       </div>
       <div class="archive-grid">
-        <button
+        <div
           v-for="entry in visibleArchiveEntries"
           :key="`${entry.type}-${entry.date}`"
-          type="button"
-          :disabled="isLoading"
-          @click="openSource(entry.link)"
+          class="archive-entry"
         >
-          {{ entry.label }}
-        </button>
+          <button
+            type="button"
+            :disabled="isLoading"
+            @click="openSource(entry.link)"
+          >
+            {{ entry.label }}
+          </button>
+          <ShareButton
+            size="compact"
+            :payload="archiveSharePayload(entry)"
+          />
+        </div>
       </div>
     </section>
 
@@ -572,6 +624,11 @@ onMounted((): void => {
             :title="isContentItemFavorite(helloGithubFavoriteKey(item)) ? '取消收藏项目' : '收藏项目'"
             @toggle="toggleHelloGithubFavorite(item)"
           />
+          <ShareButton
+            class="hello-card-share"
+            size="compact"
+            :payload="helloGithubSharePayload(item)"
+          />
           <div class="hello-image-frame">
             <img
               v-if="item.image && !helloImageErrors[item.title]"
@@ -594,7 +651,9 @@ onMounted((): void => {
   </main>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import '../../style/mixins.scss';
+
 .github-page {
   min-height: 100vh;
   padding: 28px;
@@ -732,6 +791,12 @@ button:disabled {
   right: 18px;
 }
 
+.github-card-share {
+  position: absolute;
+  top: 60px;
+  right: 18px;
+}
+
 .project-main a,
 .hello-card a {
   color: #58a6ff;
@@ -743,6 +808,7 @@ button:disabled {
 .project-main p {
   margin: 14px 0;
   line-height: 1.8;
+  @include line-clamp(2);
 }
 
 .tag-row {
@@ -779,6 +845,12 @@ button:disabled {
   gap: 12px;
 }
 
+.archive-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 8px;
+}
+
 .archive-grid button {
   min-height: 52px;
 }
@@ -811,6 +883,13 @@ button:disabled {
 .hello-card-favorite {
   position: absolute;
   top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+.hello-card-share {
+  position: absolute;
+  top: 54px;
   right: 12px;
   z-index: 2;
 }
@@ -857,10 +936,7 @@ button:disabled {
 }
 
 .hello-image-fallback small {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  @include line-clamp(2);
 }
 
 .empty-message {
