@@ -285,7 +285,7 @@ import { DEFAULT_AVATAR, handleAvatarImgError } from '@/utils/avatar'
 import { STORAGE_KEYS } from '@/constants/storageKeys'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
 import { Search, Loading } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   API_BASE,
   mapTheme,
@@ -364,10 +364,27 @@ function isThemeFavorite(item: ThemeItem): boolean {
   return Boolean(contentItemFavorites.value[themeFavoriteKey(item)])
 }
 
-function toggleThemeFavorite(item: ThemeItem): void {
+async function confirmFavoriteRemoval(title: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏「${title}」吗？`, '取消收藏确认', {
+      confirmButtonText: '确认取消',
+      cancelButtonText: '再想想',
+      type: 'warning',
+      autofocus: false,
+      lockScroll: false
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function toggleThemeFavorite(item: ThemeItem): Promise<void> {
   const key = themeFavoriteKey(item)
   const next = { ...contentItemFavorites.value }
   if (next[key]) {
+    const confirmed = await confirmFavoriteRemoval(item.name)
+    if (!confirmed) return
     delete next[key]
     ElMessage({ message: `已取消收藏主题：${item.name}`, type: 'info', duration: 1200 })
   } else {

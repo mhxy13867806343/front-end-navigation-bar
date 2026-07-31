@@ -86,7 +86,7 @@ import {
 
 import { useRoute, useRouter } from 'vue-router'
 import { Loading, Timer } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
 import type { CityInfo, CityLetterMap, CascaderNode, CurrentWeather, WeatherForecast } from './types/app'
@@ -198,10 +198,27 @@ const currentRouteFavoriteTitle = computed<string>(() => {
 
 const isCurrentRouteFavorite = computed<boolean>(() => Boolean(pageFavorites.value[route.path]))
 
-function toggleCurrentRouteFavorite(): void {
+async function confirmFavoriteRemoval(title: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏「${title}」吗？`, '取消收藏确认', {
+      confirmButtonText: '确认取消',
+      cancelButtonText: '再想想',
+      type: 'warning',
+      autofocus: false,
+      lockScroll: false
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function toggleCurrentRouteFavorite(): Promise<void> {
   const path = route.path
   const next = { ...pageFavorites.value }
   if (next[path]) {
+    const confirmed = await confirmFavoriteRemoval(currentRouteFavoriteTitle.value)
+    if (!confirmed) return
     delete next[path]
     ElMessage({ message: `已取消收藏页面：${currentRouteFavoriteTitle.value}`, type: 'info', duration: 1200 })
   } else {

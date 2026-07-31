@@ -30,7 +30,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 - **🌾 Oat UI Studio (`/oat-studio`)**: Integrates [Oat.ink 26 official WebComponents / CSS components](https://oat.ink/components/) (Dropdown, TagInput, Upload, Tabs WC) with Element Plus 64-item Component Sidebar directory. Features Oat Dialog / Modal design inspired by **Element Plus Dialog** layout and **Naive UI OS-Theme Dialog** backdrop filter backdrop. Includes 400 examples dataset with double-click inline cell editing.
 - **📘 Juejin Course Booklets (`/juejin-course`)**: Syncs Juejin booklet courses with category filters, latest / hot / price sorting, VIP-only filtering, keyword search, author profile links, detail-page links, activity discount prices, countdowns, and booklet-level VIP badges.
 - **🧭 Internal News Hubs**: Adds `/ai-xxx/:section`, `/jandan`, `/tophub`, `/ithome`, `/huxiu`, and `/github` for AI resources, Jandan, TopHub, ITHome, Huxiu 24h, GitCN/Githot/HelloGitHub. Loading states are visible, controls are disabled while data is pending, pagination is guarded, and HelloGitHub images use a local proxy with fallback cards.
-- **♡ Records Cache Page** (`/records-cache`): Collects page entries, favorites, localStorage history, and build-time cache indexes into cloud tags and two-column cards with favorite/unfavorite controls and transit links.
+- **♡ Records Cache Page** (`/records-cache`): Shows only favorited pages, favorited list items, and favorited record cards as cloud tags and two-column cards with transit links; unfavoriting asks for confirmation first.
 - **API Toolbox**: Built-in collection of commonly used APIs
 - **Theme Switching**: One-click dark/light theme toggle with local persistence
 - **Custom Layout**: Adjustable grid columns (persisted locally), collapsible sidebar
@@ -39,6 +39,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 ## 🆕 Recent Updates
 
 - 🧭 **Added internal news hub pages**: `/ai-xxx/:section`, `/jandan`, `/tophub`, `/ithome`, `/huxiu`, and `/github` are now route-backed internal pages with explicit loading states and disabled refresh/category/pagination controls while requests are pending.
+- ♡ **Added item-level favorites**: New hub list cards, AI news/apps/tutorial lists, Juejin topic cards, and HelloWorld lists now include heart controls that feed into `/records-cache`; unfavorited items stay out of the records page, and removal uses a confirmation dialog.
 - 🧷 **Improved pagination and images**: Huxiu pagination now keeps the current page visible, ITHome/Jandan/TopHub/GitHub hub controls are locked during loading, HelloGitHub images use a same-dev-server proxy with fallback cards, and the issue catalog can expand older issues 1-95.
 - 📘 **Added Juejin Course Booklets (`/juejin-course`)**: Shows live Juejin course data with category filters, price sorting, VIP filtering, discount countdowns, activity discount prices, author profile links, and course-detail navigation.
 - 🧩 **Grouped the top Web Components & Libraries menu**: New pages, Component & UI, Animation & Scheduling, Maps & Charts, Engineering Tools, and Documentation are now separated into a two-column grouped panel.

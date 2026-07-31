@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 
 interface IthomeSection {
@@ -46,6 +48,7 @@ const items = ref<IthomeItem[]>([])
 const ranks = ref<IthomeRank[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const activeSection = computed<IthomeSection>(() => {
   return sections.find((section: IthomeSection): boolean => section.id === activeSectionId.value) ?? sections[0]
@@ -206,6 +209,37 @@ function openSource(path: string = activeSection.value.path): void {
   window.open(toSourceUrl(path), '_blank', 'noopener,noreferrer')
 }
 
+function ithomeItemFavoriteKey(item: IthomeItem): string {
+  return `ithome:item:${activeSectionId.value}:${item.link || item.title}`
+}
+
+function toggleIthomeItemFavorite(item: IthomeItem): void {
+  toggleContentItemFavorite({
+    id: ithomeItemFavoriteKey(item),
+    title: item.title,
+    source: `IT之家 · ${activeSection.value.label}`,
+    url: item.link || toSourceUrl(activeSection.value.path),
+    summary: item.summary || item.date || '暂无摘要',
+    image: item.image || undefined,
+    tags: ['IT之家', activeSection.value.label, ...item.tags].filter(Boolean)
+  })
+}
+
+function ithomeRankFavoriteKey(rank: IthomeRank): string {
+  return `ithome:rank:${rank.link || rank.title}`
+}
+
+function toggleIthomeRankFavorite(rank: IthomeRank): void {
+  toggleContentItemFavorite({
+    id: ithomeRankFavoriteKey(rank),
+    title: rank.title,
+    source: 'IT之家 · IT资讯热榜',
+    url: rank.link || toSourceUrl('/'),
+    summary: 'IT资讯热榜日榜内容',
+    tags: ['IT之家', '热榜']
+  })
+}
+
 onMounted((): void => {
   void fetchSection()
 })
@@ -277,6 +311,13 @@ onMounted((): void => {
               <span v-if="item.tags.length">Tags：{{ item.tags.slice(0, 4).join('、') }}</span>
             </div>
           </div>
+          <ContentFavoriteButton
+            class="news-card-favorite"
+            size="compact"
+            :active="isContentItemFavorite(ithomeItemFavoriteKey(item))"
+            :title="isContentItemFavorite(ithomeItemFavoriteKey(item)) ? '取消收藏新闻' : '收藏新闻'"
+            @toggle="toggleIthomeItemFavorite(item)"
+          />
         </article>
       </div>
 
@@ -289,6 +330,13 @@ onMounted((): void => {
           <li v-for="(rank, index) in ranks" :key="rank.link || rank.title">
             <span>{{ index + 1 }}</span>
             <a :href="rank.link" target="_blank" rel="noopener noreferrer">{{ rank.title }}</a>
+            <ContentFavoriteButton
+              class="rank-item-favorite"
+              size="compact"
+              :active="isContentItemFavorite(ithomeRankFavoriteKey(rank))"
+              :title="isContentItemFavorite(ithomeRankFavoriteKey(rank)) ? '取消收藏热榜' : '收藏热榜'"
+              @toggle="toggleIthomeRankFavorite(rank)"
+            />
           </li>
         </ol>
       </aside>
@@ -420,10 +468,16 @@ button:disabled {
 }
 
 .news-card {
+  position: relative;
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-columns: 160px minmax(0, 1fr) 42px;
   gap: 20px;
   padding: 16px;
+}
+
+.news-card-favorite {
+  align-self: center;
+  justify-self: end;
 }
 
 .news-card img {
@@ -474,9 +528,13 @@ button:disabled {
 
 .rank-panel li {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-columns: 28px minmax(0, 1fr) 34px;
   gap: 10px;
   align-items: start;
+}
+
+.rank-item-favorite {
+  justify-self: end;
 }
 
 .rank-panel li span {
@@ -516,6 +574,10 @@ button:disabled {
 
   .news-card {
     grid-template-columns: 1fr;
+  }
+
+  .news-card-favorite {
+    justify-self: start;
   }
 
   .news-card img {

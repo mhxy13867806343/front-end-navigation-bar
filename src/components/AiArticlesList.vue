@@ -6,6 +6,8 @@ import fallbackQa from '../utlis/daily_ai_qa.json'
 import fallbackEncyclopedia from '../utlis/daily_ai_encyclopedia.json'
 import fallbackHallOfFame from '../utlis/daily_ai_hall_of_fame.json'
 import fallbackResearch from '../utlis/daily_ai_research.json'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 
 type ArticleType = 'tutorials' | 'column' | 'qa' | 'encyclopedia' | 'hall_of_fame' | 'research'
@@ -43,6 +45,7 @@ const articlesList = ref<ArticleItem[]>([])
 const isLiveMode = ref<boolean>(false)
 const isLoading = ref<boolean>(false)
 const countdown = ref<number>(60)
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 // Category details
 const pageMeta: Record<ArticleType, PageMeta> = {
@@ -94,6 +97,22 @@ const openLink = (link: string): void => {
   if (link) {
     window.open(link, '_blank')
   }
+}
+
+function articleFavoriteKey(item: ArticleItem): string {
+  return `ai-article:${props.type}:${item.link || item.title}`
+}
+
+function toggleArticleFavorite(item: ArticleItem): void {
+  toggleContentItemFavorite({
+    id: articleFavoriteKey(item),
+    title: item.title,
+    source: pageMeta[props.type].title.replace(/^[^A-Za-z0-9\u4e00-\u9fa5]+/, ''),
+    url: item.link || pageMeta[props.type].url,
+    summary: item.desc || pageMeta[props.type].subtitle,
+    image: item.thumbnail || undefined,
+    tags: ['AI教程资源', pageMeta[props.type].title, item.category].filter(Boolean)
+  })
 }
 
 // Browser DOM parser for dynamic list compilation
@@ -272,6 +291,13 @@ onUnmounted(() => {
             @click="openLink(item.link)"
             :title="'点击前往阅读全文: ' + item.title"
           >
+            <ContentFavoriteButton
+              class="article-card-favorite"
+              size="compact"
+              :active="isContentItemFavorite(articleFavoriteKey(item))"
+              :title="isContentItemFavorite(articleFavoriteKey(item)) ? '取消收藏文章' : '收藏文章'"
+              @toggle="toggleArticleFavorite(item)"
+            />
             <!-- Poster left -->
             <div class="article-poster-wrap">
               <img v-if="item.thumbnail" :src="item.thumbnail" class="poster-img" alt="cover">

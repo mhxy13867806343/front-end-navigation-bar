@@ -2,6 +2,8 @@
 
 import dailyNewsData from '../utlis/daily_ai_news.json'
 import wechatFeaturedArticles from '../ajson/wechat-featured-articles.json'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestJson, requestText } from '@/utils/request'
 
 type NewsSource = 'aiBot' | 'ithome' | 'wechat'
@@ -45,6 +47,7 @@ const isLoading = ref<boolean>(false)
 const errorMessage = ref<string>('')
 const currentPage = ref<number>(1)
 const hasNextPage = ref<boolean>(true)
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const ITHOME_NEWS_TAG: string = 'API'
 
@@ -90,6 +93,24 @@ const openNewsItem = (item: NewsItem): void => {
   }
 
   openLink(item.link)
+}
+
+function newsFavoriteKey(item: NewsItem): string {
+  return `ai-news:${activeSource.value}:${item.slug || item.link || item.title}`
+}
+
+function toggleNewsFavorite(item: NewsItem): void {
+  toggleContentItemFavorite({
+    id: newsFavoriteKey(item),
+    title: item.title,
+    source: pageTitle.value.replace(/^[^A-Za-z0-9\u4e00-\u9fa5]+/, ''),
+    url: activeSource.value === 'wechat' && item.slug
+      ? `${import.meta.env.BASE_URL}wechat-featured?article=${encodeURIComponent(item.slug)}`
+      : item.link,
+    summary: item.desc || '暂无摘要',
+    image: item.image,
+    tags: ['每日AI资讯', item.source, ...(item.tags || [])].filter(Boolean)
+  })
 }
 
 const parseAiBotNewsHtml = (htmlText: string): NewsDay[] => {
@@ -292,6 +313,7 @@ const fetchLatestNews = async (pageNo: number = currentPage.value): Promise<bool
 
 const countdown = ref<number>(60)
 const triggerManualRefresh = (): void => {
+  if (isLoading.value) return
   fetchLatestNews(currentPage.value)
   countdown.value = 60
 }
@@ -310,6 +332,7 @@ const loadPrevPage = async (): Promise<void> => {
 }
 
 const switchNewsSource = (source: NewsSource): void => {
+  if (isLoading.value) return
   if (activeSource.value === source) return
   activeSource.value = source
   currentPage.value = 1
@@ -357,6 +380,7 @@ onUnmounted(() => {
           <el-button
             size="small"
             :type="activeSource === 'aiBot' ? 'primary' : 'default'"
+            :disabled="isLoading"
             @click="switchNewsSource('aiBot')"
           >
             每日 AI 资讯
@@ -364,6 +388,7 @@ onUnmounted(() => {
           <el-button
             size="small"
             :type="activeSource === 'ithome' ? 'primary' : 'default'"
+            :disabled="isLoading"
             @click="switchNewsSource('ithome')"
           >
             IT之家 API
@@ -371,6 +396,7 @@ onUnmounted(() => {
           <el-button
             size="small"
             :type="activeSource === 'wechat' ? 'primary' : 'default'"
+            :disabled="isLoading"
             @click="switchNewsSource('wechat')"
           >
             公众号精选
@@ -387,6 +413,7 @@ onUnmounted(() => {
           size="small" 
           type="primary" 
           :loading="isLoading" 
+          :disabled="isLoading"
           @click="triggerManualRefresh"
         >
           🔄 刷新数据 ({{ countdown }}s)
@@ -434,6 +461,13 @@ onUnmounted(() => {
               @click="openNewsItem(item)"
               :title="'点击阅读来源文章: ' + item.link"
             >
+              <ContentFavoriteButton
+                class="news-card-favorite"
+                size="compact"
+                :active="isContentItemFavorite(newsFavoriteKey(item))"
+                :title="isContentItemFavorite(newsFavoriteKey(item)) ? '取消收藏资讯' : '收藏资讯'"
+                @toggle="toggleNewsFavorite(item)"
+              />
               <div class="card-inner-header">
                 <h3 class="news-title-link">
                   {{ item.title }}

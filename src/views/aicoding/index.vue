@@ -85,6 +85,13 @@
                 </template>
               </div>
             </div>
+            <ContentFavoriteButton
+              class="rank-favorite"
+              size="compact"
+              :active="isContentItemFavorite(rankFavoriteKey(item))"
+              :title="isContentItemFavorite(rankFavoriteKey(item)) ? '取消收藏榜单项' : '收藏榜单项'"
+              @toggle="toggleRankFavorite(item)"
+            />
             <strong v-if="item.metricValue" class="hot-rank">
               <span v-if="item.metricIcon">{{ item.metricIcon }}</span>
               {{ item.metricValue }}
@@ -100,7 +107,9 @@
 
 <script setup lang="ts">
 import type { ComputedRef, Ref } from 'vue'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
 import RefreshCountdownButton from '../../components/RefreshCountdownButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestJson } from '@/utils/request'
 import { requestJinaJson } from '@/utils/jinaReader'
 import {
@@ -279,6 +288,7 @@ const rankItems: Ref<RankItem[]> = ref<RankItem[]>([])
 const loading: Ref<boolean> = ref<boolean>(false)
 const error: Ref<string> = ref<string>('')
 const rankPeriodText: Ref<string> = ref<string>('')
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 const isProd: boolean = import.meta.env.PROD
 const shouldUseJuejinRankCache: boolean = isProd
 const juejinRankCacheUrl: string = `${import.meta.env.BASE_URL}live-data/juejin-rank-cache.json`
@@ -611,6 +621,22 @@ function switchAuthorRankType(rankType: JuejinAuthorRankType): void {
 
 function reload(): void {
   fetchRankData()
+}
+
+function rankFavoriteKey(item: RankItem): string {
+  return `juejin-rank:${activeNavKey.value}:${item.id}`
+}
+
+function toggleRankFavorite(item: RankItem): void {
+  toggleContentItemFavorite({
+    id: rankFavoriteKey(item),
+    title: item.title,
+    source: `掘金热榜 · ${activeNav.value.title}`,
+    url: item.url,
+    summary: item.description || item.stats.map((stat: RankStat): string => `${stat.value} ${stat.label}`).join(' · '),
+    image: item.avatar || undefined,
+    tags: ['掘金热榜', activeNav.value.title, activeCategoryLabel.value].filter(Boolean)
+  })
 }
 
 async function handleRefresh(): Promise<void> {

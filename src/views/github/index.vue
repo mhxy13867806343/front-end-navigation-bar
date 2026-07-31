@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 import { resolveApiUrl } from '@/utils/resolveApiUrl'
 
@@ -86,6 +88,7 @@ const helloItems = ref<HelloGithubItem[]>([])
 const helloImageErrors = ref<Record<string, boolean>>({})
 const isLoading = ref(false)
 const errorMessage = ref('')
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const activeSource = computed<GithubSource>(() => {
   return sources.find((source: GithubSource): boolean => source.id === activeSourceId.value) ?? sources[0]
@@ -380,6 +383,37 @@ function markHelloImageFailed(title: string): void {
   }
 }
 
+function gitcnFavoriteKey(project: GitcnProject): string {
+  return `github:gitcn:${activeSourceId.value}:${project.link || project.fullName}`
+}
+
+function toggleGitcnFavorite(project: GitcnProject): void {
+  toggleContentItemFavorite({
+    id: gitcnFavoriteKey(project),
+    title: project.fullName,
+    source: `GitHub聚合 · ${activeSource.value.label}`,
+    url: project.link,
+    summary: project.summary || '源站没有返回项目摘要。',
+    tags: ['GitHub', activeSource.value.label, project.language, ...project.tags].filter(Boolean)
+  })
+}
+
+function helloGithubFavoriteKey(item: HelloGithubItem): string {
+  return `github:hellogithub:${activeHelloMode.value}:${activeIssue.value}:${activeCategory.value}:${item.link || item.title}`
+}
+
+function toggleHelloGithubFavorite(item: HelloGithubItem): void {
+  toggleContentItemFavorite({
+    id: helloGithubFavoriteKey(item),
+    title: item.title,
+    source: 'HelloGitHub 月刊',
+    url: item.link || buildHelloGithubSourceUrl(),
+    summary: item.summary || 'HelloGitHub 月刊项目卡片',
+    image: item.image || undefined,
+    tags: ['GitHub', 'HelloGitHub', activeHelloMode.value === 'category' ? activeCategory.value : `第${activeIssue.value}期`]
+  })
+}
+
 onMounted((): void => {
   void fetchActiveSource()
 })
@@ -454,6 +488,13 @@ onMounted((): void => {
           <b>Star {{ project.stars || '-' }}</b>
           <em>+{{ project.todayStars || '-' }}</em>
         </div>
+        <ContentFavoriteButton
+          class="github-card-favorite"
+          size="compact"
+          :active="isContentItemFavorite(gitcnFavoriteKey(project))"
+          :title="isContentItemFavorite(gitcnFavoriteKey(project)) ? '取消收藏项目' : '收藏项目'"
+          @toggle="toggleGitcnFavorite(project)"
+        />
       </article>
     </section>
 
@@ -524,6 +565,13 @@ onMounted((): void => {
 
       <div class="hello-grid">
         <article v-for="item in helloItems" :key="item.title" class="hello-card">
+          <ContentFavoriteButton
+            class="hello-card-favorite"
+            size="compact"
+            :active="isContentItemFavorite(helloGithubFavoriteKey(item))"
+            :title="isContentItemFavorite(helloGithubFavoriteKey(item)) ? '取消收藏项目' : '收藏项目'"
+            @toggle="toggleHelloGithubFavorite(item)"
+          />
           <div class="hello-image-frame">
             <img
               v-if="item.image && !helloImageErrors[item.title]"
@@ -671,10 +719,17 @@ button:disabled {
 }
 
 .project-card {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 160px;
   gap: 20px;
   padding: 22px;
+}
+
+.github-card-favorite {
+  position: absolute;
+  top: 18px;
+  right: 18px;
 }
 
 .project-main a,
@@ -709,6 +764,7 @@ button:disabled {
   align-content: center;
   justify-items: end;
   gap: 10px;
+  padding-right: 42px;
 }
 
 .project-meta em {
@@ -746,9 +802,17 @@ button:disabled {
 }
 
 .hello-card {
+  position: relative;
   display: grid;
   gap: 12px;
   padding: 14px;
+}
+
+.hello-card-favorite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
 }
 
 .hello-image-frame,

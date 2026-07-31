@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 
 interface MomentTab {
@@ -33,6 +35,7 @@ const currentPage = ref(1)
 const items = ref<MomentItem[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const activeTab = computed<MomentTab>(() => {
   return tabs.find((tab: MomentTab): boolean => tab.id === activeTabId.value) ?? tabs[1]
@@ -141,6 +144,22 @@ function openSource(): void {
   window.open(buildSourceUrl(), '_blank', 'noopener,noreferrer')
 }
 
+function huxiuFavoriteKey(item: MomentItem): string {
+  return `huxiu:moment:${activeTabId.value}:${item.link || item.author + item.time}`
+}
+
+function toggleHuxiuFavorite(item: MomentItem): void {
+  toggleContentItemFavorite({
+    id: huxiuFavoriteKey(item),
+    title: item.content.slice(0, 36) || item.author,
+    source: `虎嗅24小时 · ${activeTab.value.label}`,
+    url: item.link || buildSourceUrl(),
+    summary: item.content,
+    image: item.avatar || undefined,
+    tags: ['虎嗅24小时', activeTab.value.label, item.author].filter(Boolean)
+  })
+}
+
 onMounted((): void => {
   void fetchMoments()
 })
@@ -202,6 +221,13 @@ onMounted((): void => {
 
     <section v-if="shouldShowContent" class="moment-list">
       <article v-for="item in items" :key="item.link" class="moment-card">
+        <ContentFavoriteButton
+          class="moment-favorite"
+          size="compact"
+          :active="isContentItemFavorite(huxiuFavoriteKey(item))"
+          :title="isContentItemFavorite(huxiuFavoriteKey(item)) ? '取消收藏动态' : '收藏动态'"
+          @toggle="toggleHuxiuFavorite(item)"
+        />
         <a class="avatar" :href="item.profile" target="_blank" rel="noopener noreferrer">
           <img :src="item.avatar" :alt="item.author" loading="lazy">
         </a>
@@ -347,12 +373,19 @@ button:disabled {
 }
 
 .moment-card {
+  position: relative;
   display: grid;
   grid-template-columns: 74px minmax(0, 1fr);
   gap: 18px;
   padding: 26px;
   background: #fff;
   border: 1px solid #edf0f4;
+}
+
+.moment-favorite {
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }
 
 .avatar img {
@@ -364,6 +397,7 @@ button:disabled {
 
 .moment-top {
   justify-content: space-between;
+  padding-right: 46px;
 }
 
 .moment-top a,

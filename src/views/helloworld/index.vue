@@ -59,6 +59,13 @@
                 <span>💬 {{ item.commentCount }}</span>
               </div>
             </div>
+            <ContentFavoriteButton
+              class="hello-list-favorite"
+              size="compact"
+              :active="isContentItemFavorite(helloworldFavoriteKey('article', item.url, item.title))"
+              :title="isContentItemFavorite(helloworldFavoriteKey('article', item.url, item.title)) ? '取消收藏文章' : '收藏文章'"
+              @toggle="toggleHelloArticleFavorite(item)"
+            />
             <img v-if="item.cover" class="cover" :src="item.cover" alt="" loading="lazy" />
           </li>
         </ul>
@@ -71,6 +78,13 @@
                 <span class="author">{{ item.job || '暂无职位信息' }}</span>
               </div>
             </div>
+            <ContentFavoriteButton
+              class="hello-list-favorite"
+              size="compact"
+              :active="isContentItemFavorite(helloworldFavoriteKey('author', item.url, item.name))"
+              :title="isContentItemFavorite(helloworldFavoriteKey('author', item.url, item.name)) ? '取消收藏作者' : '收藏作者'"
+              @toggle="toggleHelloAuthorFavorite(item)"
+            />
             <img v-if="item.avatar" class="avatar" :src="item.avatar" alt="" loading="lazy" />
           </li>
         </ul>
@@ -85,6 +99,13 @@
                 <span>{{ item.learnCount }}</span>
               </div>
             </div>
+            <ContentFavoriteButton
+              class="hello-list-favorite"
+              size="compact"
+              :active="isContentItemFavorite(helloworldFavoriteKey('lesson', item.url, item.title))"
+              :title="isContentItemFavorite(helloworldFavoriteKey('lesson', item.url, item.title)) ? '取消收藏课程' : '收藏课程'"
+              @toggle="toggleHelloLessonFavorite(item)"
+            />
             <img v-if="item.cover" class="cover" :src="item.cover" alt="" loading="lazy" />
           </li>
         </ul>
@@ -117,6 +138,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onActivated, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 import $ from 'jquery'
 import {
@@ -182,6 +205,7 @@ const loading = ref<boolean>(false)
 const error = ref<string>('')
 const parseDebug = ref<string>('')
 const lastUpdated = ref<string>('')
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const hasRenderableData = computed<number>(() => {
   return articles.value.length || authors.value.length || lessons.value.length
@@ -218,6 +242,46 @@ function uniqueByUrl<T extends { url: string }>(items: T[]): T[] {
     if (!item.url || seen.has(item.url)) return false
     seen.add(item.url)
     return true
+  })
+}
+
+function helloworldFavoriteKey(type: string, url: string, fallback: string): string {
+  return `helloworld:${type}:${url || fallback}`
+}
+
+function toggleHelloArticleFavorite(item: HelloArticle): void {
+  toggleContentItemFavorite({
+    id: helloworldFavoriteKey('article', item.url, item.title),
+    title: item.title,
+    source: 'HelloWorld 文章',
+    url: item.url,
+    summary: item.brief || `${item.author} · ${item.time}`,
+    image: item.cover || undefined,
+    tags: ['HelloWorld', '文章', item.author].filter(Boolean)
+  })
+}
+
+function toggleHelloAuthorFavorite(item: HelloAuthor): void {
+  toggleContentItemFavorite({
+    id: helloworldFavoriteKey('author', item.url, item.name),
+    title: item.name,
+    source: 'HelloWorld 作者榜',
+    url: item.url,
+    summary: item.job || '暂无职位信息',
+    image: item.avatar || undefined,
+    tags: ['HelloWorld', '作者']
+  })
+}
+
+function toggleHelloLessonFavorite(item: HelloLesson): void {
+  toggleContentItemFavorite({
+    id: helloworldFavoriteKey('lesson', item.url, item.title),
+    title: item.title,
+    source: 'HelloWorld 推荐课程',
+    url: item.url,
+    summary: [item.price, item.learnCount].filter(Boolean).join(' · ') || '课程内容',
+    image: item.cover || undefined,
+    tags: ['HelloWorld', '课程']
   })
 }
 

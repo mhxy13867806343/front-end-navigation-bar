@@ -126,6 +126,7 @@
 }
 
 .news-item-card {
+  position: relative;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -133,6 +134,17 @@
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.news-card-favorite {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+}
+
+.news-item-card .card-inner-header {
+  padding-right: 38px;
 }
 
 .news-item-card:hover {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
 import fallbackAppsData from '../utlis/daily_ai_apps.json'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 
 interface AiAppItem {
@@ -26,8 +28,10 @@ const selectedCategory = ref<string>(fallbackAppsData[0]?.id || '')
 const isLiveMode = ref<boolean>(false)
 const isLoading = ref<boolean>(false)
 const countdown = ref<number>(60)
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const selectCategory = (id: string): void => {
+  if (isLoading.value) return
   selectedCategory.value = id
 }
 
@@ -40,6 +44,22 @@ const openLink = (link: string): void => {
   if (link) {
     window.open(link, '_blank')
   }
+}
+
+function appFavoriteKey(app: AiAppItem): string {
+  return `ai-app-store:${app.link || app.title}`
+}
+
+function toggleAppFavorite(app: AiAppItem): void {
+  toggleContentItemFavorite({
+    id: appFavoriteKey(app),
+    title: app.title,
+    source: 'AI应用集',
+    url: app.link || 'https://ai-bot.cn/ai-app-store/',
+    summary: app.desc || '暂无详细描述',
+    image: app.icon || undefined,
+    tags: ['AI应用集', app.tag, app.android ? 'Android' : '', app.ios ? 'iOS' : ''].filter(Boolean)
+  })
 }
 
 // Browser DOM parser for real-time live content
@@ -233,6 +253,7 @@ onUnmounted(() => {
           size="small" 
           type="primary" 
           :loading="isLoading" 
+          :disabled="isLoading"
           @click="triggerManualRefresh"
         >
           🔄 刷新应用 ({{ countdown }}s)
@@ -249,6 +270,7 @@ onUnmounted(() => {
           :key="cat.id"
           class="store-cat-item"
           :class="{ active: selectedCategory === cat.id }"
+          :disabled="isLoading"
           @click="selectCategory(cat.id)"
         >
           📱 {{ cat.name }}
@@ -272,6 +294,13 @@ onUnmounted(() => {
               @click="openLink(app.link)"
               :title="'点击前往下载安装: ' + app.title"
             >
+              <ContentFavoriteButton
+                class="app-card-favorite"
+                size="compact"
+                :active="isContentItemFavorite(appFavoriteKey(app))"
+                :title="isContentItemFavorite(appFavoriteKey(app)) ? '取消收藏应用' : '收藏应用'"
+                @toggle="toggleAppFavorite(app)"
+              />
               <!-- Left side icon -->
               <div class="app-icon-wrapper">
                 <img v-if="app.icon" :src="app.icon" class="app-img" alt="app icon">

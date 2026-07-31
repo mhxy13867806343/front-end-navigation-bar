@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 
 type TopHubSectionType = 'home' | 'category' | 'calendar'
@@ -89,6 +91,7 @@ const activeSectionId = ref<string>('home')
 const currentPage = ref<number>(1)
 const totalPages = ref<number>(1)
 const hasNextPage = ref<boolean>(false)
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const activeSection = computed<TopHubSection>(() => {
   return sections.find((section: TopHubSection): boolean => section.id === activeSectionId.value) || sections[0]
@@ -454,6 +457,37 @@ function openLink(url: string): void {
   window.open(url, '_blank', 'noopener,noreferrer')
 }
 
+function tophubItemFavoriteKey(board: TopHubBoard, item: TopHubItem): string {
+  return `tophub:item:${activeSectionId.value}:${board.id}:${item.link || item.title}`
+}
+
+function toggleTopHubItemFavorite(board: TopHubBoard, item: TopHubItem): void {
+  toggleContentItemFavorite({
+    id: tophubItemFavoriteKey(board, item),
+    title: item.title,
+    source: `TopHub · ${board.title}`,
+    url: item.link || buildSectionSourceUrl(),
+    summary: [board.subtitle, item.extra].filter(Boolean).join(' · ') || activeSection.value.intro,
+    image: board.icon || undefined,
+    tags: ['TopHub', activeSection.value.name, board.title].filter(Boolean)
+  })
+}
+
+function tophubCalendarFavoriteKey(event: TopHubCalendarEvent): string {
+  return `tophub:calendar:${event.id}`
+}
+
+function toggleTopHubCalendarFavorite(event: TopHubCalendarEvent): void {
+  toggleContentItemFavorite({
+    id: tophubCalendarFavoriteKey(event),
+    title: event.title,
+    source: 'TopHub · 热点日历',
+    url: 'https://tophub.today/calendar',
+    summary: activeSection.value.intro,
+    tags: ['TopHub', '热点日历']
+  })
+}
+
 onMounted(() => {
   window.addEventListener('keydown', handlePaginationKey)
   void loadTopHub()
@@ -520,16 +554,25 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <div class="calendar-grid">
-            <button
+            <div
               v-for="event in calendarEvents"
               :key="event.id"
-              type="button"
               class="calendar-event"
-              :disabled="isLoading"
+              :class="{ disabled: isLoading }"
+              role="button"
+              tabindex="0"
               @click="openLink('https://tophub.today/calendar')"
+              @keydown.enter="openLink('https://tophub.today/calendar')"
             >
+              <ContentFavoriteButton
+                class="calendar-favorite"
+                size="compact"
+                :active="isContentItemFavorite(tophubCalendarFavoriteKey(event))"
+                :title="isContentItemFavorite(tophubCalendarFavoriteKey(event)) ? '取消收藏事件' : '收藏事件'"
+                @toggle="toggleTopHubCalendarFavorite(event)"
+              />
               {{ event.title }}
-            </button>
+            </div>
           </div>
         </section>
       </template>
@@ -546,18 +589,27 @@ onBeforeUnmount(() => {
             </header>
 
             <div class="board-card-list">
-              <button
+              <div
                 v-for="item in board.items.slice(0, 10)"
                 :key="item.rank + item.title"
-                type="button"
                 class="board-card-item"
-                :disabled="isLoading"
+                :class="{ disabled: isLoading }"
+                role="button"
+                tabindex="0"
                 @click="openLink(item.link)"
+                @keydown.enter="openLink(item.link)"
               >
                 <span class="rank">{{ item.rank }}</span>
                 <span class="title">{{ item.title }}</span>
                 <span v-if="item.extra" class="extra">{{ item.extra }}</span>
-              </button>
+                <ContentFavoriteButton
+                  class="board-item-favorite"
+                  size="compact"
+                  :active="isContentItemFavorite(tophubItemFavoriteKey(board, item))"
+                  :title="isContentItemFavorite(tophubItemFavoriteKey(board, item)) ? '取消收藏热榜项' : '收藏热榜项'"
+                  @toggle="toggleTopHubItemFavorite(board, item)"
+                />
+              </div>
             </div>
 
             <footer class="board-card-footer">
@@ -837,18 +889,29 @@ button:hover:not(:disabled),
 
 .board-card-item {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: 28px minmax(0, 1fr) auto 34px;
   align-items: start;
   gap: 10px;
   min-height: 29px;
   border: 0;
   padding: 1px 0;
   background: transparent;
+  cursor: pointer;
   text-align: left;
+}
+
+.board-item-favorite {
+  justify-self: end;
 }
 
 .board-card-item:hover {
   color: var(--primary-color);
+}
+
+.board-card-item.disabled,
+.calendar-event.disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .board-card-footer {
@@ -939,9 +1002,17 @@ button:hover:not(:disabled),
 }
 
 .calendar-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   min-height: 44px;
   text-align: left;
   line-height: 1.45;
+  cursor: pointer;
+}
+
+.calendar-favorite {
+  flex: 0 0 auto;
 }
 
 .content-state {
@@ -973,6 +1044,11 @@ button:hover:not(:disabled),
 
   .board-card-item {
     grid-template-columns: 26px minmax(0, 1fr);
+  }
+
+  .board-item-favorite {
+    grid-column: 2;
+    justify-self: start;
   }
 
   .extra {

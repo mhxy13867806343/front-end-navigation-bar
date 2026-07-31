@@ -172,11 +172,15 @@
 
 .rank-item {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 140px;
+  grid-template-columns: 42px minmax(0, 1fr) 42px 140px;
   align-items: center;
   gap: 18px;
   min-height: 92px;
   border-bottom: 1px solid #24282e;
+}
+
+.rank-favorite {
+  justify-self: end;
 }
 
 .rank-item:last-child {
@@ -328,6 +332,11 @@
     grid-column: 2;
     justify-self: start;
     font-size: 17px;
+  }
+
+  .rank-favorite {
+    grid-column: 2;
+    justify-self: start;
   }
 
   .rank-title {

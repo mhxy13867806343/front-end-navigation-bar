@@ -9,7 +9,7 @@ import {
 } from '@/constants/liveData'
 import { STORAGE_KEYS } from '@/constants/storageKeys'
 import { Refresh } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -27,6 +27,7 @@ interface RecordEntry {
   count: number
   tags: string[]
   updatedAt?: string
+  contentFavoriteId?: string
 }
 
 interface PageFavoriteEntry {
@@ -201,10 +202,37 @@ function isRecordFavorite(entry: RecordEntry): boolean {
   return Boolean(recordFavorites.value[entry.id])
 }
 
-function togglePageFavorite(entry: RecordEntry): void {
+function isContentFavorite(entry: RecordEntry): boolean {
+  return Boolean(entry.contentFavoriteId && contentItemFavorites.value[entry.contentFavoriteId])
+}
+
+function isEntryFavorite(entry: RecordEntry): boolean {
+  if (entry.kind === 'page') return isPageFavorite(entry)
+  if (entry.kind === 'content-favorite') return isContentFavorite(entry)
+  return isRecordFavorite(entry)
+}
+
+async function confirmFavoriteRemoval(title: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏「${title}」吗？`, '取消收藏确认', {
+      confirmButtonText: '确认取消',
+      cancelButtonText: '再想想',
+      type: 'warning',
+      autofocus: false,
+      lockScroll: false
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function togglePageFavorite(entry: RecordEntry): Promise<void> {
   if (!entry.route) return
   const next = { ...pageFavorites.value }
   if (next[entry.route]) {
+    const confirmed = await confirmFavoriteRemoval(entry.title)
+    if (!confirmed) return
     delete next[entry.route]
     ElMessage({ message: `已取消收藏页面：${entry.title}`, type: 'info', duration: 1200 })
   } else {
@@ -221,9 +249,11 @@ function togglePageFavorite(entry: RecordEntry): void {
   loadLocalCaches()
 }
 
-function toggleRecordFavorite(entry: RecordEntry): void {
+async function toggleRecordFavorite(entry: RecordEntry): Promise<void> {
   const next = { ...recordFavorites.value }
   if (next[entry.id]) {
+    const confirmed = await confirmFavoriteRemoval(entry.title)
+    if (!confirmed) return
     delete next[entry.id]
     ElMessage({ message: `已取消收藏记录：${entry.title}`, type: 'info', duration: 1200 })
   } else {
@@ -237,6 +267,33 @@ function toggleRecordFavorite(entry: RecordEntry): void {
   recordFavorites.value = next
   saveJsonObject(STORAGE_KEYS.RECORD_CACHE_FAVORITES, next)
   loadLocalCaches()
+}
+
+async function toggleContentFavorite(entry: RecordEntry): Promise<void> {
+  if (!entry.contentFavoriteId) return
+  const next = { ...contentItemFavorites.value }
+  if (!next[entry.contentFavoriteId]) return
+
+  const confirmed = await confirmFavoriteRemoval(entry.title)
+  if (!confirmed) return
+  delete next[entry.contentFavoriteId]
+  contentItemFavorites.value = next
+  saveJsonObject(STORAGE_KEYS.CONTENT_ITEM_FAVORITES, next)
+  window.dispatchEvent(new Event('hooksvue-content-favorites-change'))
+  ElMessage({ message: `已取消收藏内容：${entry.title}`, type: 'info', duration: 1200 })
+  loadLocalCaches()
+}
+
+function toggleEntryFavorite(entry: RecordEntry): void {
+  if (entry.kind === 'page') {
+    void togglePageFavorite(entry)
+    return
+  }
+  if (entry.kind === 'content-favorite') {
+    void toggleContentFavorite(entry)
+    return
+  }
+  void toggleRecordFavorite(entry)
 }
 
 const versionEntry = computed<RecordEntry>(() => {
@@ -282,17 +339,30 @@ const contentFavoriteEntries = computed<RecordEntry[]>(() => {
       url: favorite.url,
       count: 1,
       updatedAt: new Date(favorite.timestamp).toLocaleString(),
-      tags: ['内容收藏', ...favorite.tags]
+      tags: ['内容收藏', ...favorite.tags],
+      contentFavoriteId: id
+    }))
+})
+
+const recordFavoriteEntries = computed<RecordEntry[]>(() => {
+  const availableRecordEntries = [
+    ...liveCacheEntries,
+    ...localCacheEntries.value,
+    versionEntry.value
+  ]
+
+  return availableRecordEntries
+    .filter((entry: RecordEntry): boolean => Boolean(recordFavorites.value[entry.id]))
+    .map((entry: RecordEntry): RecordEntry => ({
+      ...entry,
+      updatedAt: new Date(recordFavorites.value[entry.id]?.timestamp || Date.now()).toLocaleString()
     }))
 })
 
 const allEntries = computed<RecordEntry[]>(() => [
   ...pageFavoriteEntries.value,
   ...contentFavoriteEntries.value,
-  ...pageEntries,
-  ...liveCacheEntries,
-  ...localCacheEntries.value,
-  versionEntry.value
+  ...recordFavoriteEntries.value
 ])
 
 const cloudTags = computed<Array<RecordEntry & { size: number; tone: number }>>(() => {
@@ -305,10 +375,10 @@ const cloudTags = computed<Array<RecordEntry & { size: number; tone: number }>>(
 })
 
 const stats = computed(() => ({
-  pages: pageEntries.length,
-  liveCaches: liveCacheEntries.length,
-  localCaches: localCacheEntries.value.length,
-  favorites: Object.keys(pageFavorites.value).length + Object.keys(recordFavorites.value).length + Object.keys(contentItemFavorites.value).length
+  pages: pageFavoriteEntries.value.length,
+  liveCaches: contentFavoriteEntries.value.length,
+  localCaches: recordFavoriteEntries.value.length,
+  favorites: allEntries.value.length
 }))
 
 function openEntry(entry: RecordEntry): void {
@@ -376,7 +446,7 @@ onUnmounted(() => {
       <div>
         <p class="eyebrow">RECORDS CACHE</p>
         <h1>记录缓存展示</h1>
-        <p class="subtitle">把页面入口、本地记录、收藏数据和 live-data 缓存统一收进一个可收藏、可中转的展示页。</p>
+        <p class="subtitle">只展示已经收藏的页面、列表内容和记录卡片，统一收进一个可中转的收藏展示页。</p>
       </div>
       <button class="refresh-btn" type="button" :disabled="isRefreshing" @click="refreshRecords">
         <el-icon><Refresh /></el-icon>
@@ -385,14 +455,15 @@ onUnmounted(() => {
     </section>
 
     <section class="stats-strip" aria-label="记录缓存统计">
-      <div><strong>{{ stats.pages }}</strong><span>页面入口</span></div>
-      <div><strong>{{ stats.liveCaches }}</strong><span>构建缓存</span></div>
-      <div><strong>{{ stats.localCaches }}</strong><span>本地记录</span></div>
-      <div><strong>{{ stats.favorites }}</strong><span>已收藏</span></div>
+      <div><strong>{{ stats.pages }}</strong><span>已收藏页面</span></div>
+      <div><strong>{{ stats.liveCaches }}</strong><span>内容收藏</span></div>
+      <div><strong>{{ stats.localCaches }}</strong><span>记录收藏</span></div>
+      <div><strong>{{ stats.favorites }}</strong><span>收藏合计</span></div>
     </section>
 
     <section class="cloud-panel" aria-label="云标签展示">
       <div v-if="isRefreshing" class="record-loading">正在加载记录缓存...</div>
+      <div v-else-if="!cloudTags.length" class="record-loading">暂无收藏记录，先去列表页点亮爱心。</div>
       <template v-else>
         <button
           v-for="tag in cloudTags"
@@ -414,17 +485,21 @@ onUnmounted(() => {
       正在整理页面入口、收藏记录和缓存索引...
     </section>
 
+    <section v-else-if="!allEntries.length" class="record-loading large" aria-label="记录缓存空状态">
+      暂无收藏内容。页面右上角收藏页面，或在列表卡片里点亮爱心后，会同步展示在这里。
+    </section>
+
     <section v-else class="records-grid" aria-label="双列记录卡片">
       <article v-for="entry in allEntries" :key="entry.id" class="record-card" @click="openEntry(entry)">
         <button
           type="button"
           class="record-heart"
-          :class="{ active: entry.kind === 'page' ? isPageFavorite(entry) : isRecordFavorite(entry) }"
-          :title="entry.kind === 'page' ? '收藏或取消收藏页面' : '收藏或取消收藏记录'"
+          :class="{ active: isEntryFavorite(entry) }"
+          :title="entry.kind === 'content-favorite' ? '取消收藏这条内容' : (entry.kind === 'page' ? '收藏或取消收藏页面' : '收藏或取消收藏记录')"
           :disabled="isRefreshing"
-          @click.stop="entry.kind === 'page' ? togglePageFavorite(entry) : toggleRecordFavorite(entry)"
+          @click.stop="toggleEntryFavorite(entry)"
         >
-          <span>{{ (entry.kind === 'page' ? isPageFavorite(entry) : isRecordFavorite(entry)) ? '♥' : '♡' }}</span>
+          <span>{{ isEntryFavorite(entry) ? '♥' : '♡' }}</span>
         </button>
 
         <div class="record-topline">
@@ -584,6 +659,7 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: min(100%, 760px);
   min-height: 38px;
   padding: 0.42em 0.82em;
   border: 1px solid currentColor;
@@ -596,12 +672,22 @@ h1 {
   transition: transform 0.18s ease, background 0.18s ease;
 }
 
+.cloud-tag span {
+  display: block;
+  min-width: 0;
+  max-width: clamp(140px, 42vw, 680px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cloud-tag:hover {
   transform: translateY(-2px);
   background: rgba(99, 102, 241, 0.16);
 }
 
 .cloud-tag small {
+  flex: 0 0 auto;
   font-size: 0.72em;
   opacity: 0.72;
 }

@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-31T07:26:57.035Z",
+  "generatedAt": "2026-07-31T08:12:29.675Z",
   "groups": [
     {
       "date": "2026-07-31",
       "items": [
+        {
+          "hash": "0ed675984a15b701e462dcd90b5aaac2a9b69fd2",
+          "shortHash": "0ed6759",
+          "date": "2026-07-31",
+          "time": "15:27",
+          "type": "功能更新",
+          "title": "add topic item favorites",
+          "scope": "",
+          "message": "feat: add topic item favorites"
+        },
         {
           "hash": "6344bf440cc3eb8d97d1c92b4645fa5125b0f51f",
           "shortHash": "6344bf4",
@@ -303,16 +313,6 @@
           "title": "expand Auth Showcase dataset to 500 total Auth UI themes (250 Login + 250 Register) with 20 categories, pagination, and search",
           "scope": "",
           "message": "feat: expand Auth Showcase dataset to 500 total Auth UI themes (250 Login + 250 Register) with 20 categories, pagination, and search"
-        },
-        {
-          "hash": "bc4bd9111671b00defe3e82149ee9e531cd83469",
-          "shortHash": "bc4bd91",
-          "date": "2026-07-24",
-          "time": "08:34",
-          "type": "功能更新",
-          "title": "expand Auth Showcase to 100 total Auth UI themes (50 Login + 50 Register) with mode filter and search",
-          "scope": "",
-          "message": "feat: expand Auth Showcase to 100 total Auth UI themes (50 Login + 50 Register) with mode filter and search"
         }
       ]
     }

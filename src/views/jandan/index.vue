@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import ContentFavoriteButton from '@/components/ContentFavoriteButton.vue'
+import { useContentItemFavorites } from '@/composables/useContentItemFavorites'
 import { requestText } from '@/utils/request'
 
 type JandanSectionType = 'home' | 'comments' | 'commentList' | 'forum'
@@ -166,6 +168,7 @@ const errorText = ref<string>('')
 const currentPage = ref<number>(1)
 const totalPages = ref<number>(1)
 const hasNextPage = ref<boolean>(false)
+const { isContentItemFavorite, toggleContentItemFavorite } = useContentItemFavorites()
 
 const activeSection = computed<JandanSection>(() => {
   return sections.find((section: JandanSection): boolean => section.id === activeSectionId.value) || sections[0]
@@ -470,6 +473,22 @@ function openSource(url: string): void {
   window.open(url, '_blank', 'noopener,noreferrer')
 }
 
+function jandanFavoriteKey(item: JandanFeedItem): string {
+  return `jandan:${activeSection.value.id}:${item.id || item.link || item.title}`
+}
+
+function toggleJandanFavorite(item: JandanFeedItem): void {
+  toggleContentItemFavorite({
+    id: jandanFavoriteKey(item),
+    title: item.title,
+    source: `煎蛋 · ${activeSection.value.name}`,
+    summary: item.desc,
+    url: item.link || buildSourceUrl(),
+    route: '/jandan',
+    tags: ['煎蛋', activeSection.value.name]
+  })
+}
+
 onMounted(() => {
   currentPage.value = activeSection.value.type === 'comments' ? 0 : 1
   void loadJandan()
@@ -515,6 +534,13 @@ onMounted(() => {
       <template v-else>
         <div v-if="items.length" class="feed-grid">
           <article v-for="item in items" :key="item.id" class="feed-card" :class="{ 'has-image': item.image }">
+            <ContentFavoriteButton
+              class="feed-card-favorite"
+              size="compact"
+              :active="isContentItemFavorite(jandanFavoriteKey(item))"
+              :title="isContentItemFavorite(jandanFavoriteKey(item)) ? '取消收藏这条内容' : '收藏这条内容'"
+              @toggle="toggleJandanFavorite(item)"
+            />
             <img v-if="item.image" :src="item.image" alt="" loading="lazy">
             <div class="feed-card-body">
               <h2>{{ item.title }}</h2>
@@ -712,6 +738,7 @@ button:hover:not(:disabled),
 }
 
 .feed-card {
+  position: relative;
   display: block;
   min-height: 0;
   overflow: hidden;
@@ -735,7 +762,14 @@ button:hover:not(:disabled),
   align-content: start;
   gap: 9px;
   min-width: 0;
-  padding: 12px;
+  padding: 12px 46px 12px 12px;
+}
+
+.feed-card-favorite {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
 }
 
 .feed-card h2 {

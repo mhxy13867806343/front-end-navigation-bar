@@ -315,11 +315,28 @@ const isCurrentFavorite = computed<boolean>(() => {
   )
 })
 
-const toggleFavorite = (quote: any): void => {
+async function confirmFavoriteRemoval(title: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏「${title}」吗？`, '取消收藏确认', {
+      confirmButtonText: '确认取消',
+      cancelButtonText: '再想想',
+      type: 'warning',
+      autofocus: false,
+      lockScroll: false
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+const toggleFavorite = async (quote: any): Promise<void> => {
   const idx: number = favoriteQuotes.value.findIndex(
     (item: any) => item.content === quote.content && item.author === quote.author
   )
   if (idx >= 0) {
+    const confirmed = await confirmFavoriteRemoval(quote.content || '这条内容')
+    if (!confirmed) return
     favoriteQuotes.value.splice(idx, 1)
     ElMessage.info('已取消收藏')
   } else {

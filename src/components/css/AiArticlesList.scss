@@ -91,6 +91,7 @@
 
 /* Article Card */
 .article-flow-card {
+  position: relative;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -100,6 +101,17 @@
   cursor: pointer;
   transition: all 0.22s ease-in-out;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.article-card-favorite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+.article-flow-card .article-info-col {
+  padding-right: 34px;
 }
 
 .article-flow-card:hover {

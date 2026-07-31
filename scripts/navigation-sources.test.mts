@@ -548,16 +548,27 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(pageSource, /class="records-grid"/)
   assert.match(pageSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
   assert.match(pageSource, /record-heart/)
+  assert.match(pageSource, /ElMessageBox\.confirm/)
+  assert.match(pageSource, /confirmFavoriteRemoval/)
   assert.match(pageSource, /togglePageFavorite/)
   assert.match(pageSource, /toggleRecordFavorite/)
+  assert.match(pageSource, /toggleContentFavorite/)
+  assert.match(pageSource, /toggleEntryFavorite/)
+  assert.match(pageSource, /isEntryFavorite\(entry\)/)
+  assert.match(pageSource, /contentFavoriteId:\s*id/)
   assert.match(pageSource, /CONTENT_ITEM_FAVORITES/)
   assert.match(pageSource, /contentFavoriteEntries/)
+  assert.match(pageSource, /recordFavoriteEntries/)
+  assert.match(pageSource, /\.\.\.pageFavoriteEntries\.value,[\s\S]*?\.\.\.contentFavoriteEntries\.value,[\s\S]*?\.\.\.recordFavoriteEntries\.value/)
+  assert.match(pageSource, /暂无收藏记录/)
   assert.match(pageSource, /buildLiveDataUrl\(JUEJIN_COURSE_CACHE_FILE\)/)
   assert.match(pageSource, /window\.localStorage\.length/)
   assert.match(pageSource, /中转进入/)
   assert.match(pageSource, /isRefreshing/)
   assert.match(pageSource, /正在加载记录缓存/)
   assert.match(pageSource, /:disabled="isRefreshing"/)
+  assert.match(pageSource, /text-overflow:\s*ellipsis/)
+  assert.match(pageSource, /white-space:\s*nowrap/)
 })
 
 test('Juejin theme cards provide item-level favorite controls saved into content favorites', () => {
@@ -568,6 +579,7 @@ test('Juejin theme cards provide item-level favorite controls saved into content
   assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
   assert.match(pageSource, /STORAGE_KEYS\.CONTENT_ITEM_FAVORITES/)
   assert.match(pageSource, /theme-card-favorite/)
+  assert.match(pageSource, /ElMessageBox\.confirm/)
   assert.match(pageSource, /toggleThemeFavorite\(item\)/)
   assert.match(pageSource, /isThemeFavorite\(item\)/)
   assert.match(pageSource, /juejin-theme:\$\{item\.id\}/)
@@ -576,6 +588,41 @@ test('Juejin theme cards provide item-level favorite controls saved into content
   assert.match(styleSource, /\.theme-card-favorite/)
   assert.match(styleSource, /\.theme-card\.favorited/)
   assert.match(styleSource, /right:\s*24px/)
+})
+
+test('new internal list pages share item-level content favorite buttons', () => {
+  const composableSource = readFileSync(new URL('../src/composables/useContentItemFavorites.ts', import.meta.url), 'utf8')
+  const buttonSource = readFileSync(new URL('../src/components/ContentFavoriteButton.vue', import.meta.url), 'utf8')
+  const listPages = [
+    '../src/components/AiArticlesList.vue',
+    '../src/components/AiAppStore.vue',
+    '../src/components/AiNewsTimeline.vue',
+    '../src/views/aicoding/index.vue',
+    '../src/views/tophub/index.vue',
+    '../src/views/ithome/index.vue',
+    '../src/views/huxiu/index.vue',
+    '../src/views/github/index.vue',
+    '../src/views/helloworld/index.vue',
+    '../src/views/jandan/index.vue'
+  ]
+
+  assert.match(composableSource, /CONTENT_FAVORITES_CHANGE_EVENT/)
+  assert.match(composableSource, /STORAGE_KEYS\.CONTENT_ITEM_FAVORITES/)
+  assert.match(composableSource, /ElMessageBox\.confirm/)
+  assert.match(composableSource, /toggleContentItemFavorite/)
+  assert.match(buttonSource, /content-favorite-button/)
+  assert.match(buttonSource, /@click\.stop\.prevent/)
+
+  for (const filePath of listPages) {
+    const source = readFileSync(new URL(filePath, import.meta.url), 'utf8')
+    assert.match(source, /ContentFavoriteButton/)
+    assert.match(source, /useContentItemFavorites/)
+    assert.match(source, /toggleContentItemFavorite/)
+  }
+
+  assert.match(readFileSync(new URL('../src/views/tophub/index.vue', import.meta.url), 'utf8'), /board-item-favorite/)
+  assert.match(readFileSync(new URL('../src/views/jandan/index.vue', import.meta.url), 'utf8'), /feed-card-favorite/)
+  assert.match(readFileSync(new URL('../src/views/helloworld/index.vue', import.meta.url), 'utf8'), /hello-list-favorite/)
 })
 
 test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {

@@ -16,9 +16,24 @@ interface UseLikesReturn {
   likedItemsInfo: Ref<LikedItemsInfo>
   showLikeHistory: Ref<boolean>
   isLiked: (itemId: string) => boolean
-  toggleLike: (itemId: string) => void
+  toggleLike: (itemId: string) => Promise<void>
   likedToolsList: ComputedRef<LikedToolItem[]>
   clearAllLikes: () => void
+}
+
+async function confirmFavoriteRemoval(title: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏「${title}」吗？`, '取消收藏确认', {
+      confirmButtonText: '确认取消',
+      cancelButtonText: '再想想',
+      type: 'warning',
+      autofocus: false,
+      lockScroll: false
+    })
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function useLikes(menuItems: Ref<NavigationCategory[]>): UseLikesReturn {
@@ -29,7 +44,7 @@ export function useLikes(menuItems: Ref<NavigationCategory[]>): UseLikesReturn {
     return !!likedItemsInfo.value[itemId]
   }
 
-  const toggleLike = (itemId: string): void => {
+  const toggleLike = async (itemId: string): Promise<void> => {
     let currentMenu: NavigationCategory | null = null
     let currentTool: ToolItem | null = null
     
@@ -55,6 +70,8 @@ export function useLikes(menuItems: Ref<NavigationCategory[]>): UseLikesReturn {
     }
     
     if (likedItemsInfo.value[itemId]) {
+      const confirmed = await confirmFavoriteRemoval(currentTool ? currentTool.name : '该工具')
+      if (!confirmed) return
       delete likedItemsInfo.value[itemId]
       ElMessage({
         message: `已取消收藏: ${currentTool ? currentTool.name : '该工具'}`,

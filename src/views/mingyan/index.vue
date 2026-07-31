@@ -291,11 +291,28 @@ function fallbackCopy(text: string) {
   document.body.removeChild(textArea)
 }
 
-const toggleFavorite = (quote: MingyanQuoteItem): void => {
+async function confirmFavoriteRemoval(title: string): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(`确定要取消收藏「${title}」吗？`, '取消收藏确认', {
+      confirmButtonText: '确认取消',
+      cancelButtonText: '再想想',
+      type: 'warning',
+      autofocus: false,
+      lockScroll: false
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+const toggleFavorite = async (quote: MingyanQuoteItem): Promise<void> => {
   const idx: number = favoriteQuotes.value.findIndex(
     (item: MingyanQuoteItem) => item.content === quote.content && item.author === quote.author
   )
   if (idx >= 0) {
+    const confirmed = await confirmFavoriteRemoval(quote.content)
+    if (!confirmed) return
     favoriteQuotes.value.splice(idx, 1)
     ElMessage({
       message: '已从金句收藏库中取消收藏',
@@ -707,9 +724,11 @@ const isDoutuFavorite = (url: string): boolean => {
   return favoriteDoutus.value.includes(url)
 }
 
-const toggleFavoriteDoutu = (url: string): void => {
+const toggleFavoriteDoutu = async (url: string): Promise<void> => {
   const idx = favoriteDoutus.value.indexOf(url)
   if (idx >= 0) {
+    const confirmed = await confirmFavoriteRemoval('这张表情包')
+    if (!confirmed) return
     favoriteDoutus.value.splice(idx, 1)
     ElMessage({ message: '已从表情包收藏库移除', type: 'info', grouping: true })
   } else {
@@ -785,11 +804,13 @@ const copyShiciText = (item: ShiciItem): void => {
   }
 }
 
-const toggleFavoriteShici = (item: ShiciItem): void => {
+const toggleFavoriteShici = async (item: ShiciItem): Promise<void> => {
   const idx = favoriteShicis.value.findIndex(
     i => i.content === item.content && i.origin === item.origin
   )
   if (idx >= 0) {
+    const confirmed = await confirmFavoriteRemoval(item.origin || item.content)
+    if (!confirmed) return
     favoriteShicis.value.splice(idx, 1)
     ElMessage({ message: '已取消收藏该诗词', type: 'info', grouping: true })
   } else {
@@ -854,9 +875,11 @@ const isCurrentQinghuaFavorite = computed<boolean>(() => {
   return favoriteQinghuas.value.some(item => item.content === currentQinghua.value?.content)
 })
 
-const toggleFavoriteQinghua = (item: QinghuaItem): void => {
+const toggleFavoriteQinghua = async (item: QinghuaItem): Promise<void> => {
   const idx = favoriteQinghuas.value.findIndex(i => i.content === item.content)
   if (idx >= 0) {
+    const confirmed = await confirmFavoriteRemoval(item.content)
+    if (!confirmed) return
     favoriteQinghuas.value.splice(idx, 1)
     ElMessage({ message: '已取消收藏该情话', type: 'info', grouping: true })
   } else {
@@ -896,10 +919,12 @@ const isCurrentRiddleFavorite = computed<boolean>(() => {
   return favoriteRiddles.value.some(item => (item.title || item.content) === q)
 })
 
-const toggleFavoriteRiddle = (item: RiddleItem): void => {
+const toggleFavoriteRiddle = async (item: RiddleItem): Promise<void> => {
   const q = item.title || item.content
   const idx = favoriteRiddles.value.findIndex(i => (i.title || i.content) === q)
   if (idx >= 0) {
+    const confirmed = await confirmFavoriteRemoval(q)
+    if (!confirmed) return
     favoriteRiddles.value.splice(idx, 1)
     ElMessage({ message: '已取消收藏该谜语', type: 'info', grouping: true })
   } else {
