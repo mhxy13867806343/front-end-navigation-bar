@@ -1,6 +1,21 @@
 {
-  "generatedAt": "2026-07-25T04:20:08.964Z",
+  "generatedAt": "2026-07-31T05:52:35.030Z",
   "groups": [
+    {
+      "date": "2026-07-25",
+      "items": [
+        {
+          "hash": "a712291adea80716b328f4c15618469e05aa6ceb",
+          "shortHash": "a712291",
+          "date": "2026-07-25",
+          "time": "12:21",
+          "type": "功能更新",
+          "title": "add Juejin course page",
+          "scope": "",
+          "message": "feat: add Juejin course page"
+        }
+      ]
+    },
     {
       "date": "2026-07-24",
       "items": [
@@ -293,16 +308,6 @@
           "title": "bind explicit interactive Oat UI cards for all oat-* prefixed component keys (oat-switch, oat-alert, oat-button, oat-dialog, etc.) in Oat Studio",
           "scope": "",
           "message": "feat: bind explicit interactive Oat UI cards for all oat-* prefixed component keys (oat-switch, oat-alert, oat-button, oat-dialog, etc.) in Oat Studio"
-        },
-        {
-          "hash": "99ef2394642621f7114ffa7f6de06e8bb3ec63dd",
-          "shortHash": "99ef239",
-          "date": "2026-07-24",
-          "time": "08:13",
-          "type": "功能更新",
-          "title": "add dedicated interactive UI cards for Select, Avatar, Badge, Breadcrumb, Form, and Input components in Oat Studio",
-          "scope": "",
-          "message": "feat: add dedicated interactive UI cards for Select, Avatar, Badge, Breadcrumb, Form, and Input components in Oat Studio"
         }
       ]
     }

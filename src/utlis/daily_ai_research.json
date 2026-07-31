@@ -1,0 +1,66 @@
+[
+  {
+    "title": "秒悟Meoo – 1分钟生成前后端完整的网站，真0门槛开发！",
+    "link": "https://ai-bot.cn/meoo-banner/",
+    "desc": "阿里推出的首个对话式AI开发工具，内置阿里云数据库、存储、域名等全栈服务，支持蜂群Agent并行处理，打通百炼可调用多模态大模型，真正实现0门槛开发！",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/meoo-banner-0720.jpg",
+    "category": "AI研究",
+    "date": "11秒前"
+  },
+  {
+    "title": "MiniMax H3 – 稀宇科技推出的通用全模态生成模型",
+    "link": "https://ai-bot.cn/minimax-h3/",
+    "desc": "MiniMax H3 是稀宇科技推出的通用全模态生成模型，打破传统任务与模态边界，支持对文本、图像、视频、音频的统一理解与原生生成。模型能输出原生双声道音视频...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/MiniMax-H3-website.png",
+    "category": "AI研究",
+    "date": "39秒前"
+  },
+  {
+    "title": "Grok Voice Think Fast 2.0 – SpaceXAI 推出的语音模型",
+    "link": "https://ai-bot.cn/grok-voice-think-fast-2-0/",
+    "desc": "Grok Voice Think Fast 2.0 是 SpaceXAI（xAI）推出的端到端语音到语音模型，采用原生语音到语音架构，无需经过识别—推理—合成多阶段流程即可直接理解并回应...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/Grok-Voice-Think-Fast-2.0-website.png",
+    "category": "AI研究",
+    "date": "20小时前"
+  },
+  {
+    "title": "AngelSpec – 腾讯混元团队开源的端到端推测解码训练框架",
+    "link": "https://ai-bot.cn/angelspec/",
+    "desc": "AngelSpec 是腾讯混元团队开源的端到端推测解码训练框架，基于 TorchSpec 构建，支持 MTP 自回归与 DFly 块并行共 6 种草稿架构。推理与训练解耦，推理引擎经...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/AngelSpec-website.png",
+    "category": "AI研究",
+    "date": "21小时前"
+  },
+  {
+    "title": "Codex Security CLI – OpenAI开源的AI代码安全扫描CLI工具",
+    "link": "https://ai-bot.cn/codex-security-cli/",
+    "desc": "Codex Security CLI是OpenAI开源的AI代码安全扫描CLI工具，前身为Codex内置的闭源安全插件。工具基于大模型语义理解自动扫描代码漏洞，深度验证攻击路径真实...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/Codex-Security-CLI-website.png",
+    "category": "AI研究",
+    "date": "23小时前"
+  },
+  {
+    "title": "Lyria 3.5 – 谷歌 DeepMind 推出的 AI 音乐生成模型",
+    "link": "https://ai-bot.cn/lyria-3-5/",
+    "desc": "Lyria 3.5是Google DeepMind 在 Google Flow Music 中推出的新一代音乐生成模型，实现音乐性、歌词质量、人声表现力与创作控制四项核心升级。",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/Lyria-3.5-website.png",
+    "category": "AI研究",
+    "date": "1天前"
+  },
+  {
+    "title": "Qwen-Audio-Agent – 阿里开源的实时语音 Agent 框架",
+    "link": "https://ai-bot.cn/qwen-audio-agent/",
+    "desc": "Qwen-Audio-Agent 是阿里语音AI团队推出的开源实时语音 Agent 框架，基于 Qwen-Audio-3.0-Realtime 模型构建。框架作为统一的实时语音入口层，让用户通过自然...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/Qwen-Audio-Agent-website.png",
+    "category": "AI研究",
+    "date": "2天前"
+  },
+  {
+    "title": "JiuwenSwarm – 华为开源的 AI Agent 统一工作平台",
+    "link": "https://ai-bot.cn/jiuwenswarm/",
+    "desc": "JiuwenSwarm是华为2012实验室、华为云、终端小艺等团队联合构建的开源AI Agent平台，也是首个面向鸿蒙PC的开源AI统一工作台。平台采用多智能体协同架构，支持...",
+    "thumbnail": "https://ai-bot.cn/wp-content/uploads/2026/07/JiuwenSwarm-website.png",
+    "category": "AI研究",
+    "date": "2天前"
+  }
+]

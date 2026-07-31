@@ -1,6 +1,13 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  JUEJIN_API_BASE_URL,
+  JUEJIN_COURSE_FALLBACK_CATEGORIES,
+  JUEJIN_COURSE_SORT_VALUES,
+  JUEJIN_COURSE_VIP_VALUES
+} from '../src/constants/juejin.ts'
+import { JUEJIN_COURSE_CACHE_FILE, LIVE_DATA_DIR } from '../src/constants/liveData.ts'
 
 interface CacheEntry<TData> {
   updatedAt: string
@@ -42,20 +49,10 @@ interface JsonRequestOptions {
 const __filename: string = fileURLToPath(import.meta.url)
 const __dirname: string = path.dirname(__filename)
 const projectRoot: string = path.resolve(__dirname, '..')
-const publicCachePath: string = path.join(projectRoot, 'public', 'live-data', 'juejin-course-cache.json')
-const juejinApiBase: string = 'https://api.juejin.cn'
-const sortValues: number[] = [10, 1, 7, 8, 9]
-const vipValues: number[] = [0, 1]
-const fallbackCourseCategories: JuejinCourseCategory[] = [
-  { category_id: '6809637769959178254', category_name: '后端' },
-  { category_id: '6809637767543259144', category_name: '前端' },
-  { category_id: '6809635626879549454', category_name: 'Android' },
-  { category_id: '6809635626661445640', category_name: 'iOS' },
-  { category_id: '6809637773935378440', category_name: '人工智能' },
-  { category_id: '6809637771511070734', category_name: '开发工具' },
-  { category_id: '6809637776263217160', category_name: '代码人生' },
-  { category_id: '6809637772874219534', category_name: '阅读' }
-]
+const publicCachePath: string = path.join(projectRoot, 'public', LIVE_DATA_DIR, JUEJIN_COURSE_CACHE_FILE)
+const sortValues: number[] = [...JUEJIN_COURSE_SORT_VALUES]
+const vipValues: number[] = [...JUEJIN_COURSE_VIP_VALUES]
+const fallbackCourseCategories: JuejinCourseCategory[] = [...JUEJIN_COURSE_FALLBACK_CATEGORIES]
 
 function createEmptyCache(): JuejinCourseCache {
   return {
@@ -141,7 +138,7 @@ async function buildCache(previousCache: JuejinCourseCache): Promise<JuejinCours
     'categories',
     previousCache.categories,
     (): Promise<JuejinCourseCategoryResponse> => {
-      return fetchJson(`${juejinApiBase}/tag_api/v1/query_category_briefs?show_type=1`)
+      return fetchJson(`${JUEJIN_API_BASE_URL}/tag_api/v1/query_category_briefs?show_type=1`)
     }
   )
   const categoryList: JuejinCourseCategory[] = categories.data?.data?.length
@@ -162,7 +159,7 @@ async function buildCache(previousCache: JuejinCourseCache): Promise<JuejinCours
           `course-list ${key}`,
           previousCache.courseLists[key],
           (): Promise<JuejinCourseResponse> => {
-            return fetchJson(`${juejinApiBase}/booklet_api/v1/booklet/listbycategory`, {
+            return fetchJson(`${JUEJIN_API_BASE_URL}/booklet_api/v1/booklet/listbycategory`, {
               method: 'POST',
               body: {
                 category_id: categoryId,

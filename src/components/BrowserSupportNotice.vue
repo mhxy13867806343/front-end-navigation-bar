@@ -111,7 +111,16 @@ const webLibraryGroups: WebLibraryGroup[] = [
     title: '新建页面',
     icon: '🆕',
     items: [
-      { label: '📘 掘金小册课程', command: '/juejin-course' }
+      { label: '📘 掘金小册课程', command: '/juejin-course' },
+      { label: '💬 掘金圈子广场', command: '/juejin-clubs' },
+      { label: '📅 掘金每日签到', command: '/juejin-signin' },
+      { label: '🥚 煎蛋页面', command: '/jandan' },
+      { label: '🔥 今日热榜 TopHub', command: '/tophub' },
+      { label: '📰 IT之家', command: '/ithome' },
+      { label: '🐯 虎嗅24小时', command: '/huxiu' },
+      { label: '🐙 GitHub开源聚合', command: '/github' },
+      { label: '💼 BOSS直聘杭州首页', command: '/boss-zhipin-hangzhou' },
+      { label: '🗺️ BOSS直聘地图找工作', command: '/boss-zhipin-hangzhou-map' }
     ]
   },
   {
@@ -457,6 +466,15 @@ onUnmounted((): void => {
             <el-dropdown-item command="/docker-showcase">🐳 Docker 命令行与可视化双方案部署</el-dropdown-item>
             <el-dropdown-item divided disabled>🆕 新建页面</el-dropdown-item>
             <el-dropdown-item command="/juejin-course">📘 掘金小册课程</el-dropdown-item>
+            <el-dropdown-item command="/juejin-clubs">💬 掘金圈子广场</el-dropdown-item>
+            <el-dropdown-item command="/juejin-signin">📅 掘金每日签到</el-dropdown-item>
+            <el-dropdown-item command="/jandan">🥚 煎蛋页面</el-dropdown-item>
+            <el-dropdown-item command="/tophub">🔥 今日热榜 TopHub</el-dropdown-item>
+            <el-dropdown-item command="/ithome">📰 IT之家</el-dropdown-item>
+            <el-dropdown-item command="/huxiu">🐯 虎嗅24小时</el-dropdown-item>
+            <el-dropdown-item command="/github">🐙 GitHub开源聚合</el-dropdown-item>
+            <el-dropdown-item command="/boss-zhipin-hangzhou">💼 BOSS直聘杭州首页</el-dropdown-item>
+            <el-dropdown-item command="/boss-zhipin-hangzhou-map">🗺️ BOSS直聘地图找工作</el-dropdown-item>
             <el-dropdown-item divided command="triggerVersionCheck">🚀 模拟测试版本更新检测 (Element Plus UI)</el-dropdown-item>
             <el-dropdown-item command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
             <el-dropdown-item command="https://www.ruanyifeng.com/blog/2019/08/web_components.html">📰 阮一峰 Web Components 教程</el-dropdown-item>

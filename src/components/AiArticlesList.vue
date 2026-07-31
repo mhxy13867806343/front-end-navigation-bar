@@ -5,9 +5,10 @@ import fallbackTutorials from '../utlis/daily_ai_tutorials.json'
 import fallbackQa from '../utlis/daily_ai_qa.json'
 import fallbackEncyclopedia from '../utlis/daily_ai_encyclopedia.json'
 import fallbackHallOfFame from '../utlis/daily_ai_hall_of_fame.json'
+import fallbackResearch from '../utlis/daily_ai_research.json'
 import { requestText } from '@/utils/request'
 
-type ArticleType = 'tutorials' | 'qa' | 'encyclopedia' | 'hall_of_fame'
+type ArticleType = 'tutorials' | 'column' | 'qa' | 'encyclopedia' | 'hall_of_fame' | 'research'
 
 interface ArticleItem {
   title: string
@@ -30,9 +31,13 @@ const props = defineProps({
   type: {
     type: String,
     required: true,
-    validator: (value: unknown): boolean => ['tutorials', 'qa', 'encyclopedia', 'hall_of_fame'].includes(String(value))
+    validator: (value: unknown): boolean => ['tutorials', 'column', 'qa', 'encyclopedia', 'hall_of_fame', 'research'].includes(String(value))
   }
 }) as { type: ArticleType }
+
+const emit = defineEmits<{
+  (event: 'loading-change', value: boolean): void
+}>()
 
 const articlesList = ref<ArticleItem[]>([])
 const isLiveMode = ref<boolean>(false)
@@ -47,6 +52,13 @@ const pageMeta: Record<ArticleType, PageMeta> = {
     proxyPath: '/api-tutorials',
     fallbackData: fallbackTutorials,
     url: 'https://ai-bot.cn/ai-tutorials/'
+  },
+  column: {
+    title: '📚 AI 教程专栏',
+    subtitle: '精选 AI 行业专栏、实测文章与趋势拆解，适合快速跟进热门工具玩法。',
+    proxyPath: '/api-column',
+    fallbackData: fallbackTutorials,
+    url: 'https://ai-bot.cn/ai-column/'
   },
   qa: {
     title: '💬 AI 百问百答',
@@ -68,6 +80,13 @@ const pageMeta: Record<ArticleType, PageMeta> = {
     proxyPath: '/api-hall-of-fame',
     fallbackData: fallbackHallOfFame,
     url: 'https://ai-bot.cn/ai-hall-of-fame/'
+  },
+  research: {
+    title: '🔬 AI 项目研究',
+    subtitle: '追踪前沿 AI 项目、模型框架与论文方法，快速了解研究进展和工作原理。',
+    proxyPath: '/api-research',
+    fallbackData: fallbackResearch,
+    url: 'https://ai-bot.cn/ai-research/'
   }
 }
 
@@ -136,7 +155,10 @@ const parseArticlesHtml = (htmlText: string): ArticleItem[] => {
 }
 
 const fetchArticles = async (): Promise<void> => {
+  if (isLoading.value) return
   isLoading.value = true
+  emit('loading-change', true)
+  articlesList.value = []
   const meta: PageMeta = pageMeta[props.type]
   
   const targetUrls: string[] = [
@@ -170,9 +192,11 @@ const fetchArticles = async (): Promise<void> => {
     isLiveMode.value = false
   }
   isLoading.value = false
+  emit('loading-change', false)
 }
 
 const triggerManualRefresh = (): void => {
+  if (isLoading.value) return
   fetchArticles()
   countdown.value = 60
 }
@@ -217,13 +241,14 @@ onUnmounted(() => {
       <div class="header-badges">
         <div class="status-badge" :class="isLiveMode ? 'live' : 'cached'">
           <span class="dot">●</span>
-          <span>{{ isLiveMode ? '实时在线模式' : '本地历史模式' }}</span>
+          <span>{{ isLoading ? '正在加载内容' : isLiveMode ? '实时在线模式' : '本地历史模式' }}</span>
         </div>
         
         <el-button 
           size="small" 
           type="primary" 
           :loading="isLoading" 
+          :disabled="isLoading"
           @click="triggerManualRefresh"
         >
           🔄 刷新内容 ({{ countdown }}s)

@@ -73,6 +73,60 @@ const routes = [
     component: () => import('../views/juejinCourse/index.vue')
   },
   {
+    path: '/juejin-clubs',
+    name: 'JuejinClubs',
+    component: () => import('../views/juejinClubs/index.vue')
+  },
+  {
+    path: '/juejin-signin',
+    name: 'JuejinSignin',
+    component: () => import('../views/juejinSignin/index.vue')
+  },
+  {
+    path: '/jandan',
+    name: 'Jandan',
+    component: () => import('../views/jandan/index.vue')
+  },
+  {
+    path: '/tophub',
+    name: 'TopHub',
+    component: () => import('../views/tophub/index.vue')
+  },
+  {
+    path: '/ithome',
+    name: 'Ithome',
+    component: () => import('../views/ithome/index.vue')
+  },
+  {
+    path: '/huxiu',
+    name: 'Huxiu',
+    component: () => import('../views/huxiu/index.vue')
+  },
+  {
+    path: '/github',
+    name: 'Github',
+    component: () => import('../views/github/index.vue')
+  },
+  {
+    path: '/ai-xxx',
+    redirect: '/ai-xxx/ai-column'
+  },
+  {
+    path: '/ai-xxx/:section',
+    name: 'AiXxxArticles',
+    component: () => import('../views/ai-xxx/index.vue')
+  },
+  {
+    path: '/boss-zhipin-hangzhou',
+    name: 'BossZhipinHangzhou',
+    component: () => import('../views/bossZhipinHangzhou/index.vue')
+  },
+  {
+    path: '/boss-zhipin-hangzhou-map',
+    name: 'BossZhipinHangzhouMap',
+    component: () => import('../views/bossZhipinHangzhouMap/index.vue')
+  },
+  {
     path: '/wechat-featured',
     name: 'WechatFeatured',
     component: () => import('../views/wechatFeatured/index.vue')

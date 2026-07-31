@@ -13,6 +13,8 @@ const aiBotRoutes: Array<[string, string]> = [
   ['/api-news', 'https://ai-bot.cn/daily-ai-news/'],
   ['/api-app-store', 'https://ai-bot.cn/ai-app-store/'],
   ['/api-tutorials', 'https://ai-bot.cn/ai-tutorials/'],
+  ['/api-column', 'https://ai-bot.cn/ai-column/'],
+  ['/api-research', 'https://ai-bot.cn/ai-research/'],
   ['/api-qa', 'https://ai-bot.cn/ai-question-and-answer/'],
   ['/api-encyclopedia', 'https://ai-bot.cn/ai-encyclopedia/'],
   ['/api-hall-of-fame', 'https://ai-bot.cn/ai-hall-of-fame/']
@@ -47,6 +49,18 @@ export const serverProxy: ServerProxyMap = {
     Origin: 'https://juejin.cn',
     Referer: 'https://juejin.cn/'
   }),
+  '/api-boss': createProxyEntry('/api-boss', 'https://www.zhipin.com', {
+    Origin: 'https://www.zhipin.com',
+    Referer: 'https://www.zhipin.com/hangzhou/?ka=header-home'
+  }),
+  '/api-jandan': createProxyEntry('/api-jandan', 'https://jandan.net', {
+    Origin: 'https://jandan.net',
+    Referer: 'https://jandan.net/'
+  }),
+  '/api-tophub': createProxyEntry('/api-tophub', 'https://tophub.today', {
+    Origin: 'https://tophub.today',
+    Referer: 'https://tophub.today/'
+  }),
   '/api-uapis': createProxyEntry('/api-uapis', 'https://uapis.cn', {
     Origin: 'https://uapis.cn',
     Referer: 'https://uapis.cn/'
@@ -70,6 +84,21 @@ export const serverProxy: ServerProxyMap = {
   '/api-ithome': createProxyEntry('/api-ithome', 'https://m.ithome.com', {
     Origin: 'https://m.ithome.com',
     Referer: 'https://m.ithome.com/'
+  }),
+  '/api-ithome-web': {
+    ...createProxyEntry('/api-ithome-web', 'https://it.ithome.com', {
+      Host: 'it.ithome.com',
+      Referer: 'https://it.ithome.com/'
+    }),
+    configure: (proxy): void => {
+      proxy.on('proxyReq', (proxyReq): void => {
+        proxyReq.removeHeader('origin')
+      })
+    }
+  },
+  '/api-huxiu': createProxyEntry('/api-huxiu', 'https://www.huxiu.com', {
+    Origin: 'https://www.huxiu.com',
+    Referer: 'https://www.huxiu.com/moment/'
   }),
   '/api-pexels': createProxyEntry('/api-pexels', 'https://api.pexels.com', {
     Origin: 'https://www.pexels.com',
@@ -153,5 +182,21 @@ export const serverProxy: ServerProxyMap = {
   '/api-github-cn': createProxyEntry('/api-github-cn', 'https://github-cn.com', {
     Origin: 'https://github-cn.com',
     Referer: 'https://github-cn.com/'
+  }),
+  '/api-gitcn': createProxyEntry('/api-gitcn', 'https://gitcn.org', {
+    Origin: 'https://gitcn.org',
+    Referer: 'https://gitcn.org/trending'
+  }),
+  '/api-githot': createProxyEntry('/api-githot', 'https://githot.dev', {
+    Origin: 'https://githot.dev',
+    Referer: 'https://githot.dev/archive'
+  }),
+  '/api-hellogithub-img': createProxyEntry('/api-hellogithub-img', 'https://img.hellogithub.com', {
+    Host: 'img.hellogithub.com',
+    Referer: 'https://hellogithub.com/periodical'
+  }),
+  '/api-hellogithub': createProxyEntry('/api-hellogithub', 'https://hellogithub.com', {
+    Origin: 'https://hellogithub.com',
+    Referer: 'https://hellogithub.com/periodical'
   })
 }

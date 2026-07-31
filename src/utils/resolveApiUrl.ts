@@ -9,11 +9,16 @@ const isProd: boolean = import.meta.env.PROD
 /** 代理路径 -> 真实 API 地址 映射表 */
 const PROXY_MAP: Record<string, string> = {
   '/api-juejin': 'https://api.juejin.cn',
+  '/api-boss': 'https://www.zhipin.com',
+  '/api-jandan': 'https://jandan.net',
+  '/api-tophub': 'https://tophub.today',
   '/api-uapis': 'https://uapis.cn',
   '/api-alapi': 'https://v3.alapi.cn',
   '/api-aa1': 'https://v.api.aa1.cn',
   '/api-helloworld': 'https://www.helloworld.net',
   '/api-ithome': 'https://m.ithome.com',
+  '/api-ithome-web': 'https://it.ithome.com',
+  '/api-huxiu': 'https://www.huxiu.com',
   '/api-pexels': 'https://api.pexels.com',
   '/api-pokeapi': 'https://pokeapi.co',
   '/api-tilvids': 'https://tilvids.com',
@@ -30,6 +35,8 @@ const PROXY_MAP: Record<string, string> = {
   '/api-news': 'https://ai-bot.cn/daily-ai-news/',
   '/api-app-store': 'https://ai-bot.cn/ai-app-store/',
   '/api-tutorials': 'https://ai-bot.cn/ai-tutorials/',
+  '/api-column': 'https://ai-bot.cn/ai-column/',
+  '/api-research': 'https://ai-bot.cn/ai-research/',
   '/api-qa': 'https://ai-bot.cn/ai-question-and-answer/',
   '/api-encyclopedia': 'https://ai-bot.cn/ai-encyclopedia/',
   '/api-hall-of-fame': 'https://ai-bot.cn/ai-hall-of-fame/',
@@ -41,6 +48,10 @@ const PROXY_MAP: Record<string, string> = {
   '/api-bilibili-web': 'https://api.bilibili.com',
   '/api-bilibili-live': 'https://api.live.bilibili.com',
   '/api-github-cn': 'https://github-cn.com',
+  '/api-gitcn': 'https://gitcn.org',
+  '/api-githot': 'https://githot.dev',
+  '/api-hellogithub': 'https://hellogithub.com',
+  '/api-hellogithub-img': 'https://img.hellogithub.com',
   '/api-lolm-news': 'https://apps.game.qq.com',
   '/api-lolm': 'https://mlol.qt.qq.com'
 }

@@ -12,7 +12,9 @@ export const STORAGE_KEYS = {
   /** Web Components 注册表缓存 */
   WEB_COMPONENTS_CACHE: 'HOOKSVUE_WEB_COMPONENTS_CACHE',
   /** Oat UI 拖拽编排预设 */
-  OAT_STUDIO_PRESETS: 'HOOKSVUE_OAT_STUDIO_PRESETS'
+  OAT_STUDIO_PRESETS: 'HOOKSVUE_OAT_STUDIO_PRESETS',
+  /** BOSS 直聘页面最近选择城市 */
+  BOSS_SELECTED_CITY: 'HOOKSVUE_BOSS_SELECTED_CITY_V2'
 } as const
 
 export type StorageKeyType = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS] | string

@@ -43,7 +43,7 @@ export function initVersionPolling() {
   // 限制仅在生产环境生效
   if (!import.meta.env.PROD) return
 
-  const versionFileUrl = (import.meta.env.BASE_URL || '/') + 'version.json'
+  const versionFileUrl = new URL(`${import.meta.env.BASE_URL || '/'}version.json`, window.location.origin).toString()
 
   try {
     createVersionPolling({

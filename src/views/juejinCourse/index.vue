@@ -68,8 +68,8 @@
           >
             价格
             <span class="price-sort-arrows" aria-hidden="true">
-              <span :class="{ active: sortValue === SORT_PRICE_ASC }">▲</span>
-              <span :class="{ active: sortValue === SORT_PRICE_DESC }">▼</span>
+              <span :class="{ active: sortValue === JUEJIN_COURSE_SORT_PRICE_ASC }">▲</span>
+              <span :class="{ active: sortValue === JUEJIN_COURSE_SORT_PRICE_DESC }">▼</span>
             </span>
           </button>
         </div>
@@ -212,7 +212,26 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Link, Loading, Refresh, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { request, requestJson } from '@/utils/request'
+import {
+  JUEJIN_COURSE_API,
+  JUEJIN_COURSE_CATEGORY_API,
+  JUEJIN_COURSE_FALLBACK_CATEGORIES,
+  JUEJIN_COURSE_HOME_URL,
+  JUEJIN_COURSE_SORT_DEFAULT,
+  JUEJIN_COURSE_SORT_HOT,
+  JUEJIN_COURSE_SORT_LATEST,
+  JUEJIN_COURSE_SORT_PRICE_ASC,
+  JUEJIN_COURSE_SORT_PRICE_DESC,
+  buildJuejinBookUrl,
+  buildJuejinUserUrl
+} from '@/constants/juejin'
+import {
+  JUEJIN_COURSE_CACHE_FILE,
+  buildLiveDataFallbackPath,
+  buildLiveDataUrl
+} from '@/constants/liveData'
+import { readJsonCache } from '@/utils/liveDataCache'
+import { postJson, requestJson } from '@/utils/request'
 
 interface JuejinCourseBaseInfo {
   booklet_id: string
@@ -286,37 +305,19 @@ interface JuejinCourseCache {
   courseLists: Record<string, JuejinCourseCacheEntry<JuejinCourseResponse>>
 }
 
-const SORT_DEFAULT = 10
-const SORT_LATEST = 1
-const SORT_HOT = 7
-const SORT_PRICE_ASC = 8
-const SORT_PRICE_DESC = 9
-const COURSE_API = '/api-juejin/booklet_api/v1/booklet/listbycategory'
-const CATEGORY_API = '/api-juejin/tag_api/v1/query_category_briefs?show_type=1'
-const COURSE_HOME_URL = 'https://juejin.cn/course'
 const isProd = import.meta.env.PROD
-const courseCacheUrl = `${import.meta.env.BASE_URL}live-data/juejin-course-cache.json`
+const courseCacheUrl = buildLiveDataUrl(JUEJIN_COURSE_CACHE_FILE)
 let juejinCourseCachePromise: Promise<JuejinCourseCache> | null = null
 
 const sortOptions = [
-  { label: '全部', value: SORT_DEFAULT },
-  { label: '最新', value: SORT_LATEST },
-  { label: '热销', value: SORT_HOT }
-]
-const fallbackCourseCategories: JuejinCourseCategory[] = [
-  { category_id: '6809637769959178254', category_name: '后端' },
-  { category_id: '6809637767543259144', category_name: '前端' },
-  { category_id: '6809635626879549454', category_name: 'Android' },
-  { category_id: '6809635626661445640', category_name: 'iOS' },
-  { category_id: '6809637773935378440', category_name: '人工智能' },
-  { category_id: '6809637771511070734', category_name: '开发工具' },
-  { category_id: '6809637776263217160', category_name: '代码人生' },
-  { category_id: '6809637772874219534', category_name: '阅读' }
+  { label: '全部', value: JUEJIN_COURSE_SORT_DEFAULT },
+  { label: '最新', value: JUEJIN_COURSE_SORT_LATEST },
+  { label: '热销', value: JUEJIN_COURSE_SORT_HOT }
 ]
 
-const sortValue = ref<number>(SORT_DEFAULT)
+const sortValue = ref<number>(JUEJIN_COURSE_SORT_DEFAULT)
 const selectedCategoryId = ref<string>('0')
-const courseCategories = ref<JuejinCourseCategory[]>(fallbackCourseCategories)
+const courseCategories = ref<JuejinCourseCategory[]>([...JUEJIN_COURSE_FALLBACK_CATEGORIES])
 const vipOnly = ref<boolean>(false)
 const keyword = ref<string>('')
 const courses = ref<JuejinCourseItem[]>([])
@@ -328,7 +329,7 @@ const error = ref<string>('')
 const currentTimestamp = ref<number>(Date.now())
 const serverClockOffsetMs = ref<number>(0)
 let countdownTimer: number | null = null
-const isPriceSortActive = computed<boolean>(() => sortValue.value === SORT_PRICE_ASC || sortValue.value === SORT_PRICE_DESC)
+const isPriceSortActive = computed<boolean>(() => sortValue.value === JUEJIN_COURSE_SORT_PRICE_ASC || sortValue.value === JUEJIN_COURSE_SORT_PRICE_DESC)
 
 const normalizedKeyword = computed<string>(() => keyword.value.trim().toLowerCase())
 const filteredCourses = computed<JuejinCourseItem[]>(() => {
@@ -369,22 +370,13 @@ async function fetchCourses(append: boolean = false): Promise<void> {
       return
     }
 
-    const apiResponse = await request(COURSE_API, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        category_id: selectedCategoryId.value,
-        cursor: append ? cursor.value : '0',
-        sort: sortValue.value,
-        is_vip: vipOnly.value ? 1 : 0,
-        limit: 20
-      })
+    const response = await postJson<JuejinCourseResponse>(JUEJIN_COURSE_API, {
+      category_id: selectedCategoryId.value,
+      cursor: append ? cursor.value : '0',
+      sort: sortValue.value,
+      is_vip: vipOnly.value ? 1 : 0,
+      limit: 20
     })
-    syncServerClock(apiResponse)
-    const response = await apiResponse.json() as JuejinCourseResponse
 
     if (response.err_no !== 0) {
       throw new Error(response.err_msg || '掘金课程加载失败')
@@ -415,12 +407,12 @@ async function fetchCategories(): Promise<void> {
       return
     }
 
-    const response = await requestJson<JuejinCourseCategoryResponse>(CATEGORY_API)
+    const response = await requestJson<JuejinCourseCategoryResponse>(JUEJIN_COURSE_CATEGORY_API)
     if (response.err_no === 0 && response.data?.length) {
       courseCategories.value = response.data
     }
   } catch {
-    courseCategories.value = fallbackCourseCategories
+    courseCategories.value = [...JUEJIN_COURSE_FALLBACK_CATEGORIES]
   }
 }
 
@@ -434,15 +426,36 @@ async function fetchCachedCourses(): Promise<JuejinCourseResponse> {
 
 async function loadJuejinCourseCache(): Promise<JuejinCourseCache> {
   if (!juejinCourseCachePromise) {
-    juejinCourseCachePromise = requestJson<JuejinCourseCache>(courseCacheUrl, {
-      cache: 'no-cache'
-    }).catch((cacheError: unknown): never => {
+    juejinCourseCachePromise = readJuejinCourseCache().catch((cacheError: unknown): never => {
       const message = cacheError instanceof Error ? cacheError.message : String(cacheError)
       throw new Error(`加载掘金课程快照失败：${message}`)
     })
   }
 
   return juejinCourseCachePromise
+}
+
+async function readJuejinCourseCache(): Promise<JuejinCourseCache> {
+  const candidates = Array.from(new Set([
+    courseCacheUrl,
+    buildLiveDataFallbackPath(JUEJIN_COURSE_CACHE_FILE)
+  ]))
+  const errors: string[] = []
+
+  for (const url of candidates) {
+    try {
+      const cache = await readJsonCache<JuejinCourseCache>({
+        primaryUrl: url,
+        label: '课程快照',
+        validate: (value: JuejinCourseCache): boolean => Boolean(value.courseLists && typeof value.courseLists === 'object')
+      })
+      return cache
+    } catch (error: unknown) {
+      errors.push(`${url}: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+
+  throw new Error(errors.join('；'))
 }
 
 function courseCacheKey(categoryId: string, sort: number, isVip: number): string {
@@ -471,7 +484,7 @@ function setSort(value: number): void {
 }
 
 function togglePriceSort(): void {
-  sortValue.value = sortValue.value === SORT_PRICE_DESC ? SORT_PRICE_ASC : SORT_PRICE_DESC
+  sortValue.value = sortValue.value === JUEJIN_COURSE_SORT_PRICE_DESC ? JUEJIN_COURSE_SORT_PRICE_ASC : JUEJIN_COURSE_SORT_PRICE_DESC
 }
 
 function loadMoreCourses(): void {
@@ -480,16 +493,16 @@ function loadMoreCourses(): void {
 }
 
 function openBook(bookletId: string): void {
-  window.open(`https://juejin.cn/book/${bookletId}?utm_source=course_list`, '_blank', 'noopener,noreferrer')
+  window.open(buildJuejinBookUrl(bookletId), '_blank', 'noopener,noreferrer')
 }
 
 function openUser(userId: string): void {
   if (!userId) return
-  window.open(`https://juejin.cn/user/${userId}`, '_blank', 'noopener,noreferrer')
+  window.open(buildJuejinUserUrl(userId), '_blank', 'noopener,noreferrer')
 }
 
 function openCourseHome(): void {
-  window.open(COURSE_HOME_URL, '_blank', 'noopener,noreferrer')
+  window.open(JUEJIN_COURSE_HOME_URL, '_blank', 'noopener,noreferrer')
 }
 
 function displayPrice(course: JuejinCourseItem): number {

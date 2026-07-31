@@ -1,0 +1,22 @@
+@mixin system-font {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+@mixin form-control-reset {
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+
+  button {
+    border: 0;
+    cursor: pointer;
+  }
+}
+
+@mixin centered-shell($max-width, $gutter) {
+  width: min(100% - #{$gutter}, #{$max-width});
+  margin-right: auto;
+  margin-left: auto;
+}

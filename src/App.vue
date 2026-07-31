@@ -113,11 +113,12 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
 const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isFlashRoute = computed<boolean>(() => !isDyFormRoute.value && !isBigScreenRoute.value)
 const isH5DesktopHintRoute = computed<boolean>(() => route.path === '/h5' || route.path.startsWith('/h5/'))
+const isAiArticlesRoute = computed<boolean>(() => route.path === '/ai-xxx' || route.path.startsWith('/ai-xxx/'))
 const isHeaderActionsOpen = ref(false)
 
 interface DrawerCloudLink {
@@ -339,7 +340,7 @@ onMounted((): void => {
   syncRouteCategory()
   syncAlapiPlayerVisible()
   window.addEventListener(ALAPI_PLAYER_VISIBILITY_CHANGE_EVENT, handleAlapiPlayerVisibilityChange)
-  if (localStorage.getItem(VERSION_HISTORY_SEEN_KEY) !== '1') {
+  if (isDyFormRoute.value && localStorage.getItem(VERSION_HISTORY_SEEN_KEY) !== '1') {
     showVersionHistoryDialog.value = true
   }
 })
@@ -348,7 +349,10 @@ onUnmounted((): void => {
   window.removeEventListener(ALAPI_PLAYER_VISIBILITY_CHANGE_EVENT, handleAlapiPlayerVisibilityChange)
 })
 
-watch(() => route.path, syncRouteCategory)
+watch(() => route.path, (): void => {
+  syncRouteCategory()
+  if (!isDyFormRoute.value) showVersionHistoryDialog.value = false
+})
 
 const blessingYear = computed<number>((): number => new Date().getFullYear())
 
@@ -941,15 +945,18 @@ watch(isDarkMode, () => {
             <div class="nav-h-item"
                  @mouseenter="showAiTutorialsDropdown = true"
                  @mouseleave="showAiTutorialsDropdown = false">
-              <div class="nav-h-link" :class="{ active: isArticlesListActive }">
+              <div class="nav-h-link" :class="{ active: isArticlesListActive || isAiArticlesRoute }">
                 <span class="icon">📚</span>
                 AI教程资源
                 <span class="arrow">▼</span>
               </div>
               <transition name="fade-slide">
                 <div class="nav-h-dropdown" v-show="showAiTutorialsDropdown">
-                  <a href="https://ai-bot.cn/ai-tutorials/" target="_blank" class="nav-h-dropdown-item">📖 AI教程专栏</a>
-                  <a href="https://ai-bot.cn/ai-encyclopedia/" target="_blank" class="nav-h-dropdown-item">📖 AI百科大全</a>
+                  <router-link to="/ai-xxx/ai-research" class="nav-h-dropdown-item">🔬 AI项目研究</router-link>
+                  <router-link to="/ai-xxx/ai-column" class="nav-h-dropdown-item">📖 AI教程专栏</router-link>
+                  <router-link to="/ai-xxx/ai-question-and-answer" class="nav-h-dropdown-item">💬 AI百问百答</router-link>
+                  <router-link to="/ai-xxx/ai-encyclopedia" class="nav-h-dropdown-item">📕 AI百科大全</router-link>
+                  <router-link to="/ai-xxx/ai-hall-of-fame" class="nav-h-dropdown-item">🎖️ AI名人堂</router-link>
                 </div>
               </transition>
             </div>
@@ -3070,10 +3077,10 @@ watch(isDarkMode, () => {
       </n-back-top>
     </div>
 
-    <AlapiBottomMusicPlayer />
+    <AlapiBottomMusicPlayer v-if="isDyFormRoute" />
 
     <!-- 全局返回顶部 -->
-    <n-back-top :right="240" :bottom="30" :visibility-height="80">
+    <n-back-top v-if="isDyFormRoute" :right="240" :bottom="30" :visibility-height="80">
       <div class="route-back-top">↑</div>
     </n-back-top>
     </template>

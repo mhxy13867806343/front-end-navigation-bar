@@ -34,18 +34,42 @@ export async function request(input: RequestInput, init?: RequestInit): Promise<
   return fetch(resolved, init)
 }
 
+export function assertOkResponse(response: Response, fallbackMessage: string = '请求失败'): void {
+  if (!response.ok) {
+    throw new Error(`${fallbackMessage}：${response.status}`)
+  }
+}
+
 export async function requestJson<T>(input: RequestInput, init?: RequestInit): Promise<T> {
   const response: Response = await request(input, {
     ...init,
     headers: jsonHeaders(init?.headers, Boolean(init?.body) && !(init?.body instanceof FormData))
   })
-  return response.json() as Promise<T>
+  assertOkResponse(response)
+  const text: string = await response.text()
+  const trimmedText: string = text.trim()
+
+  if (trimmedText.startsWith('<')) {
+    throw new Error('接口返回了 HTML 页面，不是 JSON 数据')
+  }
+
+  try {
+    return JSON.parse(trimmedText) as T
+  } catch {
+    throw new Error('接口返回的 JSON 格式不正确')
+  }
+}
+
+export async function postJson<T>(input: RequestInput, body: unknown, init?: RequestInit): Promise<T> {
+  return requestJson<T>(input, {
+    ...init,
+    method: 'POST',
+    body: JSON.stringify(body)
+  })
 }
 
 export async function requestText(input: RequestInput, init?: RequestInit): Promise<string> {
   const response: Response = await request(input, init)
-  if (!response.ok) {
-    throw new Error(`请求失败：${response.status}`)
-  }
+  assertOkResponse(response)
   return response.text()
 }
