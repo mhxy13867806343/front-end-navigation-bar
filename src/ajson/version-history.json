@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-31T08:12:29.675Z",
+  "generatedAt": "2026-07-31T08:16:26.425Z",
   "groups": [
     {
       "date": "2026-07-31",
       "items": [
+        {
+          "hash": "d466ccff1898c0c083c5a37709d7675f03471779",
+          "shortHash": "d466ccf",
+          "date": "2026-07-31",
+          "time": "16:14",
+          "type": "功能更新",
+          "title": "sync favorite records",
+          "scope": "",
+          "message": "feat: sync favorite records"
+        },
         {
           "hash": "0ed675984a15b701e462dcd90b5aaac2a9b69fd2",
           "shortHash": "0ed6759",
@@ -303,16 +313,6 @@
           "title": "expand Auth Showcase dataset to 100,000 total Auth UI themes (50,000 Login + 50,000 Register) with 50 categories, ID jump, pagination, and search",
           "scope": "",
           "message": "feat: expand Auth Showcase dataset to 100,000 total Auth UI themes (50,000 Login + 50,000 Register) with 50 categories, ID jump, pagination, and search"
-        },
-        {
-          "hash": "6a1375e0ca2413b4077337e0b21a73d72a1d25ac",
-          "shortHash": "6a1375e",
-          "date": "2026-07-24",
-          "time": "08:39",
-          "type": "功能更新",
-          "title": "expand Auth Showcase dataset to 500 total Auth UI themes (250 Login + 250 Register) with 20 categories, pagination, and search",
-          "scope": "",
-          "message": "feat: expand Auth Showcase dataset to 500 total Auth UI themes (250 Login + 250 Register) with 20 categories, pagination, and search"
         }
       ]
     }

@@ -567,6 +567,8 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(pageSource, /isRefreshing/)
   assert.match(pageSource, /正在加载记录缓存/)
   assert.match(pageSource, /:disabled="isRefreshing"/)
+  assert.match(pageSource, /:title="`\$\{tag\.title\} \(\$\{tag\.count\} 条\)`"/)
+  assert.match(pageSource, /max-width:\s*3em/)
   assert.match(pageSource, /text-overflow:\s*ellipsis/)
   assert.match(pageSource, /white-space:\s*nowrap/)
 })

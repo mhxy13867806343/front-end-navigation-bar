@@ -472,10 +472,11 @@ onUnmounted(() => {
           class="cloud-tag"
           :class="`tone-${tag.tone}`"
           :style="{ fontSize: `${tag.size}px` }"
+          :title="`${tag.title} (${tag.count} 条)`"
           :disabled="isRefreshing"
           @click="openEntry(tag)"
         >
-          <span>{{ tag.title }}</span>
+          <span :title="tag.title">{{ tag.title }}</span>
           <small>{{ tag.count }}</small>
         </button>
       </template>
@@ -675,7 +676,7 @@ h1 {
 .cloud-tag span {
   display: block;
   min-width: 0;
-  max-width: clamp(140px, 42vw, 680px);
+  max-width: 3em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
