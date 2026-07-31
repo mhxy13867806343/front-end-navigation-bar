@@ -117,6 +117,7 @@ export interface FlashNavItem {
 export interface FeedTab {
   key: string
   label: string
+  sourceType?: string
   badge?: number
 }
 
@@ -126,14 +127,14 @@ export interface UserSummary {
 }
 
 export interface FlashComment {
-  id: number
+  id: string
   nickname: string
   content: string
   time: number
 }
 
 export interface FlashFeed {
-  id: number
+  id: string
   nickname: string
   avatar: string
   content: string
@@ -143,4 +144,6 @@ export interface FlashFeed {
   expanded: boolean
   replying: boolean
   replyDraft: string
+  sourceUrl?: string
+  likeCount?: number
 }

@@ -1,10 +1,115 @@
 {
-  "version": "v1.7.359489",
-  "randomVersion": "v1.7.359489",
-  "randomCode": "VER-902784",
-  "buildTime": "2026-07-31T09:04:10.427Z",
-  "timestamp": 1785488650428,
+  "version": "v1.3.844809",
+  "randomVersion": "v1.3.844809",
+  "randomCode": "VER-446403",
+  "buildTime": "2026-07-31T13:41:23.066Z",
+  "timestamp": 1785505283066,
   "history": [
+    {
+      "version": "v1.3.844809",
+      "randomVersion": "v1.3.844809",
+      "randomCode": "VER-446403",
+      "buildTime": "2026-07-31T13:41:23.066Z",
+      "timestamp": 1785505283066
+    },
+    {
+      "version": "v1.8.720769",
+      "randomVersion": "v1.8.720769",
+      "randomCode": "VER-464103",
+      "buildTime": "2026-07-31T13:39:11.843Z",
+      "timestamp": 1785505151844
+    },
+    {
+      "version": "v1.5.626651",
+      "randomVersion": "v1.5.626651",
+      "randomCode": "VER-304522",
+      "buildTime": "2026-07-31T13:38:30.860Z",
+      "timestamp": 1785505110861
+    },
+    {
+      "version": "v1.7.465814",
+      "randomVersion": "v1.7.465814",
+      "randomCode": "VER-679261",
+      "buildTime": "2026-07-31T13:35:48.814Z",
+      "timestamp": 1785504948814
+    },
+    {
+      "version": "v1.3.596059",
+      "randomVersion": "v1.3.596059",
+      "randomCode": "VER-807881",
+      "buildTime": "2026-07-31T13:35:01.350Z",
+      "timestamp": 1785504901350
+    },
+    {
+      "version": "v1.2.898250",
+      "randomVersion": "v1.2.898250",
+      "randomCode": "VER-196780",
+      "buildTime": "2026-07-31T13:33:32.799Z",
+      "timestamp": 1785504812799
+    },
+    {
+      "version": "v1.9.506168",
+      "randomVersion": "v1.9.506168",
+      "randomCode": "VER-136715",
+      "buildTime": "2026-07-31T13:33:07.503Z",
+      "timestamp": 1785504787504
+    },
+    {
+      "version": "v1.2.854658",
+      "randomVersion": "v1.2.854658",
+      "randomCode": "VER-373243",
+      "buildTime": "2026-07-31T13:32:25.069Z",
+      "timestamp": 1785504745070
+    },
+    {
+      "version": "v1.5.493791",
+      "randomVersion": "v1.5.493791",
+      "randomCode": "VER-995084",
+      "buildTime": "2026-07-31T13:31:18.880Z",
+      "timestamp": 1785504678880
+    },
+    {
+      "version": "v1.1.435541",
+      "randomVersion": "v1.1.435541",
+      "randomCode": "VER-832832",
+      "buildTime": "2026-07-31T13:30:37.898Z",
+      "timestamp": 1785504637899
+    },
+    {
+      "version": "v1.8.632394",
+      "randomVersion": "v1.8.632394",
+      "randomCode": "VER-920927",
+      "buildTime": "2026-07-31T13:30:17.042Z",
+      "timestamp": 1785504617043
+    },
+    {
+      "version": "v1.9.355841",
+      "randomVersion": "v1.9.355841",
+      "randomCode": "VER-510917",
+      "buildTime": "2026-07-31T13:29:02.544Z",
+      "timestamp": 1785504542544
+    },
+    {
+      "version": "v1.2.746452",
+      "randomVersion": "v1.2.746452",
+      "randomCode": "VER-177593",
+      "buildTime": "2026-07-31T13:15:50.549Z",
+      "timestamp": 1785503750550
+    },
+    {
+      "version": "v1.9.334194",
+      "randomVersion": "v1.9.334194",
+      "randomCode": "VER-123058",
+      "buildTime": "2026-07-31T09:50:19.370Z",
+      "timestamp": 1785491419371
+    },
+    {
+      "version": "v1.7.136046",
+      "randomVersion": "v1.7.136046",
+      "randomCode": "VER-705781",
+      "buildTime": "2026-07-31T09:45:19.253Z",
+      "timestamp": 1785491119254
+    },
     {
       "version": "v1.7.359489",
       "randomVersion": "v1.7.359489",

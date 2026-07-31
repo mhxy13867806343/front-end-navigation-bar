@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-31T09:04:10.540Z",
+  "generatedAt": "2026-07-31T13:41:23.189Z",
   "groups": [
     {
       "date": "2026-07-31",
       "items": [
+        {
+          "hash": "708d705bffeb04f852e79d16f568ec4f7cd6315c",
+          "shortHash": "708d705",
+          "date": "2026-07-31",
+          "time": "17:32",
+          "type": "功能更新",
+          "title": "add shared share records",
+          "scope": "",
+          "message": "feat: add shared share records"
+        },
         {
           "hash": "876d688203f5591ca66cc35698024dce7a4efa93",
           "shortHash": "876d688",
@@ -303,16 +313,6 @@
           "title": "adjust Auth Showcase dataset to 20,000 Auth UI themes with exactly 10 items per page pagination",
           "scope": "",
           "message": "feat: adjust Auth Showcase dataset to 20,000 Auth UI themes with exactly 10 items per page pagination"
-        },
-        {
-          "hash": "b01922507f232a32a327bf4449b69225cb68dad9",
-          "shortHash": "b019225",
-          "date": "2026-07-24",
-          "time": "08:42",
-          "type": "功能更新",
-          "title": "expand Auth Showcase dataset to 1,000,000 (1 Million) total Auth UI themes (500k Login + 500k Register) with 50 categories, ID jump, pagination, and search",
-          "scope": "",
-          "message": "feat: expand Auth Showcase dataset to 1,000,000 (1 Million) total Auth UI themes (500k Login + 500k Register) with 50 categories, ID jump, pagination, and search"
         }
       ]
     }

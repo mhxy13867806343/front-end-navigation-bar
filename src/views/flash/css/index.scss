@@ -83,6 +83,24 @@
   display: flex;
   align-items: center;
 }
+.search-box input:disabled,
+.search-box button:disabled,
+.refresh-mini:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.refresh-mini {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border-radius: 4px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font: inherit;
+}
+.refresh-mini:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.24);
+}
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -197,6 +215,11 @@
 .feed-tabs a:hover {
   color: #3a6ea5;
 }
+.feed-tabs a.disabled {
+  color: #aaa;
+  cursor: wait;
+  pointer-events: none;
+}
 .feed-tabs a.active {
   color: #3a6ea5;
   font-weight: 600;
@@ -222,6 +245,96 @@
   text-align: center;
   border-radius: 8px;
   vertical-align: 2px;
+}
+
+.source-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #888;
+}
+.source-status strong {
+  color: #333;
+}
+.source-status.loading {
+  color: #3a6ea5;
+}
+.source-status.error {
+  color: #d9534f;
+}
+.source-time {
+  margin-left: auto;
+  color: #aaa;
+  font-size: 12px;
+}
+.feed-loading,
+.auth-panel {
+  margin-top: 12px;
+  padding: 34px 20px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  color: #777;
+  text-align: center;
+}
+.loading-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #3a6ea5;
+  box-shadow: 0 0 0 6px rgba(58, 110, 165, 0.12);
+  animation: flashPulse 1.2s ease-in-out infinite;
+}
+@keyframes flashPulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+.auth-panel h3 {
+  margin: 0 0 8px;
+  color: #333;
+  font-size: 18px;
+}
+.auth-panel p {
+  margin: 0 auto;
+  max-width: 560px;
+}
+.auth-actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.auth-actions a,
+.auth-actions button {
+  color: #3a6ea5;
+  text-decoration: none;
+  padding: 7px 16px;
+  background: #fff;
+  border: 1px solid #d7e2ed;
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
+}
+.auth-actions a:hover,
+.auth-actions button:hover {
+  border-color: #3a6ea5;
 }
 
 /* ===== 消息流 ===== */
@@ -370,6 +483,7 @@
 .feed-pager a.disabled {
   color: #bbb;
   pointer-events: none;
+  cursor: not-allowed;
 }
 .page-no {
   color: #666;
@@ -419,6 +533,14 @@
 }
 .side-list a:hover {
   color: #3a6ea5;
+}
+.side-list span,
+.side-muted {
+  color: #888;
+}
+.side-muted {
+  margin: 0;
+  font-size: 13px;
 }
 .active-users {
   list-style: none;

@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import type { CSSProperties } from 'vue'
 import { ElMessage } from 'element-plus'
 import 'social-share.js/dist/css/share.min.css'
-import 'social-share.js/dist/js/social-share.min.js'
 import { buildShareUrl, type SharePayload, useShareRecords } from '@/composables/useShareRecords'
-
-declare global {
-  interface Window {
-    socialShare?: (elem: Element, options: Record<string, unknown>) => void
-  }
-}
 
 const props = withDefaults(defineProps<{
   payload: SharePayload
@@ -21,30 +15,118 @@ const props = withDefaults(defineProps<{
 })
 
 const isOpen = ref(false)
-const sharePanelRef = ref<HTMLElement | null>(null)
+const triggerRef = ref<HTMLElement | null>(null)
+const popoverRef = ref<HTMLElement | null>(null)
+const popoverStyle = ref<CSSProperties>({})
 const { recordShare, copyShareLink } = useShareRecords()
 
-function initSharePanel(): void {
-  const panel = sharePanelRef.value
-  if (!panel || typeof window === 'undefined' || !window.socialShare) return
-  panel.innerHTML = ''
-  ;(panel as HTMLElement & { initialized?: boolean }).initialized = false
-  window.socialShare(panel, {
-    url: buildShareUrl(props.payload.url),
-    title: props.payload.title,
-    description: props.payload.description || props.payload.title,
-    image: props.payload.image || '',
-    source: props.payload.source || 'HOOKSVUE',
-    sites: ['wechat', 'weibo', 'qq', 'qzone', 'douban']
-  })
+interface ShareLink {
+  key: string
+  label: string
+  href: string
+}
+
+const shareUrl = computed(() => buildShareUrl(props.payload.url))
+
+const shareLinks = computed<ShareLink[]>(() => {
+  const url = encodeURIComponent(shareUrl.value)
+  const title = encodeURIComponent(props.payload.title)
+  const description = encodeURIComponent(props.payload.description || props.payload.title)
+  const image = encodeURIComponent(props.payload.image || '')
+  const source = encodeURIComponent(props.payload.source || 'HOOKSVUE')
+
+  return [
+    {
+      key: 'weibo',
+      label: '微博',
+      href: `https://service.weibo.com/share/share.php?url=${url}&title=${title}&pic=${image}`
+    },
+    {
+      key: 'qq',
+      label: 'QQ',
+      href: `https://connect.qq.com/widget/shareqq/index.html?url=${url}&title=${title}&source=${source}&desc=${description}&pics=${image}`
+    },
+    {
+      key: 'qzone',
+      label: '空间',
+      href: `https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=${url}&title=${title}&desc=${description}&summary=${description}&site=${source}`
+    },
+    {
+      key: 'douban',
+      label: '豆瓣',
+      href: `https://www.douban.com/share/service?href=${url}&name=${title}&text=${description}&image=${image}`
+    }
+  ]
+})
+
+function removeFloatingListeners(): void {
+  window.removeEventListener('resize', handleFloatingUpdate)
+  window.removeEventListener('scroll', handleFloatingUpdate, true)
+  document.removeEventListener('pointerdown', handleDocumentPointerdown)
+}
+
+function closeShare(): void {
+  isOpen.value = false
+  removeFloatingListeners()
+}
+
+function updatePopoverPosition(): void {
+  const trigger = triggerRef.value
+  if (!trigger) return
+
+  const rect = trigger.getBoundingClientRect()
+  const panel = popoverRef.value
+  const panelWidth = panel?.offsetWidth || 230
+  const panelHeight = panel?.offsetHeight || 112
+  const gap = 10
+  const margin = 12
+
+  let top = rect.bottom + gap
+  if (top + panelHeight > window.innerHeight - margin) {
+    top = rect.top - panelHeight - gap
+  }
+  if (top < margin) {
+    top = Math.min(rect.bottom + gap, window.innerHeight - panelHeight - margin)
+  }
+
+  let left = rect.right - panelWidth
+  left = Math.max(margin, Math.min(left, window.innerWidth - panelWidth - margin))
+
+  popoverStyle.value = {
+    position: 'fixed',
+    top: `${Math.max(margin, top)}px`,
+    left: `${Math.max(margin, left)}px`
+  }
+}
+
+function handleFloatingUpdate(): void {
+  if (!isOpen.value) return
+  updatePopoverPosition()
+}
+
+function handleDocumentPointerdown(event: PointerEvent): void {
+  const target = event.target
+  if (!(target instanceof Node)) return
+  if (triggerRef.value?.contains(target) || popoverRef.value?.contains(target)) return
+  closeShare()
+}
+
+function addFloatingListeners(): void {
+  window.addEventListener('resize', handleFloatingUpdate)
+  window.addEventListener('scroll', handleFloatingUpdate, true)
+  document.addEventListener('pointerdown', handleDocumentPointerdown)
 }
 
 async function toggleShare(): Promise<void> {
   isOpen.value = !isOpen.value
-  if (!isOpen.value) return
+  if (!isOpen.value) {
+    removeFloatingListeners()
+    return
+  }
   recordShare(props.payload)
   await nextTick()
-  initSharePanel()
+  updatePopoverPosition()
+  addFloatingListeners()
 }
 
 async function copyLink(): Promise<void> {
@@ -57,19 +139,21 @@ async function copyLink(): Promise<void> {
 
 function openLink(): void {
   recordShare(props.payload)
-  window.open(buildShareUrl(props.payload.url), '_blank', 'noopener,noreferrer')
+  window.open(shareUrl.value, '_blank', 'noopener,noreferrer')
 }
 
-watch(() => props.payload, () => {
-  if (isOpen.value) {
-    void nextTick(initSharePanel)
-  }
-}, { deep: true })
+function openShareLink(link: ShareLink): void {
+  recordShare(props.payload)
+  window.open(link.href, '_blank', 'noopener,noreferrer')
+}
+
+onBeforeUnmount(removeFloatingListeners)
 </script>
 
 <template>
   <span class="share-button-wrap" @click.stop>
     <button
+      ref="triggerRef"
       type="button"
       class="share-trigger"
       :class="props.size"
@@ -80,13 +164,34 @@ watch(() => props.payload, () => {
       <strong v-if="props.label || props.size === 'normal'">{{ props.label || '分享' }}</strong>
     </button>
 
-    <span v-if="isOpen" class="share-popover">
-      <span ref="sharePanelRef" class="sharejs-panel"></span>
-      <span class="share-extra-actions">
-        <button type="button" @click.stop.prevent="copyLink">复制链接</button>
-        <button type="button" @click.stop.prevent="openLink">打开</button>
+    <Teleport to="body">
+      <span
+        v-if="isOpen"
+        ref="popoverRef"
+        class="share-popover"
+        :style="popoverStyle"
+        @click.stop
+      >
+        <span class="share-popover-title">分享：{{ props.payload.title }}</span>
+        <span class="sharejs-panel" role="list">
+          <button
+            v-for="link in shareLinks"
+            :key="link.key"
+            type="button"
+            class="social-share-icon share-link"
+            :class="`icon-${link.key}`"
+            :title="`分享到${link.label}`"
+            @click.stop.prevent="openShareLink(link)"
+          >
+            <span>{{ link.label }}</span>
+          </button>
+        </span>
+        <span class="share-extra-actions">
+          <button type="button" @click.stop.prevent="copyLink">复制链接</button>
+          <button type="button" @click.stop.prevent="openLink">打开</button>
+        </span>
       </span>
-    </span>
+    </Teleport>
   </span>
 </template>
 
@@ -96,7 +201,6 @@ watch(() => props.payload, () => {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  z-index: 5;
 }
 
 .share-trigger {
@@ -141,17 +245,26 @@ watch(() => props.payload, () => {
 }
 
 .share-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
   display: grid;
   gap: 10px;
   min-width: 230px;
+  max-width: min(320px, calc(100vw - 24px));
   padding: 12px;
   border: 1px solid var(--border-color);
   border-radius: 10px;
   background: var(--card-bg);
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+  z-index: 3000;
+}
+
+.share-popover-title {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sharejs-panel {
@@ -159,6 +272,45 @@ watch(() => props.payload, () => {
   flex-wrap: wrap;
   gap: 8px;
   min-height: 36px;
+}
+
+.share-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  border-radius: 999px;
+  color: #bfdbfe;
+  background: rgba(96, 165, 250, 0.08);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.share-link:hover {
+  border-color: rgba(96, 165, 250, 0.72);
+  background: rgba(96, 165, 250, 0.16);
+}
+
+.share-link.icon-weibo {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(248, 113, 113, 0.09);
+}
+
+.share-link.icon-qq,
+.share-link.icon-qzone {
+  color: #60a5fa;
+}
+
+.share-link.icon-douban {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.42);
+  background: rgba(52, 211, 153, 0.09);
 }
 
 .share-extra-actions {

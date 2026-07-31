@@ -44,6 +44,8 @@ const PROXY_MAP: Record<string, string> = {
   '/api-cocoloop': 'https://www.cocoloop.cn',
   '/api-cnblogs': 'https://news.cnblogs.com',
   '/api-cnblogs-main': 'https://www.cnblogs.com',
+  '/api-cnblogs-ing': 'https://ing.cnblogs.com',
+  '/api-cnblogs-openapi': 'https://api.cnblogs.com',
   '/api-bilibili-trending': 'https://app.bilibili.com',
   '/api-bilibili-web': 'https://api.bilibili.com',
   '/api-bilibili-live': 'https://api.live.bilibili.com',

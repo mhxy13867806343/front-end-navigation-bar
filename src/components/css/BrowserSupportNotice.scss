@@ -172,21 +172,405 @@
   border-radius: 8px !important;
 }
 
+.web-library-container {
+  display: flex;
+  flex-direction: column;
+  color: var(--text-color);
+  background: var(--bg-secondary);
+}
+
+.web-library-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
+}
+
+.toolbar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.view-switch-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.switch-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  &.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+  }
+}
+
+.web-library-tree-wrapper {
+  padding: 12px 16px;
+  height: 440px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.web-library-tree {
+  background: transparent !important;
+  color: var(--text-color) !important;
+
+  :deep(.el-tree-node__content) {
+    height: 34px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--primary-color) 12%, transparent) !important;
+    }
+  }
+
+  :deep(.el-tree-node__expand-icon) {
+    color: var(--text-secondary);
+  }
+}
+
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-right: 8px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &.is-leaf {
+    color: var(--text-color);
+  }
+
+  .node-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .node-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+    color: var(--primary-color);
+  }
+}
+
+/* 卡片/边框卡片/多方向 标签页模式 (Tabs) */
+.web-library-tabs-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 440px;
+  max-height: 80vh;
+  padding: 12px;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.tabs-control-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+  border: 1px solid var(--border-color);
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.mini-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.mini-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+
+  &.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+  }
+}
+
+.web-library-el-tabs {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 6px;
+  background: transparent;
+
+  :deep(.el-tabs__header) {
+    border-color: var(--border-color);
+  }
+
+  :deep(.el-tabs__item) {
+    color: var(--text-color);
+    font-size: 13px;
+
+    &.is-active {
+      color: var(--primary-color);
+    }
+  }
+
+  :deep(.el-tabs__content) {
+    padding: 10px;
+    height: 100%;
+    overflow-y: auto;
+  }
+}
+
+.tabs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* 穿梭列表模式 (Image 2 - 无复选框) */
+.web-library-transfer-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 440px;
+  max-height: 80vh;
+  padding: 12px;
+  gap: 10px;
+}
+
+.transfer-header {
+  width: 100%;
+}
+
+.transfer-body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.transfer-panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.panel-header-title {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-list {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 4px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.transfer-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-color);
+
+  &:hover, &.active {
+    color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  }
+
+  .item-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .action-tag {
+    font-size: 11px;
+    color: var(--primary-color);
+  }
+}
+
+/* 走马灯轮播模式 (Image 3) */
+.web-library-carousel-wrapper {
+  padding: 14px;
+  height: 440px;
+
+  :deep(.el-carousel__indicators--outside) {
+    button {
+      background-color: var(--border-color);
+      opacity: 0.7;
+    }
+    .is-active button {
+      background-color: var(--primary-color);
+      opacity: 1;
+    }
+  }
+}
+
+.carousel-slide {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.slide-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+
+  .slide-icon {
+    font-size: 20px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-color);
+  }
+
+  .slide-badge {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--primary-color);
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  }
+}
+
+.slide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+}
+
+/* 折叠面板模式 (Image 4) */
+.web-library-collapse-wrapper {
+  padding: 12px 16px;
+  height: 440px;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  :deep(.el-collapse) {
+    border: none;
+  }
+
+  :deep(.el-collapse-item__header) {
+    background: transparent;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  :deep(.el-collapse-item__wrap) {
+    background: transparent;
+    border-bottom: none;
+  }
+}
+
+.collapse-item-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-right: 12px;
+
+  .collapse-count-badge {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+}
+
+.collapse-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 0;
+}
+
 .web-library-menu {
   display: grid;
-  grid-template-columns: 176px minmax(0, 1fr);
-  min-height: 308px;
+  grid-template-columns: 185px minmax(0, 1fr);
+  height: 440px;
+  max-height: 80vh;
   color: var(--text-color);
   background: var(--bg-secondary);
 }
 
 .web-library-groups {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   align-content: start;
   gap: 4px;
   padding: 10px;
   border-right: 1px solid var(--border-color);
   background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+  overflow-y: auto;
 }
 
 .web-library-group,
@@ -208,6 +592,7 @@
   min-height: 38px;
   padding: 8px 10px;
   border-radius: 6px;
+  flex-shrink: 0;
 }
 
 .web-library-group strong {
@@ -231,6 +616,7 @@
   gap: 8px;
   min-width: 0;
   padding: 14px;
+  overflow-y: auto;
 }
 
 .web-library-heading {

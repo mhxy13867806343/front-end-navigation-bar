@@ -22,12 +22,16 @@ const goToPage = (path: string): void => {
 import { triggerVersionNotice } from '../utils/versionPolling'
 
 const handleCommand = (command: string): void => {
+  if (!command) return
   if (command === 'openDialog') {
     dialogVisible.value = true
   } else if (command === 'triggerVersionCheck') {
     triggerVersionNotice()
   } else if (command.startsWith('http://') || command.startsWith('https://')) {
     window.open(command, '_blank')
+  } else if (command.endsWith('.html')) {
+    const url = import.meta.env.BASE_URL + command.replace(/^\/+/, '')
+    window.open(url, '_blank')
   } else {
     router.push(command)
   }
@@ -120,8 +124,65 @@ const webLibraryGroups: WebLibraryGroup[] = [
       { label: '🐯 虎嗅24小时', command: '/huxiu' },
       { label: '🐙 GitHub开源聚合', command: '/github' },
       { label: '♡ 记录缓存展示', command: '/records-cache' },
+      { label: '↗ 分享记录展示', command: '/share-records' },
       { label: '💼 BOSS直聘杭州首页', command: '/boss-zhipin-hangzhou' },
       { label: '🗺️ BOSS直聘地图找工作', command: '/boss-zhipin-hangzhou-map' }
+    ]
+  },
+  {
+    id: 'games',
+    title: '游戏合集',
+    icon: '🎮',
+    items: [
+      { label: '🎮 游戏全量大展厅', command: '/feature' },
+      { label: '✈️ 1942 飞行射击', command: '1942.html' },
+      { label: '🐱 哆啦A梦·大雄救援', command: 'doraemon.html' },
+      { label: '☀️ 黄金太阳·封印篇', command: 'goldsun.html' },
+      { label: '⛄ 雪人兄弟 Snow Bros', command: 'snowbros.html' },
+      { label: '🎯 75 宾果 75 Bingo', command: 'bingo75.html' },
+      { label: '🐢 激光快打 TMNT', command: 'tmnt.html' },
+      { label: '🎲 经典推箱子游戏', command: '/sokoban' },
+      { label: '🧺 接水果游戏', command: '/feature' },
+      { label: '🐍 贪吃蛇大作战', command: '/feature' },
+      { label: '🧱 俄罗斯方块', command: '/feature' },
+      { label: '🔢 2048 经典合并', command: '/feature' },
+      { label: '💣 扫雷小游戏', command: '/feature' },
+      { label: '❌ 井字棋对战', command: '/feature' },
+      { label: '🛡️ 90坦克大战', command: '/feature' },
+      { label: '🧱 经典打砖块', command: '/feature' },
+      { label: '🐦 飞翔小鸟', command: '/feature' },
+      { label: '🚀 太空战机', command: '/feature' }
+    ]
+  },
+  {
+    id: 'ai-news',
+    title: 'AI与资讯',
+    icon: '🤖',
+    items: [
+      { label: '🤖 AI编程资讯', command: '/aicoding' },
+      { label: '⚡ 闪存社区', command: '/flash' },
+      { label: '🌍 HelloWorld 社区', command: '/helloworld' },
+      { label: '🔥 掘金热门主题', command: '/juejin-theme' },
+      { label: '📜 经典名人名言语录', command: '/mingyan' },
+      { label: '🌌 CocoLoop 社区', command: '/cocoloop' },
+      { label: '📰 博客园新闻', command: '/cnblogs' },
+      { label: '🐙 GitHub 中文社区', command: '/github-cn' }
+    ]
+  },
+  {
+    id: 'media-tools',
+    title: '媒体与工具',
+    icon: '🧰',
+    items: [
+      { label: '🎬 哔哩哔哩热门视频', command: '/bilibili-trending' },
+      { label: '📺 哔哩哔哩直播', command: '/bilibili-live' },
+      { label: '🌦️ 实时天气预报', command: '/weather' },
+      { label: '📊 极简可视化大屏', command: '/big-screen' },
+      { label: '🌅 Bing 每日壁纸', command: '/star' },
+      { label: '🧰 开发者智能工具箱', command: '/toolbox' },
+      { label: '💰 统一 API 行情中心', command: '/api-center' },
+      { label: '♡ 记录缓存', command: '/records-cache' },
+      { label: '↗ 分享记录', command: '/share-records' }
     ]
   },
   {
@@ -164,9 +225,27 @@ const webLibraryGroups: WebLibraryGroup[] = [
     title: '工程工具',
     icon: '💻',
     items: [
+      { label: '⚙️ 浏览器兼容性检测', command: 'openDialog' },
+      { label: '🧡 小米商城 (27万行数据)', command: '/xiaomi-shop' },
       { label: '💻 页面与功能全量源码查看/复制', command: '/source-code' },
       { label: '🐳 Docker 命令行与可视化双方案部署', command: '/docker-showcase' },
       { label: '🚀 模拟测试版本更新检测 (Element Plus UI)', command: 'triggerVersionCheck' }
+    ]
+  },
+  {
+    id: 'system-status',
+    title: '权限与状态页',
+    icon: '🛡️',
+    items: [
+      { label: '🔐 权限控制中心', command: '/permission' },
+      { label: '📜 实时系统日志', command: '/logs' },
+      { label: '✅ 200 访问正常', command: '/200' },
+      { label: '🔑 401 未授权访问', command: '/401' },
+      { label: '💎 402 需要付费订阅', command: '/402' },
+      { label: '🛡️ 403 禁止/无权访问', command: '/403' },
+      { label: '🚀 404 页面未找到', command: '/404' },
+      { label: '⚡ 405 方法不受允许', command: '/405' },
+      { label: '🔥 500 服务器错误', command: '/500' }
     ]
   },
   {
@@ -184,6 +263,57 @@ const webLibraryGroups: WebLibraryGroup[] = [
 const activeWebLibraryGroup: ComputedRef<WebLibraryGroup> = computed<WebLibraryGroup>(() => {
   return webLibraryGroups.find((group: WebLibraryGroup): boolean => group.id === activeWebLibraryGroupId.value) || webLibraryGroups[0]
 })
+
+interface WebLibraryTreeNode {
+  id: string
+  label: string
+  command?: string
+  children?: WebLibraryTreeNode[]
+}
+
+type ViewMode = 'tree' | 'split' | 'transfer' | 'carousel' | 'collapse' | 'tabs'
+
+const viewMode: Ref<ViewMode> = ref<ViewMode>('tree')
+const transferSearchQuery: Ref<string> = ref<string>('')
+const activeCollapseNames: Ref<string[]> = ref<string[]>(webLibraryGroups.map((g: WebLibraryGroup): string => g.id))
+
+const tabsPosition: Ref<'top' | 'left' | 'right' | 'bottom'> = ref<'top' | 'left' | 'right' | 'bottom'>('top')
+const tabsType: Ref<'border-card' | 'card' | ''> = ref<'border-card' | 'card' | ''>('border-card')
+
+const filteredTransferGroups: ComputedRef<WebLibraryGroup[]> = computed<WebLibraryGroup[]>(() => {
+  if (!transferSearchQuery.value.trim()) return webLibraryGroups
+  const q: string = transferSearchQuery.value.trim().toLowerCase()
+  return webLibraryGroups.filter(
+    (g: WebLibraryGroup): boolean =>
+      g.title.toLowerCase().includes(q) ||
+      g.items.some((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(q))
+  )
+})
+
+const filteredTransferItems: ComputedRef<WebLibraryItem[]> = computed<WebLibraryItem[]>(() => {
+  const items: WebLibraryItem[] = activeWebLibraryGroup.value.items
+  if (!transferSearchQuery.value.trim()) return items
+  const q: string = transferSearchQuery.value.trim().toLowerCase()
+  return items.filter((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(q))
+})
+
+const treeData: ComputedRef<WebLibraryTreeNode[]> = computed<WebLibraryTreeNode[]>(() => {
+  return webLibraryGroups.map((group: WebLibraryGroup): WebLibraryTreeNode => ({
+    id: group.id,
+    label: `${group.icon} ${group.title}`,
+    children: group.items.map((item: WebLibraryItem, idx: number): WebLibraryTreeNode => ({
+      id: `${group.id}-${idx}`,
+      label: item.label,
+      command: item.command
+    }))
+  }))
+})
+
+const handleTreeNodeClick = (node: WebLibraryTreeNode): void => {
+  if (node.command) {
+    handleCommand(node.command)
+  }
+}
 
 const techStack: TechStackItem[] = [
   { name: 'Vue', packageName: 'vue', version: getPackageVersion('vue'), url: 'https://vuejs.org/', group: '框架' },
@@ -332,76 +462,11 @@ onUnmounted((): void => {
     </div>
 
     <div class="bar-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-      <!-- 查看详情 下拉菜单 (Element Plus Dropdown split-button) -->
-      <el-dropdown split-button type="primary" size="small" @click="dialogVisible = true" @command="handleCommand">
-        查看详情
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="openDialog">⚙️ 浏览器兼容性检测</el-dropdown-item>
-            <el-dropdown-item command="/xiaomi-shop">🧡 小米商城 (27万行数据)</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-
-      <!-- 天气预报 下拉菜单 (Element Plus Dropdown split-button) -->
-      <el-dropdown split-button type="success" size="small" @click="goToWeather" @command="handleCommand">
-        🌦️ 天气预报
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="/weather">🌦️ 实时天气预报看板</el-dropdown-item>
-            <el-dropdown-item command="/api-center">💰 统一 API 行情看板</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-
-      <!-- 名人名言 下拉菜单 (Element Plus Dropdown split-button) -->
-      <el-dropdown split-button type="warning" size="small" @click="goToMingyan" @command="handleCommand">
-        📜 名人名言
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="/mingyan">📜 经典名人名言语录</el-dropdown-item>
-            <el-dropdown-item command="/cocoloop">🌌 CocoLoop 社区</el-dropdown-item>
-            <el-dropdown-item command="/cnblogs">📰 博客园新闻</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-
-      <!-- 异常/状态页 下拉菜单 (Element Plus Dropdown) -->
-      <el-dropdown @command="handleCommand" trigger="click">
-        <el-button type="danger" plain size="small">
-          🚫 异常/状态页 ▾
-        </el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="/200">✅ 200 访问正常</el-dropdown-item>
-            <el-dropdown-item command="/401">🔑 401 未授权访问</el-dropdown-item>
-            <el-dropdown-item command="/402">💎 402 需要付费订阅</el-dropdown-item>
-            <el-dropdown-item command="/403">🛡️ 403 禁止/无权访问</el-dropdown-item>
-            <el-dropdown-item command="/404">🚀 404 页面未找到</el-dropdown-item>
-            <el-dropdown-item command="/405">⚡ 405 方法不受允许</el-dropdown-item>
-            <el-dropdown-item command="/500">🔥 500 服务器错误</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-
-      <!-- 权限与日志 下拉菜单 (Element Plus Dropdown) -->
-      <el-dropdown @command="handleCommand" trigger="click">
-        <el-button type="info" plain size="small">
-          🔐 权限与日志 ▾
-        </el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="/permission">🔐 权限控制中心</el-dropdown-item>
-            <el-dropdown-item command="/logs">📜 实时系统日志</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-
       <!-- Web 组件与库 分组下拉菜单 -->
       <el-popover
         placement="bottom"
         trigger="click"
-        :width="680"
+        :width="850"
         popper-class="web-library-popover"
       >
         <template #reference>
@@ -410,35 +475,310 @@ onUnmounted((): void => {
           </el-button>
         </template>
 
-        <div class="web-library-menu">
-          <nav class="web-library-groups" aria-label="Web 组件与库分类">
-            <button
-              v-for="group in webLibraryGroups"
-              :key="group.id"
-              type="button"
-              class="web-library-group"
-              :class="{ active: activeWebLibraryGroupId === group.id }"
-              @click="activeWebLibraryGroupId = group.id"
-            >
-              <span>{{ group.icon }}</span>
-              <strong>{{ group.title }}</strong>
-            </button>
-          </nav>
-
-          <div class="web-library-items">
-            <div class="web-library-heading">
-              <span>{{ activeWebLibraryGroup.icon }}</span>
-              <strong>{{ activeWebLibraryGroup.title }}</strong>
+        <div class="web-library-container">
+          <div class="web-library-toolbar">
+            <span class="toolbar-title">🧩 Web 组件与库导航系统</span>
+            <div class="view-switch-btns">
+              <button
+                type="button"
+                class="switch-btn"
+                :class="{ active: viewMode === 'tree' }"
+                @click="viewMode = 'tree'"
+                title="树形结构"
+              >
+                🌲 树形结构
+              </button>
+              <button
+                type="button"
+                class="switch-btn"
+                :class="{ active: viewMode === 'tabs' }"
+                @click="viewMode = 'tabs'"
+                title="卡片标签页"
+              >
+                🏷️ 标签页
+              </button>
+              <button
+                type="button"
+                class="switch-btn"
+                :class="{ active: viewMode === 'split' }"
+                @click="viewMode = 'split'"
+                title="悬停分栏模式"
+              >
+                📑 悬停分栏
+              </button>
+              <button
+                type="button"
+                class="switch-btn"
+                :class="{ active: viewMode === 'transfer' }"
+                @click="viewMode = 'transfer'"
+                title="双列表穿梭过滤"
+              >
+                🔀 穿梭列表
+              </button>
+              <button
+                type="button"
+                class="switch-btn"
+                :class="{ active: viewMode === 'carousel' }"
+                @click="viewMode = 'carousel'"
+                title="走马灯轮播"
+              >
+                🎠 走马灯
+              </button>
+              <button
+                type="button"
+                class="switch-btn"
+                :class="{ active: viewMode === 'collapse' }"
+                @click="viewMode = 'collapse'"
+                title="折叠面板"
+              >
+                📂 折叠面板
+              </button>
             </div>
-            <button
-              v-for="item in activeWebLibraryGroup.items"
-              :key="item.command"
-              type="button"
-              class="web-library-item"
-              @click="handleCommand(item.command)"
+          </div>
+
+          <!-- 模式 1：树形结构 -->
+          <div v-if="viewMode === 'tree'" class="web-library-tree-wrapper">
+            <el-tree
+              :data="treeData"
+              node-key="id"
+              default-expand-all
+              :expand-on-click-node="false"
+              :props="{ children: 'children', label: 'label' }"
+              @node-click="handleTreeNodeClick"
+              class="web-library-tree"
             >
-              {{ item.label }}
-            </button>
+              <template #default="{ data }">
+                <div
+                  class="custom-tree-node"
+                  :class="{ 'is-leaf': !data.children || !data.children.length }"
+                  @click.stop="data.command && handleCommand(data.command)"
+                >
+                  <span class="node-label">{{ data.label }}</span>
+                  <span v-if="data.command" class="node-badge">▶ 打开</span>
+                </div>
+              </template>
+            </el-tree>
+          </div>
+
+          <!-- 模式 6：卡片/边框卡片/多方向标签页 (Tabs) -->
+          <div v-else-if="viewMode === 'tabs'" class="web-library-tabs-wrapper">
+            <div class="tabs-control-bar">
+              <div class="control-group">
+                <span class="control-label">标签位置:</span>
+                <div class="mini-btn-group">
+                  <button
+                    type="button"
+                    class="mini-btn"
+                    :class="{ active: tabsPosition === 'top' }"
+                    @click="tabsPosition = 'top'"
+                  >top</button>
+                  <button
+                    type="button"
+                    class="mini-btn"
+                    :class="{ active: tabsPosition === 'left' }"
+                    @click="tabsPosition = 'left'"
+                  >left</button>
+                  <button
+                    type="button"
+                    class="mini-btn"
+                    :class="{ active: tabsPosition === 'right' }"
+                    @click="tabsPosition = 'right'"
+                  >right</button>
+                  <button
+                    type="button"
+                    class="mini-btn"
+                    :class="{ active: tabsPosition === 'bottom' }"
+                    @click="tabsPosition = 'bottom'"
+                  >bottom</button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <span class="control-label">卡片风格:</span>
+                <div class="mini-btn-group">
+                  <button
+                    type="button"
+                    class="mini-btn"
+                    :class="{ active: tabsType === 'border-card' }"
+                    @click="tabsType = 'border-card'"
+                  >border-card</button>
+                  <button
+                    type="button"
+                    class="mini-btn"
+                    :class="{ active: tabsType === 'card' }"
+                    @click="tabsType = 'card'"
+                  >card</button>
+                  <button
+                    type="button"
+                    class="mini-btn"
+                    :class="{ active: tabsType === '' }"
+                    @click="tabsType = ''"
+                  >default</button>
+                </div>
+              </div>
+            </div>
+
+            <el-tabs
+              v-model="activeWebLibraryGroupId"
+              :type="tabsType || undefined"
+              :tab-position="tabsPosition"
+              class="web-library-el-tabs"
+            >
+              <el-tab-pane
+                v-for="group in webLibraryGroups"
+                :key="group.id"
+                :name="group.id"
+              >
+                <template #label>
+                  <span>{{ group.icon }} {{ group.title }}</span>
+                </template>
+                <div class="tabs-grid">
+                  <button
+                    v-for="item in group.items"
+                    :key="item.command"
+                    type="button"
+                    class="web-library-item"
+                    @click="handleCommand(item.command)"
+                  >
+                    {{ item.label }}
+                  </button>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
+
+          <!-- 模式 2：悬停分栏模式 -->
+          <div v-else-if="viewMode === 'split'" class="web-library-menu">
+            <nav class="web-library-groups" aria-label="Web 组件与库分类">
+              <button
+                v-for="group in webLibraryGroups"
+                :key="group.id"
+                type="button"
+                class="web-library-group"
+                :class="{ active: activeWebLibraryGroupId === group.id }"
+                @mouseenter="activeWebLibraryGroupId = group.id"
+                @click="activeWebLibraryGroupId = group.id"
+              >
+                <span>{{ group.icon }}</span>
+                <strong>{{ group.title }}</strong>
+              </button>
+            </nav>
+
+            <div class="web-library-items">
+              <div class="web-library-heading">
+                <span>{{ activeWebLibraryGroup.icon }}</span>
+                <strong>{{ activeWebLibraryGroup.title }}</strong>
+              </div>
+              <button
+                v-for="item in activeWebLibraryGroup.items"
+                :key="item.command"
+                type="button"
+                class="web-library-item"
+                @click="handleCommand(item.command)"
+              >
+                {{ item.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- 模式 3：穿梭列表模式 (无复选框) -->
+          <div v-else-if="viewMode === 'transfer'" class="web-library-transfer-wrapper">
+            <div class="transfer-header">
+              <el-input
+                v-model="transferSearchQuery"
+                placeholder="🔍 搜索名称或功能... (穿梭列表实时过滤)"
+                clearable
+                size="small"
+                class="transfer-search-input"
+              />
+            </div>
+            <div class="transfer-body">
+              <div class="transfer-panel left-panel">
+                <div class="panel-header-title">List 1 分类导航 ({{ filteredTransferGroups.length }})</div>
+                <div class="panel-list">
+                  <div
+                    v-for="group in filteredTransferGroups"
+                    :key="group.id"
+                    class="transfer-list-item"
+                    :class="{ active: activeWebLibraryGroupId === group.id }"
+                    @mouseenter="activeWebLibraryGroupId = group.id"
+                    @click="activeWebLibraryGroupId = group.id"
+                  >
+                    <span>{{ group.icon }} {{ group.title }}</span>
+                    <span class="item-count">{{ group.items.length }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="transfer-panel right-panel">
+                <div class="panel-header-title">{{ activeWebLibraryGroup.icon }} {{ activeWebLibraryGroup.title }} 项列表 ({{ filteredTransferItems.length }})</div>
+                <div class="panel-list">
+                  <div
+                    v-for="item in filteredTransferItems"
+                    :key="item.command"
+                    class="transfer-list-item link-item"
+                    @click="handleCommand(item.command)"
+                  >
+                    <span>{{ item.label }}</span>
+                    <span class="action-tag">访问 ▶</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 模式 4：走马灯轮播模式 (Hover切换) -->
+          <div v-else-if="viewMode === 'carousel'" class="web-library-carousel-wrapper">
+            <el-carousel trigger="hover" height="420px" indicator-position="outside">
+              <el-carousel-item v-for="group in webLibraryGroups" :key="group.id">
+                <div class="carousel-slide">
+                  <div class="slide-header">
+                    <span class="slide-icon">{{ group.icon }}</span>
+                    <h3>{{ group.title }}</h3>
+                    <span class="slide-badge">{{ group.items.length }} 个项目</span>
+                  </div>
+                  <div class="slide-grid">
+                    <button
+                      v-for="item in group.items"
+                      :key="item.command"
+                      type="button"
+                      class="web-library-item"
+                      @click="handleCommand(item.command)"
+                    >
+                      {{ item.label }}
+                    </button>
+                  </div>
+                </div>
+              </el-carousel-item>
+            </el-carousel>
+          </div>
+
+          <!-- 模式 5：折叠面板模式 (全展开) -->
+          <div v-else-if="viewMode === 'collapse'" class="web-library-collapse-wrapper">
+            <el-collapse v-model="activeCollapseNames" class="web-library-collapse">
+              <el-collapse-item
+                v-for="group in webLibraryGroups"
+                :key="group.id"
+                :name="group.id"
+              >
+                <template #title>
+                  <div class="collapse-item-title">
+                    <span>{{ group.icon }} {{ group.title }}</span>
+                    <span class="collapse-count-badge">{{ group.items.length }} 项</span>
+                  </div>
+                </template>
+                <div class="collapse-grid">
+                  <button
+                    v-for="item in group.items"
+                    :key="item.command"
+                    type="button"
+                    class="web-library-item"
+                    @click="handleCommand(item.command)"
+                  >
+                    {{ item.label }}
+                  </button>
+                </div>
+              </el-collapse-item>
+            </el-collapse>
           </div>
         </div>
       </el-popover>
@@ -475,6 +815,7 @@ onUnmounted((): void => {
             <el-dropdown-item command="/huxiu">🐯 虎嗅24小时</el-dropdown-item>
             <el-dropdown-item command="/github">🐙 GitHub开源聚合</el-dropdown-item>
             <el-dropdown-item command="/records-cache">♡ 记录缓存展示</el-dropdown-item>
+            <el-dropdown-item command="/share-records">↗ 分享记录展示</el-dropdown-item>
             <el-dropdown-item command="/boss-zhipin-hangzhou">💼 BOSS直聘杭州首页</el-dropdown-item>
             <el-dropdown-item command="/boss-zhipin-hangzhou-map">🗺️ BOSS直聘地图找工作</el-dropdown-item>
             <el-dropdown-item divided command="triggerVersionCheck">🚀 模拟测试版本更新检测 (Element Plus UI)</el-dropdown-item>

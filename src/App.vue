@@ -13,6 +13,7 @@ import ComponentShowcase from './components/ComponentShowcase.vue'
 import RefreshCountdownButton from './components/RefreshCountdownButton.vue'
 import ShareButton from './components/ShareButton.vue'
 import type { SharePayload } from './composables/useShareRecords'
+import type { ToolItem } from './types/navigation'
 import { NBackTop } from 'naive-ui'
 
 const {
@@ -210,6 +211,19 @@ const currentRouteSharePayload = computed<SharePayload>(() => ({
   tags: ['页面分享', currentRouteFavoriteTitle.value],
   type: 'page'
 }))
+
+function toolSharePayload(tool: ToolItem): SharePayload {
+  return {
+    id: `tool:${tool.id}`,
+    title: tool.name,
+    url: tool.link || route.fullPath,
+    description: tool.desc,
+    image: isUrl(tool.icon || '') ? tool.icon : undefined,
+    source: tool.categoryName ? `${tool.categoryIcon || ''} ${tool.categoryName}`.trim() : 'HOOKSVUE 工具卡片',
+    tags: ['工具卡片', tool.categoryName || getActiveCategoryName()],
+    type: 'item'
+  }
+}
 
 async function confirmFavoriteRemoval(title: string): Promise<boolean> {
   try {
@@ -926,93 +940,7 @@ watch(isDarkMode, () => {
           </el-menu-item>
         </template>
       </el-menu>
-      <div class="sidebar-footers">
-        <div class="sidebar-footer" @click="goFlash" title="闪存">
-          <span class="nav-icon">⚡</span>
-          <span v-show="isSidebarOpen">闪存</span>
-        </div>
-        <div class="sidebar-footer" @click="goAiCoding" title="AI编程资讯">
-          <span class="nav-icon">🤖</span>
-          <span v-show="isSidebarOpen">AI编程资讯</span>
-        </div>
-        <div class="sidebar-footer" @click="goHelloWorld" title="HelloWorld社区">
-          <span class="nav-icon">🌍</span>
-          <span v-show="isSidebarOpen">HelloWorld</span>
-        </div>
-        <div class="sidebar-footer" @click="goJuejinTheme" title="掘金热门主题">
-          <span class="nav-icon">🔥</span>
-          <span v-show="isSidebarOpen">热门主题</span>
-        </div>
-        <el-popover
-          placement="top-start"
-          :width="160"
-          trigger="click"
-          popper-class="sidebar-upward-popover"
-        >
-          <template #reference>
-            <div class="sidebar-footer" title="实用工具箱">
-              <span class="nav-icon">🧰</span>
-              <span v-show="isSidebarOpen">实用工具箱</span>
-            </div>
-          </template>
-          
-          <div class="popover-tool-menu">
-            <div class="popover-tool-item" @click="showVideoDialog = true">
-              <span class="tool-icon">🎬</span>
-              <span>视频网站</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="showWeatherDialog = true">
-              <span class="tool-icon">🌦️</span>
-              <span>天气预报</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="goMingyan">
-              <span class="tool-icon">📜</span>
-              <span>名人名言</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="goCocoloop">
-              <span class="tool-icon">🌌</span>
-              <span>CocoLoop 社区</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="goCnblogs">
-              <span class="tool-icon">📰</span>
-              <span>博客园新闻</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="goGithubCn">
-              <span class="tool-icon">🐙</span>
-              <span>GitHub 中文社区</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="goBigScreen">
-              <span class="tool-icon">📊</span>
-              <span>可视化大屏</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="showBingDialog = true">
-              <span class="tool-icon">🌅</span>
-              <span>Bing 每日壁纸</span>
-            </div>
-            <div class="popover-tool-item" @click="showUtilityDialog = true">
-              <span class="tool-icon">🧰</span>
-              <span>智能工具箱</span>
-            </div>
-            <div class="popover-tool-item" @click="goToolbox">
-              <span class="tool-icon">🗂️</span>
-              <span>工具集合</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-            <div class="popover-tool-item" @click="goRecordsCache">
-              <span class="tool-icon">♡</span>
-              <span>记录缓存</span>
-              <span style="margin-left: auto; font-size: 10px; color: var(--text-secondary);">▶</span>
-            </div>
-          </div>
-        </el-popover>
-      </div>
+
     </nav>
 
     <!-- 主内容区域 -->
@@ -1378,6 +1306,11 @@ watch(isDarkMode, () => {
                 <div class="tool-link" :title="'点击跳转: ' + tool.link" @click="openLink(tool.link)">
                   <span class="link-icon">🔗</span>
                 </div>
+                <ShareButton
+                  class="tool-card-share"
+                  size="compact"
+                  :payload="toolSharePayload(tool)"
+                />
               </div>
             </div>
           </template>

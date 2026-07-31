@@ -1,10 +1,9 @@
 <template>
   <div class="flash-page">
-    <!-- 顶部导航 -->
     <header class="flash-header">
       <div class="header-inner">
         <div class="header-left">
-          <a class="logo" href="javascript:;">闪存</a>
+          <a class="logo" href="https://ing.cnblogs.com/" target="_blank" rel="noopener noreferrer">闪存</a>
           <nav class="top-nav" :class="{ open: navOpen }">
             <a
               v-for="nav in topNavs"
@@ -17,16 +16,14 @@
         </div>
         <div class="header-right">
           <div class="search-box">
-            <input v-model="keyword" type="text" placeholder="搜索闪存" @keyup.enter="onSearch" />
-            <button @click="onSearch">
+            <input v-model="keyword" type="text" placeholder="搜索闪存" :disabled="isLoading" @keyup.enter="onSearch" />
+            <button :disabled="isLoading" @click="onSearch">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
               </svg>
             </button>
           </div>
-          <div class="user-mini">
-            <img class="avatar sm" :src="currentUser.avatar" alt="me" />
-          </div>
+          <button class="refresh-mini" :disabled="isLoading" @click="fetchFeeds">刷新</button>
           <button class="nav-toggle" @click="navOpen = !navOpen" aria-label="菜单">
             <span></span><span></span><span></span>
           </button>
@@ -35,14 +32,12 @@
     </header>
 
     <div class="flash-body">
-      <!-- 主内容区 -->
       <main class="flash-main">
-        <!-- 发布框 -->
         <section class="publish-box">
           <textarea
             v-model="draft"
             :maxlength="maxLen"
-            placeholder="有什么想说的？"
+            placeholder="有什么想说的？本页发布先保存为本地草稿，真实发布需要博客园授权。"
             @focus="publishFocus = true"
           ></textarea>
           <div class="publish-actions" v-show="publishFocus || draft">
@@ -53,18 +48,17 @@
             </div>
             <div class="right-tools">
               <span class="count" :class="{ warn: remain < 20 }">{{ remain }}</span>
-              <button class="btn-publish" :disabled="!draft.trim()" @click="publish">发布</button>
+              <button class="btn-publish" :disabled="!draft.trim()" @click="publish">发布草稿</button>
             </div>
           </div>
         </section>
 
-        <!-- Tab 栏 -->
         <nav class="feed-tabs">
           <a
             v-for="tab in tabs"
             :key="tab.key"
             href="javascript:;"
-            :class="{ active: activeTab === tab.key }"
+            :class="{ active: activeTab === tab.key, disabled: isLoading }"
             @click="switchTab(tab.key)"
           >
             {{ tab.label }}
@@ -72,17 +66,39 @@
           </a>
         </nav>
 
-        <!-- 消息流 -->
-        <ul class="feed-list" v-if="filteredFeeds.length">
-          <li v-for="item in filteredFeeds" :key="item.id" class="feed-item">
+        <section class="source-status" :class="{ loading: isLoading, error: Boolean(errorMessage) }">
+          <strong>{{ currentTab?.label || '全站' }}</strong>
+          <span v-if="isLoading">正在加载博客园真实闪存...</span>
+          <span v-else-if="errorMessage">{{ errorMessage }}</span>
+          <span v-else>第 {{ page }} 页 · 已载入 {{ liveFeeds.length }} 条真实闪存</span>
+          <span v-if="lastUpdatedAt" class="source-time">最近刷新：{{ lastUpdatedAt }}</span>
+        </section>
+
+        <div v-if="isLoading" class="feed-loading">
+          <span class="loading-dot"></span>
+          正在从博客园闪存接口拉取真实数据...
+        </div>
+
+        <section v-else-if="authRequired && !visibleFeeds.length" class="auth-panel">
+          <h3>博客园闪存需要授权后读取</h3>
+          <p>真实接口已返回未授权状态，本页不会再展示模拟数据。可以先打开原站登录，或在本地保存博客园 OpenAPI Token 后刷新。</p>
+          <div class="auth-actions">
+            <a href="https://ing.cnblogs.com/" target="_blank" rel="noopener noreferrer">打开闪存原站</a>
+            <button @click="fetchFeeds">重新请求</button>
+          </div>
+        </section>
+
+        <ul class="feed-list" v-if="visibleFeeds.length">
+          <li v-for="item in visibleFeeds" :key="item.id" class="feed-item">
             <img class="avatar" :src="item.avatar" :alt="item.nickname" />
             <div class="feed-content">
               <div class="feed-text">
-                <a class="nickname" href="javascript:;">{{ item.nickname }}</a>
+                <a class="nickname" :href="item.sourceUrl || 'javascript:;'" target="_blank" rel="noopener noreferrer">{{ item.nickname }}</a>
                 <span class="text" v-html="renderContent(item.content)"></span>
               </div>
               <div class="feed-meta">
                 <span class="time">{{ formatTime(item.time) }}</span>
+                <span v-if="item.likeCount" class="time">点赞 {{ item.likeCount }}</span>
                 <a class="meta-action" href="javascript:;" @click="toggleReply(item)">回应</a>
                 <a
                   v-if="item.comments.length"
@@ -90,10 +106,10 @@
                   href="javascript:;"
                   @click="item.expanded = !item.expanded"
                 >{{ item.expanded ? '收起' : `${item.comments.length} 回应` }}</a>
+                <a v-if="item.sourceUrl" class="meta-action" :href="item.sourceUrl" target="_blank" rel="noopener noreferrer">原文</a>
                 <a v-if="item.mine" class="meta-action del" href="javascript:;" @click="removeFeed(item)">删除</a>
               </div>
 
-              <!-- 回应列表 -->
               <ul v-if="item.expanded && item.comments.length" class="comment-list">
                 <li v-for="c in item.comments" :key="c.id">
                   <a class="nickname" href="javascript:;">{{ c.nickname }}</a>
@@ -102,7 +118,6 @@
                 </li>
               </ul>
 
-              <!-- 回应输入框 -->
               <div v-if="item.replying" class="reply-box">
                 <input
                   v-model="item.replyDraft"
@@ -110,32 +125,49 @@
                   :placeholder="`回应 ${item.nickname}：`"
                   @keyup.enter="submitReply(item)"
                 />
-                <button @click="submitReply(item)" :disabled="!item.replyDraft?.trim()">提交</button>
+                <button @click="submitReply(item)" :disabled="!item.replyDraft?.trim()">提交草稿</button>
               </div>
             </div>
           </li>
         </ul>
-        <div v-else class="feed-empty">暂无内容</div>
+        <div v-else-if="!authRequired && !isLoading" class="feed-empty">真实接口暂未返回可展示内容</div>
 
-        <!-- 分页 -->
         <div class="feed-pager">
-          <a href="javascript:;" :class="{ disabled: page === 1 }" @click="page > 1 && page--">上一页</a>
+          <a
+            href="javascript:;"
+            :class="{ disabled: page === 1 || isLoading }"
+            @click="goPage(page - 1)"
+          >上一页</a>
           <span class="page-no">{{ page }}</span>
-          <a href="javascript:;" @click="page++">下一页</a>
+          <a
+            href="javascript:;"
+            :class="{ disabled: isLoading || !hasNextPage }"
+            @click="goPage(page + 1)"
+          >下一页</a>
         </div>
       </main>
 
-      <!-- 右侧栏 -->
       <aside class="flash-side">
         <section class="side-card user-card">
           <img class="avatar lg" :src="currentUser.avatar" alt="me" />
           <div class="user-info">
             <div class="uname">{{ currentUser.nickname }}</div>
             <div class="ustat">
-              <span>闪存 {{ myFeedCount }}</span>
+              <span>草稿 {{ myFeedCount }}</span>
               <span>回应 {{ myCommentCount }}</span>
             </div>
           </div>
+        </section>
+
+        <section class="side-card">
+          <h3 class="side-title">最新回应</h3>
+          <ul class="side-list" v-if="latestReplies.length">
+            <li v-for="reply in latestReplies" :key="reply.id">
+              <a href="javascript:;">{{ reply.nickname }}：</a>
+              <span>{{ reply.content }}</span>
+            </li>
+          </ul>
+          <p v-else class="side-muted">等待真实回应数据</p>
         </section>
 
         <section class="side-card">
@@ -156,37 +188,38 @@
             </li>
           </ul>
         </section>
-
-        <section class="side-card">
-          <h3 class="side-title">快捷入口</h3>
-          <ul class="side-list">
-            <li v-for="t in topNavs" :key="t.key"><a href="javascript:;">{{ t.label }}</a></li>
-          </ul>
-        </section>
       </aside>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { request } from '@/utils/request'
 import {
   TOP_NAVS,
   INITIAL_TABS,
   NOTICES,
   CURRENT_USER,
-  ACTIVE_USERS,
   MAX_LEN,
-  escapeHtml,
-  renderContent,
+  FLASH_PAGE_SIZE,
+  buildFlashLegacyPath,
+  buildFlashOpenApiPath,
+  createLocalComment,
+  createLocalFeed,
   formatTime,
-  createMockComment,
-  createMockFeed
+  getFlashToken,
+  makeAvatar,
+  parseFlashLegacyHtml,
+  parseFlashOpenApiData,
+  renderContent
 } from '@/vue-pages-text-fn-abc/flash'
-import type { FlashNavItem as NavItem, FeedTab, UserSummary, FlashComment, FlashFeed } from '@/vue-pages-text-fn-abc/vue-interface'
+import type { FeedTab, UserSummary, FlashComment, FlashFeed } from '@/vue-pages-text-fn-abc/vue-interface'
 
 const topNavs = TOP_NAVS
-const tabs = reactive<FeedTab[]>(JSON.parse(JSON.stringify(INITIAL_TABS)))
+const tabs = reactive<FeedTab[]>(INITIAL_TABS.map((tab: FeedTab): FeedTab => ({ ...tab })))
 const currentUser = CURRENT_USER
+const notices = NOTICES
+const maxLen = MAX_LEN
 
 const navOpen = ref<boolean>(false)
 const keyword = ref<string>('')
@@ -195,75 +228,163 @@ const isPrivate = ref<boolean>(false)
 const publishFocus = ref<boolean>(false)
 const activeTab = ref<string>('all')
 const page = ref<number>(1)
-const maxLen = MAX_LEN
+const liveFeeds = ref<FlashFeed[]>([])
+const localFeeds = ref<FlashFeed[]>([])
+const isLoading = ref<boolean>(false)
+const errorMessage = ref<string>('')
+const authRequired = ref<boolean>(false)
+const hasNextPage = ref<boolean>(false)
+const lastUpdatedAt = ref<string>('')
 
-let idSeed: number = 100
+let idSeed = 1000
 
-const feeds = reactive<FlashFeed[]>([
-  mockFeed('清风徐来', '今天把项目的构建时间从 3 分钟优化到了 40 秒，vite 真香~', -5, [
-    mockComment('山间明月', '怎么做到的？求分享'),
-    mockComment('清风徐来', '主要是干掉了几个巨大的 barrel file，再加了依赖预构建')
-  ]),
-  mockFeed('代码搬运工', '周一综合症 + 1，来杯咖啡续命 @清风徐来', -18),
-  mockFeed('夜航星', '刚发现 CSS :has() 选择器兼容性已经很好了，可以放心用了', -42, [
-    mockComment('像素画师', '同感，父选择器等了十年')
-  ]),
-  mockFeed('像素画师', '设计稿 1px 边框在 retina 屏下的处理方案又整理了一版，回头发博客', -65),
-  mockFeed('前端小行家', '给导航站加了个闪存页面，练练手', -80, [], true),
-  mockFeed('摸鱼大师', '下班前十分钟是效率最高的十分钟，这很合理', -130),
-  mockFeed('山间明月', 'TypeScript 5 的 decorators 终于稳定了，准备把旧项目迁移一波', -200)
-])
-
-const notices = NOTICES
-const activeUsers = ACTIVE_USERS
-
+const currentTab = computed<FeedTab | undefined>(() => tabs.find((tab: FeedTab): boolean => tab.key === activeTab.value))
 const remain = computed<number>(() => maxLen - draft.value.length)
-const myFeedCount = computed<number>(() => feeds.filter((f: FlashFeed): boolean => f.mine).length)
+const myFeedCount = computed<number>(() => localFeeds.value.length)
 const myCommentCount = computed<number>(() =>
-  feeds.reduce((n: number, f: FlashFeed): number => n + f.comments.filter((c: FlashComment): boolean => c.nickname === currentUser.nickname).length, 0)
+  localFeeds.value.reduce((n: number, f: FlashFeed): number => n + f.comments.filter((c: FlashComment): boolean => c.nickname === currentUser.nickname).length, 0)
 )
+const visibleFeeds = computed<FlashFeed[]>(() => {
+  let list: FlashFeed[] = shouldIncludeLocalFeeds.value
+    ? [...localFeeds.value, ...liveFeeds.value]
+    : [...liveFeeds.value]
 
-const filteredFeeds = computed<FlashFeed[]>(() => {
-  let list: FlashFeed[] = feeds
-  if (activeTab.value === 'my') {
-    list = feeds.filter((f: FlashFeed): boolean => f.mine)
-  } else if (activeTab.value === 'reply') {
-    list = feeds.filter((f: FlashFeed): boolean => f.mine && f.comments.length > 0)
-  } else if (activeTab.value === 'mention') {
-    list = feeds.filter((f: FlashFeed): boolean => f.content.includes(`@${currentUser.nickname}`))
-  } else if (activeTab.value === 'comment') {
-    list = feeds.filter((f: FlashFeed): boolean => f.comments.some((c: FlashComment): boolean => c.nickname === currentUser.nickname))
-  } else if (activeTab.value === 'follow' || activeTab.value === 'lucky') {
-    list = feeds.slice(0, 3)
-  }
   if (keyword.value.trim()) {
-    const k: string = keyword.value.trim()
-    list = list.filter((f: FlashFeed): boolean => f.content.includes(k) || f.nickname.includes(k))
+    const key: string = keyword.value.trim()
+    list = list.filter((item: FlashFeed): boolean => item.content.includes(key) || item.nickname.includes(key))
   }
+
   return list
 })
+const shouldIncludeLocalFeeds = computed<boolean>(() => activeTab.value === 'all' || activeTab.value === 'my' || activeTab.value === 'reply')
+const latestReplies = computed<FlashComment[]>(() =>
+  [...localFeeds.value, ...liveFeeds.value]
+    .flatMap((feed: FlashFeed): FlashComment[] => feed.comments)
+    .sort((left: FlashComment, right: FlashComment): number => right.time - left.time)
+    .slice(0, 8)
+)
+const activeUsers = computed<UserSummary[]>(() => {
+  const users: Map<string, UserSummary> = new Map()
+  visibleFeeds.value.forEach((feed: FlashFeed): void => {
+    if (!users.has(feed.nickname)) {
+      users.set(feed.nickname, {
+        nickname: feed.nickname,
+        avatar: feed.avatar || makeAvatar(feed.nickname[0] || '园')
+      })
+    }
+  })
+  if (users.size === 0) {
+    users.set(currentUser.nickname, currentUser)
+  }
+  return Array.from(users.values()).slice(0, 8)
+})
 
-function mockFeed(nickname: string, content: string, minutesAgo: number, comments: FlashComment[] = [], mine: boolean = false): FlashFeed {
-  return createMockFeed(++idSeed, nickname, content, minutesAgo, comments, mine)
+onMounted((): void => {
+  void fetchFeeds()
+})
+
+async function fetchFeeds(): Promise<void> {
+  if (isLoading.value) return
+
+  isLoading.value = true
+  errorMessage.value = ''
+  authRequired.value = false
+  hasNextPage.value = false
+  liveFeeds.value = []
+
+  const sourceType: string = currentTab.value?.sourceType || 'all'
+  const token: string = getFlashToken()
+
+  try {
+    let rows: FlashFeed[] = []
+
+    if (token) {
+      rows = await fetchOpenApiFeeds(sourceType, token)
+    }
+
+    if (!rows.length) {
+      rows = await fetchLegacyFeeds(sourceType)
+    }
+
+    liveFeeds.value = rows
+    hasNextPage.value = rows.length >= FLASH_PAGE_SIZE
+    lastUpdatedAt.value = new Date().toLocaleTimeString('zh-CN', { hour12: false })
+    if (!rows.length) {
+      errorMessage.value = '真实接口返回为空'
+    }
+  } catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : '真实闪存数据请求失败'
+    hasNextPage.value = false
+  } finally {
+    isLoading.value = false
+  }
 }
 
-function mockComment(nickname: string, content: string): FlashComment {
-  return createMockComment(++idSeed, nickname, content)
+async function fetchOpenApiFeeds(sourceType: string, token: string): Promise<FlashFeed[]> {
+  const response: Response = await request(buildFlashOpenApiPath(sourceType, page.value), {
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  if (response.status === 401 || response.status === 403) {
+    authRequired.value = true
+    throw new Error('博客园 OpenAPI 授权无效，请刷新授权后再试')
+  }
+
+  if (!response.ok) {
+    throw new Error(`博客园 OpenAPI 请求失败：${response.status}`)
+  }
+
+  const payload: unknown = await response.json()
+  return parseFlashOpenApiData(payload)
+}
+
+async function fetchLegacyFeeds(sourceType: string): Promise<FlashFeed[]> {
+  const response: Response = await request(buildFlashLegacyPath(sourceType, page.value), {
+    headers: {
+      Accept: 'text/html, */*; q=0.01',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+
+  if (response.status === 401 || response.status === 403) {
+    authRequired.value = true
+    throw new Error('博客园闪存真实接口需要登录态，当前环境没有授权')
+  }
+
+  if (!response.ok) {
+    throw new Error(`博客园闪存请求失败：${response.status}`)
+  }
+
+  const html: string = await response.text()
+  return parseFlashLegacyHtml(html)
 }
 
 function publish(): void {
   const content: string = draft.value.trim()
   if (!content) return
-  feeds.unshift(mockFeed(currentUser.nickname, content + (isPrivate.value ? '（仅自己可见）' : ''), 0, [], true))
+
+  localFeeds.value.unshift(createLocalFeed(`local-${++idSeed}`, currentUser.nickname, content + (isPrivate.value ? '（仅自己可见）' : ''), 0, [], true))
   draft.value = ''
   publishFocus.value = false
 }
 
 function switchTab(key: string): void {
+  if (isLoading.value || activeTab.value === key) return
   activeTab.value = key
   page.value = 1
-  const tab: FeedTab | undefined = tabs.find((t: FeedTab): boolean => t.key === key)
+  const tab: FeedTab | undefined = tabs.find((item: FeedTab): boolean => item.key === key)
   if (tab && tab.badge) tab.badge = 0
+  void fetchFeeds()
+}
+
+function goPage(nextPage: number): void {
+  if (isLoading.value || nextPage < 1) return
+  if (nextPage > page.value && !hasNextPage.value) return
+  page.value = nextPage
+  void fetchFeeds()
 }
 
 function toggleReply(item: FlashFeed): void {
@@ -274,18 +395,19 @@ function toggleReply(item: FlashFeed): void {
 function submitReply(item: FlashFeed): void {
   const content: string = item.replyDraft?.trim()
   if (!content) return
-  item.comments.push({ id: ++idSeed, nickname: currentUser.nickname, content, time: Date.now() })
+  item.comments.push(createLocalComment(`local-comment-${++idSeed}`, currentUser.nickname, content))
   item.replyDraft = ''
   item.replying = false
   item.expanded = true
 }
 
 function removeFeed(item: FlashFeed): void {
-  const idx: number = feeds.indexOf(item)
-  if (idx > -1) feeds.splice(idx, 1)
+  const index: number = localFeeds.value.indexOf(item)
+  if (index > -1) localFeeds.value.splice(index, 1)
 }
 
 function onSearch(): void {
+  if (isLoading.value) return
   page.value = 1
 }
 </script>

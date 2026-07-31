@@ -55,6 +55,26 @@ function buildRecordId(payload: SharePayload): string {
   return payload.id || `${payload.type || 'item'}:${payload.source || 'HOOKSVUE'}:${payload.url || payload.title}`
 }
 
+async function writeClipboardText(text: string): Promise<void> {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  if (typeof document === 'undefined') return
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', 'readonly')
+  textarea.style.position = 'fixed'
+  textarea.style.left = '-9999px'
+  textarea.style.top = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
+}
+
 export function useShareRecords() {
   const shareRecords = ref<Record<string, ShareRecord>>({})
 
@@ -91,7 +111,7 @@ export function useShareRecords() {
 
   const copyShareLink = async (payload: SharePayload): Promise<void> => {
     const record = recordShare(payload)
-    await navigator.clipboard.writeText(record.url)
+    await writeClipboardText(record.url)
     ElMessage({ message: `已复制分享链接：${record.title}`, type: 'success', duration: 1200 })
   }
 
