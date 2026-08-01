@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Untyped Plutus Core with extension .uplc

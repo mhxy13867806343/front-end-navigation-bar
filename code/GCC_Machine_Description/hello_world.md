@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for GCC Machine Description with extension .md

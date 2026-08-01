@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for MoonScript with extension .moon

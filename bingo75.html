@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>75 宾果 · 复刻版</title>
+<link rel="stylesheet" href="css/game-common.css">
+<link rel="stylesheet" href="css/oat.min.css">
+<link rel="stylesheet" href="css/jquery-ui.css">
+<link rel="stylesheet" href="css/bingo75.css">
+</head>
+<body>
+<div id="stage">
+  <!-- 顶部 HUD -->
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo">🎯</span>
+      <span class="title">75 宾果</span>
+      <span class="badge" data-variant="secondary">Sachen 复刻</span>
+    </div>
+    <div class="hud">
+      <span class="badge">第 <b id="hudRound">1</b> 轮</span>
+      <span class="badge" data-variant="success">本金 <b id="hudBank">100</b></span>
+      <span class="badge" data-variant="warning">目标 <b id="hudGoal">400</b></span>
+      <span class="badge" id="hudCombo" style="display:none">连击 ×<b id="hudComboN">1</b></span>
+    </div>
+    <div class="top-actions">
+      <button id="btnAuto" class="small" title="自动取号">▶ 自动</button>
+      <button id="btnMute" class="small" title="静音 (M)">🔊</button>
+      <button id="btnMenu" class="small" title="菜单">☰ 菜单</button>
+    </div>
+  </header>
+
+  <!-- 主体 -->
+  <main id="play">
+    <section id="cardsWrap">
+      <div id="cards"></div>
+      <div id="msg" role="alert" data-variant="info" style="display:none"></div>
+    </section>
+
+    <aside id="side">
+      <div class="card call-card">
+        <h3>最新球号</h3>
+        <div id="lastNum" class="last-num">--</div>
+        <div class="ball-meta"><span id="lastCol" class="badge">-</span><span id="drawnCount" class="badge" data-variant="secondary">0 / 75</span></div>
+      </div>
+
+      <div class="card ctrl-card">
+        <button id="btnDraw" class="draw-btn">抽号 (DRAW)</button>
+        <div class="row-line">
+          <label class="switch-line"><input type="checkbox" id="autoSwitch" role="switch"> 自动取号</label>
+          <button id="btnSettle" class="ghost small" title="锁定当前本金，结束本轮">结算本轮</button>
+        </div>
+        <div class="bank-track">
+          <progress id="goalBar" value="100" max="400"></progress>
+          <span class="bank-hint">距目标 <b id="goalLeft">300</b></span>
+        </div>
+      </div>
+
+      <div class="card board-card">
+        <h3>闪光板 <span class="badge" data-variant="secondary" id="calledPct">0%</span></h3>
+        <div id="flashboard"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ===== jQuery UI 对话框 ===== -->
+
+  <!-- 标题 / 开始 -->
+  <div id="titleDialog" title="75 宾果 · 复刻版">
+    <p class="sub">经典 Sachen《75宾果》网页复刻。选好牌数，靠连线赢取本金，攒到目标即胜！</p>
+    <div class="field">
+      <label>本局扑克牌数（每张下注 <b id="betLabel">10</b> 币）</label>
+      <menu class="buttons card-pick" id="cardPick">
+        <button class="pick" data-n="1">1 张</button>
+        <button class="pick" data-n="2">2 张</button>
+        <button class="pick selected" data-n="3">3 张</button>
+        <button class="pick" data-n="4">4 张</button>
+      </menu>
+    </div>
+    <div class="rules">
+      <p role="alert" data-variant="success"><b>怎么玩</b>：点「抽号」摇出 1–75 的球，所有牌上相同数字自动点亮。凑成<strong>横/竖/斜/四角/满卡</strong>即派彩，连续出线有连击倍率。75 球抽完或主动「结算本轮」即结算。</p>
+      <p class="muted">本金 <b id="startBank">100</b> ｜ 目标 <b id="goalLabel">400</b> ｜ 本金不足即失败</p>
+    </div>
+    <button id="btnStart" class="primary">开始游戏</button>
+  </div>
+
+  <!-- 结算 -->
+  <div id="settleDialog" title="本轮结算">
+    <table class="settle-table">
+      <tbody>
+        <tr><td>下注（<span id="sCards">3</span> 张）</td><td class="num">-<span id="sBet">30</span></td></tr>
+        <tr><td>连线派彩</td><td class="num success">+<span id="sPay">0</span></td></tr>
+        <tr><td>本轮净收</td><td class="num" id="sNet">-30</td></tr>
+        <tr class="total"><td>当前本金</td><td class="num" id="sBank">100</td></tr>
+      </tbody>
+    </table>
+    <p id="settleNote" class="muted"></p>
+    <button id="btnNext" class="primary">再来一轮</button>
+  </div>
+
+  <!-- 胜利 -->
+  <div id="winDialog" title="🏆 达成目标！">
+    <p class="big">你攒到了 <b id="winBank">400</b> 币，赢下这一局！</p>
+    <p class="muted">用时 <span id="winRounds">?</span> 轮。要不要挑战更高目标？</p>
+    <button id="btnWinAgain" class="primary">再来一局</button>
+  </div>
+
+  <!-- 失败 -->
+  <div id="overDialog" title="💀 本金见底">
+    <p class="big">本金不足以再开一轮，游戏结束。</p>
+    <p class="muted">最高本金曾达 <b id="overBest">?</b>，共坚持 <span id="overRounds">?</span> 轮。</p>
+    <button id="btnOverAgain" class="primary">重新挑战</button>
+  </div>
+</div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/oat.min.js"></script>
+<script src="js/game-audio-helper.js"></script>
+<script src="js/bingo75.js"></script>
+</body>
+</html>

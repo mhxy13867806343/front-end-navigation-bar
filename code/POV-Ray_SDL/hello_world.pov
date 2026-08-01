@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for POV-Ray SDL with extension .pov

@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Opa with extension .opa

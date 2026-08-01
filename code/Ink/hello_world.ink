@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Ink with extension .ink

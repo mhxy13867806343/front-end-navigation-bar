@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for M4Sugar with extension .m4

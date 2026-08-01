@@ -21,17 +21,19 @@
 - 📘 **掘金小册课程**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course](https://mhxy13867806343.github.io/front-end-navigation-bar/#/juejin-course)
 - 🧭 **资讯聚合新页面**：[AI 资源](https://mhxy13867806343.github.io/front-end-navigation-bar/#/ai-xxx/ai-column) / [煎蛋](https://mhxy13867806343.github.io/front-end-navigation-bar/#/jandan) / [TopHub](https://mhxy13867806343.github.io/front-end-navigation-bar/#/tophub) / [IT之家](https://mhxy13867806343.github.io/front-end-navigation-bar/#/ithome) / [虎嗅](https://mhxy13867806343.github.io/front-end-navigation-bar/#/huxiu) / [GitHub 开源聚合](https://mhxy13867806343.github.io/front-end-navigation-bar/#/github) / [记录缓存展示](https://mhxy13867806343.github.io/front-end-navigation-bar/#/records-cache) / [分享记录展示](https://mhxy13867806343.github.io/front-end-navigation-bar/#/share-records)
 - 🗺️ **MapCN 地图可视化展厅**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/mapcn-showcase](https://mhxy13867806343.github.io/front-end-navigation-bar/#/mapcn-showcase)
-- 📊 **AntV 可视化示例展厅 (F2/G6/L7/S2)**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/antv-g6-examples](https://mhxy13867806343.github.io/front-end-navigation-bar/#/antv-g6-examples)
-- 📝 **动态表单设计器 (DyForm)**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/dyform](https://mhxy13867806343.github.io/front-end-navigation-bar/#/dyform)
-- 🎮 **经典 FC 游戏合集**：[https://mhxy13867806343.github.io/front-end-navigation-bar/#/feature](https://mhxy13867806343.github.io/front-end-navigation-bar/#/feature)（1942 / 哆啦A梦 / 黄金太阳 / 雪人兄弟 / 75 宾果 / 激龟快打）
-- 🏠 **主页入口**：[https://mhxy13867806343.github.io/front-end-navigation-bar/](https://mhxy13867806343.github.io/front-end-navigation-bar/)
-
-## ✨ 功能特性
-
+- 📊 **AntV 可视化示例展厅 (F2/G6/L7/S2)**：[https://mhxy13867806343.github.io/front-end-navigati- **📡 HTML5 Broadcast Channel 跨标签页实时同步展厅与新窗口表单编辑器** (`/broadcast-channel`, `/broadcast-channel/editor`)：基于 HTML5 原生 `BroadcastChannel` API 实现同源多标签页解耦通信。在主列表页面（`/broadcast-channel`）点击“新增”与“编辑”在独立新窗口中打开编辑器，提交保存后通过 `postMessage` 向主页面及所有打开窗口实时推流同步状态，并提供实时通信日志追踪。
+- **🧩 Web 组件与库 6 大 Element Plus 导航结构**：包含 `🌲 树形结构` (el-tree 全展开免点击)、`🏷️ 卡片/多方向标签页` (el-tabs 3种卡片风格+4方向位置设置)、`📑 悬停分栏` (分栏+悬停即切)、`🔀 穿梭列表` (无复选框穿梭过滤)、`🎠 走马灯` (el-carousel 悬停轮播) 与 `📂 折叠面板` (el-collapse 多面板全展开)。
+- **⏰ 实时模拟时钟与真实每日问答/语录**：对接 ALAPI/Hitokoto 真实接口拉取每日问答与金句，支持 `user-select: text` 文本框选复制、一键复制到剪贴板与刷新换一换。
 - **🐳 Docker 命令行 (CLI) & 可视化 (GUI) 双方案部署** (`/docker-showcase`)：提供完整生产级 `Dockerfile`、`docker-compose.yml`（命令行快速组网）、`docker-compose.gui.yml`（集成 Portainer CE Web Console 可视化管理面板与容器控制）与 `nginx.conf`，并包含内置 Portainer 操控台模拟器。
 - **💻 全站页面与功能源代码查看 & 0-ms 复制中心** (`/source-code`)：收录全站所有页面与功能（Schedule-X, Motion, Three.js 3D, LocalStorage 缓存模块, DevTools 防护, Version Polling 轮询）的标准 Vue 3 与 TypeScript 源码，支持一键 0-ms 复制到剪贴板。
 - **📅 Schedule-X v4.6 现代日历调度组件** (`/schedule-x`)：支持周/日/月/清单多视图切换、HTML5 跨天卡片按住拖拽排期、双击空白卡片唤起新建对话窗、单击卡片查看详情并修改，支持最多 20 个自定义分类（单分类最多 5 字校验）与 LocalStorage 本地持久化缓存。
 - **⚡ Motion for Vue 50+ 经典动画展厅** (`/motion-showcase`)：全量实现 motion.dev 的 iOS 应用文件夹平滑展开、相机曝光度滑块、3D Coverflow 轮播、拟真打字机、跑马灯与 Apple AI 水波纹等 50+ 款高保真组件。
+- **🗺️ Three.js 3D 中国地图设计器** (`/three-showcase/china-map`)：支持可编辑设计器模式与大屏渲染模式双切，包含 3D 弧线飞线、省份板块下钻、粒子降水系统、GDP 数据柱状图与一键导出 JSON 配置文件。
+- **🛡️ DevTools 开发者工具与源码快捷键防护** (`src/utils/devtoolsProtection.ts`)：拦截 `F12` / `Ctrl+Shift+I` / `Cmd+Option+I` / `Ctrl+U` 等快捷键，并检测浏览器顶部菜单 (`显示 -> 开发者 -> 开发者工具`) 开启状态，友情引导至 0-ms 源码复制中心。
+- **💾 通用 LocalStorage 缓存模块** (`src/utils/storage.ts` & `src/constants/storageKeys.ts`)：封装类型安全的全局本地缓存工具模块，统一声明 key 常量（如 `HOOKSVUE_SCHEDULE_X_EVENTS_V1`），防冲突易维护。
+- **🔐 100 万款登录注册 UI 展厅** (`/auth-showcase`)：位于顶栏「🧩 Web组件与库」下拉菜单中！支持 100 万款（50万登录 + 50万注册）交互界面，包含毛玻璃、暗黑极客、Oat UI 极简、赛博朋克、macOS Tahoe 磨砂窗、移动 H5、企业 SaaS、电竞极光、马卡龙与新拟物 3D 等 50 大主题场景，支持 6 位数 ID 精确定位、2,000 页平滑翻页（一页 10 项）与登录/注册模式切变。
+- **🛒 100 款购物车 UI 展厅** (`/cart-showcase`)：位于顶栏「🧩 Web组件与库」下拉菜单中！提供 100 款绝不重复的购物车界面与 10 大独家 UI 容器 layout（毛玻璃悬浮、3D 新拟物按压、赛博霓虹电竞、B2B 阶梯价表格、移动 H5 吸底框、macOS 窗口），支持商品数量增减、优惠券抵扣 (核销 `OATVIP` 享 85 折)、全选汇总与实时订单结算。
+- **✨ 63,353 款 CSS/JS 动画特效展厅** (`/animation-showcase`)：位于顶栏「🧩 Web组件与库」下拉菜单中！包含 63,353 款绝无重复的前端 CSS/JS 动态特效（20 大分类），提供真实 Keyframe 动画预览 Canvas 舞台、播放/暂停/0.5x~2.0x 倍速调控，以及一键复制完整 CSS/JS Keyframes 代码。��夹平滑展开、相机曝光度滑块、3D Coverflow 轮播、拟真打字机、跑马灯与 Apple AI 水波纹等 50+ 款高保真组件。
 - **🗺️ Three.js 3D 中国地图设计器** (`/three-showcase/china-map`)：支持可编辑设计器模式与大屏渲染模式双切，包含 3D 弧线飞线、省份板块下钻、粒子降水系统、GDP 数据柱状图与一键导出 JSON 配置文件。
 - **🛡️ DevTools 开发者工具与源码快捷键防护** (`src/utils/devtoolsProtection.ts`)：拦截 `F12` / `Ctrl+Shift+I` / `Cmd+Option+I` / `Ctrl+U` 等快捷键，并检测浏览器顶部菜单 (`显示 -> 开发者 -> 开发者工具`) 开启状态，友情引导至 0-ms 源码复制中心。
 - **💾 通用 LocalStorage 缓存模块** (`src/utils/storage.ts` & `src/constants/storageKeys.ts`)：封装类型安全的全局本地缓存工具模块，统一声明 key 常量（如 `HOOKSVUE_SCHEDULE_X_EVENTS_V1`），防冲突易维护。

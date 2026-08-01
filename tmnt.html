@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>激龟快打 · TMNT FTG</title>
+  <link rel="stylesheet" href="css/game-common.css" />
+  <link rel="stylesheet" href="css/oat.min.css" />
+  <link rel="stylesheet" href="css/jquery-ui.css" />
+  <link rel="stylesheet" href="css/tmnt.css" />
+</head>
+<body>
+  <div id="app" class="card">
+    <header class="topbar">
+      <span class="badge brand">🐢 激龟快打</span>
+      <div class="topbar-right">
+        <span class="badge" id="hiScore">最高分 0</span>
+        <button class="ghost-btn" id="btnPause" title="暂停 (Esc)">⏸ 暂停</button>
+      </div>
+    </header>
+
+    <!-- HUD：双方血条 / 回合 / 计时 / 连击 -->
+    <div id="hud" aria-hidden="false">
+      <div class="hud-side left">
+        <div class="fighter-name" id="p1Name">玩家</div>
+        <div class="hp-track"><div class="hp-fill" id="p1Hp"></div><div class="hp-ghost" id="p1HpGhost"></div></div>
+        <div class="round-pips" id="p1Pips"></div>
+      </div>
+
+      <div class="hud-center">
+        <div class="timer" id="timer">99</div>
+        <div class="combo" id="combo"></div>
+      </div>
+
+      <div class="hud-side right">
+        <div class="fighter-name" id="p2Name">电脑</div>
+        <div class="hp-track"><div class="hp-fill enemy" id="p2Hp"></div><div class="hp-ghost" id="p2HpGhost"></div></div>
+        <div class="round-pips" id="p2Pips"></div>
+      </div>
+    </div>
+
+    <!-- 战斗舞台 -->
+    <div id="stageWrap">
+      <canvas id="stage" width="800" height="450"></canvas>
+      <div id="roundBanner" class="round-banner"></div>
+    </div>
+
+    <!-- 移动端虚拟方向键（仅在触屏显示） -->
+    <div id="touchControls" class="touch-controls" aria-hidden="true">
+      <div class="dpad">
+        <button class="tbtn tup"    data-key="up">▲</button>
+        <button class="tbtn tleft"  data-key="left">◀</button>
+        <button class="tbtn tdown"  data-key="down">▼</button>
+        <button class="tbtn tright" data-key="right">▶</button>
+      </div>
+      <div class="actions">
+        <button class="tbtn act punch" data-key="punch">拳<br><small>J</small></button>
+        <button class="tbtn act kick"  data-key="kick">踢<br><small>K</small></button>
+        <button class="tbtn act special" data-key="special">必杀<br><small>L</small></button>
+        <button class="tbtn act throw"  data-key="throw">投<br><small>U</small></button>
+      </div>
+    </div>
+
+    <p class="hint">PC：方向键/WASD 移动 · J 拳 · K 踢 · L 必杀 · U 投技 · 按住"后"防御 · Esc 暂停 ｜ 移动端：下方出现方向图标</p>
+  </div>
+
+  <!-- 标题对话框 (jQuery UI) -->
+  <div id="dlgTitle" title="激龟快打 TMNT" class="oat-dialog">
+    <p class="dlg-lead">忍者神龟 1v1 对战格斗。选一只龟，把对手揍趴下！</p>
+    <div class="dlg-row">
+      <button class="primary-btn" id="btnStart">▶ 开始游戏</button>
+      <button class="ghost-btn" id="btnHowto">操作说明</button>
+    </div>
+    <div id="howto" class="howto hidden">
+      <ul>
+        <li><b>移动</b>：方向键 / WASD，→→ 双击前冲刺</li>
+        <li><b>跳</b>：↑ / W</li>
+        <li><b>拳 J</b> 快而短 · <b>踢 K</b> 长而重 · 连按出二段</li>
+        <li><b>必杀 L</b> 发射投射物收尾</li>
+        <li><b>投技 U</b> 贴身无视防御重摔</li>
+        <li><b>防御</b>：按住背对对手的方向（移动端 BLOCK 即"后"）</li>
+        <li>先胜 <b>2 回合</b> 赢下比赛，计时归零血多者胜</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 选人对话框 (jQuery UI) -->
+  <div id="dlgSelect" title="选择你的龟" class="oat-dialog hidden">
+    <div id="charGrid" class="char-grid"></div>
+    <p class="dlg-note">对手将由电脑随机选派。点击卡片选定即开战。</p>
+  </div>
+
+  <!-- 暂停对话框 (jQuery UI) -->
+  <div id="dlgPause" title="已暂停" class="oat-dialog hidden">
+    <div class="dlg-row">
+      <button class="primary-btn" id="btnResume">▶ 继续</button>
+      <button class="ghost-btn" id="btnQuit">退出到标题</button>
+    </div>
+  </div>
+
+  <!-- 结算对话框 (jQuery UI) -->
+  <div id="dlgResult" title="比赛结束" class="oat-dialog hidden">
+    <p id="resultText" class="dlg-lead"></p>
+    <div class="dlg-row">
+      <button class="primary-btn" id="btnAgain">🔁 再来一局</button>
+      <button class="ghost-btn" id="btnHome">返回标题</button>
+    </div>
+  </div>
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/jquery-ui.min.js"></script>
+  <script src="js/oat.min.js"></script>
+  <script src="js/game-audio-helper.js"></script>
+  <script src="js/tmnt.js"></script>
+</body>
+</html>

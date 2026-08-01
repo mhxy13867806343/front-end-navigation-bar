@@ -1,6 +1,6 @@
 <template>
   <div class="clock-wrapper">
-    <div class="clock" @click="showDialog = true" :title="formattedTime">
+    <div class="clock" @click="openClockDialog" :title="formattedTime">
       <div class="outer-clock-face">
         <div class="marking marking-one"></div>
         <div class="marking marking-two"></div>
@@ -17,7 +17,7 @@
     <el-dialog
       v-model="showDialog"
       title="当前时间"
-      width="300px"
+      width="340px"
       append-to-body
       align-center
       draggable
@@ -43,9 +43,40 @@
           </div>
         </div>
         <div class="time-text">{{ formattedTime }}</div>
-        <div class="time-greeting">
-          <span class="time-period">{{ timePeriod }}</span>
-          <span class="time-message">{{ timeMessage }}</span>
+
+        <!-- 真实接口数据/每日问答 卡片 (支持选中文本复制与一键复制) -->
+        <div class="time-greeting-card">
+          <div class="greeting-header">
+            <span class="greeting-tag">{{ dailyQuestion.tag }}</span>
+            <div class="greeting-actions">
+              <button
+                type="button"
+                class="action-btn"
+                @click="fetchRealDailyData"
+                :disabled="isFetchingDaily"
+                title="刷新数据"
+              >
+                {{ isFetchingDaily ? '⏳' : '🔄' }}
+              </button>
+              <button
+                type="button"
+                class="action-btn copy-btn"
+                @click="copyDailyText"
+                title="复制文本内容"
+              >
+                📋 复制
+              </button>
+            </div>
+          </div>
+
+          <div class="greeting-body-selectable" title="选中文字即可直接复制">
+            {{ dailyQuestion.fullText }}
+          </div>
+
+          <div class="time-period-row">
+            <span class="time-period">{{ timePeriod }}</span>
+            <span class="time-message">{{ timeMessage }}</span>
+          </div>
         </div>
       </div>
     </el-dialog>
@@ -66,14 +97,24 @@
           <span class="menu-icon">📋</span>
           <span>复制时间</span>
         </button>
+        <button class="clock-context-menu-item" type="button" @click="copyDailyText">
+          <span class="menu-icon">💬</span>
+          <span>复制问答语录</span>
+        </button>
       </div>
     </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { ElDialog, ElMessage } from 'element-plus'
+import axios from 'axios'
 
-import { ElDialog } from 'element-plus'
+interface DailyQuestionData {
+  tag: string
+  fullText: string
+}
 
 const showDialog = ref<boolean>(false)
 const hourHandStyle = ref<Record<string, string>>({})
@@ -88,6 +129,66 @@ const clockContextMenuStyle = ref<Record<string, string>>({
   left: '0px',
   top: '0px'
 })
+
+const isFetchingDaily = ref<boolean>(false)
+const dailyQuestion = ref<DailyQuestionData>({
+  tag: '❓ 每日问答',
+  fullText: '你现在在哪座城市生活，你最喜欢这个城市的什么？ —— 小时候总是习惯性把去市区称作“去上海”。'
+})
+
+const fetchRealDailyData = async (): Promise<void> => {
+  isFetchingDaily.value = true
+  try {
+    const res = await axios.get('https://v2.alapi.cn/api/one/question', {
+      params: { token: '6g9l63xX7T6GjM2s' }
+    })
+    if (res.data?.data) {
+      const q = res.data.data
+      const title: string = q.title || '你现在在哪座城市生活，你最喜欢这个城市的什么？'
+      const sub: string = q.subtitle || q.content || '小时候总是习惯性把去市区称作“去上海”。'
+      dailyQuestion.value = {
+        tag: '❓ 每日问答',
+        fullText: `${title} —— ${sub}`
+      }
+      return
+    }
+  } catch {
+    // Failover to Hitokoto if ALAPI unavailable
+  }
+
+  try {
+    const hitokotoRes = await axios.get('https://v1.hitokoto.cn/')
+    if (hitokotoRes.data?.hitokoto) {
+      const h = hitokotoRes.data
+      const fromText: string = h.from ? `—— 《${h.from}》` : ''
+      dailyQuestion.value = {
+        tag: '💬 每日一言',
+        fullText: `${h.hitokoto} ${fromText}`.trim()
+      }
+    }
+  } catch {
+    // Keep default content
+  } finally {
+    isFetchingDaily.value = false
+  }
+}
+
+const copyDailyText = async (): Promise<void> => {
+  try {
+    await navigator.clipboard.writeText(dailyQuestion.value.fullText)
+    ElMessage.success('已复制每日问答文本到剪贴板！')
+  } catch {
+    ElMessage.info('文本已允许自由选择，请手动框选复制。')
+  } finally {
+    hideClockContextMenu()
+  }
+}
+
+const openClockDialog = (): void => {
+  showDialog.value = true
+  fetchRealDailyData()
+}
+
 let animationFrameId: number | null = null
 let lastUpdateTime: number = 0
 
@@ -125,7 +226,7 @@ const hideClockContextMenu = (): void => {
 
 const openClockContextMenu = (event: MouseEvent): void => {
   const menuWidth = 176
-  const menuHeight = 104
+  const menuHeight = 140
   const left = Math.min(event.clientX, window.innerWidth - menuWidth - 8)
   const top = Math.min(event.clientY, window.innerHeight - menuHeight - 8)
 
@@ -146,15 +247,15 @@ const copyClockTime = async (): Promise<void> => {
 
   try {
     await navigator.clipboard?.writeText(text)
+    ElMessage.success('已复制当前时间到剪贴板！')
   } catch {
-    // Clipboard access can be unavailable in non-secure contexts.
+    // Clipboard access fallback
   } finally {
     hideClockContextMenu()
   }
 }
 
 const updateClock = (timestamp: number): void => {
-  // 控制更新频率为每秒一次
   if (timestamp - lastUpdateTime >= 1000 / 60) {
     const now: Date = new Date()
     const seconds: number = now.getSeconds()
@@ -162,14 +263,13 @@ const updateClock = (timestamp: number): void => {
     const hours: number = now.getHours()
     const milliseconds: number = now.getMilliseconds()
 
-    // 更流畅的指针动画，考虑毫秒
     const secondsDegrees: number = ((seconds + milliseconds / 1000) / 60) * 360 + 90
     const minutesDegrees: number = ((minutes + seconds / 60) / 60) * 360 + 90
     const hoursDegrees: number = ((hours % 12 + minutes / 60) / 12) * 360 + 90
 
     secondHandStyle.value = {
       transform: `rotate(${secondsDegrees}deg)`,
-      transition: 'none' // 移除过渡效果以实现平滑动画
+      transition: 'none'
     }
     minuteHandStyle.value = {
       transform: `rotate(${minutesDegrees}deg)`,
@@ -180,7 +280,6 @@ const updateClock = (timestamp: number): void => {
       transition: 'none'
     }
 
-    // 更新时间和日期文本
     formattedTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
     const greeting = getTimeGreeting(hours)
     timePeriod.value = greeting.period
@@ -194,7 +293,6 @@ const updateClock = (timestamp: number): void => {
     lastUpdateTime = timestamp
   }
 
-  // 继续动画循环
   animationFrameId = requestAnimationFrame(updateClock)
 }
 

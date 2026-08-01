@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Game Maker Language with extension .gml

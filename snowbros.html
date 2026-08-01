@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>雪人兄弟 Snow Bros 复刻</title>
+<style>
+  html,body{margin:0;height:100%;background:#0b1020;display:flex;align-items:center;justify-content:center;
+    font-family:'Courier New',monospace;overflow:hidden;color:#cfe}
+  #wrap{position:relative}
+  canvas{background:#101830;image-rendering:pixelated;box-shadow:0 0 30px rgba(0,0,0,.6);
+    border-radius:6px;max-width:97vw;max-height:97vh;touch-action:none}
+  #hint{position:absolute;left:0;right:0;bottom:-26px;text-align:center;font-size:12px;color:#7a89b0}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="800" height="600"></canvas>
+  <div id="hint">P1: WASD移动 J喷雪 K跳 ｜ P2: 方向键移动 .喷雪 /跳 ｜ 菜单点击或按 1/2 开始</div>
+</div>
+<script>
+"use strict";
+const cv = document.getElementById('game');
+const ctx = cv.getContext('2d');
+const W = 800, H = 600;
+
+// ---------------- CONFIG (初始假设, playtest 后调) ----------------
+const CFG = {
+  GRAVITY: 0.6,
+  MOVE: 3.2,
+  JUMP: -11,
+  BOUNCE: -13.5,
+  FREEZE_FULL: 100,
+  FREEZE_RATE: 3,
+  SPRAY_SPEED: 6,
+  PUSH_SPEED: 6,
+  FRICTION: 0.92,
+  MELT_FRAMES: 240,        // [PLACEHOLDER] 约 4s
+  ROLL_KILL_MIN_VX: 2.5,
+  PLAYER_W: 26, PLAYER_H: 34,
+  BALL_R: 18,
+  ENEMY_W: 28, ENEMY_H: 28,
+  ENEMY_SPEED: 1.2,
+  POTION_CHANCE: 0.7,      // [PLACEHOLDER]
+  POTION_DUR: 480,         // [PLACEHOLDER] 约 8s
+  INVULN: 72,
+  BOSS_HP: 10,             // [PLACEHOLDER]
+  BOSS_SHOOT: 150,
+  COMBO_BASE: 100,
+  LIVES: 3,
+};
+
+// ---------------- INPUT ----------------
+const B = {
+  p1: { left:'KeyA', right:'KeyD', up:'KeyW', down:'KeyS', shoot:'KeyJ', jump:'KeyK' },
+  p2: { left:'ArrowLeft', right:'ArrowRight', up:'ArrowUp', down:'ArrowDown', shoot:'Period', jump:'Slash' }
+};
+const keys = {};
+let prev = {};
+const PREVENT = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Slash','Period','KeyW','KeyA','KeyS','KeyD','KeyJ','KeyK'];
+window.addEventListener('keydown', e=>{
+  keys[e.code]=true;
+  if(PREVENT.includes(e.code)) e.preventDefault();
+  ac().resume && ac().resume();
+  handleMenuKey(e.code);
+});
+window.addEventListener('keyup', e=>{ keys[e.code]=false; });
+function justPressed(code){ return keys[code] && !prev[code]; }
+
+// audio
+let actx=null;
+function ac(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return actx; }
+function beep(freq,dur,type,vol){
+  try{ const a=ac(); if(!a) return; const o=a.createOscillator(); const g=a.createGain();
+    o.type=type||'square'; o.frequency.value=freq; g.gain.value=vol||0.05;
+    o.connect(g); g.connect(a.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime+dur);
+    o.stop(a.currentTime+dur);
+  }catch(e){}
+}
+function sfxJump(){ beep(520,0.12,'square',0.04); }
+function sfxFreeze(){ beep(300,0.10,'sawtooth',0.05); beep(700,0.10,'sine',0.03); }
+function sfxBounce(){ beep(660,0.10,'square',0.04); }
+function sfxKill(){ beep(200,0.12,'square',0.05); beep(120,0.16,'triangle',0.04); }
+function sfxHurt(){ beep(140,0.25,'sawtooth',0.06); }
+function sfxBossHit(){ beep(180,0.18,'square',0.06); beep(90,0.22,'triangle',0.05); }
+function sfxShoot(){ beep(420,0.08,'square',0.03); }
+function sfxPotion(){ beep(880,0.10,'sine',0.04); beep(1180,0.10,'sine',0.03); }
+function sfxClear(){ beep(660,0.12,'square',0.05); setTimeout(()=>beep(880,0.14,'square',0.05),120); setTimeout(()=>beep(1100,0.18,'square',0.05),260); }
+
+// ---------------- STATE ----------------
+let state='MENU'; // MENU, PLAY, OVER, WIN
+let mode=1;
+let level=1;
+let score=0;
+let hiScore=+(localStorage.getItem('snowbros_hi')||0);
+let players=[], enemies=[], balls=[], potions=[], sprays=[], bossBullets=[], particles=[];
+let platforms=[], door=null, boss=null;
+let combo=0, comboTimer=0, shake=0, menuSel=0;
+
+const ENEMY_COLORS=['#e74c3c','#9b59b6','#16a085','#e67e22','#f1c40f','#1ab0c4'];
+function pickEnemyColor(){ return ENEMY_COLORS[(Math.random()*ENEMY_COLORS.length)|0]; }
+function pickPotion(){ const t=['speed','freeze','range','score']; return t[(Math.random()*t.length)|0]; }
+
+// ---------------- ENTITIES ----------------
+function makePlayer(idx,x,y,color){
+  return { idx, x, y, vx:0, vy:0, w:CFG.PLAYER_W, h:CFG.PLAYER_H,
+    onGround:false, facing:1, alive:true, lives:CFG.LIVES, invuln:0,
+    shootHold:false, buffs:{speed:0,freeze:0,range:0},
+    color, controls: idx===0?B.p1:B.p2, spawnX:x, spawnY:y };
+}
+function makeBoss(x,y){
+  return { x, y, w:64, h:64, vx:0, vy:0, dir:-1, speed:1.0, freeze:0,
+    hp:CFG.BOSS_HP, maxhp:CFG.BOSS_HP, alive:true, shootTimer:CFG.BOSS_SHOOT,
+    kind:'boss', color:'#c0392b', hitFlash:0 };
+}
+
+// ---------------- LEVELS ----------------
+function buildLevel(n){
+  platforms=[]; enemies=[]; balls=[]; potions=[]; sprays=[]; bossBullets=[]; particles=[]; boss=null;
+  platforms.push({x:0,y:568,w:800,h:32});
+  if(n===1){
+    // 楼梯式布局，清场后无雪球也能逐层跳上门
+    platforms.push({x:60,y:500,w:160});
+    platforms.push({x:230,y:440,w:160});
+    platforms.push({x:410,y:380,w:160});
+    platforms.push({x:590,y:320,w:170});
+    spawnEnemyOn(platforms[1]); spawnEnemyOn(platforms[2]);
+    spawnEnemyOn(platforms[3]); spawnEnemyOn(platforms[4]);
+    spawnEnemyOn(platforms[0],420);
+    door={x:690,y:320-46,w:34,h:46,active:false};
+  } else if(n===2){
+    platforms.push({x:50,y:500,w:160});
+    platforms.push({x:230,y:440,w:160});
+    platforms.push({x:410,y:380,w:160});
+    platforms.push({x:590,y:320,w:170});
+    spawnEnemyOn(platforms[1]); spawnEnemyOn(platforms[2]); spawnEnemyOn(platforms[3]);
+    spawnEnemyOn(platforms[4]); spawnEnemyOn(platforms[0],300); spawnEnemyOn(platforms[0],700);
+    door={x:690,y:320-46,w:34,h:46,active:false};
+  } else {
+    // Boss 关：左右楼梯上到中央平台，Boss 被限制在中央平台
+    platforms.push({x:60,y:500,w:180});
+    platforms.push({x:560,y:500,w:180});
+    const bossPlat={x:310,y:380,w:180};
+    platforms.push(bossPlat);
+    spawnEnemyOn(platforms[1]); spawnEnemyOn(platforms[2]); spawnEnemyOn(platforms[0],400);
+    boss=makeBoss(368,316); boss.plat=bossPlat;
+    door=null;
+  }
+}
+function spawnEnemyOn(plat,x){
+  const px = x!==undefined ? x : plat.x+20+Math.random()*(plat.w-40);
+  enemies.push({ x:px, y:plat.y-CFG.ENEMY_H, w:CFG.ENEMY_W, h:CFG.ENEMY_H,
+    vx:0, vy:0, dir: Math.random()<0.5?-1:1, speed:CFG.ENEMY_SPEED*(0.85+Math.random()*0.4),
+    freeze:0, plat, alive:true, kind:'mob', color:pickEnemyColor(), hitFlash:0 });
+}
+
+// ---------------- HELPERS ----------------
+function aabbBox(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
+function aabbCircle(c,box){
+  const nx=Math.max(box.x,Math.min(c.x,box.x+box.w));
+  const ny=Math.max(box.y,Math.min(c.y,box.y+box.h));
+  return (c.x-nx)*(c.x-nx)+(c.y-ny)*(c.y-ny) < c.r*c.r;
+}
+function burst(x,y,color,n){
+  for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, s=1+Math.random()*3;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:20+Math.random()*15,color}); }
+}
+
+// ---------------- PLAYER ----------------
+function updatePlayer(p){
+  if(!p.alive) return;
+  const c=p.controls;
+  let move=0;
+  if(keys[c.left]) move=-1;
+  if(keys[c.right]) move=1;
+  const spd = CFG.MOVE * (p.buffs.speed>0?1.5:1) * (p.shootHold?0.5:1);
+  p.vx = move*spd;
+  if(move!==0) p.facing=move;
+  if(justPressed(c.jump) && p.onGround){ p.vy=CFG.JUMP; p.onGround=false; sfxJump(); }
+  p.vy += CFG.GRAVITY; if(p.vy>14) p.vy=14;
+  p.x += p.vx; p.y += p.vy;
+  if(p.x<0) p.x=0; if(p.x+p.w>W) p.x=W-p.w;
+  // platform landing (one-way, drop through with Down)
+  p.onGround=false;
+  for(const pl of platforms){
+    if(p.vy>=0){
+      const top=pl.y, prevBottom=(p.y-p.vy)+p.h;
+      if(p.x+p.w>pl.x && p.x<pl.x+pl.w && prevBottom<=top+1 && p.y+p.h>=top){
+        if(!(keys[c.down] && p.vy>=0)){ p.y=top-p.h; p.vy=0; p.onGround=true; }
+      }
+    }
+  }
+  // stomp balls (bounce)
+  if(p.vy>0){
+    for(const b of balls){
+      if(b.dead) continue;
+      if(p.x+p.w>b.x-b.r && p.x<b.x+b.r){
+        const top=b.y-b.r, prevBottom=(p.y-p.vy)+p.h;
+        if(prevBottom<=top+8 && p.y+p.h>=top){
+          p.y=top-p.h; p.vy=CFG.BOUNCE; p.onGround=false; sfxBounce();
+          burst(b.x,top,'#ffffff',6);
+        }
+      }
+    }
+  }
+  // push balls
+  for(const b of balls){
+    if(b.dead) continue;
+    const bx={x:b.x-b.r,y:b.y-b.r,w:2*b.r,h:2*b.r};
+    if(aabbBox(p,bx)){
+      if(p.vx>0.2 && b.x<p.x+p.w/2){ b.vx=p.vx*1.6; b.pushGrace=18; }
+      else if(p.vx<-0.2 && b.x>p.x+p.w/2){ b.vx=p.vx*1.6; b.pushGrace=18; }
+    }
+  }
+  // spray
+  p.shootHold = keys[c.shoot];
+  if(p.shootHold) emitSpray(p);
+  // buffs / invuln
+  for(const k in p.buffs){ if(p.buffs[k]>0) p.buffs[k]--; }
+  if(p.invuln>0) p.invuln--;
+}
+function emitSpray(p){
+  const rate = p.buffs.freeze>0 ? CFG.FREEZE_RATE*2 : CFG.FREEZE_RATE;
+  const cx = p.facing>0 ? p.x+p.w : p.x;
+  const cy = p.y+p.h*0.42;
+  const range = p.buffs.range>0 ? 165 : 115;
+  // enemies
+  for(const e of enemies){
+    if(e.freeze>=CFG.FREEZE_FULL) continue;
+    const ex=e.x+e.w/2, ey=e.y+e.h/2, dx=ex-cx, dy=ey-cy;
+    if((Math.sign(dx)===p.facing || Math.abs(dx)<10) && Math.abs(dy)<60){
+      const dist=Math.hypot(dx,dy);
+      if(dist<range){
+        const ang=Math.atan2(dy,dx), fa=p.facing>0?0:Math.PI;
+        let diff=Math.abs(ang-fa); if(diff>Math.PI) diff=2*Math.PI-diff;
+        if(diff<0.95){ e.freeze+=rate; e.hitFlash=4; if(e.freeze>=CFG.FREEZE_FULL) freezeToBall(e); }
+      }
+    }
+  }
+  // boss freeze
+  if(boss && boss.alive && boss.freeze<CFG.FREEZE_FULL){
+    const ex=boss.x+boss.w/2, ey=boss.y+boss.h/2, dx=ex-cx, dy=ey-cy;
+    if((Math.sign(dx)===p.facing || Math.abs(dx)<10) && Math.abs(dy)<70){
+      const dist=Math.hypot(dx,dy);
+      if(dist<range+10){
+        const ang=Math.atan2(dy,dx), fa=p.facing>0?0:Math.PI;
+        let diff=Math.abs(ang-fa); if(diff>Math.PI) diff=2*Math.PI-diff;
+        if(diff<1.05){ boss.freeze+=rate*0.55; boss.hitFlash=4; }
+      }
+    }
+  }
+  sprays.push({x:cx,y:cy,vx:p.facing*(CFG.SPRAY_SPEED+Math.random()*2),vy:(Math.random()-0.5)*2,life:14});
+}
+function freezeToBall(e){
+  e.alive=false;
+  balls.push({x:e.x+e.w/2,y:e.y+e.h/2,vx:0,vy:0,r:CFG.BALL_R,
+    melt:CFG.MELT_FRAMES, owner:e.color, dead:false, pushGrace:0});
+  if(Math.random()<CFG.POTION_CHANCE)
+    potions.push({x:e.x+e.w/2,y:e.y-14,vy:-0.6,r:11,type:pickPotion(),life:600,dead:false});
+  sfxFreeze(); burst(e.x+e.w/2,e.y+e.h/2,'#bfe9ff',10);
+}
+
+// ---------------- ENEMY ----------------
+function updateEnemy(e){
+  if(!e.alive) return;
+  if(e.hitFlash>0) e.hitFlash--;
+  e.x += e.dir*e.speed;
+  const left=e.plat.x+e.w/2, right=e.plat.x+e.plat.w-e.w/2;
+  if(e.x<left){ e.x=left; e.dir=1; }
+  if(e.x>right){ e.x=right; e.dir=-1; }
+  for(const p of players){ if(p.alive && p.invuln===0 && aabbBox(p,e)) hurtPlayer(p); }
+}
+
+// ---------------- BALL ----------------
+function updateBall(b){
+  if(b.pushGrace>0) b.pushGrace--;
+  b.vy += CFG.GRAVITY; if(b.vy>14) b.vy=14;
+  b.x += b.vx; b.y += b.vy;
+  let grounded=false;
+  for(const pl of platforms){
+    if(b.vy>=0){
+      const top=pl.y, prevBottom=(b.y-b.vy)+b.r;
+      if(b.x+b.r>pl.x && b.x-b.r<pl.x+pl.w && prevBottom<=top+2 && b.y+b.r>=top){
+        b.y=top-b.r; b.vy=0; grounded=true;
+      }
+    }
+  }
+  if(grounded){ b.vx*=CFG.FRICTION; if(Math.abs(b.vx)<0.15) b.vx=0; }
+  if(Math.abs(b.vx)<0.5){
+    b.melt--; if(b.melt<=0){ revive(b); return; }
+  }
+  if(Math.abs(b.vx)>CFG.ROLL_KILL_MIN_VX){
+    for(const e of enemies){ if(e.alive && aabbCircle(b,e)) killEnemy(e); }
+  }
+  for(const p of players){
+    if(p.alive && p.invuln===0 && Math.abs(b.vx)>CFG.ROLL_KILL_MIN_VX && b.pushGrace<=0 && aabbCircle(b,p))
+      hurtPlayer(p);
+  }
+}
+function revive(b){
+  let pl=null;
+  for(const p of platforms){ if(b.x>p.x-10 && b.x<p.x+p.w+10 && Math.abs(p.y-(b.y+b.r))<22){ pl=p; break; } }
+  if(!pl) pl=platforms[0];
+  enemies.push({ x:b.x-CFG.ENEMY_W/2, y:(pl?pl.y:568)-CFG.ENEMY_H, w:CFG.ENEMY_W, h:CFG.ENEMY_H,
+    vx:0, vy:0, dir:Math.random()<0.5?-1:1, speed:CFG.ENEMY_SPEED, freeze:0, plat:pl,
+    alive:true, kind:'mob', color:b.owner, hitFlash:0 });
+  b.dead=true;
+}
+function killEnemy(e){
+  if(!e.alive) return;
+  e.alive=false; combo++; comboTimer=120; score+=CFG.COMBO_BASE*combo;
+  sfxKill(); burst(e.x+e.w/2,e.y+e.h/2,e.color,12);
+}
+
+// ---------------- BOSS ----------------
+function updateBoss(b){
+  if(!b.alive) return;
+  if(b.hitFlash>0) b.hitFlash--;
+  if(b.freeze>=CFG.FREEZE_FULL){
+    for(const p of players){
+      if(p.alive && p.vy>0){
+        const top=b.y, prevBottom=(p.y-p.vy)+p.h;
+        if(p.x+p.w>b.x && p.x<b.x+b.w && prevBottom<=top+8 && p.y+p.h>=top){
+          p.y=top-p.h; p.vy=CFG.BOUNCE; b.hp--; b.freeze=0;
+          sfxBossHit(); burst(b.x+b.w/2,b.y,'#fff2a0',14);
+          if(b.hp<=0){ b.alive=false; score+=5000; burst(b.x+b.w/2,b.y+b.h/2,'#ffd',20); }
+        }
+      }
+    }
+    return;
+  }
+  b.x += b.dir*b.speed;
+  if(b.plat){
+    const left=b.plat.x+10, right=b.plat.x+b.plat.w-b.w-10;
+    if(b.x<left){ b.x=left; b.dir=1; }
+    if(b.x>right){ b.x=right; b.dir=-1; }
+  }
+  b.vy += CFG.GRAVITY; if(b.vy>12) b.vy=12; b.y += b.vy;
+  if(b.plat && b.vy>=0){ const top=b.plat.y, pb=(b.y-b.vy)+b.h;
+    if(b.x+b.w>b.plat.x && b.x<b.plat.x+b.plat.w && pb<=top+2 && b.y+b.h>=top){ b.y=top-b.h; b.vy=0; } }
+  else if(!b.plat && b.y+b.h>H-20){ b.y=H-20-b.h; b.vy=0; }
+  b.shootTimer--;
+  if(b.shootTimer<=0){
+    b.shootTimer=CFG.BOSS_SHOOT;
+    let target=null, bd=1e9;
+    for(const p of players){ if(!p.alive) continue; const d=Math.hypot(p.x-b.x,p.y-b.y); if(d<bd){ bd=d; target=p; } }
+    if(target){ const ang=Math.atan2(target.y-(b.y+b.h/2), target.x-(b.x+b.w/2));
+      bossBullets.push({x:b.x+b.w/2,y:b.y+b.h/2,vx:Math.cos(ang)*4,vy:Math.sin(ang)*4,r:7,life:220}); }
+    sfxShoot();
+  }
+  for(const p of players){ if(p.alive && p.invuln===0 && aabbBox(p,b)) hurtPlayer(p); }
+}
+
+// ---------------- POTION ----------------
+function updatePotion(pt){
+  pt.life--; pt.y+=pt.vy; pt.vy+=0.02; if(pt.vy>0.6) pt.vy=0.6;
+  if(pt.y<90){ pt.y=90; pt.vy=0.2; }
+  for(const p of players){
+    if(p.alive && Math.hypot((p.x+p.w/2)-pt.x,(p.y+p.h/2)-pt.y) < pt.r+16){
+      applyPotion(p,pt.type); pt.dead=true;
+    }
+  }
+}
+function applyPotion(p,type){
+  if(type==='speed') p.buffs.speed=CFG.POTION_DUR;
+  else if(type==='freeze') p.buffs.freeze=CFG.POTION_DUR;
+  else if(type==='range') p.buffs.range=CFG.POTION_DUR;
+  else if(type==='score') score+=500;
+  sfxPotion(); burst(p.x+p.w/2,p.y,'#aef',10);
+}
+
+// ---------------- PLAYER DAMAGE / FLOW ----------------
+function hurtPlayer(p){
+  if(p.invuln>0 || !p.alive) return;
+  p.lives--; p.invuln=CFG.INVULN; combo=0; comboTimer=0;
+  p.vy=-7; p.vx = p.x<W/2 ? 4 : -4;
+  sfxHurt(); shake=10; burst(p.x+p.w/2,p.y,'#fff',8);
+  if(p.lives<=0) p.alive=false;
+  if(players.every(q=>!q.alive)) gameOver();
+}
+function gameOver(){ state='OVER'; if(score>hiScore){ hiScore=score; localStorage.setItem('snowbros_hi',hiScore); } }
+function winGame(){ state='WIN'; if(score>hiScore){ hiScore=score; localStorage.setItem('snowbros_hi',hiScore); } }
+function isClear(){ return enemies.length===0 && (!boss || !boss.alive); }
+function doorOverlap(){ if(!door) return false; for(const p of players){ if(p.alive && aabbBox(p,door)) return true; } return false; }
+function levelUp(){
+  level++; buildLevel(level); resetPlayersPositions(); score+=300; sfxClear();
+}
+function resetPlayersPositions(){
+  const sp=[{x:110,y:520},{x:170,y:520}];
+  players.forEach((p,i)=>{ const s=sp[i]||sp[0]; p.x=s.x; p.y=s.y; p.vx=0; p.vy=0; p.onGround=false; if(p.lives>0) p.alive=true; });
+}
+function initGame(m){
+  mode=m; level=1; score=0; combo=0; comboTimer=0; shake=0;
+  players=[ makePlayer(0,110,520,'#3aa0ff') ];
+  if(m===2) players.push(makePlayer(1,170,520,'#ff5a4d'));
+  buildLevel(level); state='PLAY';
+}
+
+// ---------------- MENU INPUT ----------------
+const btn1={x:230,y:330,w:150,h:64}, btn2={x:420,y:330,w:150,h:64};
+function handleMenuKey(code){
+  if(state==='MENU'){
+    if(code==='Digit1'){ initGame(1); }
+    else if(code==='Digit2'){ initGame(2); }
+    else if(code==='ArrowLeft'||code==='KeyA'){ menuSel=0; }
+    else if(code==='ArrowRight'||code==='KeyD'){ menuSel=1; }
+    else if(code==='Enter'||code==='Space'){ initGame(menuSel+1); }
+  } else if(state==='OVER'||state==='WIN'){
+    if(code==='Enter'||code==='Space'){ state='MENU'; }
+  }
+}
+cv.addEventListener('click', e=>{
+  ac().resume && ac().resume();
+  const r=cv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)*(W/r.width), my=(e.clientY-r.top)*(H/r.height);
+  if(state==='MENU'){
+    if(mx>=btn1.x&&mx<=btn1.x+btn1.w&&my>=btn1.y&&my<=btn1.y+btn1.h){ initGame(1); }
+    else if(mx>=btn2.x&&mx<=btn2.x+btn2.w&&my>=btn2.y&&my<=btn2.y+btn2.h){ initGame(2); }
+  } else if(state==='OVER'||state==='WIN'){ state='MENU'; }
+});
+
+// ---------------- UPDATE ----------------
+function update(){
+  if(state==='PLAY'){
+    for(const p of players) updatePlayer(p);
+    for(const e of enemies) updateEnemy(e);
+    for(const b of balls) updateBall(b);
+    if(boss) updateBoss(boss);
+    for(const pt of potions) updatePotion(pt);
+    for(const s of sprays){ s.x+=s.vx; s.y+=s.vy; s.life--; }
+    for(const bl of bossBullets){
+      bl.x+=bl.vx; bl.y+=bl.vy; bl.life--;
+      for(const p of players){ if(p.alive && p.invuln===0 && aabbCircle(bl,p)){ hurtPlayer(p); bl.life=0; } }
+    }
+    for(const pa of particles){ pa.x+=pa.vx; pa.y+=pa.vy; pa.vy+=0.15; pa.life--; }
+    if(comboTimer>0){ comboTimer--; if(comboTimer===0) combo=0; }
+    if(shake>0) shake--;
+    enemies=enemies.filter(e=>e.alive);
+    balls=balls.filter(b=>!b.dead && b.x>-30 && b.x<W+30);
+    potions=potions.filter(p=>!p.dead && p.life>0);
+    sprays=sprays.filter(s=>s.life>0);
+    bossBullets=bossBullets.filter(b=>b.life>0 && b.x>-20 && b.x<W+20 && b.y>-20 && b.y<H+20);
+    particles=particles.filter(p=>p.life>0);
+    if(isClear()){
+      if(level===3){ winGame(); }
+      else { door.active=true; if(doorOverlap()) levelUp(); }
+    }
+  }
+  prev=Object.assign({},keys);
+}
+
+// ---------------- RENDER ----------------
+const STARS=[]; for(let i=0;i<60;i++) STARS.push({x:Math.random()*W,y:Math.random()*H*0.7,r:Math.random()*1.6+0.4});
+function render(){
+  ctx.save();
+  if(shake>0){ ctx.translate((Math.random()-0.5)*shake,(Math.random()-0.5)*shake); }
+  // bg
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#16224a'); g.addColorStop(1,'#0c1530');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  for(const s of STARS){ ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,7); ctx.fill(); }
+  if(state==='MENU'){ drawMenu(); ctx.restore(); return; }
+  // platforms
+  for(const pl of platforms){
+    ctx.fillStyle='#2d3b66'; ctx.fillRect(pl.x,pl.y,pl.w,pl.h||14);
+    ctx.fillStyle='#3f5290'; ctx.fillRect(pl.x,pl.y,pl.w,5);
+    ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(pl.x,pl.y,pl.w,2);
+  }
+  // door
+  if(door){ drawDoor(door); }
+  // potions
+  for(const pt of potions) drawPotion(pt);
+  // balls
+  for(const b of balls) drawBall(b);
+  // enemies
+  for(const e of enemies) drawEnemy(e);
+  // boss
+  if(boss && boss.alive) drawBoss(boss);
+  // players
+  for(const p of players) if(p.alive) drawPlayer(p);
+  // sprays / bossBullets / particles
+  ctx.fillStyle='rgba(220,240,255,0.8)';
+  for(const s of sprays){ ctx.beginPath(); ctx.arc(s.x,s.y,2.2,0,7); ctx.fill(); }
+  ctx.fillStyle='#ff7b5a';
+  for(const bl of bossBullets){ ctx.beginPath(); ctx.arc(bl.x,bl.y,bl.r,0,7); ctx.fill(); }
+  for(const pa of particles){ ctx.globalAlpha=Math.max(0,pa.life/30); ctx.fillStyle=pa.color;
+    ctx.fillRect(pa.x-1.5,pa.y-1.5,3,3); }
+  ctx.globalAlpha=1;
+  drawHUD();
+  if(state==='OVER') drawOver();
+  if(state==='WIN') drawWin();
+  ctx.restore();
+}
+function drawMenu(){
+  ctx.textAlign='center';
+  ctx.fillStyle='#bfe9ff'; ctx.font='bold 56px Courier New';
+  ctx.fillText('雪人兄弟', W/2, 150);
+  ctx.fillStyle='#88a'; ctx.font='20px Courier New';
+  ctx.fillText('SNOW BROS  ·  复刻纵切片', W/2, 190);
+  // buttons
+  drawBtn(btn1,'单人 1P', menuSel===0);
+  drawBtn(btn2,'双人 2P', menuSel===1);
+  ctx.fillStyle='#cde'; ctx.font='14px Courier New';
+  ctx.fillText('点击按钮 或 按 1 / 2 开始  ·  菜单内 ←→ 选择, Enter 确认', W/2, 430);
+  ctx.fillStyle='#9ab'; ctx.font='13px Courier New';
+  ctx.fillText('P1: WASD移动  J喷雪  K跳', W/2, 470);
+  ctx.fillText('P2: 方向键移动  .喷雪  /跳', W/2, 492);
+  ctx.fillStyle='#fc6'; ctx.font='15px Courier New';
+  ctx.fillText('最高分  '+hiScore, W/2, 540);
+}
+function drawBtn(b,label,sel){
+  ctx.fillStyle=sel?'#3aa0ff':'#26345f'; ctx.fillRect(b.x,b.y,b.w,b.h);
+  ctx.strokeStyle=sel?'#bfe9ff':'#556cae'; ctx.lineWidth=3; ctx.strokeRect(b.x,b.y,b.w,b.h);
+  ctx.fillStyle='#fff'; ctx.font='bold 22px Courier New'; ctx.textAlign='center';
+  ctx.fillText(label,b.x+b.w/2,b.y+b.h/2+8);
+}
+function drawDoor(d){
+  const glow=d.active?'#ffe27a':'#445';
+  if(d.active){ ctx.shadowColor='#ffe27a'; ctx.shadowBlur=18; }
+  ctx.fillStyle=glow; ctx.fillRect(d.x,d.y,d.w,d.h);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#1a2340'; ctx.fillRect(d.x+5,d.y+6,d.w-10,d.h-6);
+  ctx.fillStyle=d.active?'#ffd':'#667'; ctx.font='11px Courier New'; ctx.textAlign='center';
+  ctx.fillText(d.active?'GO':'···', d.x+d.w/2, d.y+d.h/2+4);
+}
+function drawPotion(pt){
+  const col={speed:'#ff5a4d',freeze:'#ffd23f',range:'#3aa0ff',score:'#5ad06a'}[pt.type]||'#fff';
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(pt.x,pt.y,pt.r,0,7); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='bold 12px Courier New'; ctx.textAlign='center';
+  const ic={speed:'速',freeze:'冻',range:'范',score:'分'}[pt.type]; ctx.fillText(ic,pt.x,pt.y+4);
+}
+function drawBall(b){
+  const blink = b.melt<90 && ((b.melt/6|0)%2===0);
+  ctx.fillStyle = blink ? 'rgba(255,255,255,0.4)' : '#ffffff';
+  ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,7); ctx.fill();
+  ctx.fillStyle='#bcd6ea'; ctx.beginPath(); ctx.arc(b.x+5,b.y+5,b.r*0.4,0,7); ctx.fill();
+  // freeze meter ring
+  if(b.melt<CFG.MELT_FRAMES){
+    ctx.strokeStyle='#7fd0ff'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r+2, -Math.PI/2, -Math.PI/2 + Math.PI*2*(b.melt/CFG.MELT_FRAMES)); ctx.stroke();
+  }
+}
+function drawEnemy(e){
+  const f=e.freeze/CFG.FREEZE_FULL;
+  ctx.fillStyle=e.hitFlash>0?'#fff':e.color;
+  ctx.fillRect(e.x,e.y,e.w,e.h);
+  if(f>0){ ctx.fillStyle='rgba(255,255,255,'+(f*0.85)+')'; ctx.fillRect(e.x,e.y,e.w,e.h); }
+  // eyes
+  ctx.fillStyle='#fff'; ctx.fillRect(e.x+6,e.y+8,5,5); ctx.fillRect(e.x+e.w-11,e.y+8,5,5);
+  ctx.fillStyle='#000'; ctx.fillRect(e.x+8,e.y+10,2,2); ctx.fillRect(e.x+e.w-9,e.y+10,2,2);
+  // freeze meter
+  if(f>0 && f<1){ ctx.fillStyle='#000a'; ctx.fillRect(e.x,e.y-7,e.w,4);
+    ctx.fillStyle='#7fd0ff'; ctx.fillRect(e.x,e.y-7,e.w*f,4); }
+}
+function drawBoss(b){
+  ctx.fillStyle=b.hitFlash>0?'#fff':b.color;
+  ctx.fillRect(b.x,b.y,b.w,b.h);
+  if(b.freeze>=CFG.FREEZE_FULL){ ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.fillRect(b.x,b.y,b.w,b.h); }
+  ctx.fillStyle='#fff'; ctx.fillRect(b.x+12,b.y+18,8,8); ctx.fillRect(b.x+b.w-20,b.y+18,8,8);
+  ctx.fillStyle='#000'; ctx.fillRect(b.x+15,b.y+21,3,3); ctx.fillRect(b.x+b.w-17,b.y+21,3,3);
+  // hp bar
+  ctx.fillStyle='#000a'; ctx.fillRect(b.x,b.y-12,b.w,7);
+  ctx.fillStyle='#ff5a4d'; ctx.fillRect(b.x,b.y-12,b.w*(b.hp/b.maxhp),7);
+}
+function drawPlayer(p){
+  if(p.invuln>0 && ((p.invuln/4|0)%2===0)) return; // blink
+  const x=p.x,y=p.y,w=p.w,h=p.h;
+  // body
+  ctx.fillStyle='#ffffff';
+  ctx.beginPath(); ctx.arc(x+w/2,y+h*0.62,w*0.46,0,7); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+w/2,y+h*0.28,w*0.32,0,7); ctx.fill();
+  // scarf
+  ctx.fillStyle=p.color; ctx.fillRect(x+w/2-6,y+h*0.42,12,5);
+  // eyes
+  ctx.fillStyle='#222'; ctx.fillRect(x+w/2-5,y+h*0.24,3,3); ctx.fillRect(x+w/2+2,y+h*0.24,3,3);
+  // nose
+  ctx.fillStyle='#ff9b3f'; ctx.fillRect(x+w/2-1,y+h*0.30,4,3);
+  // buff aura
+  if(p.buffs.speed>0){ ctx.strokeStyle='#ff5a4d'; ctx.lineWidth=2; ctx.strokeRect(x-2,y-2,w+4,h+4); }
+  if(p.buffs.freeze>0){ ctx.strokeStyle='#ffd23f'; ctx.lineWidth=2; ctx.strokeRect(x-2,y-2,w+4,h+4); }
+  if(p.buffs.range>0){ ctx.strokeStyle='#3aa0ff'; ctx.lineWidth=2; ctx.strokeRect(x-2,y-2,w+4,h+4); }
+}
+function drawHUD(){
+  ctx.textAlign='left'; ctx.fillStyle='#cfe'; ctx.font='16px Courier New';
+  ctx.fillText('分数 '+score, 12, 24);
+  ctx.fillStyle='#fc6'; ctx.fillText('最高 '+hiScore, 12, 46);
+  ctx.fillStyle='#cfe'; ctx.textAlign='center';
+  ctx.fillText('第 '+level+' / 3 关', W/2, 24);
+  // lives
+  ctx.textAlign='right'; let lx=W-12;
+  for(let i=players.length-1;i>=0;i--){ const p=players[i];
+    ctx.fillStyle=p.color; ctx.fillText('P'+(i+1)+' x'+p.lives, lx, 24); lx-=90; }
+  // combo
+  if(combo>1){ ctx.textAlign='center'; ctx.fillStyle='#ffd23f'; ctx.font='bold 30px Courier New';
+    ctx.fillText('COMBO x'+combo, W/2, 90); }
+}
+function drawOver(){
+  ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center'; ctx.fillStyle='#ff6b6b'; ctx.font='bold 48px Courier New';
+  ctx.fillText('GAME OVER', W/2, 260);
+  ctx.fillStyle='#fff'; ctx.font='20px Courier New';
+  ctx.fillText('本局分数 '+score+'  ·  最高 '+hiScore, W/2, 310);
+  ctx.fillStyle='#bfe9ff'; ctx.font='16px Courier New';
+  ctx.fillText('按 Enter / 点击 返回菜单', W/2, 360);
+}
+function drawWin(){
+  ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(0,0,W,H);
+  ctx.textAlign='center'; ctx.fillStyle='#ffd23f'; ctx.font='bold 48px Courier New';
+  ctx.fillText('通关胜利!', W/2, 250);
+  ctx.fillStyle='#fff'; ctx.font='20px Courier New';
+  ctx.fillText('最终分数 '+score+'  ·  最高 '+hiScore, W/2, 300);
+  ctx.fillStyle='#bfe9ff'; ctx.font='16px Courier New';
+  ctx.fillText('按 Enter / 点击 返回菜单', W/2, 350);
+}
+
+// ---------------- LOOP ----------------
+let last=performance.now(), acc=0; const STEP=1000/60;
+function frame(t){
+  acc += t-last; last=t; if(acc>200) acc=200;
+  while(acc>=STEP){ update(); acc-=STEP; }
+  render();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

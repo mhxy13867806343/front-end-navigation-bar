@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Inform 7 with extension .ni

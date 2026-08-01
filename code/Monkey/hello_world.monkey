@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Monkey with extension .monkey

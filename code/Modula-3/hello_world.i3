@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Modula-3 with extension .i3

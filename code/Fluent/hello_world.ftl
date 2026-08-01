@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Fluent with extension .ftl

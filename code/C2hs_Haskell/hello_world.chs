@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for C2hs Haskell with extension .chs

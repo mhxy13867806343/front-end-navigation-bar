@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Lean 4 with extension .lean

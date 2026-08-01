@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Macaulay2 with extension .m2

@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Visual Basic .NET with extension .vb

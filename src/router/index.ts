@@ -367,6 +367,16 @@ const routes = [
     component: () => import('../views/xiaomiShop/cart.vue')
   },
   {
+    path: '/broadcast-channel',
+    name: 'BroadcastChannel',
+    component: () => import('../views/broadcastChannel/index.vue')
+  },
+  {
+    path: '/broadcast-channel/editor',
+    name: 'BroadcastChannelEditor',
+    component: () => import('../views/broadcastChannel/editor.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFoundCatchAll',
     component: () => import('../views/error/404.vue')

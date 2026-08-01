@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Tree-sitter Query with extension .scm

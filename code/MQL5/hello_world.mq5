@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for MQL5 with extension .mq5

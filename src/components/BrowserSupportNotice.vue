@@ -225,6 +225,7 @@ const webLibraryGroups: WebLibraryGroup[] = [
     title: '工程工具',
     icon: '💻',
     items: [
+      { label: '📡 HTML5 Broadcast Channel 跨页同步展厅', command: '/broadcast-channel' },
       { label: '⚙️ 浏览器兼容性检测', command: 'openDialog' },
       { label: '🧡 小米商城 (27万行数据)', command: '/xiaomi-shop' },
       { label: '💻 页面与功能全量源码查看/复制', command: '/source-code' },

@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for 1C Enterprise with extension .bsl

@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Nix with extension .nix

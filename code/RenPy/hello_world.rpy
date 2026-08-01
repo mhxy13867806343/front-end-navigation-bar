@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Ren'Py with extension .rpy

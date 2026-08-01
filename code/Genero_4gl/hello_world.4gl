@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Genero 4gl with extension .4gl

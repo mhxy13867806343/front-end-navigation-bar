@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for NASL with extension .nasl

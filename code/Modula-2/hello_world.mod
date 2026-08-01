@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Modula-2 with extension .mod

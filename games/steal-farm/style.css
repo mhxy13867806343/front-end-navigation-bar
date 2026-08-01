@@ -1,0 +1,221 @@
+/* ===== Steal Farm — 移动端竖屏 H5 样式 ===== */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;            /* 禁止横向滚动 */
+  background: #2f6b3a;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #222;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #aee4a0 0%, #7fc977 100%);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ---- 顶部状态栏 ---- */
+#topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #2f6b3a;
+  color: #fff;
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+}
+#topbar .stat {
+  font-size: 18px;
+  font-weight: 700;
+}
+#topbar .view {
+  font-size: 14px;
+  opacity: .92;
+  flex: 1;
+  min-width: 84px;
+  text-align: center;
+}
+#topbar .actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+#topbar button {
+  font-size: 14px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 10px;
+  background: #ffe08a;
+  color: #5a3b00;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 40px;
+  touch-action: manipulation;
+}
+#topbar button:active {
+  transform: scale(.96);
+  background: #ffd166;
+}
+
+/* ---- 农场网格 ---- */
+#grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+.plot {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #d9d9d9;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .12);
+  cursor: pointer;
+  transition: transform .08s ease;
+  touch-action: manipulation;
+}
+.plot:active { transform: scale(.97); }
+.plot.empty { background: #cfcfcf; }
+.plot.planted { background: #cfe8c5; }
+.plot.mature {
+  background: #ffe08a;
+  animation: pulse 1.3s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .12), 0 0 0 0 rgba(255, 200, 0, 0);
+  }
+  50% {
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .12), 0 0 0 6px rgba(255, 200, 0, .35);
+  }
+}
+.cell-emoji { font-size: 38px; line-height: 1; }
+.cell-label { font-size: 13px; font-weight: 700; margin-top: 4px; color: #333; }
+.cell-check {
+  position: absolute; top: 6px; right: 8px;
+  font-size: 18px; font-weight: 900; color: #1c7a2b;
+}
+.cell-badge {
+  position: absolute; bottom: 6px; left: 6px;
+  font-size: 11px; font-weight: 700;
+  background: rgba(0, 0, 0, .15); color: #222;
+  border-radius: 8px; padding: 1px 5px;
+}
+.cell-event {
+  position: absolute; top: 6px; left: 6px;
+  font-size: 18px;
+}
+
+#tips {
+  text-align: center;
+  font-size: 12px;
+  color: #234d2b;
+  padding: 8px 12px calc(16px + env(safe-area-inset-bottom));
+}
+
+/* ---- 底部弹层（操作菜单 / 选择 / 商店） ---- */
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 20;
+}
+#overlay.hidden { display: none; }
+#sheet {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideup .2s ease;
+}
+@keyframes slideup {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.sheet-title {
+  font-size: 17px; font-weight: 800; text-align: center; margin-bottom: 10px;
+}
+.sheet-info {
+  text-align: center; color: #555; font-size: 14px; margin-bottom: 10px;
+}
+.sheet-warn {
+  text-align: center; color: #c0392b; font-weight: 700; margin-bottom: 10px;
+}
+.sheet-list {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
+}
+.crop-btn, .act-btn {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  touch-action: manipulation;
+}
+.crop-btn { background: #eef6ea; color: #234d2b; }
+.crop-btn:active { background: #e0efd9; }
+.crop-btn[disabled] { opacity: .45; }
+.act-btn.ok { background: #7fc977; color: #fff; }
+.act-btn.steal { background: #f0a93b; color: #fff; }
+.act-btn.warn { background: #e74c3c; color: #fff; }
+.act-btn.close { background: #eee; color: #555; }
+.act-btn:active { transform: scale(.98); }
+.act-btn[disabled] { opacity: .45; }
+
+/* ---- Toast ---- */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(0, 0, 0, .8);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: all .25s ease;
+  z-index: 30;
+  max-width: 90%;
+  text-align: center;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

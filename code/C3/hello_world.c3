@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for C3 with extension .c3

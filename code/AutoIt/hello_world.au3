@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for AutoIt with extension .au3

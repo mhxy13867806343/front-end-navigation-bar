@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Java Template Engine with extension .jte

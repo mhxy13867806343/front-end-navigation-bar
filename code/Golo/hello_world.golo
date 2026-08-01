@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for Golo with extension .golo

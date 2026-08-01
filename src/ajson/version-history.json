@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-07-31T13:41:23.189Z",
+  "generatedAt": "2026-08-01T00:36:22.837Z",
   "groups": [
     {
       "date": "2026-07-31",
       "items": [
+        {
+          "hash": "dd0f4e2b3b4d0b098fe30bc5e5a40bacf11824aa",
+          "shortHash": "dd0f4e2",
+          "date": "2026-07-31",
+          "time": "21:43",
+          "type": "功能更新",
+          "title": "add shared sharing and real flash data",
+          "scope": "",
+          "message": "feat: add shared sharing and real flash data"
+        },
         {
           "hash": "708d705bffeb04f852e79d16f568ec4f7cd6315c",
           "shortHash": "708d705",
@@ -303,16 +313,6 @@
           "title": "set Auth Showcase dataset count to 1,000,000 (1 Million) Auth UI themes with 10 items per page pagination",
           "scope": "",
           "message": "feat: set Auth Showcase dataset count to 1,000,000 (1 Million) Auth UI themes with 10 items per page pagination"
-        },
-        {
-          "hash": "2918f0159e9b211f8cfa5e4951040995e7ba9492",
-          "shortHash": "2918f01",
-          "date": "2026-07-24",
-          "time": "08:45",
-          "type": "功能更新",
-          "title": "adjust Auth Showcase dataset to 20,000 Auth UI themes with exactly 10 items per page pagination",
-          "scope": "",
-          "message": "feat: adjust Auth Showcase dataset to 20,000 Auth UI themes with exactly 10 items per page pagination"
         }
       ]
     }

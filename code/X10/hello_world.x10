@@ -1,0 +1,1 @@
+// This is a Hello World placeholder for X10 with extension .x10
