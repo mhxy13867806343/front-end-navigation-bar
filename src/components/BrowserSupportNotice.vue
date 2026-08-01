@@ -141,6 +141,7 @@ const webLibraryGroups: WebLibraryGroup[] = [
       { label: '⛄ 雪人兄弟 Snow Bros', command: 'snowbros.html' },
       { label: '🎯 75 宾果 75 Bingo', command: 'bingo75.html' },
       { label: '🐢 激光快打 TMNT', command: 'tmnt.html' },
+      { label: '🥕 偷菜农场 Steal Farm', command: 'steal-farm.html' },
       { label: '🎲 经典推箱子游戏', command: '/sokoban' },
       { label: '🧺 接水果游戏', command: '/feature' },
       { label: '🐍 贪吃蛇大作战', command: '/feature' },

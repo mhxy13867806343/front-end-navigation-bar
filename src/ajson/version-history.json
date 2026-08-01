@@ -1,6 +1,21 @@
 {
-  "generatedAt": "2026-08-01T00:36:22.837Z",
+  "generatedAt": "2026-08-01T00:40:59.097Z",
   "groups": [
+    {
+      "date": "2026-08-01",
+      "items": [
+        {
+          "hash": "22dd89f5bfe50eb1c0db1d3b400b7026cb8d30fc",
+          "shortHash": "22dd89f",
+          "date": "2026-08-01",
+          "time": "08:37",
+          "type": "功能更新",
+          "title": "add broadcast channel demo page, multi-layout navigation modes, clock daily question and documentation updates",
+          "scope": "",
+          "message": "feat: add broadcast channel demo page, multi-layout navigation modes, clock daily question and documentation updates"
+        }
+      ]
+    },
     {
       "date": "2026-07-31",
       "items": [
@@ -303,16 +318,6 @@
           "title": "add 100 Shopping Cart UI Showcase and 63,353 CSS/JS Animation Effects Showcase to Web Components menu",
           "scope": "",
           "message": "feat: add 100 Shopping Cart UI Showcase and 63,353 CSS/JS Animation Effects Showcase to Web Components menu"
-        },
-        {
-          "hash": "5a5a5e0c1a5fec06713c207b2a600152e18e6b6c",
-          "shortHash": "5a5a5e0",
-          "date": "2026-07-24",
-          "time": "08:46",
-          "type": "功能更新",
-          "title": "set Auth Showcase dataset count to 1,000,000 (1 Million) Auth UI themes with 10 items per page pagination",
-          "scope": "",
-          "message": "feat: set Auth Showcase dataset count to 1,000,000 (1 Million) Auth UI themes with 10 items per page pagination"
         }
       ]
     }

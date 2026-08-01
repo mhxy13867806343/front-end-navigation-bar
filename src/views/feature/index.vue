@@ -135,6 +135,14 @@ const items: FeatureItem[] = [
     link: 'tmnt.html',
     external: true
   },
+  {
+    name: '偷菜农场 Steal Farm',
+    desc: 'QQ 偷菜/开心农场 H5 复刻，9格地块经营、去 3 个 AI 邻居偷菜、买狗/篱笆防盗、离线时间戳结算',
+    logo: '🥕',
+    category: 'games',
+    link: 'steal-farm.html',
+    external: true
+  },
   { name: '推箱子', desc: '经典推箱子游戏，支持多个关卡', logo: '🎲', category: 'games', type: 'game' },
   { name: '接水果游戏', desc: '接住水果得分，小心炸弹！', logo: '🧺', category: 'games', type: 'fruitgame' },
   { name: '贪吃蛇大作战', desc: '经典贪吃蛇，挑战你的最高分', logo: '🐍', category: 'games', type: 'snake' },
