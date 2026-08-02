@@ -5,6 +5,15 @@ import test from 'node:test'
 import { menuItemsList } from '../src/utlis/menuItems.ts'
 import type { NavigationCategory } from '../src/types/navigation.ts'
 
+function readWebLibrarySource(): string {
+  return [
+    readFileSync(new URL('../src/constants/webLibrary.ts', import.meta.url), 'utf8'),
+    readFileSync(new URL('../src/constants/webLibrary/pagesAndGames.ts', import.meta.url), 'utf8'),
+    readFileSync(new URL('../src/constants/webLibrary/mediaAndComponents.ts', import.meta.url), 'utf8'),
+    readFileSync(new URL('../src/constants/webLibrary/engineeringAndDocs.ts', import.meta.url), 'utf8')
+  ].join('\n')
+}
+
 test('GitHub category includes both Chinese community resources', () => {
   const githubCategory: NavigationCategory | undefined = menuItemsList.find((category: NavigationCategory): boolean => category.name === 'GitHub')
   assert.ok(githubCategory?.tools)
@@ -78,7 +87,7 @@ test('Flash page loads real cnblogs status data instead of mock feeds', () => {
 
 test('Web Components has a direct route, navbar dropdown button, and component registry', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const wcSource = readFileSync(new URL('../src/views/webComponents/index.vue', import.meta.url), 'utf8')
   const registrySource = readFileSync(new URL('../src/components/webComponents/index.ts', import.meta.url), 'utf8')
@@ -86,14 +95,14 @@ test('Web Components has a direct route, navbar dropdown button, and component r
   assert.match(routerSource, /path:\s*'\/web-components'/)
   assert.match(routerSource, /views\/webComponents\/index\.vue/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?\/web-components/)
-  assert.match(noticeSource, /command="\/web-components"/)
+  assert.match(webLibrarySource, /command:\s*'\/web-components'/)
   assert.match(wcSource, /customElements\.define/)
   assert.match(registrySource, /registerWebComponents/)
 })
 
 test('Oat UI has a direct route, navbar dropdown button, and 26 components showcase', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const oatSource = readFileSync(new URL('../src/views/oatUi/index.vue', import.meta.url), 'utf8')
   const oatRegistry = readFileSync(new URL('../src/components/oatUi/index.ts', import.meta.url), 'utf8')
@@ -101,7 +110,7 @@ test('Oat UI has a direct route, navbar dropdown button, and 26 components showc
   assert.match(routerSource, /path:\s*'\/oat-ui'/)
   assert.match(routerSource, /views\/oatUi\/index\.vue/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?\/oat-ui/)
-  assert.match(noticeSource, /command="\/oat-ui"/)
+  assert.match(webLibrarySource, /command:\s*'\/oat-ui'/)
   assert.match(oatSource, /ot-dropdown/)
   assert.match(oatSource, /ot-tag-input/)
   assert.match(oatRegistry, /registerOatUiComponents/)
@@ -110,13 +119,13 @@ test('Oat UI has a direct route, navbar dropdown button, and 26 components showc
 test('Oat Studio provides update notice modal, new page modal, and confirm dialogs', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const studioSource = readFileSync(new URL('../src/views/oatStudio/index.vue', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 
   assert.match(routerSource, /path:\s*'\/oat-studio'/)
   assert.match(routerSource, /views\/oatStudio\/index\.vue/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?\/oat-studio/)
-  assert.match(noticeSource, /command="\/oat-studio"/)
+  assert.match(webLibrarySource, /command:\s*'\/oat-studio'/)
   assert.match(studioSource, /OatUpdateModal/)
   assert.match(studioSource, /OatCreatePageModal/)
   assert.match(studioSource, /OatConfirmModal/)
@@ -126,11 +135,11 @@ test('Oat Studio provides update notice modal, new page modal, and confirm dialo
 test('Auth Showcase provides 1,000,000 distinct interactive Login and Register UI themes switchable via Tabs', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const authSource = readFileSync(new URL('../src/views/authShowcase/index.vue', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
 
   assert.match(routerSource, /path:\s*'\/auth-showcase'/)
   assert.match(routerSource, /views\/authShowcase\/index\.vue/)
-  assert.match(noticeSource, /command="\/auth-showcase"/)
+  assert.match(webLibrarySource, /command:\s*'\/auth-showcase'/)
   assert.match(authSource, /generate100wThemes/)
   assert.match(authSource, /glassmorphism/)
   assert.match(authSource, /cyberpunk/)
@@ -142,7 +151,7 @@ test('Cart Showcase and Animation Showcase provide 100 carts and 63,353 animatio
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const cartSource = readFileSync(new URL('../src/views/cartShowcase/index.vue', import.meta.url), 'utf8')
   const animSource = readFileSync(new URL('../src/views/animationShowcase/index.vue', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
 
   assert.match(routerSource, /path:\s*'\/cart-showcase'/)
   assert.match(routerSource, /path:\s*'\/animation-showcase'/)
@@ -156,31 +165,31 @@ test('Cart Showcase and Animation Showcase provide 100 carts and 63,353 animatio
   assert.match(routerSource, /path:\s*'\/antv-l7-examples'/)
   assert.match(routerSource, /path:\s*'\/source-code'/)
   assert.match(routerSource, /path:\s*'\/docker-showcase'/)
-  assert.match(noticeSource, /command="\/cart-showcase"/)
-  assert.match(noticeSource, /command="\/animation-showcase"/)
-  assert.match(noticeSource, /command="\/motion-showcase"/)
-  assert.match(noticeSource, /command="\/schedule-x"/)
-  assert.match(noticeSource, /command="\/three-showcase\/china-map"/)
-  assert.match(noticeSource, /command="\/mapcn-showcase"/)
-  assert.match(noticeSource, /command="\/antv-s2-examples"/)
-  assert.match(noticeSource, /command="\/antv-g6-examples"/)
-  assert.match(noticeSource, /command="\/antv-f2-examples"/)
-  assert.match(noticeSource, /command="\/antv-l7-examples"/)
-  assert.match(noticeSource, /command="\/source-code"/)
-  assert.match(noticeSource, /command="\/docker-showcase"/)
+  assert.match(webLibrarySource, /command:\s*'\/cart-showcase'/)
+  assert.match(webLibrarySource, /command:\s*'\/animation-showcase'/)
+  assert.match(webLibrarySource, /command:\s*'\/motion-showcase'/)
+  assert.match(webLibrarySource, /command:\s*'\/schedule-x'/)
+  assert.match(webLibrarySource, /command:\s*'\/three-showcase\/china-map'/)
+  assert.match(webLibrarySource, /command:\s*'\/mapcn-showcase'/)
+  assert.match(webLibrarySource, /command:\s*'\/antv-s2-examples'/)
+  assert.match(webLibrarySource, /command:\s*'\/antv-g6-examples'/)
+  assert.match(webLibrarySource, /command:\s*'\/antv-f2-examples'/)
+  assert.match(webLibrarySource, /command:\s*'\/antv-l7-examples'/)
+  assert.match(webLibrarySource, /command:\s*'\/source-code'/)
+  assert.match(webLibrarySource, /command:\s*'\/docker-showcase'/)
   assert.match(cartSource, /generate100Carts/)
   assert.match(animSource, /generate63kAnims/)
 })
 
 test('mapcn showcase calls article-mentioned MapLibre UI components from the dropdown route', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const mapcnSource = readFileSync(new URL('../src/views/mapcnShowcase/index.vue', import.meta.url), 'utf8')
 
   assert.match(routerSource, /views\/mapcnShowcase\/index\.vue/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?\/mapcn-showcase/)
-  assert.match(noticeSource, /mapcn MapLibre 地图 UI 组件库/)
+  assert.match(webLibrarySource, /mapcn MapLibre 地图 UI 组件库/)
   assert.match(mapcnSource, /ZoomControl/)
   assert.match(mapcnSource, /CompassControl/)
   assert.match(mapcnSource, /LayerSwitcher/)
@@ -190,7 +199,7 @@ test('mapcn showcase calls article-mentioned MapLibre UI components from the dro
 
 test('AntV official examples are split into S2 G6 F2 and L7 route pages from basic to expert', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const sharedSource = readFileSync(new URL('../src/components/antv/AntvExamplesPage.vue', import.meta.url), 'utf8')
   const s2Source = readFileSync(new URL('../src/views/antvS2Examples/index.vue', import.meta.url), 'utf8')
@@ -201,7 +210,7 @@ test('AntV official examples are split into S2 G6 F2 and L7 route pages from bas
   for (const routePath of ['/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples']) {
     assert.match(routerSource, new RegExp(`path:\\s*'${routePath}'`))
     assert.match(appSource, new RegExp(`routeViewPaths:[\\s\\S]*?${routePath}`))
-    assert.match(noticeSource, new RegExp(`command="${routePath}"`))
+    assert.match(webLibrarySource, new RegExp(`command:\\s*'${routePath}'`))
   }
 
   assert.match(routerSource, /views\/antvS2Examples\/index\.vue/)
@@ -335,6 +344,7 @@ test('Juejin theme avatar opens detail modal before external navigation', () => 
 test('Juejin course page loads booklet list and keeps course-list links', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
   const noticeStyleSource = readFileSync(new URL('../src/components/css/BrowserSupportNotice.scss', import.meta.url), 'utf8')
   const pageSource = readFileSync(new URL('../src/views/juejinCourse/index.vue', import.meta.url), 'utf8')
@@ -345,8 +355,9 @@ test('Juejin course page loads booklet list and keeps course-list links', () => 
 
   assert.match(routerSource, /path:\s*'\/juejin-course'[\s\S]*?name:\s*'JuejinCourse'/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/juejin-course'/)
-  assert.match(noticeSource, /<el-dropdown-item divided disabled>🆕 新建页面<\/el-dropdown-item>/)
-  assert.match(noticeSource, /command="\/juejin-course">📘 掘金小册课程/)
+  assert.match(webLibrarySource, /id:\s*'new-pages'/)
+  assert.match(webLibrarySource, /command:\s*'\/juejin-course'/)
+  assert.match(webLibrarySource, /📘 掘金小册课程/)
   assert.doesNotMatch(appSource, /goJuejinCourse/)
   assert.match(noticeStyleSource, /\.web-library-items\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
   assert.match(juejinConstantsSource, /JUEJIN_COURSE_API = '\/api-juejin\/booklet_api\/v1\/booklet\/listbycategory'/)
@@ -404,17 +415,17 @@ test('AI tutorial resources use internal ai-xxx routes instead of external ai-bo
 test('Jandan and TopHub pages are internal routes with visible parsed feed data', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const jandanSource = readFileSync(new URL('../src/views/jandan/index.vue', import.meta.url), 'utf8')
   const tophubSource = readFileSync(new URL('../src/views/tophub/index.vue', import.meta.url), 'utf8')
 
   assert.match(routerSource, /path:\s*'\/jandan'[\s\S]*?name:\s*'Jandan'/)
   assert.match(routerSource, /path:\s*'\/tophub'[\s\S]*?name:\s*'TopHub'/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/jandan'[\s\S]*?'\/tophub'/)
-  assert.match(noticeSource, /command:\s*'\/jandan'/)
-  assert.match(noticeSource, /command:\s*'\/tophub'/)
-  assert.match(noticeSource, /command="\/jandan">🥚 煎蛋页面/)
-  assert.match(noticeSource, /command="\/tophub">🔥 今日热榜 TopHub/)
+  assert.match(webLibrarySource, /command:\s*'\/jandan'/)
+  assert.match(webLibrarySource, /command:\s*'\/tophub'/)
+  assert.match(webLibrarySource, /🥚 煎蛋页面/)
+  assert.match(webLibrarySource, /🔥 今日热榜 TopHub/)
 
   for (const sourcePath of ['treehole', 'beauty', 'ooxx', 'pic', 'new/forum', 'top#tab=4hr', 'tucao']) {
     assert.match(jandanSource, new RegExp(`https://jandan\\.net/${sourcePath.replace('/', '\\/')}`))
@@ -473,7 +484,7 @@ test('Jandan and TopHub pages are internal routes with visible parsed feed data'
 test('Ithome Huxiu and Github collection pages are internal parsed feeds', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const ithomeSource = readFileSync(new URL('../src/views/ithome/index.vue', import.meta.url), 'utf8')
   const huxiuSource = readFileSync(new URL('../src/views/huxiu/index.vue', import.meta.url), 'utf8')
   const githubSource = readFileSync(new URL('../src/views/github/index.vue', import.meta.url), 'utf8')
@@ -482,12 +493,12 @@ test('Ithome Huxiu and Github collection pages are internal parsed feeds', () =>
   assert.match(routerSource, /path:\s*'\/huxiu'[\s\S]*?name:\s*'Huxiu'/)
   assert.match(routerSource, /path:\s*'\/github'[\s\S]*?name:\s*'Github'/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/ithome'[\s\S]*?'\/huxiu'[\s\S]*?'\/github'/)
-  assert.match(noticeSource, /command:\s*'\/ithome'/)
-  assert.match(noticeSource, /command:\s*'\/huxiu'/)
-  assert.match(noticeSource, /command:\s*'\/github'/)
-  assert.match(noticeSource, /command="\/ithome">📰 IT之家/)
-  assert.match(noticeSource, /command="\/huxiu">🐯 虎嗅24小时/)
-  assert.match(noticeSource, /command="\/github">🐙 GitHub开源聚合/)
+  assert.match(webLibrarySource, /command:\s*'\/ithome'/)
+  assert.match(webLibrarySource, /command:\s*'\/huxiu'/)
+  assert.match(webLibrarySource, /command:\s*'\/github'/)
+  assert.match(webLibrarySource, /📰 IT之家/)
+  assert.match(webLibrarySource, /🐯 虎嗅24小时/)
+  assert.match(webLibrarySource, /🐙 GitHub开源聚合/)
 
   assert.match(ithomeSource, /path:\s*'\/hudong'/)
   assert.match(ithomeSource, /https:\/\/it\.ithome\.com\$\{path\}/)
@@ -562,6 +573,8 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/records-cache'/)
   assert.match(appSource, /case 'records-cache':/)
   assert.match(appSource, /goRecordsCache/)
+  const webLibrarySource = readWebLibrarySource()
+
   assert.match(appSource, /route-page-favorite/)
   assert.match(appSource, /isRouteFavoriteVisible/)
   assert.match(appSource, /!\['\/records-cache',\s*'\/share-records'\]\.includes\(route\.path\)/)
@@ -572,10 +585,10 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(appSource, /STORAGE_KEYS\.PAGE_FAVORITES/)
   assert.match(appStyleSource, /\.route-page-favorite/)
   assert.match(appStyleSource, /\.route-page-share/)
-  assert.match(noticeSource, /command:\s*'\/records-cache'/)
-  assert.match(noticeSource, /command="\/records-cache">♡ 记录缓存展示/)
-  assert.match(noticeSource, /command:\s*'\/share-records'/)
-  assert.match(noticeSource, /command="\/share-records">↗ 分享记录展示/)
+  assert.match(webLibrarySource, /command:\s*'\/records-cache'/)
+  assert.match(webLibrarySource, /♡ 记录缓存/)
+  assert.match(webLibrarySource, /command:\s*'\/share-records'/)
+  assert.match(webLibrarySource, /↗ 分享记录/)
   assert.match(storageKeysSource, /PAGE_FAVORITES: 'HOOKSVUE_PAGE_FAVORITES_V1'/)
   assert.match(storageKeysSource, /RECORD_CACHE_FAVORITES: 'HOOKSVUE_RECORD_CACHE_FAVORITES_V1'/)
   assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
@@ -760,6 +773,7 @@ test('line clamp styles are centralized through the shared SCSS mixin', () => {
 test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
   const pageSource = readFileSync(new URL('../src/views/juejinClubs/index.vue', import.meta.url), 'utf8')
   const pageStyleSource = readFileSync(new URL('../src/views/juejinClubs/css/index.scss', import.meta.url), 'utf8')
@@ -770,7 +784,8 @@ test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {
 
   assert.match(routerSource, /path:\s*'\/juejin-clubs'[\s\S]*?name:\s*'JuejinClubs'/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/juejin-clubs'/)
-  assert.match(noticeSource, /command="\/juejin-clubs">💬 掘金圈子广场/)
+  assert.match(webLibrarySource, /command:\s*'\/juejin-clubs'/)
+  assert.match(webLibrarySource, /💬 掘金圈子广场/)
   assert.match(pageSource, /<h1>圈子广场<\/h1>/)
   assert.match(juejinConstantsSource, /JUEJIN_CLUB_TOPIC_REC_API = '\/api-juejin\/tag_api\/v1\/topic\/list_by_rec'/)
   assert.match(juejinConstantsSource, /JUEJIN_CLUB_TOPIC_ALL_API = '\/api-juejin\/tag_api\/v1\/query_topic_list'/)
@@ -801,13 +816,15 @@ test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {
 test('Juejin signin page renders the daily check-in calendar from the new-pages menu', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
   const pageSource = readFileSync(new URL('../src/views/juejinSignin/index.vue', import.meta.url), 'utf8')
   const juejinConstantsSource = readFileSync(new URL('../src/constants/juejin.ts', import.meta.url), 'utf8')
 
   assert.match(routerSource, /path:\s*'\/juejin-signin'[\s\S]*?name:\s*'JuejinSignin'/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/juejin-signin'/)
-  assert.match(noticeSource, /command="\/juejin-signin">📅 掘金每日签到/)
+  assert.match(webLibrarySource, /command:\s*'\/juejin-signin'/)
+  assert.match(webLibrarySource, /📅 掘金每日签到/)
   assert.match(juejinConstantsSource, /JUEJIN_SIGNIN_URL = `\$\{JUEJIN_SITE_BASE_URL\}\/user\/center\/signin\?from=sign_in_menu_bar`/)
   assert.match(pageSource, /<h1>每日签到<\/h1>/)
   assert.match(pageSource, /签到规则/)
@@ -819,6 +836,7 @@ test('Juejin signin page renders the daily check-in calendar from the new-pages 
 test('BOSS Zhipin Hangzhou page recreates the homepage search jobs and company sections', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
   const pageSource = readFileSync(new URL('../src/views/bossZhipinHangzhou/index.vue', import.meta.url), 'utf8')
   const bossConstantsSource = readFileSync(new URL('../src/constants/bossZhipin.ts', import.meta.url), 'utf8')
@@ -832,7 +850,8 @@ test('BOSS Zhipin Hangzhou page recreates the homepage search jobs and company s
 
   assert.match(routerSource, /path:\s*'\/boss-zhipin-hangzhou'[\s\S]*?name:\s*'BossZhipinHangzhou'/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/boss-zhipin-hangzhou'/)
-  assert.match(noticeSource, /command="\/boss-zhipin-hangzhou">💼 BOSS直聘杭州首页/)
+  assert.match(webLibrarySource, /command:\s*'\/boss-zhipin-hangzhou'/)
+  assert.match(webLibrarySource, /💼 BOSS直聘杭州首页/)
   assert.match(bossConstantsSource, /BOSS_HOME_URL = `\$\{BOSS_SITE_BASE_URL\}\/hangzhou\/\?ka=header-home`/)
   assert.match(bossConstantsSource, /BOSS_MAP_URL = buildBossMapUrl/)
   assert.match(bossConstantsSource, /BOSS_CITY_API = `\$\{BOSS_PROXY_PREFIX\}\$\{BOSS_API_PATHS\.city\}`/)
@@ -888,6 +907,7 @@ test('BOSS Zhipin Hangzhou page recreates the homepage search jobs and company s
 test('BOSS Zhipin Hangzhou map page renders local map jobs and official map links', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
   const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
   const pageSource = readFileSync(new URL('../src/views/bossZhipinHangzhouMap/index.vue', import.meta.url), 'utf8')
   const bossConstantsSource = readFileSync(new URL('../src/constants/bossZhipin.ts', import.meta.url), 'utf8')
@@ -895,7 +915,8 @@ test('BOSS Zhipin Hangzhou map page renders local map jobs and official map link
 
   assert.match(routerSource, /path:\s*'\/boss-zhipin-hangzhou-map'[\s\S]*?name:\s*'BossZhipinHangzhouMap'/)
   assert.match(appSource, /routeViewPaths:[\s\S]*?'\/boss-zhipin-hangzhou-map'/)
-  assert.match(noticeSource, /command="\/boss-zhipin-hangzhou-map">🗺️ BOSS直聘地图找工作/)
+  assert.match(webLibrarySource, /command:\s*'\/boss-zhipin-hangzhou-map'/)
+  assert.match(webLibrarySource, /🗺️ BOSS直聘地图找工作/)
   assert.match(bossConstantsSource, /BOSS_MAP_URL = buildBossMapUrl/)
   assert.match(pageSource, /<h1>地图找工作<\/h1>/)
   assert.match(pageSource, /class="hangzhou-map"/)
@@ -1008,12 +1029,13 @@ test('Bilibili Live Area Tag pages and Baidu Trending pages have direct routes, 
   assert.match(toolboxSource, /id:\s*'baidu-trending-teleplay'/)
 
   const itemBlockSource = readFileSync(new URL('../src/components/WebLibraryItemBlock.vue', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
 
-  assert.match(noticeSource, /command:\s*'\/bilibili-live-play-together'/)
-  assert.match(noticeSource, /command:\s*'\/baidu-trending-movie'/)
-  assert.match(noticeSource, /command:\s*'\/baidu-trending-novel'/)
-  assert.match(noticeSource, /command:\s*'\/baidu-trending-teleplay'/)
-  assert.match(noticeSource, /children:\s*\[/)
+  assert.match(webLibrarySource, /command:\s*'\/bilibili-live-play-together'/)
+  assert.match(webLibrarySource, /command:\s*'\/baidu-trending-movie'/)
+  assert.match(webLibrarySource, /command:\s*'\/baidu-trending-novel'/)
+  assert.match(webLibrarySource, /command:\s*'\/baidu-trending-teleplay'/)
+  assert.match(webLibrarySource, /children:\s*\[/)
   assert.match(itemBlockSource, /web-library-sub-items/)
 
   assert.match(virtualView, /:parent-area-id="9"/)

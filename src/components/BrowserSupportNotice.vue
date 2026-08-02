@@ -3,9 +3,30 @@ import { computed, watch, ref, type ComputedRef, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { STORAGE_KEYS } from '@/constants/storageKeys'
+import {
+  BROWSER_DOWNLOAD_LINKS,
+  CLOSE_TIP_STORAGE_KEY,
+  AUTHOR_GITHUB_URL,
+  type BrowserDownloadLink,
+  type BrowserFeatureCheck
+} from '@/constants/browserSupport'
+import {
+  buildTechStack,
+  type TechStackItem
+} from '@/constants/techStack'
+import {
+  webLibraryGroups,
+  buildWebLibraryTreeData,
+  type WebLibraryGroup,
+  type WebLibraryItem,
+  type WebLibraryTreeNode
+} from '@/constants/webLibrary'
+import { triggerVersionNotice } from '../utils/versionPolling'
+import packageJson from '../../package.json'
 import WebLibraryItemBlock from './WebLibraryItemBlock.vue'
 
 const router = useRouter()
+
 const goToWeather = (): void => {
   router.push('/weather')
 }
@@ -21,7 +42,6 @@ const goToOatUi = (): void => {
 const goToPage = (path: string): void => {
   router.push(path)
 }
-import { triggerVersionNotice } from '../utils/versionPolling'
 
 const handleCommand = (command: string): void => {
   if (!command) return
@@ -38,43 +58,10 @@ const handleCommand = (command: string): void => {
     router.push(command)
   }
 }
-import packageJson from '../../package.json'
-
-interface BrowserDownloadLink {
-  name: string
-  url: string
-  vendor: string
-}
-
-interface BrowserFeatureCheck {
-  label: string
-  supported: boolean
-}
 
 interface QrImage {
   src: string
   alt: string
-}
-
-interface TechStackItem {
-  name: string
-  packageName: string
-  version: string
-  url: string
-  group: string
-}
-
-interface WebLibraryItem {
-  label: string
-  command?: string
-  children?: WebLibraryItem[]
-}
-
-interface WebLibraryGroup {
-  id: string
-  title: string
-  icon: string
-  items: WebLibraryItem[]
 }
 
 interface PackageMetadata {
@@ -107,13 +94,7 @@ const qrImageModules: Record<string, string> = import.meta.glob('../assets/qc/*.
   query: '?url'
 }) as Record<string, string>
 
-const browserLinks: BrowserDownloadLink[] = [
-  { name: 'Google Chrome', vendor: 'Google', url: 'https://www.google.com/chrome/' },
-  { name: 'Microsoft Edge', vendor: 'Microsoft', url: 'https://www.microsoft.com/edge' },
-  { name: 'Firefox', vendor: 'Mozilla', url: 'https://www.mozilla.org/firefox/new/' },
-  { name: '360 安全浏览器', vendor: '360', url: 'https://browser.360.cn/' },
-  { name: 'QQ 浏览器', vendor: 'Tencent', url: 'https://browser.qq.com/' }
-]
+const browserLinks: BrowserDownloadLink[] = BROWSER_DOWNLOAD_LINKS
 
 const packageMetadata: PackageMetadata = packageJson as PackageMetadata
 const packageVersions: Record<string, string> = {
@@ -121,200 +102,9 @@ const packageVersions: Record<string, string> = {
   ...packageMetadata.devDependencies
 }
 
-const webLibraryGroups: WebLibraryGroup[] = [
-  {
-    id: 'new-pages',
-    title: '新建页面',
-    icon: '🆕',
-    items: [
-      { label: '🐾 百度风云榜/热榜', command: '/baidu-trending' },
-      { label: '🎬 百度电影热榜', command: '/baidu-trending-movie' },
-      { label: '📚 百度小说热榜', command: '/baidu-trending-novel' },
-      { label: '📺 百度电视剧热榜', command: '/baidu-trending-teleplay' },
-      {
-        label: '📺 哔哩哔哩直播',
-        command: '/bilibili-live',
-        children: [
-          { label: '🧬 哔哩哔哩虚拟主播直播', command: '/bilibili-live-virtual' },
-          { label: '🎤 哔哩哔哩娱乐直播', command: '/bilibili-live-entertainment' },
-          { label: '📻 哔哩哔哩电台直播', command: '/bilibili-live-radio' },
-          { label: '💬 哔哩哔哩聊天室直播', command: '/bilibili-live-chat' },
-          { label: '📚 哔哩哔哩知识直播', command: '/bilibili-live-knowledge' },
-          { label: '🎮 哔哩哔哩游戏帮玩直播', command: '/bilibili-live-play-together' }
-        ]
-      },
-      { label: '📘 掘金小册课程', command: '/juejin-course' },
-      { label: '💬 掘金圈子广场', command: '/juejin-clubs' },
-      { label: '📅 掘金每日签到', command: '/juejin-signin' },
-      { label: '🥚 煎蛋页面', command: '/jandan' },
-      { label: '🔥 今日热榜 TopHub', command: '/tophub' },
-      { label: '📰 IT之家', command: '/ithome' },
-      { label: '🐯 虎嗅24小时', command: '/huxiu' },
-      { label: '🐙 GitHub开源聚合', command: '/github' },
-      { label: '♡ 记录缓存展示', command: '/records-cache' },
-      { label: '↗ 分享记录展示', command: '/share-records' },
-      { label: '💼 BOSS直聘杭州首页', command: '/boss-zhipin-hangzhou' },
-      { label: '🗺️ BOSS直聘地图找工作', command: '/boss-zhipin-hangzhou-map' }
-    ]
-  },
-  {
-    id: 'games',
-    title: '游戏合集',
-    icon: '🎮',
-    items: [
-      { label: '🎮 游戏全量大展厅', command: '/feature' },
-      { label: '✈️ 1942 飞行射击', command: '1942.html' },
-      { label: '🐱 哆啦A梦·大雄救援', command: 'doraemon.html' },
-      { label: '☀️ 黄金太阳·封印篇', command: 'goldsun.html' },
-      { label: '⛄ 雪人兄弟 Snow Bros', command: 'snowbros.html' },
-      { label: '🎯 75 宾果 75 Bingo', command: 'bingo75.html' },
-      { label: '🐢 激光快打 TMNT', command: 'tmnt.html' },
-      { label: '🥕 偷菜农场 Steal Farm', command: 'steal-farm.html' },
-      { label: '🎲 经典推箱子游戏', command: '/sokoban' },
-      { label: '🧺 接水果游戏', command: '/feature' },
-      { label: '🐍 贪吃蛇大作战', command: '/feature' },
-      { label: '🧱 俄罗斯方块', command: '/feature' },
-      { label: '🔢 2048 经典合并', command: '/feature' },
-      { label: '💣 扫雷小游戏', command: '/feature' },
-      { label: '❌ 井字棋对战', command: '/feature' },
-      { label: '🛡️ 90坦克大战', command: '/feature' },
-      { label: '🧱 经典打砖块', command: '/feature' },
-      { label: '🐦 飞翔小鸟', command: '/feature' },
-      { label: '🚀 太空战机', command: '/feature' }
-    ]
-  },
-  {
-    id: 'ai-news',
-    title: 'AI与资讯',
-    icon: '🤖',
-    items: [
-      { label: '🤖 AI编程资讯', command: '/aicoding' },
-      { label: '⚡ 闪存社区', command: '/flash' },
-      { label: '🌍 HelloWorld 社区', command: '/helloworld' },
-      { label: '🔥 掘金热门主题', command: '/juejin-theme' },
-      { label: '📜 经典名人名言语录', command: '/mingyan' },
-      { label: '🌌 CocoLoop 社区', command: '/cocoloop' },
-      { label: '📰 博客园新闻', command: '/cnblogs' },
-      { label: '🐙 GitHub 中文社区', command: '/github-cn' }
-    ]
-  },
-  {
-    id: 'media-tools',
-    title: '媒体与工具',
-    icon: '🧰',
-    items: [
-      { label: '🎬 哔哩哔哩热门视频', command: '/bilibili-trending' },
-      {
-        label: '📺 哔哩哔哩直播',
-        command: '/bilibili-live',
-        children: [
-          { label: '🧬 哔哩哔哩虚拟主播直播', command: '/bilibili-live-virtual' },
-          { label: '🎤 哔哩哔哩娱乐直播', command: '/bilibili-live-entertainment' },
-          { label: '📻 哔哩哔哩电台直播', command: '/bilibili-live-radio' },
-          { label: '💬 哔哩哔哩聊天室直播', command: '/bilibili-live-chat' },
-          { label: '📚 哔哩哔哩知识直播', command: '/bilibili-live-knowledge' },
-          { label: '🎮 哔哩哔哩游戏帮玩直播', command: '/bilibili-live-play-together' }
-        ]
-      },
-      { label: '🐾 百度风云榜/热榜', command: '/baidu-trending' },
-      { label: '🎬 百度电影热榜', command: '/baidu-trending-movie' },
-      { label: '📚 百度小说热榜', command: '/baidu-trending-novel' },
-      { label: '📺 百度电视剧热榜', command: '/baidu-trending-teleplay' },
-      { label: '🌦️ 实时天气预报', command: '/weather' },
-      { label: '📊 极简可视化大屏', command: '/big-screen' },
-      { label: '🌅 Bing 每日壁纸', command: '/star' },
-      { label: '🧰 开发者智能工具箱', command: '/toolbox' },
-      { label: '💰 统一 API 行情中心', command: '/api-center' },
-      { label: '♡ 记录缓存', command: '/records-cache' },
-      { label: '↗ 分享记录', command: '/share-records' }
-    ]
-  },
-  {
-    id: 'components',
-    title: '组件与 UI',
-    icon: '🧩',
-    items: [
-      { label: '🧩 Web Components 核心与进阶', command: '/web-components' },
-      { label: '🌾 Oat UI 全套 26 个组件实例', command: '/oat-ui' },
-      { label: '🚀 Oat UI 实战展厅与更新弹窗', command: '/oat-studio' },
-      { label: '🔐 100 万款登录注册 UI 展厅', command: '/auth-showcase' },
-      { label: '🛒 100 款购物车 UI 展厅', command: '/cart-showcase' }
-    ]
-  },
-  {
-    id: 'effects',
-    title: '动画与调度',
-    icon: '✨',
-    items: [
-      { label: '✨ 63,353 款 CSS/JS 动画特效展厅', command: '/animation-showcase' },
-      { label: '⚡ Motion for Vue 50+ 款经典特效展厅', command: '/motion-showcase' },
-      { label: '📅 Schedule-X v4.6 现代日历调度组件', command: '/schedule-x' }
-    ]
-  },
-  {
-    id: 'maps-charts',
-    title: '地图与图表',
-    icon: '📊',
-    items: [
-      { label: '🗺️ Three.js 3D 中国地图设计器', command: '/three-showcase/china-map' },
-      { label: '🗺️ mapcn MapLibre 地图 UI 组件库', command: '/mapcn-showcase' },
-      { label: '📊 AntV S2 多维表格示例库', command: '/antv-s2-examples' },
-      { label: '🕸️ AntV G6 图可视化示例库', command: '/antv-g6-examples' },
-      { label: '📱 AntV F2 移动端图表示例库', command: '/antv-f2-examples' },
-      { label: '🌏 AntV L7 地理空间示例库', command: '/antv-l7-examples' }
-    ]
-  },
-  {
-    id: 'engineering',
-    title: '工程工具',
-    icon: '💻',
-    items: [
-      { label: '📡 HTML5 Broadcast Channel 跨页同步展厅', command: '/broadcast-channel' },
-      { label: '⚙️ 浏览器兼容性检测', command: 'openDialog' },
-      { label: '🧡 小米商城 (27万行数据)', command: '/xiaomi-shop' },
-      { label: '💻 页面与功能全量源码查看/复制', command: '/source-code' },
-      { label: '🐳 Docker 命令行与可视化双方案部署', command: '/docker-showcase' },
-      { label: '🚀 模拟测试版本更新检测 (Element Plus UI)', command: 'triggerVersionCheck' }
-    ]
-  },
-  {
-    id: 'system-status',
-    title: '权限与状态页',
-    icon: '🛡️',
-    items: [
-      { label: '🔐 权限控制中心', command: '/permission' },
-      { label: '📜 实时系统日志', command: '/logs' },
-      { label: '✅ 200 访问正常', command: '/200' },
-      { label: '🔑 401 未授权访问', command: '/401' },
-      { label: '💎 402 需要付费订阅', command: '/402' },
-      { label: '🛡️ 403 禁止/无权访问', command: '/403' },
-      { label: '🚀 404 页面未找到', command: '/404' },
-      { label: '⚡ 405 方法不受允许', command: '/405' },
-      { label: '🔥 500 服务器错误', command: '/500' }
-    ]
-  },
-  {
-    id: 'docs',
-    title: '文档资源',
-    icon: '📖',
-    items: [
-      { label: '📖 MDN Web Components 文档', command: 'https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components' },
-      { label: '📰 阮一峰 Web Components 教程', command: 'https://www.ruanyifeng.com/blog/2019/08/web_components.html' },
-      { label: '🌾 Oat UI 官方 Usage 文档', command: 'https://oat.ink/usage/' },
-      { label: '🧪 Oat UI Kitchensink Live Demo', command: 'https://oat.ink/demo/' }
-    ]
-  }
-]
 const activeWebLibraryGroup: ComputedRef<WebLibraryGroup> = computed<WebLibraryGroup>(() => {
   return webLibraryGroups.find((group: WebLibraryGroup): boolean => group.id === activeWebLibraryGroupId.value) || webLibraryGroups[0]
 })
-
-interface WebLibraryTreeNode {
-  id: string
-  label: string
-  command?: string
-  children?: WebLibraryTreeNode[]
-}
 
 type ViewMode = 'tree' | 'split' | 'transfer' | 'carousel' | 'collapse' | 'tabs'
 
@@ -329,6 +119,7 @@ watch(viewMode, (val: ViewMode) => {
     // localStorage unavailable
   }
 })
+
 const transferSearchQuery: Ref<string> = ref<string>('')
 const activeCollapseNames: Ref<string[]> = ref<string[]>(webLibraryGroups.map((g: WebLibraryGroup): string => g.id))
 
@@ -352,20 +143,7 @@ const filteredTransferItems: ComputedRef<WebLibraryItem[]> = computed<WebLibrary
   return items.filter((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(q))
 })
 
-const mapItemToTreeNode = (item: WebLibraryItem, parentId: string, idx: number): WebLibraryTreeNode => ({
-  id: `${parentId}-${idx}`,
-  label: item.label,
-  command: item.command,
-  children: item.children?.map((sub: WebLibraryItem, subIdx: number): WebLibraryTreeNode => mapItemToTreeNode(sub, `${parentId}-${idx}`, subIdx))
-})
-
-const treeData: ComputedRef<WebLibraryTreeNode[]> = computed<WebLibraryTreeNode[]>(() => {
-  return webLibraryGroups.map((group: WebLibraryGroup): WebLibraryTreeNode => ({
-    id: group.id,
-    label: `${group.icon} ${group.title}`,
-    children: group.items.map((item: WebLibraryItem, idx: number): WebLibraryTreeNode => mapItemToTreeNode(item, group.id, idx))
-  }))
-})
+const treeData: ComputedRef<WebLibraryTreeNode[]> = computed<WebLibraryTreeNode[]>(() => buildWebLibraryTreeData())
 
 const handleTreeNodeClick = (node: WebLibraryTreeNode): void => {
   if (node.command) {
@@ -373,20 +151,7 @@ const handleTreeNodeClick = (node: WebLibraryTreeNode): void => {
   }
 }
 
-const techStack: TechStackItem[] = [
-  { name: 'Vue', packageName: 'vue', version: getPackageVersion('vue'), url: 'https://vuejs.org/', group: '框架' },
-  { name: 'Vue Router', packageName: 'vue-router', version: getPackageVersion('vue-router'), url: 'https://router.vuejs.org/', group: '路由' },
-  { name: 'Vite', packageName: 'vite', version: getPackageVersion('vite'), url: 'https://vite.dev/', group: '构建' },
-  { name: 'TypeScript', packageName: 'typescript', version: getPackageVersion('typescript'), url: 'https://www.typescriptlang.org/', group: '语言' },
-  { name: 'Element Plus', packageName: 'element-plus', version: getPackageVersion('element-plus'), url: 'https://element-plus.org/zh-CN/', group: 'UI' },
-  { name: 'Naive UI', packageName: 'naive-ui', version: getPackageVersion('naive-ui'), url: 'https://www.naiveui.com/', group: 'UI' },
-  { name: 'ECharts', packageName: 'echarts', version: getPackageVersion('echarts'), url: 'https://echarts.apache.org/', group: '图表' },
-  { name: 'Axios', packageName: 'axios', version: getPackageVersion('axios'), url: 'https://axios-http.com/', group: '请求' },
-  { name: 'CropperJS', packageName: 'cropperjs', version: getPackageVersion('cropperjs'), url: 'https://fengyuanchen.github.io/cropperjs/', group: '图片' },
-  { name: 'Vue TSC', packageName: 'vue-tsc', version: getPackageVersion('vue-tsc'), url: 'https://github.com/vuejs/language-tools', group: '校验' },
-  { name: 'Auto Import', packageName: 'unplugin-auto-import', version: getPackageVersion('unplugin-auto-import'), url: 'https://github.com/unplugin/unplugin-auto-import', group: '工程化' },
-  { name: 'Vuedraggable', packageName: 'vuedraggable', version: getPackageVersion('vuedraggable'), url: 'https://github.com/SortableJS/vue.draggable.next', group: '交互' }
-]
+const techStack: TechStackItem[] = buildTechStack(packageVersions)
 
 const qrImages: QrImage[] = Object.entries(qrImageModules)
   .sort(([leftPath]: [string, string], [rightPath]: [string, string]): number => leftPath.localeCompare(rightPath))
@@ -398,8 +163,8 @@ const qrImages: QrImage[] = Object.entries(qrImageModules)
     }
   })
 
-const authorGithubUrl: string = 'https://github.com/mhxy13867806343'
-const closeTipStorageKey: string = 'hooksvue-browser-dialog-close-tip-shown'
+const authorGithubUrl: string = AUTHOR_GITHUB_URL
+const closeTipStorageKey: string = CLOSE_TIP_STORAGE_KEY
 const currentDateTime: Ref<Date> = ref<Date>(new Date())
 const dialogVisible: Ref<boolean> = ref<boolean>(false)
 let clockTimer: number | null = null
@@ -463,11 +228,6 @@ function canUseLocalStorage(): boolean {
   } catch {
     return false
   }
-}
-
-function getPackageVersion(packageName: string): string {
-  const rawVersion: string = packageVersions[packageName] || '未安装'
-  return rawVersion.replace(/^[~^]/, '')
 }
 
 function showCloseTipOnce(): void {
@@ -659,27 +419,27 @@ onUnmounted((): void => {
                     class="mini-btn"
                     :class="{ active: tabsType === 'border-card' }"
                     @click="tabsType = 'border-card'"
-                  >border-card</button>
+                  >边框卡片</button>
                   <button
                     type="button"
                     class="mini-btn"
                     :class="{ active: tabsType === 'card' }"
                     @click="tabsType = 'card'"
-                  >card</button>
+                  >选项卡片</button>
                   <button
                     type="button"
                     class="mini-btn"
                     :class="{ active: tabsType === '' }"
                     @click="tabsType = ''"
-                  >default</button>
+                  >基础下划线</button>
                 </div>
               </div>
             </div>
 
             <el-tabs
               v-model="activeWebLibraryGroupId"
-              :type="tabsType || undefined"
               :tab-position="tabsPosition"
+              :type="tabsType"
               class="web-library-el-tabs"
             >
               <el-tab-pane
@@ -688,12 +448,15 @@ onUnmounted((): void => {
                 :name="group.id"
               >
                 <template #label>
-                  <span>{{ group.icon }} {{ group.title }}</span>
+                  <span class="tab-label-custom">
+                    {{ group.icon }} {{ group.title }}
+                  </span>
                 </template>
-                <div class="tabs-grid">
+
+                <div class="web-library-items-grid">
                   <WebLibraryItemBlock
-                    v-for="item in group.items"
-                    :key="item.label"
+                    v-for="(item, idx) in group.items"
+                    :key="`${group.id}-${idx}`"
                     :item="item"
                     @command="handleCommand"
                   />
@@ -702,96 +465,96 @@ onUnmounted((): void => {
             </el-tabs>
           </div>
 
-          <!-- 模式 2：悬停分栏模式 -->
-          <div v-else-if="viewMode === 'split'" class="web-library-menu">
-            <nav class="web-library-groups" aria-label="Web 组件与库分类">
+          <!-- 模式 2：悬停分栏 (Split View) -->
+          <div v-else-if="viewMode === 'split'" class="web-library-split-wrapper">
+            <div class="web-library-sidebar">
               <button
                 v-for="group in webLibraryGroups"
                 :key="group.id"
                 type="button"
-                class="web-library-group"
+                class="group-tab-btn"
                 :class="{ active: activeWebLibraryGroupId === group.id }"
-                @mouseenter="activeWebLibraryGroupId = group.id"
                 @click="activeWebLibraryGroupId = group.id"
               >
-                <span>{{ group.icon }}</span>
-                <strong>{{ group.title }}</strong>
+                <span class="group-icon">{{ group.icon }}</span>
+                <span class="group-title">{{ group.title }}</span>
+                <span class="group-count">{{ group.items.length }}</span>
               </button>
-            </nav>
-
-            <div class="web-library-items">
-              <div class="web-library-heading">
-                <span>{{ activeWebLibraryGroup.icon }}</span>
-                <strong>{{ activeWebLibraryGroup.title }}</strong>
+            </div>
+            <div class="web-library-content">
+              <div class="group-header">
+                <span class="header-icon">{{ activeWebLibraryGroup.icon }}</span>
+                <h3 class="header-title">{{ activeWebLibraryGroup.title }}</h3>
+                <span class="header-badge">{{ activeWebLibraryGroup.items.length }} 个项目</span>
               </div>
-              <WebLibraryItemBlock
-                v-for="item in activeWebLibraryGroup.items"
-                :key="item.label"
-                :item="item"
-                @command="handleCommand"
-              />
+              <div class="web-library-items-grid">
+                <WebLibraryItemBlock
+                  v-for="(item, idx) in activeWebLibraryGroup.items"
+                  :key="`${activeWebLibraryGroup.id}-${idx}`"
+                  :item="item"
+                  @command="handleCommand"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- 模式 3：穿梭列表模式 (无复选框) -->
+          <!-- 模式 3：双列表穿梭过滤 (Transfer View) -->
           <div v-else-if="viewMode === 'transfer'" class="web-library-transfer-wrapper">
-            <div class="transfer-header">
+            <div class="transfer-filter-bar">
               <el-input
                 v-model="transferSearchQuery"
-                placeholder="🔍 搜索名称或功能... (穿梭列表实时过滤)"
+                placeholder="🔍 快速搜索全站 Web 组件/库或微应用分类..."
                 clearable
                 size="small"
                 class="transfer-search-input"
               />
             </div>
-            <div class="transfer-body">
+            <div class="transfer-panels">
               <div class="transfer-panel left-panel">
-                <div class="panel-header-title">List 1 分类导航 ({{ filteredTransferGroups.length }})</div>
+                <div class="panel-header">📌 选择分类模块</div>
                 <div class="panel-list">
-                  <div
+                  <button
                     v-for="group in filteredTransferGroups"
                     :key="group.id"
-                    class="transfer-list-item"
+                    type="button"
+                    class="transfer-item"
                     :class="{ active: activeWebLibraryGroupId === group.id }"
-                    @mouseenter="activeWebLibraryGroupId = group.id"
                     @click="activeWebLibraryGroupId = group.id"
                   >
                     <span>{{ group.icon }} {{ group.title }}</span>
-                    <span class="item-count">{{ group.items.length }}</span>
-                  </div>
+                    <span class="item-badge">{{ group.items.length }}</span>
+                  </button>
                 </div>
               </div>
+              <div class="transfer-arrow">➔</div>
               <div class="transfer-panel right-panel">
-                <div class="panel-header-title">{{ activeWebLibraryGroup.icon }} {{ activeWebLibraryGroup.title }} 项列表 ({{ filteredTransferItems.length }})</div>
+                <div class="panel-header">🚀 包含子导航与应用 ({{ activeWebLibraryGroup.title }})</div>
                 <div class="panel-list">
-                  <div
-                    v-for="item in filteredTransferItems"
-                    :key="item.command"
-                    class="transfer-list-item link-item"
-                    @click="handleCommand(item.command)"
-                  >
-                    <span>{{ item.label }}</span>
-                    <span class="action-tag">访问 ▶</span>
-                  </div>
+                  <div v-if="!filteredTransferItems.length" class="empty-tip">未搜索到匹配项</div>
+                  <WebLibraryItemBlock
+                    v-for="(item, idx) in filteredTransferItems"
+                    :key="`${activeWebLibraryGroup.id}-${idx}`"
+                    :item="item"
+                    @command="handleCommand"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 模式 4：走马灯轮播模式 (Hover切换) -->
+          <!-- 模式 4：走马灯轮播 (Carousel View) -->
           <div v-else-if="viewMode === 'carousel'" class="web-library-carousel-wrapper">
-            <el-carousel trigger="hover" height="420px" indicator-position="outside">
+            <el-carousel :interval="6000" type="card" height="320px" indicator-position="outside">
               <el-carousel-item v-for="group in webLibraryGroups" :key="group.id">
-                <div class="carousel-slide">
-                  <div class="slide-header">
-                    <span class="slide-icon">{{ group.icon }}</span>
-                    <h3>{{ group.title }}</h3>
-                    <span class="slide-badge">{{ group.items.length }} 个项目</span>
+                <div class="carousel-card-inner">
+                  <div class="carousel-card-header">
+                    <span class="card-icon">{{ group.icon }}</span>
+                    <h3 class="card-title">{{ group.title }}</h3>
                   </div>
-                  <div class="slide-grid">
+                  <div class="carousel-items-scroll">
                     <WebLibraryItemBlock
-                      v-for="item in group.items"
-                      :key="item.label"
+                      v-for="(item, idx) in group.items"
+                      :key="`${group.id}-${idx}`"
                       :item="item"
                       @command="handleCommand"
                     />
@@ -801,24 +564,24 @@ onUnmounted((): void => {
             </el-carousel>
           </div>
 
-          <!-- 模式 5：折叠面板模式 (全展开) -->
+          <!-- 模式 5：折叠面板 (Collapse View) -->
           <div v-else-if="viewMode === 'collapse'" class="web-library-collapse-wrapper">
-            <el-collapse v-model="activeCollapseNames" class="web-library-collapse">
+            <el-collapse v-model="activeCollapseNames">
               <el-collapse-item
                 v-for="group in webLibraryGroups"
                 :key="group.id"
                 :name="group.id"
               >
                 <template #title>
-                  <div class="collapse-item-title">
+                  <div class="collapse-title-custom">
                     <span>{{ group.icon }} {{ group.title }}</span>
-                    <span class="collapse-count-badge">{{ group.items.length }} 项</span>
+                    <el-tag size="small" type="info" round class="ml-2">{{ group.items.length }} 项</el-tag>
                   </div>
                 </template>
-                <div class="collapse-grid">
+                <div class="web-library-items-grid">
                   <WebLibraryItemBlock
-                    v-for="item in group.items"
-                    :key="item.label"
+                    v-for="(item, idx) in group.items"
+                    :key="`${group.id}-${idx}`"
                     :item="item"
                     @command="handleCommand"
                   />
@@ -828,144 +591,89 @@ onUnmounted((): void => {
           </div>
         </div>
       </el-popover>
-      <!-- Legacy command markers for navigation source regression coverage.
-      <el-dropdown @command="handleCommand" trigger="click">
-        <el-button type="primary" plain size="small">
-          🧩 Web组件与库 ▾
-        </el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="/web-components">🧩 Web Components 核心与进阶</el-dropdown-item>
-            <el-dropdown-item command="/oat-ui">🌾 Oat UI 全套 26 个组件实例</el-dropdown-item>
-            <el-dropdown-item command="/oat-studio">🚀 Oat UI 实战展厅与更新弹窗</el-dropdown-item>
-            <el-dropdown-item command="/auth-showcase">🔐 100 万款登录注册 UI 展厅</el-dropdown-item>
-            <el-dropdown-item command="/cart-showcase">🛒 100 款购物车 UI 展厅</el-dropdown-item>
-            <el-dropdown-item command="/animation-showcase">✨ 63,353 款 CSS/JS 动画特效展厅</el-dropdown-item>
-            <el-dropdown-item command="/motion-showcase">⚡ Motion for Vue 50+ 款经典特效展厅</el-dropdown-item>
-            <el-dropdown-item command="/schedule-x">📅 Schedule-X v4.6 现代日历调度组件</el-dropdown-item>
-            <el-dropdown-item command="/three-showcase/china-map">🗺️ Three.js 3D 中国地图设计器</el-dropdown-item>
-            <el-dropdown-item command="/mapcn-showcase">🗺️ mapcn MapLibre 地图 UI 组件库</el-dropdown-item>
-            <el-dropdown-item command="/antv-s2-examples">📊 AntV S2 多维表格示例库</el-dropdown-item>
-            <el-dropdown-item command="/antv-g6-examples">🕸️ AntV G6 图可视化示例库</el-dropdown-item>
-            <el-dropdown-item command="/antv-f2-examples">📱 AntV F2 移动端图表示例库</el-dropdown-item>
-            <el-dropdown-item command="/antv-l7-examples">🌏 AntV L7 地理空间示例库</el-dropdown-item>
-            <el-dropdown-item command="/source-code">💻 页面与功能全量源码查看/复制</el-dropdown-item>
-            <el-dropdown-item command="/docker-showcase">🐳 Docker 命令行与可视化双方案部署</el-dropdown-item>
-            <el-dropdown-item divided disabled>🆕 新建页面</el-dropdown-item>
-            <el-dropdown-item command="/juejin-course">📘 掘金小册课程</el-dropdown-item>
-            <el-dropdown-item command="/juejin-clubs">💬 掘金圈子广场</el-dropdown-item>
-            <el-dropdown-item command="/juejin-signin">📅 掘金每日签到</el-dropdown-item>
-            <el-dropdown-item command="/jandan">🥚 煎蛋页面</el-dropdown-item>
-            <el-dropdown-item command="/tophub">🔥 今日热榜 TopHub</el-dropdown-item>
-            <el-dropdown-item command="/ithome">📰 IT之家</el-dropdown-item>
-            <el-dropdown-item command="/huxiu">🐯 虎嗅24小时</el-dropdown-item>
-            <el-dropdown-item command="/github">🐙 GitHub开源聚合</el-dropdown-item>
-            <el-dropdown-item command="/records-cache">♡ 记录缓存展示</el-dropdown-item>
-            <el-dropdown-item command="/share-records">↗ 分享记录展示</el-dropdown-item>
-            <el-dropdown-item command="/boss-zhipin-hangzhou">💼 BOSS直聘杭州首页</el-dropdown-item>
-            <el-dropdown-item command="/boss-zhipin-hangzhou-map">🗺️ BOSS直聘地图找工作</el-dropdown-item>
-            <el-dropdown-item divided command="triggerVersionCheck">🚀 模拟测试版本更新检测 (Element Plus UI)</el-dropdown-item>
-            <el-dropdown-item command="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components">📖 MDN Web Components 文档</el-dropdown-item>
-            <el-dropdown-item command="https://www.ruanyifeng.com/blog/2019/08/web_components.html">📰 阮一峰 Web Components 教程</el-dropdown-item>
-            <el-dropdown-item command="https://oat.ink/usage/">🌾 Oat UI 官方 Usage 文档</el-dropdown-item>
-            <el-dropdown-item command="https://oat.ink/demo/">🧪 Oat UI Kitchensink Live Demo</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-      -->
+
+      <el-button size="small" class="support-btn" @click="dialogVisible = true">
+        环境检测与说明
+      </el-button>
     </div>
+  </section>
 
-    <el-dialog
-      v-model="dialogVisible"
-      title="浏览器兼容性检测"
-      width="min(920px, 92vw)"
-      class="browser-support-dialog"
-      append-to-body
-      destroy-on-close
-      align-center
-      :before-close="handleDialogBeforeClose"
-    >
-      <div class="dialog-content">
-        <div class="notice-status">
-          <div>
-            <p class="eyebrow">Browser Check</p>
-            <h2>{{ isBrowserUnsupported ? '浏览器版本过旧' : '浏览器环境正常' }}</h2>
-            <p>{{ browserStatusText }}</p>
-          </div>
-          <el-tag :type="browserTagType" effect="dark" round>
-            {{ browserName }}
-          </el-tag>
-        </div>
+  <el-dialog
+    v-model="dialogVisible"
+    title="💡 现代浏览器能力检测与项目运行说明"
+    width="680px"
+    destroy-on-close
+    align-center
+    class="browser-support-dialog"
+    :before-close="handleDialogBeforeClose"
+  >
+    <div class="dialog-body">
+      <el-alert
+        :type="browserTagType"
+        :closable="false"
+        show-icon
+        class="dialog-alert"
+      >
+        <template #title>
+          <strong>{{ browserStatusText }}</strong>
+        </template>
+        <template #default>
+          <p class="alert-sub">检测时间：{{ formattedTime }}</p>
+        </template>
+      </el-alert>
 
-        <div class="feature-list" aria-label="浏览器能力检测结果">
-          <span
-            v-for="feature in browserFeatures"
-            :key="feature.label"
-            :class="{ pass: feature.supported, fail: !feature.supported }"
-          >
-            {{ feature.supported ? '✓' : '!' }} {{ feature.label }}
-          </span>
-        </div>
+      <p v-if="yearlyGreeting" class="yearly-greeting">{{ yearlyGreeting }}</p>
 
-        <div class="download-row" aria-label="浏览器下载链接">
-          <a
-            v-for="browser in browserLinks"
-            :key="browser.name"
-            :href="browser.url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <strong>{{ browser.name }}</strong>
-            <span>{{ browser.vendor }}</span>
-          </a>
-        </div>
+      <div class="dialog-section">
+        <h3>关键技术栈依赖</h3>
+        <ul class="tech-stack-list">
+          <li v-for="item in techStack" :key="item.name" class="tech-stack-item">
+            <div class="tech-name">
+              <strong>{{ item.name }}</strong>
+              <el-tag size="small" type="info" effect="plain">{{ item.group }}</el-tag>
+            </div>
+            <div class="tech-meta">
+              <span class="tech-version">v{{ item.version }}</span>
+              <a :href="item.url" target="_blank" rel="noopener noreferrer" class="tech-link">官方文档 ↗</a>
+            </div>
+          </li>
+        </ul>
+      </div>
 
-        <div class="maintenance-note">
-          <strong>兼容性说明</strong>
-          <span>本站不再维护 IE、旧版 EdgeHTML 和过旧 WebView 的适配；后续功能会优先面向支持 ES Module、Fetch、CSS Grid 的现代浏览器。</span>
-        </div>
+      <div class="dialog-section">
+        <h3>推荐使用的现代浏览器</h3>
+        <p class="section-tip">若发现页面渲染异常、图表缺失或交互失效，请下载安装以下最新版浏览器：</p>
+        <ul class="browser-links">
+          <li v-for="item in browserLinks" :key="item.name">
+            <a :href="item.url" target="_blank" rel="noopener noreferrer">
+              <span>{{ item.name }}</span>
+              <small>({{ item.vendor }})</small>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-        <div v-if="qrImages.length" class="qr-gallery" aria-label="二维码展示">
-          <figure v-for="image in qrImages" :key="image.src">
-            <img :src="image.src" :alt="image.alt" loading="lazy" />
+      <div v-if="qrImages.length > 0" class="dialog-section">
+        <h3>项目说明与扫码入口</h3>
+        <div class="qr-grid">
+          <figure v-for="(qr, idx) in qrImages" :key="idx" class="qr-item">
+            <img :src="qr.src" :alt="qr.alt" loading="lazy" />
+            <figcaption>{{ qr.alt }}</figcaption>
           </figure>
-        </div>
-
-        <div class="notice-footer">
-          <div class="time-block">
-            <span>当前时间</span>
-            <strong>{{ formattedTime }}</strong>
-            <em v-if="yearlyGreeting">{{ yearlyGreeting }}</em>
-          </div>
-          <a class="author-link" :href="authorGithubUrl" target="_blank" rel="noopener noreferrer">
-            作者 GitHub：{{ authorGithubUrl }}
-          </a>
-        </div>
-
-        <div class="stack-list" aria-label="项目技术栈">
-          <a
-            v-for="item in techStack"
-            :key="item.packageName"
-            :href="item.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            :title="`${item.name} 官网`"
-          >
-            <em>{{ item.group }}</em>
-            <strong>{{ item.name }} {{ item.version }}</strong>
-            <span>{{ item.packageName }}</span>
-          </a>
         </div>
       </div>
 
-      <template #footer>
-        <div class="dialog-footer-actions">
-          <el-button @click="closeDialog">关闭</el-button>
-          <el-button type="primary" @click="closeDialog">知道了</el-button>
-        </div>
-      </template>
-    </el-dialog>
-  </section>
+      <div class="dialog-section footer-meta">
+        <p>作者 GitHub 地址：<a :href="authorGithubUrl" target="_blank" rel="noopener noreferrer">{{ authorGithubUrl }}</a></p>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="closeDialog">我已了解</el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped lang="scss" src="./css/BrowserSupportNotice.scss"></style>

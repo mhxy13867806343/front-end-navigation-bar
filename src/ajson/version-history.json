@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-08-02T04:52:39.611Z",
+  "generatedAt": "2026-08-02T04:57:55.448Z",
   "groups": [
     {
       "date": "2026-08-02",
       "items": [
+        {
+          "hash": "057e4aac61c39b92d49dd6c17dee56567f71d353",
+          "shortHash": "057e4aa",
+          "date": "2026-08-02",
+          "time": "12:53",
+          "type": "代码重构",
+          "title": "全局 .vue 样式离线提取导出，重构 SCSS Flex/Truncate 布局 Mixins & 工具类，并持久化导航 Tabs 与 ViewMode 位置",
+          "scope": "",
+          "message": "refactor: 全局 .vue 样式离线提取导出，重构 SCSS Flex/Truncate 布局 Mixins & 工具类，并持久化导航 Tabs 与 ViewMode 位置"
+        },
         {
           "hash": "94d047b1bb6823f02eb33fb946fd684df33fee52",
           "shortHash": "94d047b",
@@ -313,16 +323,6 @@
           "title": "update site assets, Xiaomi shop data, and navigation bar",
           "scope": "",
           "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
-        },
-        {
-          "hash": "eaf73e9f6911d911b59a95581ad570e1939d2c0c",
-          "shortHash": "eaf73e9",
-          "date": "2026-07-24",
-          "time": "08:58",
-          "type": "功能更新",
-          "title": "integrate Animate.css official standards (bounce, flash, rubberBand, flip, lightSpeed, etc.) and Juejin CSS/JS animations into Animation Showcase",
-          "scope": "",
-          "message": "feat: integrate Animate.css official standards (bounce, flash, rubberBand, flip, lightSpeed, etc.) and Juejin CSS/JS animations into Animation Showcase"
         }
       ]
     }
