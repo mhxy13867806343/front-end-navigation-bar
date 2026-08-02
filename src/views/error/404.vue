@@ -59,6 +59,14 @@ const goHome = () => {
   <ErrorLayout>
     <div class="error-container">
       <section class="not-found-card">
+        <div class="card-wave-field" aria-hidden="true">
+          <span class="water-crest crest-front"></span>
+          <span class="water-crest crest-back"></span>
+          <span class="water-bubble bubble-one"></span>
+          <span class="water-bubble bubble-two"></span>
+          <span class="water-bubble bubble-three"></span>
+        </div>
+
         <div class="visual-hero" aria-hidden="true">
           <div class="signal-orbit">
             <span class="signal-dot dot-one"></span>
@@ -66,7 +74,7 @@ const goHome = () => {
             <span class="signal-dot dot-three"></span>
             <span class="satellite-icon">🛰️</span>
           </div>
-          <div class="error-code">404</div>
+          <div class="error-code" data-text="404">404</div>
         </div>
 
         <div class="error-info">

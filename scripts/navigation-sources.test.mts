@@ -71,7 +71,13 @@ test('Unknown SPA routes redirect to the redesigned 404 page with the original p
   assert.match(notFoundPageSource, /const lostPath = computed/)
   assert.match(notFoundPageSource, /这个页面没有找到/)
   assert.match(notFoundPageSource, /刚才访问的是/)
+  assert.match(notFoundPageSource, /class=["']card-wave-field["']/)
+  assert.match(notFoundPageSource, /data-text=["']404["']/)
   assert.match(notFoundStyleSource, /\.not-found-card/)
+  assert.match(notFoundStyleSource, /\.card-wave-field/)
+  assert.match(notFoundStyleSource, /@keyframes waveRiseUp/)
+  assert.match(notFoundStyleSource, /@keyframes digitWaterReveal/)
+  assert.match(notFoundStyleSource, /@keyframes bubbleLift/)
   assert.match(notFoundStyleSource, /prefers-reduced-motion:\s*reduce/)
 })
 
