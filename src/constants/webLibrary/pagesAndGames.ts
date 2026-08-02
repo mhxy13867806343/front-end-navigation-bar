@@ -44,6 +44,7 @@ export const newPagesGroup: WebLibraryGroup = {
     { label: '🐙 GitHub开源聚合', command: '/github' },
     { label: '♡ 记录缓存展示', command: '/records-cache' },
     { label: '↗ 分享记录展示', command: '/share-records' },
+    { label: '📬 联系作者中心', command: '/contact' },
     { label: '💼 BOSS直聘杭州首页', command: '/boss-zhipin-hangzhou' },
     { label: '🗺️ BOSS直聘地图找工作', command: '/boss-zhipin-hangzhou-map' }
   ]

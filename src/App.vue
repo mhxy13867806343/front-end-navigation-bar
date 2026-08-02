@@ -120,7 +120,7 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/oschina', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/records-cache', '/share-records', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/bilibili-live-virtual', '/bilibili-live-entertainment', '/bilibili-live-radio', '/bilibili-live-chat', '/bilibili-live-knowledge', '/bilibili-live-play-together', '/baidu-trending', '/baidu-trending-movie', '/baidu-trending-novel', '/baidu-trending-teleplay', '/my-github-projects', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/oschina', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/records-cache', '/share-records', '/contact', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/bilibili-live-virtual', '/bilibili-live-entertainment', '/bilibili-live-radio', '/bilibili-live-chat', '/bilibili-live-knowledge', '/bilibili-live-play-together', '/baidu-trending', '/baidu-trending-movie', '/baidu-trending-novel', '/baidu-trending-teleplay', '/my-github-projects', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
 const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isFlashRoute = computed<boolean>(() => !isDyFormRoute.value && !isBigScreenRoute.value)
@@ -157,6 +157,7 @@ const routeFavoriteTitleMap: Record<string, string> = {
   '/toolbox': '工具集合',
   '/records-cache': '记录缓存展示',
   '/share-records': '分享记录展示',
+  '/contact': '联系作者中心',
   '/weather': '天气查询',
   '/api-center': 'API中心',
   '/h5': 'H5 页面',
@@ -546,16 +547,25 @@ const openMailContact = (): void => {
 const openQqMailme = (): void => {
   window.open(QQ_MAILME_URL, '_blank', 'noopener,noreferrer')
 }
+const goContact = (channel?: string): Promise<void | Error> => {
+  return router.push({
+    path: '/contact',
+    query: channel ? { channel } : undefined
+  })
+}
 const handleQuickActionCommand = async (command: string): Promise<void> => {
   switch (command) {
     case 'qq':
-      openQqContact()
+      await goContact('qq')
       break
     case 'email':
-      openMailContact()
+      await goContact('email')
       break
     case 'qq-mailme':
-      openQqMailme()
+      await goContact('qq-mailme')
+      break
+    case 'contact':
+      await goContact()
       break
     case 'third-party':
       await openGoldPriceToolbox()
@@ -1071,6 +1081,7 @@ watch(isDarkMode, () => {
                   <el-dropdown-item command="qq">QQ 联系</el-dropdown-item>
                   <el-dropdown-item command="email">邮箱联系</el-dropdown-item>
                   <el-dropdown-item command="qq-mailme">QQ 邮我</el-dropdown-item>
+                  <el-dropdown-item command="contact">联系作者中心</el-dropdown-item>
                   <el-dropdown-item divided command="third-party">第三方页面集</el-dropdown-item>
                   <el-dropdown-item command="like-history">历史爱心</el-dropdown-item>
                   <el-dropdown-item command="records-cache">记录缓存</el-dropdown-item>

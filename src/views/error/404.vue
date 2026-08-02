@@ -1,25 +1,115 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { menuItemsList } from '@/utlis/menuItems'
+import { webLibraryGroups, type WebLibraryItem } from '@/constants/webLibrary'
 import ErrorLayout from './ErrorLayout.vue'
 
 const router = useRouter()
 const route = useRoute()
 const searchQuery = ref('')
+const RECOMMENDATION_SIZE = 6
+const RECOMMENDATION_REFRESH_MS = 4000
+let recommendationRefreshTimer: ReturnType<typeof window.setInterval> | null = null
+
+interface RouteRecommendation {
+  name: string
+  path: string
+  icon: string
+  desc: string
+}
+
 const lostPath = computed(() => {
   const from = route.query.from
   return typeof from === 'string' && from.trim() ? from : ''
 })
 
-const recommendedRoutes = [
-  { name: 'AI Coding 工具集', path: '/aicoding', icon: '🤖', desc: '继续看 AI 工具和文章聚合' },
-  { name: '实时天气预报', path: '/weather', icon: '🌤️', desc: '查城市天气和趋势图' },
-  { name: '经典名人名言', path: '/mingyan', icon: '📜', desc: '随机灵感和句子收藏' },
-  { name: '实时 API 中心', path: '/api-center', icon: '📊', desc: '常用接口入口和调试页' },
-  { name: '推箱子游戏', path: '/sokoban', icon: '🎮', desc: '休息一下，推两步箱子' },
-  { name: '3D 展示馆', path: '/three-showcase', icon: '🎨', desc: '浏览 Three.js 示例合集' }
-]
+const visibleRecommendedRoutes = ref<RouteRecommendation[]>([])
+
+function normalizeRouteLabel(label: string): { icon: string, name: string } {
+  const trimmedLabel = label.trim()
+  const firstSpaceIndex = trimmedLabel.indexOf(' ')
+
+  if (firstSpaceIndex > 0 && firstSpaceIndex <= 4) {
+    const iconCandidate = trimmedLabel.slice(0, firstSpaceIndex)
+    if (/^[\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F♡↗⚡✈]+$/u.test(iconCandidate)) {
+      return {
+        icon: iconCandidate,
+        name: trimmedLabel.slice(firstSpaceIndex + 1).trim() || trimmedLabel
+      }
+    }
+  }
+
+  return {
+    icon: '🧭',
+    name: trimmedLabel
+  }
+}
+
+function isInternalRoute(command: string | undefined): command is string {
+  return Boolean(command && command.startsWith('/') && !command.startsWith('//'))
+}
+
+function collectWebLibraryItems(items: WebLibraryItem[], groupTitle: string, routes: Map<string, RouteRecommendation>): void {
+  for (const item of items) {
+    if (isInternalRoute(item.command)) {
+      const { icon, name } = normalizeRouteLabel(item.label)
+      routes.set(item.command, {
+        name,
+        path: item.command,
+        icon,
+        desc: `${groupTitle} · 全局页面入口`
+      })
+    }
+
+    if (item.children?.length) {
+      collectWebLibraryItems(item.children, groupTitle, routes)
+    }
+  }
+}
+
+function buildGlobalRecommendedRoutes(): RouteRecommendation[] {
+  const routes = new Map<string, RouteRecommendation>()
+
+  for (const group of webLibraryGroups) {
+    collectWebLibraryItems(group.items, group.title, routes)
+  }
+
+  for (const category of menuItemsList) {
+    const tools = [
+      ...(category.tools || []),
+      ...(category.subcategories || []).flatMap((subcategory) => subcategory.tools)
+    ]
+
+    for (const tool of tools) {
+      if (isInternalRoute(tool.link)) {
+        routes.set(tool.link, {
+          name: tool.name,
+          path: tool.link,
+          icon: tool.icon || category.icon || '🧭',
+          desc: `${category.name} · ${tool.desc}`
+        })
+      }
+    }
+  }
+
+  return [...routes.values()].filter((item) => item.path !== '/404')
+}
+
+const recommendedRoutePool = computed<RouteRecommendation[]>(() => buildGlobalRecommendedRoutes())
+
+function refreshRecommendations(): void {
+  const pool = recommendedRoutePool.value
+  if (pool.length <= RECOMMENDATION_SIZE) {
+    visibleRecommendedRoutes.value = pool
+    return
+  }
+
+  visibleRecommendedRoutes.value = [...pool]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, RECOMMENDATION_SIZE)
+}
 
 const handleSearch = () => {
   const keyword = searchQuery.value.trim().toLowerCase()
@@ -28,7 +118,7 @@ const handleSearch = () => {
     return
   }
 
-  const matchedRoute = recommendedRoutes.find((item) => {
+  const matchedRoute = recommendedRoutePool.value.find((item) => {
     return item.name.toLowerCase().includes(keyword) || item.path.toLowerCase().includes(keyword)
   })
 
@@ -53,6 +143,18 @@ const goBack = () => {
 const goHome = () => {
   router.push('/')
 }
+
+onMounted(() => {
+  refreshRecommendations()
+  recommendationRefreshTimer = window.setInterval(refreshRecommendations, RECOMMENDATION_REFRESH_MS)
+})
+
+onUnmounted(() => {
+  if (recommendationRefreshTimer) {
+    window.clearInterval(recommendationRefreshTimer)
+    recommendationRefreshTimer = null
+  }
+})
 </script>
 
 <template>
@@ -114,10 +216,19 @@ const goHome = () => {
       </div>
 
       <section class="recommend-section" aria-labelledby="recommend-title">
-        <h2 id="recommend-title" class="section-title">也许你想去这里</h2>
+        <div class="recommend-heading">
+          <div>
+            <h2 id="recommend-title" class="section-title">也许你想去这里</h2>
+            <p class="section-subtitle">从全局页面入口随机抽取，每 4s 自动换一批。</p>
+          </div>
+          <button class="route-refresh-button" type="button" @click="refreshRecommendations">
+            <span>↻</span>
+            换一批
+          </button>
+        </div>
         <div class="route-grid">
           <button
-            v-for="item in recommendedRoutes"
+            v-for="item in visibleRecommendedRoutes"
             :key="item.path"
             class="route-card"
             type="button"

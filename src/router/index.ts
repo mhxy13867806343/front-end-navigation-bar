@@ -53,6 +53,11 @@ const routes = [
     component: () => import('../views/shareRecords/index.vue')
   },
   {
+    path: '/contact',
+    name: 'Contact',
+    component: () => import('../views/contact/index.vue')
+  },
+  {
     path: '/h5/:ticket',
     name: 'H5DesktopLink',
     component: () => import('../views/h5DesktopLink/index.vue')

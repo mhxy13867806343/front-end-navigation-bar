@@ -41,6 +41,9 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 
 ## 🆕 Recent Updates
 
+- 🧭 **Randomized 404 recommendations**: The `/404` “Maybe go here” section now pulls from the global navigation and Web Components library entries, refreshes randomly every 4 seconds, and includes a manual refresh button.
+- 📬 **Added Contact Center (`/contact`)**: The QQ contact, email contact, and QQ MailMe shortcuts now open a dedicated contact page and highlight the selected contact method.
+- 🐾 **Fixed mascot fallback state**: Replaced the broken-looking cat-face glyph with a stable paw icon and clearer loading/offline copy.
 - 🛑 **Production homepage archive dialog**: Production builds and `npm run preview` open the archive dialog on every homepage visit, showing live time, a clickable email contact, ALAPI jokes, jQuery `animate(scrollTop)` upward scrolling, and copy actions.
 - 🧭 **Added internal news hub pages**: `/ai-xxx/:section`, `/jandan`, `/tophub`, `/ithome`, `/huxiu`, and `/github` are now route-backed internal pages with explicit loading states and disabled refresh/category/pagination controls while requests are pending.
 - ⚡ **Cnblogs Flash now uses real data**: `/flash` prefers a Cnblogs OpenAPI token and falls back to the legacy flash endpoint; login or authorization failures render a real-source status panel instead of mock feeds.

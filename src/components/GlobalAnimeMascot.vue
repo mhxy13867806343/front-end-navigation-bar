@@ -5,7 +5,7 @@
     :class="{ error: loadState === 'error' }"
     aria-label="全局二次元看板娘加载状态"
   >
-    <span class="mascot-face">ฅ^•ﻌ•^ฅ</span>
+    <span class="mascot-face">🐾</span>
     <span>{{ statusText }}</span>
   </aside>
 </template>
