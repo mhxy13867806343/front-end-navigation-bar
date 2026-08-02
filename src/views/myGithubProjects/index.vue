@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   GITHUB_PROJECTS,
   GITHUB_PROJECT_CATEGORIES,
@@ -9,10 +10,66 @@ import {
 import ShareButton from '@/components/ShareButton.vue'
 import './css/index.scss'
 
-const activeCategory: Ref<string> = ref<string>('all')
+const route = useRoute()
+const router = useRouter()
+
+const initialCat: string = (route.query.category as string) || 'all'
+const activeCategory: Ref<string> = ref<string>(initialCat)
 const searchQuery: Ref<string> = ref<string>('')
 const selectedProject: Ref<GithubProjectItem | null> = ref<GithubProjectItem | null>(null)
 const previewDialogVisible: Ref<boolean> = ref<boolean>(false)
+
+const externalUrl: Ref<string> = ref<string>('')
+const externalModalVisible: Ref<boolean> = ref<boolean>(false)
+
+watch(activeCategory, (newCat: string) => {
+  const query = { ...route.query }
+  if (newCat === 'all') {
+    delete query.category
+  } else {
+    query.category = newCat
+  }
+  void router.replace({ query })
+})
+
+watch(
+  () => route.query.category,
+  (newCatQuery) => {
+    const cat = (newCatQuery as string) || 'all'
+    if (activeCategory.value !== cat) {
+      activeCategory.value = cat
+    }
+  }
+)
+
+const handleKeydown = (e: KeyboardEvent): void => {
+  const target = e.target as HTMLElement | null
+  if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+    return
+  }
+
+  const keys = GITHUB_PROJECT_CATEGORIES.map((c: GithubProjectCategory): string => c.key)
+  const currentIndex = keys.indexOf(activeCategory.value)
+  if (currentIndex === -1) return
+
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    const prevIndex = (currentIndex - 1 + keys.length) % keys.length
+    activeCategory.value = keys[prevIndex]
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    const nextIndex = (currentIndex + 1) % keys.length
+    activeCategory.value = keys[nextIndex]
+  }
+}
+
+onMounted((): void => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted((): void => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 
 const filteredProjects: ComputedRef<GithubProjectItem[]> = computed<GithubProjectItem[]>(() => {
   let list = GITHUB_PROJECTS
@@ -42,8 +99,16 @@ const openProjectDetail = (item: GithubProjectItem): void => {
   previewDialogVisible.value = true
 }
 
-const openGithubUrl = (url: string): void => {
-  window.open(url, '_blank')
+const requestExternalNavigation = (url: string): void => {
+  externalUrl.value = url
+  externalModalVisible.value = true
+}
+
+const confirmExternalNavigation = (): void => {
+  if (externalUrl.value) {
+    window.open(externalUrl.value, '_blank')
+  }
+  externalModalVisible.value = false
 }
 </script>
 
@@ -131,7 +196,7 @@ const openGithubUrl = (url: string): void => {
               <button
                 type="button"
                 class="action-btn primary-btn"
-                @click="openGithubUrl(project.githubUrl)"
+                @click="requestExternalNavigation(project.githubUrl)"
               >
                 🐙 GitHub 仓库 ↗
               </button>
@@ -194,10 +259,44 @@ const openGithubUrl = (url: string): void => {
         <div class="detail-section">
           <h3>🔗 快捷跳转链接</h3>
           <div class="quick-links">
-            <a :href="selectedProject.githubUrl" target="_blank" rel="noopener noreferrer" class="link-item github">
+            <button
+              type="button"
+              class="link-item github"
+              @click="requestExternalNavigation(selectedProject.githubUrl)"
+            >
               🐙 访问 GitHub 官方开源地址 ↗
-            </a>
+            </button>
           </div>
+        </div>
+      </div>
+    </el-dialog>
+
+    <!-- 稀土掘金风 外链跳转安全确认 Modal -->
+    <el-dialog
+      v-model="externalModalVisible"
+      title="🔗 外部链接访问确认"
+      width="520px"
+      append-to-body
+      destroy-on-close
+      class="juejin-external-dialog"
+    >
+      <div class="juejin-external-container">
+        <div class="juejin-logo-badge">
+          <span class="badge-icon">🌐</span>
+          <span class="badge-brand">稀土掘金风 · 外链安全检测</span>
+        </div>
+
+        <h3 class="juejin-notice-title">即将离开本站，请注意账号与财产安全</h3>
+
+        <div class="target-url-box">
+          <code>{{ externalUrl }}</code>
+        </div>
+
+        <div class="juejin-modal-actions">
+          <el-button @click="externalModalVisible = false">取消</el-button>
+          <el-button type="primary" class="continue-btn" @click="confirmExternalNavigation">
+            继续访问 ↗
+          </el-button>
         </div>
       </div>
     </el-dialog>
