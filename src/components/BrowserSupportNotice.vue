@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { ComputedRef, Ref } from 'vue'
+import { computed, watch, ref, type ComputedRef, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { STORAGE_KEYS } from '@/constants/storageKeys'
 import WebLibraryItemBlock from './WebLibraryItemBlock.vue'
 
 const router = useRouter()
@@ -89,7 +90,16 @@ const props: BrowserSupportNoticeProps = withDefaults(defineProps<BrowserSupport
   autoOpen: true
 })
 
-const activeWebLibraryGroupId: Ref<string> = ref<string>('new-pages')
+const savedActiveGroup = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.WEB_LIBRARY_ACTIVE_GROUP) : null
+const activeWebLibraryGroupId: Ref<string> = ref<string>(savedActiveGroup || 'new-pages')
+
+watch(activeWebLibraryGroupId, (val: string) => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.WEB_LIBRARY_ACTIVE_GROUP, val)
+  } catch {
+    // localStorage unavailable
+  }
+})
 
 const qrImageModules: Record<string, string> = import.meta.glob('../assets/qc/*.{png,jpg,jpeg,webp,svg}', {
   eager: true,
@@ -308,7 +318,17 @@ interface WebLibraryTreeNode {
 
 type ViewMode = 'tree' | 'split' | 'transfer' | 'carousel' | 'collapse' | 'tabs'
 
-const viewMode: Ref<ViewMode> = ref<ViewMode>('tree')
+const savedViewMode = (typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.WEB_LIBRARY_VIEW_MODE) : null) as ViewMode | null
+const initialViewMode: ViewMode = (savedViewMode && ['tree', 'split', 'transfer', 'carousel', 'collapse', 'tabs'].includes(savedViewMode)) ? savedViewMode : 'tabs'
+const viewMode: Ref<ViewMode> = ref<ViewMode>(initialViewMode)
+
+watch(viewMode, (val: ViewMode) => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.WEB_LIBRARY_VIEW_MODE, val)
+  } catch {
+    // localStorage unavailable
+  }
+})
 const transferSearchQuery: Ref<string> = ref<string>('')
 const activeCollapseNames: Ref<string[]> = ref<string[]>(webLibraryGroups.map((g: WebLibraryGroup): string => g.id))
 

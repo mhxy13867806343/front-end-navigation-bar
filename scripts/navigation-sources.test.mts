@@ -581,9 +581,11 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
   assert.match(storageKeysSource, /SHARE_RECORDS: 'HOOKSVUE_SHARE_RECORDS_V1'/)
 
+  const pageStyleSource = readFileSync(new URL('../src/views/recordsCache/css/index.scss', import.meta.url), 'utf8')
+
   assert.match(pageSource, /class="cloud-panel"/)
   assert.match(pageSource, /class="records-grid"/)
-  assert.match(pageSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
+  assert.match(pageStyleSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
   assert.match(pageSource, /record-heart/)
   assert.match(pageSource, /ShareButton/)
   assert.match(pageSource, /recordSharePayload/)
@@ -607,9 +609,9 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(pageSource, /正在加载记录缓存/)
   assert.match(pageSource, /:disabled="isRefreshing"/)
   assert.match(pageSource, /:title="`\$\{tag\.title\} \(\$\{tag\.count\} 条\)`"/)
-  assert.match(pageSource, /max-width:\s*3em/)
-  assert.match(pageSource, /@include text-ellipsis/)
-  assert.match(pageSource, /@include line-clamp\(2\)/)
+  assert.match(pageStyleSource, /max-width:\s*3em/)
+  assert.match(pageStyleSource, /@include text-ellipsis/)
+  assert.match(pageStyleSource, /@include line-clamp\(2\)/)
 })
 
 test('Juejin theme cards provide item-level favorite controls saved into content favorites', () => {
@@ -692,6 +694,8 @@ test('share records page and shared share button use social share hooks', () => 
   assert.match(appSource, /toolSharePayload/)
   assert.match(appSource, /class="tool-card-share"/)
   assert.match(storageKeysSource, /SHARE_RECORDS: 'HOOKSVUE_SHARE_RECORDS_V1'/)
+  const pageStyleSource = readFileSync(new URL('../src/views/shareRecords/css/index.scss', import.meta.url), 'utf8')
+
   assert.match(composableSource, /SHARE_RECORDS_CHANGE_EVENT/)
   assert.match(composableSource, /buildShareUrl/)
   assert.match(composableSource, /recordShare/)
@@ -713,9 +717,9 @@ test('share records page and shared share button use social share hooks', () => 
   assert.match(pageSource, /class="share-records-page"/)
   assert.match(pageSource, /class="cloud-panel"/)
   assert.match(pageSource, /class="records-grid"/)
-  assert.match(pageSource, /max-width:\s*3em/)
-  assert.match(pageSource, /@include text-ellipsis/)
-  assert.match(pageSource, /@include line-clamp\(2\)/)
+  assert.match(pageStyleSource, /max-width:\s*3em/)
+  assert.match(pageStyleSource, /@include text-ellipsis/)
+  assert.match(pageStyleSource, /@include line-clamp\(2\)/)
   assert.doesNotMatch(pageSource, /record-heart/)
 })
 
@@ -733,16 +737,16 @@ test('line clamp styles are centralized through the shared SCSS mixin', () => {
     '../src/views/cocoloop/css/index.scss',
     '../src/views/githubCn/css/index.scss',
     '../src/views/helloworld/css/index.scss',
-    '../src/views/jandan/index.vue',
-    '../src/views/juejinCourse/index.vue',
+    '../src/views/jandan/css/index.scss',
+    '../src/views/juejinCourse/css/index.scss',
     '../src/views/juejinTheme/css/index.scss',
     '../src/views/mingyan/index.vue',
     '../src/views/mingyan/css/index.scss',
-    '../src/views/recordsCache/index.vue',
-    '../src/views/shareRecords/index.vue'
+    '../src/views/recordsCache/css/index.scss',
+    '../src/views/shareRecords/css/index.scss'
   ]
 
-  assert.match(mixinsSource, /@mixin line-clamp\(\$lines:\s*2\)/)
+  assert.match(mixinsSource, /@mixin line-clamp/)
   assert.match(mixinsSource, /@mixin text-ellipsis/)
 
   for (const filePath of files) {
@@ -758,6 +762,7 @@ test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {
   const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
   const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
   const pageSource = readFileSync(new URL('../src/views/juejinClubs/index.vue', import.meta.url), 'utf8')
+  const pageStyleSource = readFileSync(new URL('../src/views/juejinClubs/css/index.scss', import.meta.url), 'utf8')
   const juejinConstantsSource = readFileSync(new URL('../src/constants/juejin.ts', import.meta.url), 'utf8')
   const liveDataConstantsSource = readFileSync(new URL('../src/constants/liveData.ts', import.meta.url), 'utf8')
   const packageSource = readFileSync(new URL('../package.json', import.meta.url), 'utf8')
@@ -779,10 +784,10 @@ test('Juejin clubs page renders pin club plaza from the new-pages menu', () => {
   assert.match(pageSource, /class="popular-clubs"[\s\S]*?人气圈子/)
   assert.match(pageSource, /popularTopicTitles[\s\S]*?'上班摸鱼'[\s\S]*?'青训营-快乐出发'[\s\S]*?'树洞一下'[\s\S]*?'技术交流圈'[\s\S]*?'内推招聘广场'/)
   assert.match(pageSource, /async function fetchAllTopics\(\): Promise<void>/)
-  assert.match(pageSource, /width:\s*min\(100%,\s*1500px\)/)
-  assert.match(pageSource, /grid-template-columns:\s*minmax\(0,\s*1160px\)\s*420px/)
-  assert.match(pageSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(420px,\s*520px\)\)/)
-  assert.match(pageSource, /justify-content:\s*center/)
+  assert.match(pageStyleSource, /width:\s*min\(100%,\s*1500px\)/)
+  assert.match(pageStyleSource, /grid-template-columns:\s*minmax\(0,\s*1160px\)\s*420px/)
+  assert.match(pageStyleSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(420px,\s*520px\)\)/)
+  assert.match(pageStyleSource, /justify-content:\s*center/)
   assert.match(pageSource, /formatCount\(item\.topic\.follower_count\)[\s\S]*?掘友[\s\S]*?formatCount\(item\.topic\.msg_count\)[\s\S]*?沸点/)
   assert.match(juejinConstantsSource, /buildJuejinClubUrl\(topicId\?: string\)/)
   assert.match(packageSource, /generate-juejin-course-cache\.mts && node scripts\/generate-juejin-clubs-cache\.mts && node scripts\/generate-boss-city-cache\.mts && vite build/)

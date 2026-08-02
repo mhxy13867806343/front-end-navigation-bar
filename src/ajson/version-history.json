@@ -1,6 +1,31 @@
 {
-  "generatedAt": "2026-08-02T04:33:17.866Z",
+  "generatedAt": "2026-08-02T04:52:39.611Z",
   "groups": [
+    {
+      "date": "2026-08-02",
+      "items": [
+        {
+          "hash": "94d047b1bb6823f02eb33fb946fd684df33fee52",
+          "shortHash": "94d047b",
+          "date": "2026-08-02",
+          "time": "12:35",
+          "type": "代码重构",
+          "title": "提取导航子项为共用组件 WebLibraryItemBlock 与共用样式 WebLibraryItemNav.scss",
+          "scope": "",
+          "message": "refactor: 提取导航子项为共用组件 WebLibraryItemBlock 与共用样式 WebLibraryItemNav.scss"
+        },
+        {
+          "hash": "29d367dcc52d82a998f24d6f5fd53d89ca2f6120",
+          "shortHash": "29d367d",
+          "date": "2026-08-02",
+          "time": "12:33",
+          "type": "功能更新",
+          "title": "新增B站直播多分区与百度热榜页面，重构导航菜单三级层级结构并对齐TopHub数据",
+          "scope": "",
+          "message": "feat: 新增B站直播多分区与百度热榜页面，重构导航菜单三级层级结构并对齐TopHub数据"
+        }
+      ]
+    },
     {
       "date": "2026-08-01",
       "items": [
@@ -298,26 +323,6 @@
           "title": "integrate Animate.css official standards (bounce, flash, rubberBand, flip, lightSpeed, etc.) and Juejin CSS/JS animations into Animation Showcase",
           "scope": "",
           "message": "feat: integrate Animate.css official standards (bounce, flash, rubberBand, flip, lightSpeed, etc.) and Juejin CSS/JS animations into Animation Showcase"
-        },
-        {
-          "hash": "20150e43d4dfe5919e96fb5d43bff903b25e5de0",
-          "shortHash": "20150e4",
-          "date": "2026-07-24",
-          "time": "08:55",
-          "type": "功能更新",
-          "title": "optimize Animation Showcase to render unique CSS keyframes, Hue gradients, and code snippets for every single item ID",
-          "scope": "",
-          "message": "feat: optimize Animation Showcase to render unique CSS keyframes, Hue gradients, and code snippets for every single item ID"
-        },
-        {
-          "hash": "6ff9d23cb86d5681061ee945f51b49abaa8dfe10",
-          "shortHash": "6ff9d23",
-          "date": "2026-07-24",
-          "time": "08:53",
-          "type": "功能更新",
-          "title": "enhance Cart Showcase with 10 distinct UI container layouts and Animation Showcase with real CSS keyframe animations, update documentation",
-          "scope": "",
-          "message": "feat: enhance Cart Showcase with 10 distinct UI container layouts and Animation Showcase with real CSS keyframe animations, update documentation"
         }
       ]
     }

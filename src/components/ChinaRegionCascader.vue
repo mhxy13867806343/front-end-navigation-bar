@@ -148,23 +148,4 @@ function handleChange(val: any): void {
 
 <style scoped lang="scss" src="./css/ChinaRegionCascader.scss"></style>
 
-<style lang="scss">
-.china-region-cascader-popper.el-popper,
-.china-region-cascader-popper.el-cascader__dropdown {
-  z-index: 6000 !important;
-}
-
-.china-region-cascader-popper {
-  border-radius: 16px !important;
-  overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2) !important;
-}
-
-.china-region-cascader-popper .el-cascader-menu {
-  min-width: 180px;
-}
-
-.china-region-cascader-popper .el-scrollbar__wrap {
-  max-height: min(360px, 50vh);
-}
-</style>
+<style lang="scss" src="./css/ChinaRegionCascaderGlobal.scss"></style>

@@ -1,0 +1,214 @@
+@import '@/style/mixins.scss';
+
+.huxiu-page {
+  min-height: 100vh;
+  padding: 28px;
+  color: #2b3038;
+  background: #f6f7f9;
+}
+
+.huxiu-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 28px;
+  background: #fff;
+  border: 1px solid #edf0f4;
+}
+
+.huxiu-header span {
+  color: #8d949f;
+  font-weight: 800;
+}
+
+.huxiu-header h1 {
+  margin: 8px 0 10px;
+  font-size: 36px;
+}
+
+.huxiu-header p,
+.status-line span,
+.moment-footer,
+.empty-message {
+  color: #8a919c;
+}
+
+.header-actions,
+.moment-tabs,
+.page-controls,
+.moment-top,
+.moment-footer {
+  display: flex;
+  align-items: center;
+}
+
+.header-actions,
+.moment-tabs {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+button {
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid #e1e5ea;
+  border-radius: 6px;
+  color: #2b3038;
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.moment-tabs {
+  margin: 22px 0;
+  border-bottom: 1px solid #e6e9ee;
+}
+
+.moment-tabs button {
+  border-color: transparent;
+  color: #7c838d;
+}
+
+.moment-tabs button.active {
+  color: #252a32;
+  box-shadow: inset 0 -3px 0 #252a32;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.status-line {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: #fff;
+  border: 1px solid #edf0f4;
+}
+
+.loading-panel {
+  display: grid;
+  gap: 10px;
+  min-height: 180px;
+  place-items: center;
+  margin-bottom: 16px;
+  color: #8a919c;
+  background: #fff;
+  border: 1px solid #edf0f4;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #dfe4ea;
+  border-top-color: #252a32;
+  border-radius: 50%;
+  animation: huxiu-spin 0.8s linear infinite;
+}
+
+.page-controls {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.page-controls button.active {
+  color: #fff;
+  background: #252a32;
+}
+
+.moment-list {
+  display: grid;
+  gap: 18px;
+}
+
+.moment-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 18px;
+  padding: 26px;
+  background: #fff;
+  border: 1px solid #edf0f4;
+}
+
+.moment-favorite {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.moment-share {
+  position: absolute;
+  top: 66px;
+  right: 20px;
+}
+
+.avatar img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.moment-top {
+  justify-content: space-between;
+  padding-right: 56px;
+}
+
+.moment-top a,
+.moment-footer a {
+  color: #2b3038;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.moment-top button {
+  min-width: 88px;
+  color: #ff3b3b;
+  border-color: #ff3b3b;
+}
+
+.moment-body p {
+  margin: 20px 0 28px;
+  font-size: 18px;
+  line-height: 1.9;
+  @include line-clamp(3);
+}
+
+.moment-footer {
+  justify-content: space-between;
+}
+
+.empty-message {
+  padding: 20px;
+  background: #fff;
+  border: 1px dashed #d8dde5;
+}
+
+@keyframes huxiu-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .huxiu-page {
+    padding: 16px;
+  }
+
+  .huxiu-header,
+  .moment-card {
+    display: block;
+  }
+
+  .header-actions {
+    margin-top: 16px;
+  }
+
+  .avatar img {
+    margin-bottom: 14px;
+  }
+}

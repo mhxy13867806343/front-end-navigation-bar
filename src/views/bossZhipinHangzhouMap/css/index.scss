@@ -1,0 +1,586 @@
+@use '@/style/pageMixins.scss' as page;
+
+@include page.form-control-reset;
+
+.boss-map-page {
+  min-height: 100vh;
+  color: #263238;
+  background: #eef4f5;
+  @include page.system-font;
+}
+
+.map-header {
+  display: grid;
+  grid-template-columns: minmax(280px, 430px) minmax(520px, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 18px 28px;
+  border-bottom: 1px solid #dce8e9;
+  background: #ffffff;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.back-button {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 4px;
+  color: #5d6b6f;
+  background: #f1f5f6;
+  font-weight: 800;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #162629;
+  background: transparent;
+}
+
+.brand span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 7px;
+  color: #ffffff;
+  background: #00bebd;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.brand strong {
+  font-size: 21px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.brand-row em {
+  overflow: hidden;
+  color: #00a6a7;
+  font-style: normal;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-search {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 156px 92px 132px;
+  gap: 10px;
+}
+
+.map-search label {
+  position: relative;
+  display: block;
+}
+
+.map-search label span {
+  position: absolute;
+  left: 12px;
+  top: 7px;
+  color: #89979a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.map-search input,
+.map-search select {
+  width: 100%;
+  height: 48px;
+  padding: 18px 12px 4px;
+  border: 1px solid #d6e3e4;
+  border-radius: 4px;
+  color: #263238;
+  background: #ffffff;
+  outline: 0;
+}
+
+.map-search input:focus,
+.map-search select:focus {
+  border-color: #00bebd;
+}
+
+.map-search button {
+  height: 48px;
+  border-radius: 4px;
+  color: #ffffff;
+  font-weight: 900;
+  background: #00bebd;
+}
+
+.map-search .official-button {
+  color: #00a6a7;
+  background: #e8fbfa;
+}
+
+.map-workspace {
+  display: grid;
+  grid-template-columns: 430px minmax(0, 1fr);
+  height: calc(100vh - 85px);
+  min-height: 680px;
+}
+
+.job-list-panel {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  border-right: 1px solid #dce8e9;
+  background: #ffffff;
+}
+
+.list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 16px;
+}
+
+.list-heading span,
+.map-toolbar span,
+.selected-card span {
+  color: #00a6a7;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.list-heading h1 {
+  margin: 5px 0 0;
+  color: #1f2d30;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.list-heading button,
+.filter-row button {
+  border-radius: 4px;
+  color: #536266;
+  background: #f2f6f7;
+  font-weight: 800;
+}
+
+.list-heading button {
+  height: 34px;
+  padding: 0 12px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 22px 16px;
+  border-bottom: 1px solid #edf2f3;
+}
+
+.filter-row button {
+  height: 32px;
+  padding: 0 11px;
+  font-size: 13px;
+}
+
+.filter-row button.active {
+  color: #ffffff;
+  background: #00bebd;
+}
+
+.job-scroll {
+  overflow: auto;
+  padding: 16px;
+}
+
+.map-error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  color: #ff6a3d;
+  background: #fff3ee;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.map-job-card {
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e1e9ea;
+  border-radius: 6px;
+  background: #ffffff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.map-job-card:hover,
+.map-job-card:focus-visible,
+.map-job-card.active {
+  border-color: #00bebd;
+  box-shadow: 0 12px 28px rgba(0, 143, 145, 0.12);
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.map-job-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.map-job-card h2 {
+  margin: 0;
+  color: #1f2d30;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.map-job-card header strong,
+.selected-card > strong {
+  flex: 0 0 auto;
+  color: #ff6a3d;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.map-job-card p {
+  margin: 0 0 12px;
+  color: #657478;
+  font-size: 14px;
+}
+
+.job-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.job-tags span {
+  padding: 5px 8px;
+  border-radius: 4px;
+  color: #59686b;
+  background: #f2f6f7;
+  font-size: 12px;
+}
+
+.map-job-card footer {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 70px;
+  align-items: center;
+  gap: 10px;
+  padding-top: 13px;
+  border-top: 1px solid #edf2f3;
+}
+
+.company-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 6px;
+  color: #ffffff;
+  background: #00bebd;
+  font-weight: 900;
+}
+
+.map-job-card footer b,
+.map-job-card footer span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-job-card footer b {
+  color: #253236;
+  font-size: 14px;
+}
+
+.map-job-card footer span {
+  color: #879397;
+  font-size: 12px;
+}
+
+.map-job-card footer button,
+.map-toolbar button {
+  height: 34px;
+  border-radius: 4px;
+  color: #ffffff;
+  background: #00bebd;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.empty-state {
+  padding: 36px 18px;
+  border: 1px dashed #c9d8da;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.empty-state h2 {
+  margin: 0 0 8px;
+  color: #263238;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #718084;
+}
+
+.map-panel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  padding: 18px;
+  background: #dceff0;
+}
+
+.map-toolbar,
+.selected-card {
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(0, 143, 145, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 36px rgba(32, 62, 65, 0.12);
+}
+
+.map-toolbar strong {
+  display: block;
+  margin-top: 4px;
+  color: #1f2d30;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.map-toolbar button {
+  width: 96px;
+}
+
+.hangzhou-map {
+  position: relative;
+  min-height: 520px;
+  margin: 18px 0;
+  overflow: hidden;
+  border: 1px solid rgba(0, 143, 145, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(140deg, #cbebe9 0%, #edf8ef 48%, #c7e5ef 100%);
+  background-size: 44px 44px, 44px 44px, auto;
+}
+
+.map-water,
+.road,
+.district-label,
+.map-pin {
+  position: absolute;
+}
+
+.map-water {
+  display: grid;
+  place-items: center;
+  color: rgba(0, 123, 155, 0.56);
+  font-size: 15px;
+  font-weight: 900;
+  background: rgba(85, 183, 220, 0.3);
+}
+
+.west-lake {
+  left: 28%;
+  top: 39%;
+  width: 96px;
+  height: 132px;
+  border-radius: 48% 52% 42% 58%;
+}
+
+.qiantang-river {
+  left: 42%;
+  top: 58%;
+  width: 54%;
+  height: 64px;
+  transform: rotate(-16deg);
+  border-radius: 999px;
+}
+
+.road {
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 0 0 1px rgba(0, 143, 145, 0.08);
+}
+
+.road-east {
+  left: 54%;
+  top: 8%;
+  width: 20px;
+  height: 76%;
+  transform: rotate(12deg);
+}
+
+.road-west {
+  left: 20%;
+  top: 12%;
+  width: 16px;
+  height: 68%;
+  transform: rotate(-24deg);
+}
+
+.road-south {
+  left: 12%;
+  top: 62%;
+  width: 78%;
+  height: 18px;
+  transform: rotate(-8deg);
+}
+
+.district-label {
+  padding: 7px 10px;
+  border-radius: 4px;
+  color: rgba(38, 50, 56, 0.64);
+  background: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.district-label.xihu {
+  left: 25%;
+  top: 30%;
+}
+
+.district-label.yuhang {
+  left: 18%;
+  top: 15%;
+}
+
+.district-label.binjiang {
+  left: 48%;
+  top: 72%;
+}
+
+.district-label.xiaoshan {
+  left: 66%;
+  top: 50%;
+}
+
+.district-label.gongshu {
+  left: 48%;
+  top: 25%;
+}
+
+.map-pin {
+  display: grid;
+  min-width: 48px;
+  height: 30px;
+  padding: 0 9px;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #00bebd;
+  box-shadow: 0 10px 24px rgba(0, 105, 107, 0.24);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.map-pin::after {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 10px;
+  height: 10px;
+  content: "";
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  background: inherit;
+}
+
+.map-pin.active {
+  z-index: 4;
+  background: #ff6a3d;
+  transform: translate(-50%, -50%) scale(1.12);
+}
+
+.selected-card h2 {
+  margin: 5px 0 6px;
+  color: #1f2d30;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.selected-card p {
+  margin: 0;
+  color: #617074;
+}
+
+@media (max-width: 1100px) {
+  .map-header,
+  .map-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .map-workspace {
+    height: auto;
+  }
+
+  .job-list-panel {
+    border-right: 0;
+    border-bottom: 1px solid #dce8e9;
+  }
+
+  .job-scroll {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    max-height: none;
+  }
+
+  .map-job-card {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .map-header {
+    padding: 14px;
+  }
+
+  .brand-row {
+    flex-wrap: wrap;
+  }
+
+  .map-search,
+  .job-scroll {
+    grid-template-columns: 1fr;
+  }
+
+  .map-panel {
+    padding: 12px;
+  }
+
+  .map-toolbar,
+  .selected-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hangzhou-map {
+    min-height: 430px;
+  }
+}

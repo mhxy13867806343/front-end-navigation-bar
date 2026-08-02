@@ -35,6 +35,20 @@
   --sidebar-active-bg: rgba(108, 114, 247, 0.15);
 }
 
+/* Global Layout Utility Classes */
+.flex-between-end { @include flex-between-end; }
+.flex-between-start { @include flex-between-start; }
+.flex-between { @include flex-between; }
+.flex-center { @include flex-center; }
+.flex-column { @include flex-column; }
+.flex-column-center { @include flex-column-center; }
+.grid-center { @include grid-center; }
+
+/* Global Text Truncation Utility Classes */
+.text-ellipsis, .text-truncate { @include line-clamp(1); }
+.line-clamp-2 { @include line-clamp(2); }
+.line-clamp-3 { @include line-clamp(3); }
+
 * {
   margin: 0;
   padding: 0;

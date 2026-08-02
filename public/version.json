@@ -1,10 +1,31 @@
 {
-  "version": "v1.0.954784",
-  "randomVersion": "v1.0.954784",
-  "randomCode": "VER-153256",
-  "buildTime": "2026-08-02T04:33:17.743Z",
-  "timestamp": 1785645197744,
+  "version": "v1.2.100726",
+  "randomVersion": "v1.2.100726",
+  "randomCode": "VER-623416",
+  "buildTime": "2026-08-02T04:52:39.477Z",
+  "timestamp": 1785646359478,
   "history": [
+    {
+      "version": "v1.2.100726",
+      "randomVersion": "v1.2.100726",
+      "randomCode": "VER-623416",
+      "buildTime": "2026-08-02T04:52:39.477Z",
+      "timestamp": 1785646359478
+    },
+    {
+      "version": "v1.2.957345",
+      "randomVersion": "v1.2.957345",
+      "randomCode": "VER-817651",
+      "buildTime": "2026-08-02T04:52:09.859Z",
+      "timestamp": 1785646329859
+    },
+    {
+      "version": "v1.5.475054",
+      "randomVersion": "v1.5.475054",
+      "randomCode": "VER-610271",
+      "buildTime": "2026-08-02T04:51:15.001Z",
+      "timestamp": 1785646275002
+    },
     {
       "version": "v1.0.954784",
       "randomVersion": "v1.0.954784",

@@ -132,10 +132,7 @@ export class WcCounterButton extends HTMLElement {
   render() {
     const count = this.getAttribute('count') || '0'
     this.shadowRoot.innerHTML = \`
-      <style>
-        :host { display: inline-flex; font-family: sans-serif; }
-        button { background: #3b82f6; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
-      </style>
+      <style lang="scss" src="./css/index.scss"></style>
       <button part="button">\${count}</button>
     \`
   }
@@ -606,87 +603,12 @@ export const ReactWebComponentDemo = () => {
   cursor: pointer;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-  }
-
-  &.highlight {
-    background: #ec4899;
-    border-color: #ec4899;
-
-    &:hover {
-      background: #db2777;
-    }
-  }
-}
-
-.nav-tabs {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
-}
-
-.tab-item {
-  padding: 10px 20px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #6b7280;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: #111827;
-    background: rgba(0, 0, 0, 0.04);
-  }
-
   &.active {
     background: #4338ca;
     color: #ffffff;
     box-shadow: 0 4px 14px rgba(67, 56, 202, 0.3);
   }
 }
-
-.demo-section {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.section-desc {
-  margin-bottom: 24px;
-  h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
-  p { color: #6b7280; line-height: 1.6; }
-}
-
-.lifecycle-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.lifecycle-card {
-  background: #ffffff;
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  h4 { font-size: 1rem; color: #4338ca; margin-bottom: 6px; }
-  p { font-size: 0.85rem; color: #4b5563; margin: 0; }
-}
-
-.interactive-workbench {
-  display: grid;
   grid-template-columns: 340px 1fr;
   gap: 24px;
   margin-bottom: 24px;

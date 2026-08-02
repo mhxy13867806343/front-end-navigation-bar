@@ -429,6 +429,4 @@ const triggerSocial = (platform: string) => {
   </div>
 </template>
 
-<style scoped lang="scss">
-@import './css/index.scss';
-</style>
+<style scoped lang="scss" src="./css/index.scss"></style>

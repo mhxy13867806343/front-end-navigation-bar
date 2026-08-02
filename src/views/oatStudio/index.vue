@@ -1002,11 +1002,4 @@ const scrollToTop = () => {
   </div>
 </template>
 
-<style scoped lang="scss">
-@import './css/index.scss';
-
-@keyframes oatSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-</style>
+<style scoped lang="scss" src="./css/index.scss"></style>

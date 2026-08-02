@@ -1,0 +1,128 @@
+.error-container {
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.visual-hero {
+  position: relative;
+  margin-bottom: 20px;
+
+  .planet-orbit {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(126, 34, 206, 0.05) 100%);
+    border: 2px dashed rgba(168, 85, 247, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    position: relative;
+
+    .astronaut-icon {
+      font-size: 58px;
+      animation: orbitFloat 4s ease-in-out infinite;
+    }
+  }
+
+  .error-code {
+    font-size: 88px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7e22ce 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 30px rgba(168, 85, 247, 0.35);
+  }
+}
+
+.error-info {
+  width: 100%;
+
+  .error-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #f8fafc;
+  }
+
+  .error-desc {
+    font-size: 15px;
+    color: #94a3b8;
+    max-width: 650px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+  }
+
+  .search-card {
+    max-width: 580px;
+    margin: 0 auto 32px;
+  }
+
+  .recommend-section {
+    margin-bottom: 32px;
+
+    .section-title {
+      font-size: 15px;
+      color: #cbd5e1;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .route-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+
+      .route-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+
+        &:hover {
+          background: rgba(168, 85, 247, 0.12);
+          border-color: rgba(168, 85, 247, 0.4);
+          transform: translateY(-2px);
+        }
+
+        .route-icon {
+          font-size: 22px;
+        }
+
+        .route-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: #f1f5f9;
+        }
+      }
+    }
+  }
+
+  .action-btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+}
+
+@keyframes orbitFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(10deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
