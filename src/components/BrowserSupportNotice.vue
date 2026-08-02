@@ -2,6 +2,7 @@
 import type { ComputedRef, Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import WebLibraryItemBlock from './WebLibraryItemBlock.vue'
 
 const router = useRouter()
 const goToWeather = (): void => {
@@ -670,15 +671,12 @@ onUnmounted((): void => {
                   <span>{{ group.icon }} {{ group.title }}</span>
                 </template>
                 <div class="tabs-grid">
-                  <button
+                  <WebLibraryItemBlock
                     v-for="item in group.items"
-                    :key="item.command"
-                    type="button"
-                    class="web-library-item"
-                    @click="handleCommand(item.command)"
-                  >
-                    {{ item.label }}
-                  </button>
+                    :key="item.label"
+                    :item="item"
+                    @command="handleCommand"
+                  />
                 </div>
               </el-tab-pane>
             </el-tabs>
@@ -706,36 +704,12 @@ onUnmounted((): void => {
                 <span>{{ activeWebLibraryGroup.icon }}</span>
                 <strong>{{ activeWebLibraryGroup.title }}</strong>
               </div>
-              <template v-for="item in activeWebLibraryGroup.items" :key="item.label">
-                <div v-if="item.children?.length" class="web-library-item-block">
-                  <button
-                    type="button"
-                    class="web-library-item parent-item"
-                    @click="item.command && handleCommand(item.command)"
-                  >
-                    {{ item.label }}
-                  </button>
-                  <div class="web-library-sub-items">
-                    <button
-                      v-for="sub in item.children"
-                      :key="sub.command || sub.label"
-                      type="button"
-                      class="web-library-sub-item"
-                      @click="sub.command && handleCommand(sub.command)"
-                    >
-                      {{ sub.label }}
-                    </button>
-                  </div>
-                </div>
-                <button
-                  v-else
-                  type="button"
-                  class="web-library-item"
-                  @click="item.command && handleCommand(item.command)"
-                >
-                  {{ item.label }}
-                </button>
-              </template>
+              <WebLibraryItemBlock
+                v-for="item in activeWebLibraryGroup.items"
+                :key="item.label"
+                :item="item"
+                @command="handleCommand"
+              />
             </div>
           </div>
 
@@ -795,15 +769,12 @@ onUnmounted((): void => {
                     <span class="slide-badge">{{ group.items.length }} 个项目</span>
                   </div>
                   <div class="slide-grid">
-                    <button
+                    <WebLibraryItemBlock
                       v-for="item in group.items"
-                      :key="item.command"
-                      type="button"
-                      class="web-library-item"
-                      @click="handleCommand(item.command)"
-                    >
-                      {{ item.label }}
-                    </button>
+                      :key="item.label"
+                      :item="item"
+                      @command="handleCommand"
+                    />
                   </div>
                 </div>
               </el-carousel-item>
@@ -825,15 +796,12 @@ onUnmounted((): void => {
                   </div>
                 </template>
                 <div class="collapse-grid">
-                  <button
+                  <WebLibraryItemBlock
                     v-for="item in group.items"
-                    :key="item.command"
-                    type="button"
-                    class="web-library-item"
-                    @click="handleCommand(item.command)"
-                  >
-                    {{ item.label }}
-                  </button>
+                    :key="item.label"
+                    :item="item"
+                    @command="handleCommand"
+                  />
                 </div>
               </el-collapse-item>
             </el-collapse>

@@ -1002,12 +1002,14 @@ test('Bilibili Live Area Tag pages and Baidu Trending pages have direct routes, 
   assert.match(toolboxSource, /id:\s*'baidu-trending-novel'/)
   assert.match(toolboxSource, /id:\s*'baidu-trending-teleplay'/)
 
+  const itemBlockSource = readFileSync(new URL('../src/components/WebLibraryItemBlock.vue', import.meta.url), 'utf8')
+
   assert.match(noticeSource, /command:\s*'\/bilibili-live-play-together'/)
   assert.match(noticeSource, /command:\s*'\/baidu-trending-movie'/)
   assert.match(noticeSource, /command:\s*'\/baidu-trending-novel'/)
   assert.match(noticeSource, /command:\s*'\/baidu-trending-teleplay'/)
   assert.match(noticeSource, /children:\s*\[/)
-  assert.match(noticeSource, /web-library-sub-items/)
+  assert.match(itemBlockSource, /web-library-sub-items/)
 
   assert.match(virtualView, /:parent-area-id="9"/)
   assert.match(entertainmentView, /:parent-area-id="1"/)
