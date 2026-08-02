@@ -26,7 +26,9 @@ export const STORAGE_KEYS = {
   /** Web 组件与库导航模式缓存 (tree / tabs / split / transfer / carousel / collapse) */
   WEB_LIBRARY_VIEW_MODE: 'HOOKSVUE_WEB_LIBRARY_VIEW_MODE_V1',
   /** Web 组件与库导航选中的分类组 ID */
-  WEB_LIBRARY_ACTIVE_GROUP: 'HOOKSVUE_WEB_LIBRARY_ACTIVE_GROUP_V1'
+  WEB_LIBRARY_ACTIVE_GROUP: 'HOOKSVUE_WEB_LIBRARY_ACTIVE_GROUP_V1',
+  /** Web 组件与库导航搜索历史记录 */
+  WEB_LIBRARY_SEARCH_HISTORY: 'HOOKSVUE_WEB_LIBRARY_SEARCH_HISTORY_V1'
 } as const
 
 export type StorageKeyType = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS] | string

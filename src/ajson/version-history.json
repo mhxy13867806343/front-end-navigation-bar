@@ -1,9 +1,49 @@
 {
-  "generatedAt": "2026-08-02T04:57:55.448Z",
+  "generatedAt": "2026-08-02T05:19:59.577Z",
   "groups": [
     {
       "date": "2026-08-02",
       "items": [
+        {
+          "hash": "340d62ff0d4244b04a4a254cc17659da2a465100",
+          "shortHash": "340d62f",
+          "date": "2026-08-02",
+          "time": "13:14",
+          "type": "功能更新",
+          "title": "隐藏右侧环境检测与说明按钮，支持点击左侧环境检测文本区域直接唤起弹窗",
+          "scope": "",
+          "message": "feat: 隐藏右侧环境检测与说明按钮，支持点击左侧环境检测文本区域直接唤起弹窗"
+        },
+        {
+          "hash": "adace9b4e6aa2a0c1ee64d54abd75b8070755c2d",
+          "shortHash": "adace9b",
+          "date": "2026-08-02",
+          "time": "13:01",
+          "type": "问题修复",
+          "title": "为环境检测与说明弹窗添加 append-to-body 属性以实现全局屏幕居中，修复类名选择器",
+          "scope": "",
+          "message": "fix: 为环境检测与说明弹窗添加 append-to-body 属性以实现全局屏幕居中，修复类名选择器"
+        },
+        {
+          "hash": "3bc2d5ce9dda2b82329a0060fbbd4f233da04eea",
+          "shortHash": "3bc2d5c",
+          "date": "2026-08-02",
+          "time": "13:00",
+          "type": "问题修复",
+          "title": "完善浏览器能力检测弹窗与走马灯 3D 卡片半透明重叠 SCSS 样式",
+          "scope": "",
+          "message": "fix: 完善浏览器能力检测弹窗与走马灯 3D 卡片半透明重叠 SCSS 样式"
+        },
+        {
+          "hash": "40c924d9fba7b0e3fd34562e8e6714a80fea41a8",
+          "shortHash": "40c924d",
+          "date": "2026-08-02",
+          "time": "12:59",
+          "type": "问题修复",
+          "title": "移除顶部导航重复快捷按钮，修复 webLibrary 弹窗 6 种视图模式的 SCSS 样式绑定与布局",
+          "scope": "",
+          "message": "fix: 移除顶部导航重复快捷按钮，修复 webLibrary 弹窗 6 种视图模式的 SCSS 样式绑定与布局"
+        },
         {
           "hash": "057e4aac61c39b92d49dd6c17dee56567f71d353",
           "shortHash": "057e4aa",
@@ -279,46 +319,6 @@
           "shortHash": "29f24df",
           "date": "2026-07-24",
           "time": "10:08",
-          "type": "功能更新",
-          "title": "update site assets, Xiaomi shop data, and navigation bar",
-          "scope": "",
-          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
-        },
-        {
-          "hash": "e1ca35837ff5a82013fe3daa623c04ff3312f773",
-          "shortHash": "e1ca358",
-          "date": "2026-07-24",
-          "time": "09:55",
-          "type": "功能更新",
-          "title": "update site assets, Xiaomi shop data, and navigation bar",
-          "scope": "",
-          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
-        },
-        {
-          "hash": "203372dcf85f14e7d3337833780bc08ee199286e",
-          "shortHash": "203372d",
-          "date": "2026-07-24",
-          "time": "09:48",
-          "type": "功能更新",
-          "title": "update site assets, Xiaomi shop data, and navigation bar",
-          "scope": "",
-          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
-        },
-        {
-          "hash": "ac31dd2a02061b0789f31de972547e96c5322394",
-          "shortHash": "ac31dd2",
-          "date": "2026-07-24",
-          "time": "09:40",
-          "type": "功能更新",
-          "title": "update site assets, Xiaomi shop data, and navigation bar",
-          "scope": "",
-          "message": "feat: update site assets, Xiaomi shop data, and navigation bar"
-        },
-        {
-          "hash": "eacdcf84a3eae49c811c7e6cdf635449aa266857",
-          "shortHash": "eacdcf8",
-          "date": "2026-07-24",
-          "time": "09:14",
           "type": "功能更新",
           "title": "update site assets, Xiaomi shop data, and navigation bar",
           "scope": "",

@@ -120,6 +120,90 @@ watch(viewMode, (val: ViewMode) => {
   }
 })
 
+const webLibrarySearchQuery: Ref<string> = ref<string>('')
+
+function loadInitialSearchHistory(): string[] {
+  if (typeof localStorage === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.WEB_LIBRARY_SEARCH_HISTORY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+const searchHistoryList: Ref<string[]> = ref<string[]>(loadInitialSearchHistory())
+
+function saveSearchHistory(query: string): void {
+  const trimmed = query.trim()
+  if (!trimmed) return
+  searchHistoryList.value = [trimmed, ...searchHistoryList.value.filter((item: string): boolean => item !== trimmed)].slice(0, 10)
+  try {
+    localStorage.setItem(STORAGE_KEYS.WEB_LIBRARY_SEARCH_HISTORY, JSON.stringify(searchHistoryList.value))
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+function removeHistoryItem(term: string): void {
+  searchHistoryList.value = searchHistoryList.value.filter((item: string): boolean => item !== term)
+  try {
+    localStorage.setItem(STORAGE_KEYS.WEB_LIBRARY_SEARCH_HISTORY, JSON.stringify(searchHistoryList.value))
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+function clearSearchHistory(): void {
+  searchHistoryList.value = []
+  try {
+    localStorage.removeItem(STORAGE_KEYS.WEB_LIBRARY_SEARCH_HISTORY)
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+function applyHistoryQuery(term: string): void {
+  webLibrarySearchQuery.value = term
+}
+
+function filterItemRecursive(item: WebLibraryItem, q: string): WebLibraryItem | null {
+  const labelMatches = item.label.toLowerCase().includes(q)
+  const matchedChildren = item.children
+    ? item.children.map((sub: WebLibraryItem): WebLibraryItem | null => filterItemRecursive(sub, q)).filter((sub: WebLibraryItem | null): sub is WebLibraryItem => sub !== null)
+    : undefined
+
+  if (labelMatches || (matchedChildren && matchedChildren.length > 0)) {
+    return {
+      ...item,
+      children: matchedChildren && matchedChildren.length > 0 ? matchedChildren : item.children
+    }
+  }
+  return null
+}
+
+const filteredWebLibraryGroups: ComputedRef<WebLibraryGroup[]> = computed<WebLibraryGroup[]>(() => {
+  const q: string = webLibrarySearchQuery.value.trim().toLowerCase()
+  if (!q) return webLibraryGroups
+
+  return webLibraryGroups
+    .map((group: WebLibraryGroup): WebLibraryGroup | null => {
+      const groupMatches: boolean = group.title.toLowerCase().includes(q)
+      const matchedItems: WebLibraryItem[] = group.items
+        .map((item: WebLibraryItem): WebLibraryItem | null => filterItemRecursive(item, q))
+        .filter((item: WebLibraryItem | null): item is WebLibraryItem => item !== null)
+
+      if (groupMatches || matchedItems.length > 0) {
+        return {
+          ...group,
+          items: matchedItems.length > 0 ? matchedItems : group.items
+        }
+      }
+      return null
+    })
+    .filter((g: WebLibraryGroup | null): g is WebLibraryGroup => g !== null)
+})
+
 const transferSearchQuery: Ref<string> = ref<string>('')
 const activeCollapseNames: Ref<string[]> = ref<string[]>(webLibraryGroups.map((g: WebLibraryGroup): string => g.id))
 
@@ -127,23 +211,47 @@ const tabsPosition: Ref<'top' | 'left' | 'right' | 'bottom'> = ref<'top' | 'left
 const tabsType: Ref<'border-card' | 'card' | ''> = ref<'border-card' | 'card' | ''>('border-card')
 
 const filteredTransferGroups: ComputedRef<WebLibraryGroup[]> = computed<WebLibraryGroup[]>(() => {
-  if (!transferSearchQuery.value.trim()) return webLibraryGroups
-  const q: string = transferSearchQuery.value.trim().toLowerCase()
-  return webLibraryGroups.filter(
+  const subQ = transferSearchQuery.value.trim().toLowerCase()
+  if (!subQ) return filteredWebLibraryGroups.value
+
+  return filteredWebLibraryGroups.value.filter(
     (g: WebLibraryGroup): boolean =>
-      g.title.toLowerCase().includes(q) ||
-      g.items.some((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(q))
+      g.title.toLowerCase().includes(subQ) ||
+      g.items.some((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(subQ))
   )
 })
 
 const filteredTransferItems: ComputedRef<WebLibraryItem[]> = computed<WebLibraryItem[]>(() => {
-  const items: WebLibraryItem[] = activeWebLibraryGroup.value.items
-  if (!transferSearchQuery.value.trim()) return items
-  const q: string = transferSearchQuery.value.trim().toLowerCase()
-  return items.filter((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(q))
+  const group = filteredWebLibraryGroups.value.find((g: WebLibraryGroup): boolean => g.id === activeWebLibraryGroupId.value) || filteredWebLibraryGroups.value[0]
+  if (!group) return []
+  const items: WebLibraryItem[] = group.items
+  const subQ: string = transferSearchQuery.value.trim().toLowerCase()
+  if (!subQ) return items
+  return items.filter((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(subQ))
 })
 
-const treeData: ComputedRef<WebLibraryTreeNode[]> = computed<WebLibraryTreeNode[]>(() => buildWebLibraryTreeData())
+const treeData: ComputedRef<WebLibraryTreeNode[]> = computed<WebLibraryTreeNode[]>(() => {
+  const rawTree = buildWebLibraryTreeData()
+  const q = webLibrarySearchQuery.value.trim().toLowerCase()
+  if (!q) return rawTree
+
+  function filterTreeNode(node: WebLibraryTreeNode): WebLibraryTreeNode | null {
+    const labelMatches = node.label.toLowerCase().includes(q)
+    const filteredChildren = node.children
+      ? node.children.map(filterTreeNode).filter((c: WebLibraryTreeNode | null): c is WebLibraryTreeNode => c !== null)
+      : undefined
+
+    if (labelMatches || (filteredChildren && filteredChildren.length > 0)) {
+      return {
+        ...node,
+        children: filteredChildren
+      }
+    }
+    return null
+  }
+
+  return rawTree.map(filterTreeNode).filter((n: WebLibraryTreeNode | null): n is WebLibraryTreeNode => n !== null)
+})
 
 const handleTreeNodeClick = (node: WebLibraryTreeNode): void => {
   if (node.command) {
@@ -354,8 +462,59 @@ onUnmounted((): void => {
             </div>
           </div>
 
+          <!-- 全局实时搜索框与历史记录栏 -->
+          <div class="web-library-global-search">
+            <div class="search-input-row">
+              <el-input
+                v-model="webLibrarySearchQuery"
+                placeholder="🔍 搜索 Web 组件/微应用/子页面 (如: 哔哩哔哩, 掘金, BOSS直聘, 动画, 地图... 按 Enter 保存历史)"
+                clearable
+                size="small"
+                class="global-search-input"
+                @keyup.enter="saveSearchHistory(webLibrarySearchQuery)"
+                @clear="webLibrarySearchQuery = ''"
+              />
+              <el-button
+                v-if="webLibrarySearchQuery.trim()"
+                type="primary"
+                size="small"
+                plain
+                class="save-search-btn"
+                @click="saveSearchHistory(webLibrarySearchQuery)"
+              >
+                保存历史
+              </el-button>
+            </div>
+
+            <div v-if="searchHistoryList.length > 0" class="search-history-bar">
+              <span class="history-label">🕒 历史搜索：</span>
+              <div class="history-tags">
+                <el-tag
+                  v-for="item in searchHistoryList"
+                  :key="item"
+                  size="small"
+                  effect="plain"
+                  round
+                  closable
+                  class="history-tag"
+                  @click="applyHistoryQuery(item)"
+                  @close="removeHistoryItem(item)"
+                >
+                  {{ item }}
+                </el-tag>
+              </div>
+              <button type="button" class="clear-history-btn" @click="clearSearchHistory" title="清空全部搜索历史">
+                🗑️ 清空历史
+              </button>
+            </div>
+          </div>
+
+          <div v-if="!filteredWebLibraryGroups.length" class="web-library-empty-tip">
+            🔍 未检索到匹配的 Web 组件或导航页面，请尝试调整关键词。
+          </div>
+
           <!-- 模式 1：树形结构 -->
-          <div v-if="viewMode === 'tree'" class="web-library-tree-wrapper">
+          <div v-else-if="viewMode === 'tree'" class="web-library-tree-wrapper">
             <el-tree
               :data="treeData"
               node-key="id"
@@ -443,7 +602,7 @@ onUnmounted((): void => {
               class="web-library-el-tabs"
             >
               <el-tab-pane
-                v-for="group in webLibraryGroups"
+                v-for="group in filteredWebLibraryGroups"
                 :key="group.id"
                 :name="group.id"
               >
@@ -469,7 +628,7 @@ onUnmounted((): void => {
           <div v-else-if="viewMode === 'split'" class="web-library-split-wrapper">
             <div class="web-library-sidebar">
               <button
-                v-for="group in webLibraryGroups"
+                v-for="group in filteredWebLibraryGroups"
                 :key="group.id"
                 type="button"
                 class="group-tab-btn"
@@ -503,7 +662,7 @@ onUnmounted((): void => {
             <div class="transfer-filter-bar">
               <el-input
                 v-model="transferSearchQuery"
-                placeholder="🔍 快速搜索全站 Web 组件/库或微应用分类..."
+                placeholder="🔍 在当前选中的分类面板内进行二次精细筛选..."
                 clearable
                 size="small"
                 class="transfer-search-input"
@@ -545,7 +704,7 @@ onUnmounted((): void => {
           <!-- 模式 4：走马灯轮播 (Carousel View) -->
           <div v-else-if="viewMode === 'carousel'" class="web-library-carousel-wrapper">
             <el-carousel :interval="6000" type="card" height="320px" indicator-position="outside">
-              <el-carousel-item v-for="group in webLibraryGroups" :key="group.id">
+              <el-carousel-item v-for="group in filteredWebLibraryGroups" :key="group.id">
                 <div class="carousel-card-inner">
                   <div class="carousel-card-header">
                     <span class="card-icon">{{ group.icon }}</span>
@@ -568,7 +727,7 @@ onUnmounted((): void => {
           <div v-else-if="viewMode === 'collapse'" class="web-library-collapse-wrapper">
             <el-collapse v-model="activeCollapseNames">
               <el-collapse-item
-                v-for="group in webLibraryGroups"
+                v-for="group in filteredWebLibraryGroups"
                 :key="group.id"
                 :name="group.id"
               >

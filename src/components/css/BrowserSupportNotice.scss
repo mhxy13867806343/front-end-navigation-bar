@@ -203,6 +203,106 @@
   background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
 }
 
+.web-library-global-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  .global-search-input {
+    flex: 1;
+
+    :deep(.el-input__wrapper) {
+      border-radius: 6px;
+      background: var(--bg-primary);
+      box-shadow: 0 0 0 1px var(--border-color) inset;
+
+      &.is-focus {
+        box-shadow: 0 0 0 1px var(--primary-color) inset;
+      }
+    }
+  }
+
+  .save-search-btn {
+    flex-shrink: 0;
+  }
+}
+
+.search-history-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  min-width: 0;
+
+  .history-label {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .history-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    flex: 1;
+    min-width: 0;
+    padding-bottom: 2px;
+
+    &::-webkit-scrollbar {
+      height: 3px;
+    }
+
+    .history-tag {
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+
+      &:hover {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+    }
+  }
+
+  .clear-history-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+
+    &:hover {
+      color: #ff5a5f;
+      background: color-mix(in srgb, #ff5a5f 12%, transparent);
+    }
+  }
+}
+
+.web-library-empty-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
 .toolbar-title {
   font-size: 13px;
   font-weight: 700;

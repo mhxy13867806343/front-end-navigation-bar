@@ -593,6 +593,7 @@ test('records cache page renders cloud tags two-column cards and favorite contro
   assert.match(storageKeysSource, /RECORD_CACHE_FAVORITES: 'HOOKSVUE_RECORD_CACHE_FAVORITES_V1'/)
   assert.match(storageKeysSource, /CONTENT_ITEM_FAVORITES: 'HOOKSVUE_CONTENT_ITEM_FAVORITES_V1'/)
   assert.match(storageKeysSource, /SHARE_RECORDS: 'HOOKSVUE_SHARE_RECORDS_V1'/)
+  assert.match(storageKeysSource, /WEB_LIBRARY_SEARCH_HISTORY: 'HOOKSVUE_WEB_LIBRARY_SEARCH_HISTORY_V1'/)
 
   const pageStyleSource = readFileSync(new URL('../src/views/recordsCache/css/index.scss', import.meta.url), 'utf8')
 
@@ -1049,5 +1050,21 @@ test('Bilibili Live Area Tag pages and Baidu Trending pages have direct routes, 
   assert.match(baiduMovieView, /tab="movie"/)
   assert.match(baiduNovelView, /tab="novel"/)
   assert.match(baiduTeleplayView, /tab="teleplay"/)
+})
+
+test('WebLibrary popover provides global search with search history storage', () => {
+  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+  const noticeStyleSource = readFileSync(new URL('../src/components/css/BrowserSupportNotice.scss', import.meta.url), 'utf8')
+  const storageKeysSource = readFileSync(new URL('../src/constants/storageKeys.ts', import.meta.url), 'utf8')
+
+  assert.match(storageKeysSource, /WEB_LIBRARY_SEARCH_HISTORY:\s*'HOOKSVUE_WEB_LIBRARY_SEARCH_HISTORY_V1'/)
+  assert.match(noticeSource, /webLibrarySearchQuery/)
+  assert.match(noticeSource, /searchHistoryList/)
+  assert.match(noticeSource, /saveSearchHistory/)
+  assert.match(noticeSource, /removeHistoryItem/)
+  assert.match(noticeSource, /clearSearchHistory/)
+  assert.match(noticeStyleSource, /\.web-library-global-search/)
+  assert.match(noticeStyleSource, /\.search-history-bar/)
+  assert.match(noticeStyleSource, /\.history-tags/)
 })
 
