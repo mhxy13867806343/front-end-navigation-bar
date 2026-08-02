@@ -30,37 +30,39 @@
             <span>ALAPI 笑话接口</span>
             <strong>列表自动向上滚动</strong>
           </div>
-          <div class="joke-actions">
-            <div class="joke-count-presets" aria-label="选择笑话条数">
-              <n-button
-                v-for="preset in jokeCountPresets"
-                :key="preset"
-                size="small"
-                :type="jokeCount === preset ? 'primary' : 'default'"
-                secondary
-                @click="setJokeCount(preset)"
-              >
-                {{ preset }}
-              </n-button>
-            </div>
-            <n-input-number
-              v-model:value="jokeCount"
-              class="joke-count-input"
+        </div>
+
+        <div class="joke-toolbar" aria-label="笑话列表数量控制">
+          <span class="joke-count-label">条数</span>
+          <div class="joke-count-presets" aria-label="选择笑话条数">
+            <n-button
+              v-for="preset in jokeCountPresets"
+              :key="preset"
               size="small"
-              :min="1"
-              :max="300"
-              :step="1"
-              :precision="0"
-              placeholder="条数"
-              aria-label="手动输入笑话条数"
-            />
-            <n-button size="small" secondary :loading="isLoading" @click="refreshJokes">
-              刷新列表
-            </n-button>
-            <n-button size="small" secondary :disabled="!jokes.length" @click="copyAllJokes">
-              复制全部
+              :type="jokeCount === preset ? 'primary' : 'default'"
+              secondary
+              @click="setJokeCount(preset)"
+            >
+              {{ preset }}
             </n-button>
           </div>
+          <n-input-number
+            v-model:value="jokeCount"
+            class="joke-count-input"
+            size="small"
+            :min="1"
+            :max="300"
+            :step="1"
+            :precision="0"
+            placeholder="手动输入"
+            aria-label="手动输入笑话条数"
+          />
+          <n-button size="small" secondary :loading="isLoading" @click="refreshJokes">
+            刷新列表
+          </n-button>
+          <n-button size="small" secondary :disabled="!jokes.length" @click="copyAllJokes">
+            复制全部
+          </n-button>
         </div>
 
         <n-spin :show="isLoading">
@@ -496,11 +498,21 @@ onUnmounted((): void => {
   gap: 12px;
 }
 
-.joke-actions {
+.joke-toolbar {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  align-items: center;
   gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.7);
+}
+
+.joke-count-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .joke-count-presets {
@@ -587,7 +599,7 @@ onUnmounted((): void => {
   }
 
   .joke-heading,
-  .joke-actions {
+  .joke-toolbar {
     align-items: stretch;
     flex-direction: column;
   }
