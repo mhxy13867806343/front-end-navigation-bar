@@ -59,7 +59,8 @@ test('Home farewell dialog opens only on the production homepage with live jokes
   assert.match(dialogSource, /window\.setInterval[\s\S]*?formatTime\(new Date\(\)\)/)
   assert.match(dialogSource, /\.animate\(\{\s*scrollTop:\s*nextTop\s*\}/)
   assert.match(dialogSource, /navigator\.clipboard\?\.writeText/)
-  assert.match(dialogSource, /props\.routePath !== '\/'/)
+  assert.match(dialogSource, /function isHomeFarewellRoute\(path: string\): boolean/)
+  assert.match(dialogSource, /path === '\/dyform'/)
 })
 
 test('RunCode has a direct route and toolbox hub entry', () => {

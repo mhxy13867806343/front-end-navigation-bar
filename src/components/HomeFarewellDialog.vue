@@ -318,8 +318,12 @@ async function copyAllJokes(): Promise<void> {
   showCopyStatus('已复制全部笑话')
 }
 
+function isHomeFarewellRoute(path: string): boolean {
+  return path === '/' || path === '/dyform' || path.endsWith('/dyform')
+}
+
 function openHomeDialog(): void {
-  if (!isProduction || props.routePath !== '/') return
+  if (!isProduction || !isHomeFarewellRoute(props.routePath)) return
 
   showDialog.value = true
   if (!hasRequestedJokes) {
@@ -336,7 +340,7 @@ function handleGoodbye(): void {
 }
 
 watch((): string => props.routePath, (path: string): void => {
-  if (path === '/') {
+  if (isHomeFarewellRoute(path)) {
     openHomeDialog()
     return
   }
