@@ -118,7 +118,7 @@ const goGithubCn = (): void => {
 const goBilibiliTrending = (): void => {
   void router.push('/bilibili-trending')
 }
-const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/records-cache', '/share-records', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
+const routeViewPaths: string[] = ['/flash', '/aicoding', '/helloworld', '/juejin-theme', '/juejin-course', '/juejin-clubs', '/juejin-signin', '/jandan', '/tophub', '/ithome', '/huxiu', '/github', '/ai-xxx', '/boss-zhipin-hangzhou', '/boss-zhipin-hangzhou-map', '/wechat-featured', '/runcode', '/toolbox', '/records-cache', '/share-records', '/weather', '/api-center', '/h5', '/mingyan', '/cocoloop', '/cnblogs', '/github-cn', '/bilibili-trending', '/bilibili-live', '/bilibili-live-virtual', '/bilibili-live-entertainment', '/bilibili-live-radio', '/bilibili-live-chat', '/bilibili-live-knowledge', '/bilibili-live-play-together', '/baidu-trending', '/baidu-trending-movie', '/baidu-trending-novel', '/baidu-trending-teleplay', '/three-showcase', '/mapcn-showcase', '/antv-s2-examples', '/antv-g6-examples', '/antv-f2-examples', '/antv-l7-examples', '/feature', '/web-components', '/oat-ui', '/oat-studio', '/200', '/401', '/402', '/403', '/404', '/405', '/500', '/permission', '/logs', '/xiaomi-shop']
 const isBigScreenRoute = computed<boolean>(() => route.path === '/big-screen' || route.path.endsWith('/big-screen'))
 const isDyFormRoute = computed<boolean>(() => route.path === '/' || route.path === '/dyform' || route.path.endsWith('/dyform'))
 const isFlashRoute = computed<boolean>(() => !isDyFormRoute.value && !isBigScreenRoute.value)
@@ -164,6 +164,16 @@ const routeFavoriteTitleMap: Record<string, string> = {
   '/github-cn': 'GitHub中文社区',
   '/bilibili-trending': 'B站热门',
   '/bilibili-live': 'B站直播',
+  '/bilibili-live-virtual': 'B站虚拟主播直播',
+  '/bilibili-live-entertainment': 'B站娱乐直播',
+  '/bilibili-live-radio': 'B站电台直播',
+  '/bilibili-live-chat': 'B站聊天室直播',
+  '/bilibili-live-knowledge': 'B站知识直播',
+  '/bilibili-live-play-together': 'B站游戏帮玩直播',
+  '/baidu-trending': '百度热榜',
+  '/baidu-trending-movie': '百度电影热榜',
+  '/baidu-trending-novel': '百度小说热榜',
+  '/baidu-trending-teleplay': '百度电视剧热榜',
   '/three-showcase': 'Three.js 展示',
   '/mapcn-showcase': 'MapCN 展示',
   '/feature': '功能页面',

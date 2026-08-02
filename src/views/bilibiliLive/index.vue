@@ -1,9 +1,23 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { resolveApiUrl } from '../../utils/resolveApiUrl'
 import { requestJinaJson } from '../../utils/jinaReader'
+
+interface Props {
+  parentAreaId?: number
+  title?: string
+  subtitle?: string
+  icon?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  parentAreaId: 0,
+  title: '',
+  subtitle: '',
+  icon: ''
+})
 
 type LiveTabId = 'recommend' | 'hot' | 'new'
 type LiveSourceId = string
@@ -91,35 +105,86 @@ interface BilibiliLiveSubArea {
   areaId: number
 }
 
+const route = useRoute()
 const router = useRouter()
+
+const targetParentAreaId = computed<number>(() => {
+  if (props.parentAreaId) return props.parentAreaId
+  const qId = Number(route.query.parentAreaId)
+  if (!Number.isNaN(qId) && qId > 0) return qId
+  return 0
+})
+
+const areaMetaMap: Record<number, { title: string; subtitle: string; icon: string }> = {
+  9: { title: '虚拟主播直播', subtitle: 'Bilibili 虚拟主播分区直播数据', icon: '🧬' },
+  1: { title: '娱乐直播', subtitle: 'Bilibili 娱乐分区直播数据', icon: '🎤' },
+  5: { title: '电台直播', subtitle: 'Bilibili 电台分区直播数据', icon: '📻' },
+  14: { title: '聊天室直播', subtitle: 'Bilibili 聊天室分区直播数据', icon: '💬' },
+  11: { title: '知识直播', subtitle: 'Bilibili 知识/学习分区直播数据', icon: '📚' },
+  301: { title: '游戏帮玩直播', subtitle: 'Bilibili 游戏帮玩/互动玩法分区直播数据', icon: '🎮' }
+}
+
+const displayTitle = computed(() => {
+  if (props.title) return props.title
+  const meta = areaMetaMap[targetParentAreaId.value]
+  return meta ? meta.title : '直播'
+})
+
+const displaySubtitle = computed(() => {
+  if (props.subtitle) return props.subtitle
+  const meta = areaMetaMap[targetParentAreaId.value]
+  return meta ? meta.subtitle : 'Bilibili 全部直播数据'
+})
+
+const displayIcon = computed(() => {
+  if (props.icon) return props.icon
+  const meta = areaMetaMap[targetParentAreaId.value]
+  return meta ? meta.icon : '📡'
+})
+
+const initialSourceId = computed<LiveSourceId>(() => {
+  const tId = targetParentAreaId.value
+  return tId ? `area-${tId}` : 'all'
+})
+
 const tabs: Array<{ id: LiveTabId; label: string; icon: string }> = [
   { id: 'recommend', label: '推荐直播', icon: '✨' },
   { id: 'hot', label: '人气直播', icon: '🔥' },
   { id: 'new', label: '最新开播', icon: '🆕' }
 ]
+
 const fallbackSources: BilibiliLiveSource[] = [
   { id: 'all', label: '全部直播', icon: '📺', parentAreaId: 0, areaId: 0 },
-  { id: 'chat', label: '聊天室', icon: '💬', parentAreaId: 14, areaId: 0 },
-  { id: 'radio', label: '电台', icon: '📻', parentAreaId: 5, areaId: 0 },
-  { id: 'online-game', label: '网游', icon: '🎮', parentAreaId: 2, areaId: 0 },
-  { id: 'single-game', label: '单机', icon: '🕹', parentAreaId: 6, areaId: 0 }
+  { id: 'area-9', label: '虚拟主播', icon: '🧬', parentAreaId: 9, areaId: 0 },
+  { id: 'area-1', label: '娱乐', icon: '🎤', parentAreaId: 1, areaId: 0 },
+  { id: 'area-5', label: '电台', icon: '📻', parentAreaId: 5, areaId: 0 },
+  { id: 'area-14', label: '聊天室', icon: '💬', parentAreaId: 14, areaId: 0 },
+  { id: 'area-11', label: '知识', icon: '📚', parentAreaId: 11, areaId: 0 },
+  { id: 'area-301', label: '游戏帮玩', icon: '🎮', parentAreaId: 301, areaId: 0 },
+  { id: 'area-2', label: '网游', icon: '🎮', parentAreaId: 2, areaId: 0 },
+  { id: 'area-6', label: '单机', icon: '🕹', parentAreaId: 6, areaId: 0 }
 ]
+
 const areaIconMap: Record<string, string> = {
   网游: '🎮',
   手游: '📱',
   单机游戏: '🕹',
+  单机: '🕹',
   娱乐: '🎤',
   电台: '📻',
   虚拟主播: '🧬',
   聊天室: '💬',
   生活: '🏠',
   知识: '📚',
+  学习: '📚',
   赛事: '🏆',
-  互动玩法: '🎲'
+  互动玩法: '🎮',
+  游戏帮玩: '🎮',
+  帮玩: '🎮'
 }
 
 const activeTab = ref<LiveTabId>('recommend')
-const activeSource = ref<LiveSourceId>('all')
+const activeSource = ref<LiveSourceId>(initialSourceId.value)
 const activeAreaId = ref<number>(0)
 const hasStarted = ref<boolean>(false)
 const loading = ref<boolean>(false)
@@ -129,6 +194,12 @@ const liveRoomCount = ref<number>(0)
 const updateTime = ref<string>('')
 const errorMessage = ref<string>('')
 const liveAreaGroups = ref<BilibiliLiveAreaGroup[]>([])
+
+watch(initialSourceId, (newSourceId) => {
+  activeSource.value = newSourceId
+  activeAreaId.value = 0
+  if (hasStarted.value) void loadLiveData(newSourceId, activeTab.value, 0)
+})
 
 const activeTabInfo = computed(() => tabs.find(tab => tab.id === activeTab.value) || tabs[0])
 const sources = computed<BilibiliLiveSource[]>(() => {
@@ -148,7 +219,21 @@ const sources = computed<BilibiliLiveSource[]>(() => {
 
   return [fallbackSources[0], ...dynamicSources]
 })
-const activeSourceInfo = computed(() => sources.value.find(source => source.id === activeSource.value) || sources.value[0])
+
+const activeSourceInfo = computed(() => {
+  const found = sources.value.find(source => source.id === activeSource.value)
+  if (found) return found
+  if (targetParentAreaId.value > 0) {
+    return {
+      id: `area-${targetParentAreaId.value}`,
+      label: displayTitle.value,
+      icon: displayIcon.value,
+      parentAreaId: targetParentAreaId.value,
+      areaId: 0
+    }
+  }
+  return sources.value[0] || fallbackSources[0]
+})
 const subAreas = computed<BilibiliLiveSubArea[]>(() => {
   const parentAreaId = activeSourceInfo.value.parentAreaId
   if (!parentAreaId) return []
@@ -372,11 +457,11 @@ const openRoom = (room: BilibiliLiveRoom): void => {
   <main class="bilibili-live-page">
     <section class="live-header">
       <div class="live-title-block">
-        <span class="live-logo">📡</span>
+        <span class="live-logo">{{ displayIcon }}</span>
         <div>
-          <h1>直播</h1>
+          <h1>{{ displayTitle }}</h1>
           <p>
-            Bilibili 全部直播数据
+            {{ displaySubtitle }}
             <span v-if="updateTime">（更新于 {{ updateTime }}）</span>
           </p>
         </div>
@@ -387,9 +472,9 @@ const openRoom = (room: BilibiliLiveRoom): void => {
 
     <section v-if="!hasStarted" class="live-entry">
       <button type="button" class="entry-action" :disabled="loading" @click="loadLiveData()">
-        <span class="entry-icon">📺</span>
+        <span class="entry-icon">{{ displayIcon }}</span>
         <span>
-          <strong>{{ loading ? '正在获取...' : 'Bibi 直播' }}</strong>
+          <strong>{{ loading ? '正在获取...' : displayTitle }}</strong>
           <em>点击后才请求直播列表数据</em>
         </span>
       </button>

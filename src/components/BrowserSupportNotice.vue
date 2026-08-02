@@ -64,7 +64,8 @@ interface TechStackItem {
 
 interface WebLibraryItem {
   label: string
-  command: string
+  command?: string
+  children?: WebLibraryItem[]
 }
 
 interface WebLibraryGroup {
@@ -115,6 +116,22 @@ const webLibraryGroups: WebLibraryGroup[] = [
     title: '新建页面',
     icon: '🆕',
     items: [
+      { label: '🐾 百度风云榜/热榜', command: '/baidu-trending' },
+      { label: '🎬 百度电影热榜', command: '/baidu-trending-movie' },
+      { label: '📚 百度小说热榜', command: '/baidu-trending-novel' },
+      { label: '📺 百度电视剧热榜', command: '/baidu-trending-teleplay' },
+      {
+        label: '📺 哔哩哔哩直播',
+        command: '/bilibili-live',
+        children: [
+          { label: '🧬 哔哩哔哩虚拟主播直播', command: '/bilibili-live-virtual' },
+          { label: '🎤 哔哩哔哩娱乐直播', command: '/bilibili-live-entertainment' },
+          { label: '📻 哔哩哔哩电台直播', command: '/bilibili-live-radio' },
+          { label: '💬 哔哩哔哩聊天室直播', command: '/bilibili-live-chat' },
+          { label: '📚 哔哩哔哩知识直播', command: '/bilibili-live-knowledge' },
+          { label: '🎮 哔哩哔哩游戏帮玩直播', command: '/bilibili-live-play-together' }
+        ]
+      },
       { label: '📘 掘金小册课程', command: '/juejin-course' },
       { label: '💬 掘金圈子广场', command: '/juejin-clubs' },
       { label: '📅 掘金每日签到', command: '/juejin-signin' },
@@ -176,7 +193,22 @@ const webLibraryGroups: WebLibraryGroup[] = [
     icon: '🧰',
     items: [
       { label: '🎬 哔哩哔哩热门视频', command: '/bilibili-trending' },
-      { label: '📺 哔哩哔哩直播', command: '/bilibili-live' },
+      {
+        label: '📺 哔哩哔哩直播',
+        command: '/bilibili-live',
+        children: [
+          { label: '🧬 哔哩哔哩虚拟主播直播', command: '/bilibili-live-virtual' },
+          { label: '🎤 哔哩哔哩娱乐直播', command: '/bilibili-live-entertainment' },
+          { label: '📻 哔哩哔哩电台直播', command: '/bilibili-live-radio' },
+          { label: '💬 哔哩哔哩聊天室直播', command: '/bilibili-live-chat' },
+          { label: '📚 哔哩哔哩知识直播', command: '/bilibili-live-knowledge' },
+          { label: '🎮 哔哩哔哩游戏帮玩直播', command: '/bilibili-live-play-together' }
+        ]
+      },
+      { label: '🐾 百度风云榜/热榜', command: '/baidu-trending' },
+      { label: '🎬 百度电影热榜', command: '/baidu-trending-movie' },
+      { label: '📚 百度小说热榜', command: '/baidu-trending-novel' },
+      { label: '📺 百度电视剧热榜', command: '/baidu-trending-teleplay' },
       { label: '🌦️ 实时天气预报', command: '/weather' },
       { label: '📊 极简可视化大屏', command: '/big-screen' },
       { label: '🌅 Bing 每日壁纸', command: '/star' },
@@ -299,15 +331,18 @@ const filteredTransferItems: ComputedRef<WebLibraryItem[]> = computed<WebLibrary
   return items.filter((i: WebLibraryItem): boolean => i.label.toLowerCase().includes(q))
 })
 
+const mapItemToTreeNode = (item: WebLibraryItem, parentId: string, idx: number): WebLibraryTreeNode => ({
+  id: `${parentId}-${idx}`,
+  label: item.label,
+  command: item.command,
+  children: item.children?.map((sub: WebLibraryItem, subIdx: number): WebLibraryTreeNode => mapItemToTreeNode(sub, `${parentId}-${idx}`, subIdx))
+})
+
 const treeData: ComputedRef<WebLibraryTreeNode[]> = computed<WebLibraryTreeNode[]>(() => {
   return webLibraryGroups.map((group: WebLibraryGroup): WebLibraryTreeNode => ({
     id: group.id,
     label: `${group.icon} ${group.title}`,
-    children: group.items.map((item: WebLibraryItem, idx: number): WebLibraryTreeNode => ({
-      id: `${group.id}-${idx}`,
-      label: item.label,
-      command: item.command
-    }))
+    children: group.items.map((item: WebLibraryItem, idx: number): WebLibraryTreeNode => mapItemToTreeNode(item, group.id, idx))
   }))
 })
 
@@ -671,15 +706,36 @@ onUnmounted((): void => {
                 <span>{{ activeWebLibraryGroup.icon }}</span>
                 <strong>{{ activeWebLibraryGroup.title }}</strong>
               </div>
-              <button
-                v-for="item in activeWebLibraryGroup.items"
-                :key="item.command"
-                type="button"
-                class="web-library-item"
-                @click="handleCommand(item.command)"
-              >
-                {{ item.label }}
-              </button>
+              <template v-for="item in activeWebLibraryGroup.items" :key="item.label">
+                <div v-if="item.children?.length" class="web-library-item-block">
+                  <button
+                    type="button"
+                    class="web-library-item parent-item"
+                    @click="item.command && handleCommand(item.command)"
+                  >
+                    {{ item.label }}
+                  </button>
+                  <div class="web-library-sub-items">
+                    <button
+                      v-for="sub in item.children"
+                      :key="sub.command || sub.label"
+                      type="button"
+                      class="web-library-sub-item"
+                      @click="sub.command && handleCommand(sub.command)"
+                    >
+                      {{ sub.label }}
+                    </button>
+                  </div>
+                </div>
+                <button
+                  v-else
+                  type="button"
+                  class="web-library-item"
+                  @click="item.command && handleCommand(item.command)"
+                >
+                  {{ item.label }}
+                </button>
+              </template>
             </div>
           </div>
 

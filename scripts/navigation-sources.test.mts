@@ -960,3 +960,65 @@ test('Production mobile visits are routed to an H5 desktop-link copy page', () =
   assert.match(h5Source, /front_end_navigation_allow_mobile_page/)
   assert.match(h5Source, /navigator\.clipboard\.writeText/)
 })
+
+test('Bilibili Live Area Tag pages and Baidu Trending pages have direct routes, toolbox entries, and configured area IDs', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const toolboxSource = readFileSync(new URL('../src/views/toolbox/index.vue', import.meta.url), 'utf8')
+  const noticeSource = readFileSync(new URL('../src/components/BrowserSupportNotice.vue', import.meta.url), 'utf8')
+
+  const virtualView = readFileSync(new URL('../src/views/bilibiliLiveVirtual/index.vue', import.meta.url), 'utf8')
+  const entertainmentView = readFileSync(new URL('../src/views/bilibiliLiveEntertainment/index.vue', import.meta.url), 'utf8')
+  const radioView = readFileSync(new URL('../src/views/bilibiliLiveRadio/index.vue', import.meta.url), 'utf8')
+  const chatView = readFileSync(new URL('../src/views/bilibiliLiveChat/index.vue', import.meta.url), 'utf8')
+  const knowledgeView = readFileSync(new URL('../src/views/bilibiliLiveKnowledge/index.vue', import.meta.url), 'utf8')
+  const playTogetherView = readFileSync(new URL('../src/views/bilibiliLivePlayTogether/index.vue', import.meta.url), 'utf8')
+
+  const baiduMainView = readFileSync(new URL('../src/views/baiduTrending/index.vue', import.meta.url), 'utf8')
+  const baiduMovieView = readFileSync(new URL('../src/views/baiduMovie/index.vue', import.meta.url), 'utf8')
+  const baiduNovelView = readFileSync(new URL('../src/views/baiduNovel/index.vue', import.meta.url), 'utf8')
+  const baiduTeleplayView = readFileSync(new URL('../src/views/baiduTeleplay/index.vue', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /path:\s*'\/bilibili-live-virtual'/)
+  assert.match(routerSource, /path:\s*'\/bilibili-live-entertainment'/)
+  assert.match(routerSource, /path:\s*'\/bilibili-live-radio'/)
+  assert.match(routerSource, /path:\s*'\/bilibili-live-chat'/)
+  assert.match(routerSource, /path:\s*'\/bilibili-live-knowledge'/)
+  assert.match(routerSource, /path:\s*'\/bilibili-live-play-together'/)
+
+  assert.match(routerSource, /path:\s*'\/baidu-trending'/)
+  assert.match(routerSource, /path:\s*'\/baidu-trending-movie'/)
+  assert.match(routerSource, /path:\s*'\/baidu-trending-novel'/)
+  assert.match(routerSource, /path:\s*'\/baidu-trending-teleplay'/)
+
+  assert.match(appSource, /\/bilibili-live-virtual/)
+  assert.match(appSource, /\/bilibili-live-play-together/)
+  assert.match(appSource, /\/baidu-trending-movie/)
+  assert.match(appSource, /\/baidu-trending-novel/)
+  assert.match(appSource, /\/baidu-trending-teleplay/)
+
+  assert.match(toolboxSource, /id:\s*'bilibili-live-play-together'/)
+  assert.match(toolboxSource, /id:\s*'baidu-trending-movie'/)
+  assert.match(toolboxSource, /id:\s*'baidu-trending-novel'/)
+  assert.match(toolboxSource, /id:\s*'baidu-trending-teleplay'/)
+
+  assert.match(noticeSource, /command:\s*'\/bilibili-live-play-together'/)
+  assert.match(noticeSource, /command:\s*'\/baidu-trending-movie'/)
+  assert.match(noticeSource, /command:\s*'\/baidu-trending-novel'/)
+  assert.match(noticeSource, /command:\s*'\/baidu-trending-teleplay'/)
+  assert.match(noticeSource, /children:\s*\[/)
+  assert.match(noticeSource, /web-library-sub-items/)
+
+  assert.match(virtualView, /:parent-area-id="9"/)
+  assert.match(entertainmentView, /:parent-area-id="1"/)
+  assert.match(radioView, /:parent-area-id="5"/)
+  assert.match(chatView, /:parent-area-id="14"/)
+  assert.match(knowledgeView, /:parent-area-id="11"/)
+  assert.match(playTogetherView, /:parent-area-id="301"/)
+
+  assert.match(baiduMainView, /tabMetaMap/)
+  assert.match(baiduMovieView, /tab="movie"/)
+  assert.match(baiduNovelView, /tab="novel"/)
+  assert.match(baiduTeleplayView, /tab="teleplay"/)
+})
+

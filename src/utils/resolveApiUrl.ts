@@ -49,6 +49,7 @@ const PROXY_MAP: Record<string, string> = {
   '/api-bilibili-trending': 'https://app.bilibili.com',
   '/api-bilibili-web': 'https://api.bilibili.com',
   '/api-bilibili-live': 'https://api.live.bilibili.com',
+  '/api-baidu-top': 'https://top.baidu.com',
   '/api-github-cn': 'https://github-cn.com',
   '/api-gitcn': 'https://gitcn.org',
   '/api-githot': 'https://githot.dev',

@@ -202,6 +202,56 @@ const routes = [
     component: () => import('../views/bilibiliLive/index.vue')
   },
   {
+    path: '/bilibili-live-virtual',
+    name: 'BilibiliLiveVirtual',
+    component: () => import('../views/bilibiliLiveVirtual/index.vue')
+  },
+  {
+    path: '/bilibili-live-entertainment',
+    name: 'BilibiliLiveEntertainment',
+    component: () => import('../views/bilibiliLiveEntertainment/index.vue')
+  },
+  {
+    path: '/bilibili-live-radio',
+    name: 'BilibiliLiveRadio',
+    component: () => import('../views/bilibiliLiveRadio/index.vue')
+  },
+  {
+    path: '/bilibili-live-chat',
+    name: 'BilibiliLiveChat',
+    component: () => import('../views/bilibiliLiveChat/index.vue')
+  },
+  {
+    path: '/bilibili-live-knowledge',
+    name: 'BilibiliLiveKnowledge',
+    component: () => import('../views/bilibiliLiveKnowledge/index.vue')
+  },
+  {
+    path: '/bilibili-live-play-together',
+    name: 'BilibiliLivePlayTogether',
+    component: () => import('../views/bilibiliLivePlayTogether/index.vue')
+  },
+  {
+    path: '/baidu-trending',
+    name: 'BaiduTrending',
+    component: () => import('../views/baiduTrending/index.vue')
+  },
+  {
+    path: '/baidu-trending-movie',
+    name: 'BaiduMovie',
+    component: () => import('../views/baiduMovie/index.vue')
+  },
+  {
+    path: '/baidu-trending-novel',
+    name: 'BaiduNovel',
+    component: () => import('../views/baiduNovel/index.vue')
+  },
+  {
+    path: '/baidu-trending-teleplay',
+    name: 'BaiduTeleplay',
+    component: () => import('../views/baiduTeleplay/index.vue')
+  },
+  {
     path: '/big-screen',
     name: 'BigScreen',
     component: BigScreen

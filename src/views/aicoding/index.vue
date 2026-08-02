@@ -28,7 +28,7 @@
             <h2>{{ activeHeading }}</h2>
             <p>{{ headerDescription }}</p>
           </div>
-          <RefreshCountdownButton :on-refresh="handleRefresh" />
+          <RefreshCountdownButton :on-refresh="handleRefresh" storage-key="juejin-hot" />
         </header>
 
         <div v-if="activeNav.categoryMode !== 'none' || activeNavKey === 'authors'" class="rank-controls">
@@ -286,11 +286,26 @@ interface RankItem {
   metricIcon: string
 }
 
+const STORAGE_KEY_NAV = 'juejin-hot:nav'
+const STORAGE_KEY_CATEGORY = 'juejin-hot:category'
+const STORAGE_KEY_AUTHOR_RANK = 'juejin-hot:author-rank-type'
+
+function restoreNavState(): { nav: JuejinHotListType; category: string; authorRankType: JuejinAuthorRankType } {
+  const nav = (localStorage.getItem(STORAGE_KEY_NAV) as JuejinHotListType | null) || 'articles'
+  const validNav = JUEJIN_HOT_SIDE_NAV.some((item: JuejinHotNavItem): boolean => item.key === nav) ? nav : 'articles'
+  const category = localStorage.getItem(STORAGE_KEY_CATEGORY) || '1'
+  const rawRankType = parseInt(localStorage.getItem(STORAGE_KEY_AUTHOR_RANK) || '1', 10)
+  const authorRankType: JuejinAuthorRankType = ([1, 2, 3].includes(rawRankType) ? rawRankType : 1) as JuejinAuthorRankType
+  return { nav: validNav, category, authorRankType }
+}
+
 const sideNavItems: JuejinHotNavItem[] = JUEJIN_HOT_SIDE_NAV
 const authorRankOptions: JuejinAuthorRankOption[] = JUEJIN_AUTHOR_RANK_OPTIONS
-const activeNavKey: Ref<JuejinHotListType> = ref<JuejinHotListType>('articles')
-const activeCategoryId: Ref<string> = ref<string>('1')
-const activeAuthorRankType: Ref<JuejinAuthorRankType> = ref<JuejinAuthorRankType>(1)
+
+const _restored = restoreNavState()
+const activeNavKey: Ref<JuejinHotListType> = ref<JuejinHotListType>(_restored.nav)
+const activeCategoryId: Ref<string> = ref<string>(_restored.category)
+const activeAuthorRankType: Ref<JuejinAuthorRankType> = ref<JuejinAuthorRankType>(_restored.authorRankType)
 const rankItems: Ref<RankItem[]> = ref<RankItem[]>([])
 const loading: Ref<boolean> = ref<boolean>(false)
 const error: Ref<string> = ref<string>('')
@@ -610,19 +625,24 @@ function mapAuthorRankItem(item: JuejinAuthorRankRaw, index: number): RankItem |
 function switchNav(item: JuejinHotNavItem): void {
   if (activeNavKey.value === item.key) return
   activeNavKey.value = item.key
-  activeCategoryId.value = item.categoryMode === 'author' ? JUEJIN_HOT_AUTHOR_CATEGORY_OPTIONS[0].value : '1'
+  const newCategory = item.categoryMode === 'author' ? JUEJIN_HOT_AUTHOR_CATEGORY_OPTIONS[0].value : '1'
+  activeCategoryId.value = newCategory
+  localStorage.setItem(STORAGE_KEY_NAV, item.key)
+  localStorage.setItem(STORAGE_KEY_CATEGORY, newCategory)
   fetchRankData()
 }
 
 function switchCategory(categoryId: string): void {
   if (activeCategoryId.value === categoryId) return
   activeCategoryId.value = categoryId
+  localStorage.setItem(STORAGE_KEY_CATEGORY, categoryId)
   fetchRankData()
 }
 
 function switchAuthorRankType(rankType: JuejinAuthorRankType): void {
   if (activeAuthorRankType.value === rankType) return
   activeAuthorRankType.value = rankType
+  localStorage.setItem(STORAGE_KEY_AUTHOR_RANK, String(rankType))
   fetchRankData()
 }
 

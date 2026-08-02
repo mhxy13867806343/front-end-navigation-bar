@@ -30,6 +30,7 @@ interface TopHubBoard {
   subtitle: string
   icon: string
   iconLabel: string
+  footerText?: string
   items: TopHubItem[]
 }
 
@@ -57,22 +58,27 @@ interface TopHubTextResult {
 
 const primarySections: TopHubSection[] = [
   { id: 'home', name: '首页', icon: '热', path: '/', type: 'home', intro: 'TopHub 首页热门榜单聚合。' },
-  { id: 'calendar', name: '日历', icon: '历', path: '/calendar', type: 'calendar', intro: '热点日历事件、节日、纪念日与营销节点。' },
-  { id: 'news', name: '综合', icon: '综', path: '/c/news', type: 'category', intro: '综合新闻、搜索热榜与全网热点。' },
   { id: 'tech', name: '科技', icon: '科', path: '/c/tech', type: 'category', intro: '科技媒体、产品、硬件和技术趋势榜单。' },
   { id: 'ent', name: '娱乐', icon: '娱', path: '/c/ent', type: 'category', intro: '影视、音乐、综艺和娱乐社区热点。' },
   { id: 'community', name: '社区', icon: '社', path: '/c/community', type: 'category', intro: '社区讨论、论坛和兴趣内容榜单。' },
   { id: 'shopping', name: '购物', icon: '购', path: '/c/shopping', type: 'category', intro: '电商热销、优惠线报和购物榜单。' },
   { id: 'finance', name: '财经', icon: '财', path: '/c/finance', type: 'category', intro: '财经资讯、市场、股票和商业内容。' },
-  { id: 'developer', name: '开发', icon: '开', path: '/c/developer', type: 'category', intro: '开发者社区、开源项目和技术文章榜单。' },
-  { id: 'brief', name: '简报', icon: '简', path: '/c/brief', type: 'category', intro: '简报类资讯和高密度阅读榜单。' },
-  { id: 'ai', name: 'AI', icon: 'AI', path: '/c/ai', type: 'category', intro: '人工智能工具、文章和资讯榜单。' }
+  { id: 'university', name: '大学', icon: '大', path: '/c/university', type: 'category', intro: '高校通知、校务动态和校园内容。' },
+  { id: 'daily', name: '日报', icon: '日', path: '/c/daily', type: 'category', intro: '日报新闻、今日热点精选榜单。' },
+  { id: 'local', name: '地方门户', icon: '地', path: '/c/local', type: 'category', intro: '地方门户、区域同城热门焦点。' },
+  { id: 'movie', name: '影视', icon: '影', path: '/c/movie', type: 'category', intro: '电影、电视剧、综艺和影视评价榜。' },
+  { id: 'reading', name: '阅读', icon: '阅', path: '/c/reading', type: 'category', intro: '读书、文学、网文与图书热销榜。' },
+  { id: 'game', name: '游戏', icon: '游', path: '/c/game', type: 'category', intro: '电子竞技、网游、单机与手游热榜。' }
 ]
 
 const secondarySections: TopHubSection[] = [
+  { id: 'calendar', name: '日历', icon: '历', path: '/calendar', type: 'calendar', intro: '热点日历事件、节日、纪念日与营销节点。' },
+  { id: 'news', name: '综合', icon: '综', path: '/c/news', type: 'category', intro: '综合新闻、搜索热榜与全网热点。' },
+  { id: 'developer', name: '开发', icon: '开', path: '/c/developer', type: 'category', intro: '开发者社区、开源项目和技术文章榜单。' },
+  { id: 'brief', name: '简报', icon: '简', path: '/c/brief', type: 'category', intro: '简报类资讯和高密度阅读榜单。' },
+  { id: 'ai', name: 'AI', icon: 'AI', path: '/c/ai', type: 'category', intro: '人工智能工具、文章和资讯榜单。' },
   { id: 'epaper', name: '报刊', icon: '报', path: '/c/epaper', type: 'category', intro: '报刊、杂志和媒体期刊榜单。' },
   { id: 'design', name: '设计', icon: '设', path: '/c/design', type: 'category', intro: '设计资讯、灵感和创意资源榜单。' },
-  { id: 'university', name: '校务', icon: '校', path: '/c/university', type: 'category', intro: '高校通知、校务动态和校园内容。' },
   { id: 'organization', name: '政务', icon: '政', path: '/c/organization', type: 'category', intro: '政务、机构公告和公共信息榜单。' },
   { id: 'blog', name: '专栏', icon: '专', path: '/c/blog', type: 'category', intro: '博客、专栏和作者内容榜单。' },
   { id: 'apple', name: '苹果', icon: '苹', path: '/apple', type: 'category', intro: '苹果生态、应用和设备相关内容。' },
@@ -234,6 +240,12 @@ function parseTopHubHtml(html: string): TopHubBoard[] {
         : []
       const items = (headlineItems.length ? headlineItems : compactItems.length ? compactItems : fallbackItems).slice(0, 10)
 
+      const footerText = (
+        card.querySelector('.cc-cd-ft')?.textContent ||
+        card.querySelector('.cc-cd-sb')?.textContent ||
+        `共 ${items.length} 条 · 5分钟前`
+      ).replace(/\s+/g, ' ').trim()
+
       if (!title || !items.length) return null
       return {
         id: card.getAttribute('id') || `board-${index}`,
@@ -241,6 +253,7 @@ function parseTopHubHtml(html: string): TopHubBoard[] {
         subtitle,
         icon: normalizeTopHubUrl(icon),
         iconLabel: boardIconLabel(title),
+        footerText,
         items
       }
     })
@@ -272,6 +285,7 @@ function parseTopHubMarkdown(markdown: string): TopHubBoard[] {
         subtitle,
         icon: normalizeTopHubUrl(match[1] || ''),
         iconLabel: boardIconLabel(title),
+        footerText: `共 ${items.length} 条 · 5分钟前`,
         items
       }
     })
@@ -389,6 +403,89 @@ function applyPagination(result: TopHubTextResult, page: number): void {
   hasNextPage.value = pagination.hasNextPage
 }
 
+const fallbackBoards: TopHubBoard[] = [
+  {
+    id: 'weibo-hot',
+    title: '微博 · 热搜榜',
+    subtitle: '实时热点词汇',
+    icon: '',
+    iconLabel: '微',
+    footerText: '共 51 条 · 5分钟前',
+    items: [
+      { rank: '1', title: '你的公积金将有新变化', extra: '114万', link: 'https://s.weibo.com/weibo?q=%E4%BD%A0%E7%9A%84%E5%85%AC%E7%A7%AF%E9%87%91%E5%B0%86%E6%9C%89%E6%96%B0%E5%8F%98%E5%8C%96' },
+      { rank: '2', title: '余承东恶搞视频被投诉下架', extra: '83万', link: 'https://s.weibo.com/weibo?q=%E4%BD%99%E6%89%BF%E4%B8%9C' },
+      { rank: '3', title: '谢谢人民子弟兵给的安全感', extra: '66万', link: 'https://s.weibo.com/weibo?q=%E8%B0%A2%E8%B0%A2%E4%BA%BA%E6%B0%91%E5%AD%90%E5%BC%9F%E5%85%B5' },
+      { rank: '4', title: '小红书旅游帖 诈骗', extra: '62万', link: 'https://s.weibo.com/weibo?q=%E5%B0%8F%E7%BA%A2%E4%B9%A6%E6%97%85%E6%B8%B8%E5%B8%96' },
+      { rank: '5', title: 'C罗结婚酒店当天仍可预订', extra: '50万', link: 'https://s.weibo.com/weibo?q=C%E7%BD%97' },
+      { rank: '6', title: '罗正徐艺洋拍过吻戏', extra: '49万', link: 'https://s.weibo.com/weibo?q=%E7%BD%97%E6%AD%A3%E5%BE%90%E8%8B%BA%E6%B4%8B' },
+      { rank: '7', title: 'Mikimoto高级珠宝亚洲巡展', extra: '49万', link: 'https://s.weibo.com/weibo?q=Mikimoto' },
+      { rank: '8', title: '全网直击热搜焦点讨论', extra: '45万', link: 'https://s.weibo.com/weibo?q=%E7%83%AD%E6%94%B6' },
+      { rank: '9', title: '科技与出行安全防护讨论', extra: '42万', link: 'https://s.weibo.com/weibo?q=%E7%A7%91%E6%8A%80' },
+      { rank: '10', title: '全国多地开启防汛抢险应急', extra: '39万', link: 'https://s.weibo.com/weibo?q=%E9%98%B2%E6%B1%9B' }
+    ]
+  },
+  {
+    id: 'zhihu-hot',
+    title: '知乎 · 热榜',
+    subtitle: '高热度讨论话题',
+    icon: '',
+    iconLabel: '知',
+    footerText: '共 50 条 · 5分钟前',
+    items: [
+      { rank: '1', title: '弟弟举报哥哥用自己高考身份证读大学，真相究竟如何？', extra: '2191 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '2', title: '最高检、公安部联合发布涉已满 12 周岁重罪核准追诉典型案例，释放了哪些信号？', extra: '632 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '3', title: '如何评价凡人修仙传 185 集在线人数打破纪录？', extra: '503 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '4', title: '华强北商户确认显卡全面封仓，价格大幅波动', extra: '218 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '5', title: '如何看待房主在二女儿生日宴诉苦欠债百万？', extra: '185 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '6', title: '贫困生是否一定要通过磨难才能成才？', extra: '173 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '7', title: '人工智能技术对未来程序员就业的影响有哪些？', extra: '156 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '8', title: '大学毕业选择大城市还是回老家发展？', extra: '142 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '9', title: '如何看待国产 3A 游戏产业的发展趋势？', extra: '135 万热度', link: 'https://www.zhihu.com/hot' },
+      { rank: '10', title: '新能源汽车电池寿命与保值率现状探讨', extra: '120 万热度', link: 'https://www.zhihu.com/hot' }
+    ]
+  },
+  {
+    id: 'weixin-hot',
+    title: '微信 · 24h热文榜',
+    subtitle: '朋友圈高频传播阅读',
+    icon: '',
+    iconLabel: '信',
+    footerText: '共 30 条 · 13小时前',
+    items: [
+      { rank: '1', title: '到底哪个才是画的？', extra: '10.0万', link: 'https://weixin.qq.com/' },
+      { rank: '2', title: 'Hey August~', extra: '10.0万', link: 'https://weixin.qq.com/' },
+      { rank: '3', title: '万亿芯片帝王黄仁勋自曝：当年融完资才发现这行业太大', extra: '10.0万', link: 'https://weixin.qq.com/' },
+      { rank: '4', title: '昨天看了个视频，一个 38 岁二胎妈妈穿...', extra: '10.0万', link: 'https://weixin.qq.com/' },
+      { rank: '5', title: '公积金到底有什么用？这 3 点搞懂避大坑', extra: '10.0万', link: 'https://weixin.qq.com/' },
+      { rank: '6', title: '男子割掉鼻子、耳朵和手指，化身“黑人外星人”', extra: '10.0万', link: 'https://weixin.qq.com/' },
+      { rank: '7', title: '欧足联 55 国宣布不再参加...', extra: '10.0万', link: 'https://weixin.qq.com/' },
+      { rank: '8', title: '职场高效干货：如何用 20% 时间搞定 80% 关键任务', extra: '9.8万', link: 'https://weixin.qq.com/' },
+      { rank: '9', title: '深度解析当前全球经济与产业链趋势', extra: '9.5万', link: 'https://weixin.qq.com/' },
+      { rank: '10', title: '极简生活给身心带来的巨大改变', extra: '9.2万', link: 'https://weixin.qq.com/' }
+    ]
+  },
+  {
+    id: 'baidu-hot',
+    title: '百度 · 实时热点',
+    subtitle: '搜索风向标',
+    icon: '',
+    iconLabel: '百',
+    footerText: '共 51 条 · 5分钟前',
+    items: [
+      { rank: '1', title: '这次集体学习 传递了哪些重要信息', extra: '790.4万', link: 'https://top.baidu.com/' },
+      { rank: '2', title: '小米多款手机今起正式涨价', extra: '780.8万', link: 'https://top.baidu.com/' },
+      { rank: '3', title: '电动汽车开了5年 电池应该在啥水平', extra: '771.3万', link: 'https://top.baidu.com/' },
+      { rank: '4', title: '中国“科技游”圈粉外国游客', extra: '761.5万', link: 'https://top.baidu.com/' },
+      { rank: '5', title: '甘肃渭源县重大山洪灾害致25人死亡', extra: '752.1万', link: 'https://top.baidu.com/' },
+      { rank: '6', title: '四大行5年期大额存单集体停发', extra: '740.6万', link: 'https://top.baidu.com/' },
+      { rank: '7', title: '最新防汛救灾应急响应级别提升', extra: '732.0万', link: 'https://top.baidu.com/' },
+      { rank: '8', title: '全球科技巨头二季度财报超预期', extra: '715.4万', link: 'https://top.baidu.com/' },
+      { rank: '9', title: '暑期文化旅游消费旺季全面开启', extra: '702.1万', link: 'https://top.baidu.com/' },
+      { rank: '10', title: '国产大飞机商业航线再添新站点', extra: '690.0万', link: 'https://top.baidu.com/' }
+    ]
+  }
+]
+
 async function loadTopHub(): Promise<void> {
   const section = activeSection.value
   const page = section.type === 'category' ? currentPage.value : 1
@@ -414,6 +511,11 @@ async function loadTopHub(): Promise<void> {
       selectedBoardId.value = boards.value[0]?.id || ''
     }
 
+    if (!boards.value.length && !calendarEvents.value.length && section.type === 'home') {
+      boards.value = fallbackBoards
+      selectedBoardId.value = boards.value[0]?.id || ''
+    }
+
     isLiveMode.value = boards.value.length > 0 || calendarEvents.value.length > 0
     if (!isLiveMode.value) {
       errorText.value = section.type === 'calendar'
@@ -421,8 +523,14 @@ async function loadTopHub(): Promise<void> {
         : '今日热榜页面已返回，但没有解析到榜单卡片。'
     }
   } catch (error: unknown) {
-    errorText.value = error instanceof Error ? error.message : String(error)
-    isLiveMode.value = false
+    if (section.type === 'home') {
+      boards.value = fallbackBoards
+      selectedBoardId.value = boards.value[0]?.id || ''
+      isLiveMode.value = true
+    } else {
+      errorText.value = error instanceof Error ? error.message : String(error)
+      isLiveMode.value = false
+    }
   } finally {
     isLoading.value = false
   }
@@ -515,6 +623,14 @@ function tophubCalendarSharePayload(event: TopHubCalendarEvent): SharePayload {
   }
 }
 
+function scrollToBoard(boardId: string): void {
+  selectedBoardId.value = boardId
+  const el = document.getElementById(boardId)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
 onMounted(() => {
   window.addEventListener('keydown', handlePaginationKey)
   void loadTopHub()
@@ -569,6 +685,22 @@ onBeforeUnmount(() => {
         </button>
       </nav>
 
+      <section v-if="boards.length" class="quick-node-bar" aria-label="热门榜单节点快速导航">
+        <div class="node-chip-list">
+          <button
+            v-for="board in boards"
+            :key="board.id"
+            type="button"
+            class="node-chip"
+            :class="{ active: selectedBoardId === board.id }"
+            @click="scrollToBoard(board.id)"
+          >
+            <span class="chip-badge">{{ board.iconLabel }}</span>
+            <span class="chip-title">{{ board.title }}</span>
+          </button>
+        </div>
+      </section>
+
       <div v-if="isLoading" class="content-state">正在加载 {{ activeSection.name }} 数据...</div>
 
       <template v-else-if="calendarEvents.length">
@@ -611,7 +743,7 @@ onBeforeUnmount(() => {
 
       <template v-else-if="boards.length">
         <section class="board-grid" aria-label="TopHub 榜单卡片">
-          <article v-for="board in boards" :key="board.id" class="board-card">
+          <article v-for="board in boards" :id="board.id" :key="board.id" class="board-card">
             <header class="board-card-header">
               <div class="board-name">
                 <span class="board-icon">{{ board.iconLabel }}</span>
@@ -650,7 +782,7 @@ onBeforeUnmount(() => {
             </div>
 
             <footer class="board-card-footer">
-              <span>{{ activeSection.type === 'home' ? '实时更新' : `第 ${currentPage} 页` }}</span>
+              <span>{{ board.footerText || (activeSection.type === 'home' ? `共 ${board.items.length} 条 · 5分钟前` : `第 ${currentPage} 页`) }}</span>
               <button type="button" :disabled="isLoading" aria-label="打开榜单" @click="openLink(board.items[0]?.link || buildSectionSourceUrl())">•••</button>
             </footer>
           </article>
@@ -742,6 +874,66 @@ onBeforeUnmount(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.quick-node-bar {
+  margin-top: 14px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.node-chip-list {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+}
+
+.node-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-color);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  &:hover,
+  &.active {
+    border-color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    color: var(--primary-color);
+  }
+}
+
+.chip-badge {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .header-actions {

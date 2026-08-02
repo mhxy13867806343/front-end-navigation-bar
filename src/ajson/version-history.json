@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-08-01T00:40:59.097Z",
+  "generatedAt": "2026-08-02T04:33:17.866Z",
   "groups": [
     {
       "date": "2026-08-01",
       "items": [
+        {
+          "hash": "d1f51ea4b384861a31ce2d827d358af515c2ba43",
+          "shortHash": "d1f51ea",
+          "date": "2026-08-01",
+          "time": "08:41",
+          "type": "功能更新",
+          "title": "integrate steal-farm logic and styles into single-file h5 and update documentation",
+          "scope": "",
+          "message": "feat: integrate steal-farm logic and styles into single-file h5 and update documentation"
+        },
         {
           "hash": "22dd89f5bfe50eb1c0db1d3b400b7026cb8d30fc",
           "shortHash": "22dd89f",
@@ -308,16 +318,6 @@
           "title": "enhance Cart Showcase with 10 distinct UI container layouts and Animation Showcase with real CSS keyframe animations, update documentation",
           "scope": "",
           "message": "feat: enhance Cart Showcase with 10 distinct UI container layouts and Animation Showcase with real CSS keyframe animations, update documentation"
-        },
-        {
-          "hash": "629a07eb976edad1e7d8a831f30a8247104dd409",
-          "shortHash": "629a07e",
-          "date": "2026-07-24",
-          "time": "08:50",
-          "type": "功能更新",
-          "title": "add 100 Shopping Cart UI Showcase and 63,353 CSS/JS Animation Effects Showcase to Web Components menu",
-          "scope": "",
-          "message": "feat: add 100 Shopping Cart UI Showcase and 63,353 CSS/JS Animation Effects Showcase to Web Components menu"
         }
       ]
     }

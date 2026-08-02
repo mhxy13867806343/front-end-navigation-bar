@@ -88,10 +88,90 @@ const toolboxItems: ToolboxItem[] = [
   {
     id: 'bilibili-live',
     name: '直播',
-    desc: '进入直播页后点击 Bibi 直播，再按全部、聊天室、电台、网游、单机获取 Bilibili 直播间数据。',
+    desc: '进入直播页后点击 Bibi 直播，再按全部、虚拟主播、娱乐、电台、聊天室、知识获取 Bilibili 直播间数据。',
     icon: '📡',
     path: '/bilibili-live',
     tag: 'Bibi 直播'
+  },
+  {
+    id: 'bilibili-live-virtual',
+    name: '虚拟主播直播',
+    desc: '进入 Bilibili 虚拟主播 (parentAreaId=9) 分区直播列表，可按推荐、人气、最新及各细分子标签刷看虚拟主播。',
+    icon: '🧬',
+    path: '/bilibili-live-virtual',
+    tag: 'Bilibili 虚拟主播'
+  },
+  {
+    id: 'bilibili-live-entertainment',
+    name: '娱乐直播',
+    desc: '进入 Bilibili 娱乐 (parentAreaId=1) 分区直播列表，涵盖视频唱见、舞见、沉浸式体验等丰富直播内容。',
+    icon: '🎤',
+    path: '/bilibili-live-entertainment',
+    tag: 'Bilibili 娱乐'
+  },
+  {
+    id: 'bilibili-live-radio',
+    name: '电台直播',
+    desc: '进入 Bilibili 电台 (parentAreaId=5) 分区直播列表，实时聆听语音情感、语音游戏、声优配音等声音频道。',
+    icon: '📻',
+    path: '/bilibili-live-radio',
+    tag: 'Bilibili 电台'
+  },
+  {
+    id: 'bilibili-live-chat',
+    name: '聊天室直播',
+    desc: '进入 Bilibili 聊天室 (parentAreaId=14) 分区直播列表，参与互动交友、实时连麦与聊天室氛围。',
+    icon: '💬',
+    path: '/bilibili-live-chat',
+    tag: 'Bilibili 聊天室'
+  },
+  {
+    id: 'bilibili-live-knowledge',
+    name: '知识直播',
+    desc: '进入 Bilibili 知识 (parentAreaId=11) 分区直播列表，学习公开课、自习打卡、科学普及与职业技能。',
+    icon: '📚',
+    path: '/bilibili-live-knowledge',
+    tag: 'Bilibili 知识'
+  },
+  {
+    id: 'bilibili-live-play-together',
+    name: '游戏帮玩直播',
+    desc: '进入 Bilibili 游戏帮玩/互动玩法 (parentAreaId=301) 分区直播列表，查看原神、绝区零、崩铁等游戏托管帮玩。',
+    icon: '🎮',
+    path: '/bilibili-live-play-together',
+    tag: 'Bilibili 帮玩'
+  },
+  {
+    id: 'baidu-trending-movie',
+    name: '百度电影热榜',
+    desc: '实时查看百度风云榜·全网热门电影排行榜、影评热度与演员阵容。',
+    icon: '🎬',
+    path: '/baidu-trending-movie',
+    tag: '百度电影榜'
+  },
+  {
+    id: 'baidu-trending-novel',
+    name: '百度小说热榜',
+    desc: '实时查看百度风云榜·全网热门小说风向标、流行文学与作者新作。',
+    icon: '📚',
+    path: '/baidu-trending-novel',
+    tag: '百度小说榜'
+  },
+  {
+    id: 'baidu-trending-teleplay',
+    name: '百度电视剧热榜',
+    desc: '实时查看百度风云榜·全网热门电视剧、网剧追踪与追剧热度。',
+    icon: '📺',
+    path: '/baidu-trending-teleplay',
+    tag: '百度剧集榜'
+  },
+  {
+    id: 'baidu-trending',
+    name: '百度热榜与风云榜',
+    desc: '聚合百度电影、小说、电视剧、游戏及实时热搜的综合风云榜。',
+    icon: '🐾',
+    path: '/baidu-trending',
+    tag: '百度热榜'
   },
   {
     id: 'star',
