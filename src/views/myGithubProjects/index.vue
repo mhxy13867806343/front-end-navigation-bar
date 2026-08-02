@@ -283,7 +283,7 @@ const confirmExternalNavigation = (): void => {
       <div class="juejin-external-container">
         <div class="juejin-logo-badge">
           <span class="badge-icon">🌐</span>
-          <span class="badge-brand">稀土掘金风 · 外链安全检测</span>
+          <span class="badge-brand">GitHub 个人精选开源项目展馆</span>
         </div>
 
         <h3 class="juejin-notice-title">即将离开本站，请注意账号与财产安全</h3>
