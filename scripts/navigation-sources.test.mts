@@ -1092,7 +1092,10 @@ test('MyGithubProjects page provides 21 open source projects showcase with route
   assert.match(dataStoreSource, /rustchatService/)
   assert.match(dataStoreSource, /myvitepressblog/)
   assert.match(pageSource, /class="my-github-projects-page"/)
+  assert.match(pageSource, /querySearchSuggestions/)
+  assert.match(pageSource, /el-autocomplete/)
   assert.match(pageSource, /class="projects-grid"/)
   assert.match(pageStyleSource, /\.my-github-projects-page/)
+  assert.match(pageStyleSource, /\.suggestion-option-row/)
 })
 

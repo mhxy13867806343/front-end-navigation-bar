@@ -104,6 +104,55 @@ const requestExternalNavigation = (url: string): void => {
   externalModalVisible.value = true
 }
 
+interface SuggestionItem {
+  value: string
+  type: string
+  icon?: string
+}
+
+const querySearchSuggestions = (queryString: string, cb: (results: SuggestionItem[]) => void): void => {
+  const q = queryString.trim().toLowerCase()
+  if (!q) {
+    cb([])
+    return
+  }
+
+  const suggestions: SuggestionItem[] = []
+  const seen = new Set<string>()
+
+  // 1. 匹配项目名称
+  GITHUB_PROJECTS.forEach((p: GithubProjectItem): void => {
+    if (p.name.toLowerCase().includes(q) && !seen.has(p.name)) {
+      seen.add(p.name)
+      suggestions.push({ value: p.name, type: '项目', icon: p.icon })
+    }
+  })
+
+  // 2. 匹配技术栈标签
+  GITHUB_PROJECTS.forEach((p: GithubProjectItem): void => {
+    p.techStack.forEach((tech: string): void => {
+      if (tech.toLowerCase().includes(q) && !seen.has(tech)) {
+        seen.add(tech)
+        suggestions.push({ value: tech, type: '技术栈', icon: '🛠️' })
+      }
+    })
+  })
+
+  // 3. 匹配分类名称
+  GITHUB_PROJECT_CATEGORIES.forEach((cat: GithubProjectCategory): void => {
+    if (cat.label.toLowerCase().includes(q) && !seen.has(cat.label)) {
+      seen.add(cat.label)
+      suggestions.push({ value: cat.label, type: '分类', icon: cat.icon })
+    }
+  })
+
+  cb(suggestions.slice(0, 10))
+}
+
+const handleSuggestionSelect = (item: Record<string, any>): void => {
+  searchQuery.value = item.value as string
+}
+
 const confirmExternalNavigation = (): void => {
   if (externalUrl.value) {
     window.open(externalUrl.value, '_blank')
@@ -149,13 +198,25 @@ const confirmExternalNavigation = (): void => {
       </div>
 
       <div class="search-input-box">
-        <el-input
+        <el-autocomplete
           v-model="searchQuery"
-          placeholder="🔍 搜索项目名称、技术栈 (如: Rust, Vue3, UniApp)..."
+          :fetch-suggestions="querySearchSuggestions"
+          placeholder="🔍 搜索项目名称、技术栈 (输入 r 自动提示)..."
           clearable
           size="small"
           class="project-search-input"
-        />
+          @select="handleSuggestionSelect"
+        >
+          <template #default="{ item }">
+            <div class="suggestion-option-row">
+              <div class="suggestion-left">
+                <span class="suggestion-icon">{{ item.icon || '🔍' }}</span>
+                <span class="suggestion-text">{{ item.value }}</span>
+              </div>
+              <span class="suggestion-type-badge">{{ item.type }}</span>
+            </div>
+          </template>
+        </el-autocomplete>
       </div>
     </div>
 
