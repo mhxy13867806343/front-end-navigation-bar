@@ -108,6 +108,8 @@ interface SuggestionItem {
   value: string
   type: string
   icon?: string
+  githubUrl?: string
+  categoryKey?: string
 }
 
 const querySearchSuggestions = (queryString: string, cb: (results: SuggestionItem[]) => void): void => {
@@ -124,7 +126,7 @@ const querySearchSuggestions = (queryString: string, cb: (results: SuggestionIte
   GITHUB_PROJECTS.forEach((p: GithubProjectItem): void => {
     if (p.name.toLowerCase().includes(q) && !seen.has(p.name)) {
       seen.add(p.name)
-      suggestions.push({ value: p.name, type: '项目', icon: p.icon })
+      suggestions.push({ value: p.name, type: '项目', icon: p.icon, githubUrl: p.githubUrl })
     }
   })
 
@@ -142,7 +144,7 @@ const querySearchSuggestions = (queryString: string, cb: (results: SuggestionIte
   GITHUB_PROJECT_CATEGORIES.forEach((cat: GithubProjectCategory): void => {
     if (cat.label.toLowerCase().includes(q) && !seen.has(cat.label)) {
       seen.add(cat.label)
-      suggestions.push({ value: cat.label, type: '分类', icon: cat.icon })
+      suggestions.push({ value: cat.label, type: '分类', icon: cat.icon, categoryKey: cat.key })
     }
   })
 
@@ -151,6 +153,13 @@ const querySearchSuggestions = (queryString: string, cb: (results: SuggestionIte
 
 const handleSuggestionSelect = (item: Record<string, any>): void => {
   searchQuery.value = item.value as string
+
+  if (item.type === '项目' && item.githubUrl) {
+    requestExternalNavigation(item.githubUrl as string)
+  } else if (item.type === '分类' && item.categoryKey) {
+    activeCategory.value = item.categoryKey as string
+    searchQuery.value = ''
+  }
 }
 
 const confirmExternalNavigation = (): void => {

@@ -5,6 +5,16 @@
       "date": "2026-08-02",
       "items": [
         {
+          "hash": "e25727e4c12b5395ff418f2bf4c0d4e9ecfcd3506",
+          "shortHash": "e25727e",
+          "date": "2026-08-02",
+          "time": "13:46",
+          "type": "功能更新",
+          "title": "新增 GitHub 21个精选开源项目展馆 /my-github-projects，支持 ElAutocomplete 联想选择与外链安全确认",
+          "scope": "",
+          "message": "feat: 新增 GitHub 21个精选开源项目展馆 /my-github-projects，支持 ElAutocomplete 联想选择与外链安全确认"
+        },
+        {
           "hash": "340d62ff0d4244b04a4a254cc17659da2a465100",
           "shortHash": "340d62f",
           "date": "2026-08-02",
