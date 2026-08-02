@@ -243,6 +243,12 @@ const filteredWebLibraryGroups: ComputedRef<WebLibraryGroup[]> = computed<WebLib
 })
 
 const transferSearchQuery: Ref<string> = ref<string>('')
+
+function onTransferSelectChange(val: string): void {
+  if (val && val.trim()) {
+    saveSearchHistory(val)
+  }
+}
 const activeCollapseNames: Ref<string[]> = ref<string[]>(webLibraryGroups.map((g: WebLibraryGroup): string => g.id))
 
 const tabsPosition: Ref<'top' | 'left' | 'right' | 'bottom'> = ref<'top' | 'left' | 'right' | 'bottom'>('top')
@@ -748,13 +754,64 @@ onUnmounted((): void => {
           <!-- 模式 3：双列表穿梭过滤 (Transfer View) -->
           <div v-else-if="viewMode === 'transfer'" class="web-library-transfer-wrapper">
             <div class="transfer-filter-bar">
-              <el-input
+              <el-select
                 v-model="transferSearchQuery"
-                placeholder="🔍 在当前选中的分类面板内进行二次精细筛选..."
+                filterable
                 clearable
+                allow-create
+                default-first-option
+                placeholder="🔍 在当前选中的分类面板内进行二级精细筛选 (支持下拉历史与推荐)..."
                 size="small"
-                class="transfer-search-input"
-              />
+                class="transfer-search-select"
+                @change="onTransferSelectChange"
+                @clear="transferSearchQuery = ''"
+              >
+                <!-- 下拉顶部：历史记录统计与清空操作按钮 -->
+                <template #header>
+                  <div class="select-dropdown-header">
+                    <span class="header-text">
+                      {{ searchHistoryList.length ? `🕒 历史搜索记录 (${searchHistoryList.length})` : '💡 暂无历史记录' }}
+                    </span>
+                    <el-button
+                      v-if="searchHistoryList.length > 0"
+                      type="danger"
+                      link
+                      size="small"
+                      class="clear-link-btn"
+                      @click.stop="confirmClearSearchHistory"
+                    >
+                      🗑️ 清空历史
+                    </el-button>
+                  </div>
+                </template>
+
+                <!-- 历史搜索记录 -->
+                <el-option-group v-if="searchHistoryList.length > 0" label="历史搜索">
+                  <el-option
+                    v-for="term in searchHistoryList"
+                    :key="`sub-history-${term}`"
+                    :label="term"
+                    :value="term"
+                  >
+                    <div class="history-option-row">
+                      <span>🕒 {{ term }}</span>
+                      <span class="remove-history-icon" title="删除此条" @click.stop="removeHistoryItem(term)">✕</span>
+                    </div>
+                  </el-option>
+                </el-option-group>
+
+                <!-- 热门推荐 -->
+                <el-option-group label="推荐精细筛选">
+                  <el-option
+                    v-for="rec in hotSearchRecommendations"
+                    :key="`sub-rec-${rec}`"
+                    :label="rec"
+                    :value="rec"
+                  >
+                    🔥 {{ rec }}
+                  </el-option>
+                </el-option-group>
+              </el-select>
             </div>
             <div class="transfer-panels">
               <div class="transfer-panel left-panel">

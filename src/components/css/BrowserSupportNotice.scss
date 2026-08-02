@@ -649,6 +649,23 @@
 
 .transfer-filter-bar {
   width: 100%;
+
+  .transfer-search-select,
+  .transfer-search-input {
+    width: 100%;
+
+    :deep(.el-select__wrapper),
+    :deep(.el-input__wrapper) {
+      border-radius: 6px;
+      background: var(--bg-primary);
+      box-shadow: 0 0 0 1px var(--border-color) inset;
+
+      &.is-focused,
+      &.is-focus {
+        box-shadow: 0 0 0 1px var(--primary-color) inset;
+      }
+    }
+  }
 }
 
 .transfer-panels {
