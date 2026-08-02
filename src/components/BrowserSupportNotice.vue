@@ -271,7 +271,7 @@ onUnmounted((): void => {
 
 <template>
   <section class="browser-support-bar" :class="{ warning: isBrowserUnsupported }" aria-label="浏览器兼容性提示">
-    <div class="bar-copy">
+    <div class="bar-copy" @click="dialogVisible = true" title="点击查看环境检测与项目运行说明">
       <span class="bar-dot" aria-hidden="true"></span>
       <div>
         <strong>{{ isBrowserUnsupported ? '浏览器版本过旧' : '浏览器环境正常' }}</strong>
@@ -592,9 +592,6 @@ onUnmounted((): void => {
         </div>
       </el-popover>
 
-      <el-button size="small" class="support-btn" @click="dialogVisible = true">
-        环境检测与说明
-      </el-button>
     </div>
   </section>
 

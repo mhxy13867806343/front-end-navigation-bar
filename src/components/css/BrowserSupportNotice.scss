@@ -28,6 +28,17 @@
   min-width: 0;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+
+    strong {
+      color: var(--primary-color);
+    }
+  }
 }
 
 .bar-dot {
