@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, ref, type ComputedRef, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { STORAGE_KEYS } from '@/constants/storageKeys'
 import {
   BROWSER_DOWNLOAD_LINKS,
@@ -162,6 +162,44 @@ function clearSearchHistory(): void {
     // localStorage unavailable
   }
 }
+
+function confirmClearSearchHistory(): void {
+  if (!searchHistoryList.value.length) {
+    ElMessage.info('暂无搜索历史记录')
+    return
+  }
+
+  ElMessageBox.confirm('确定要清空全部 Web 组件与导航搜索历史记录吗？', '清空历史提示', {
+    confirmButtonText: '确定清空',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then((): void => {
+      clearSearchHistory()
+      ElMessage.success('已成功清空全部搜索历史记录')
+    })
+    .catch((): void => {
+      // 用户取消
+    })
+}
+
+function onSearchSelectChange(val: string): void {
+  if (val && val.trim()) {
+    saveSearchHistory(val)
+  }
+}
+
+const hotSearchRecommendations: string[] = [
+  '哔哩哔哩直播',
+  '掘金小册课程',
+  'BOSS直聘',
+  'Three.js 3D 地图',
+  'CSS 动画特效',
+  'AntV 图表',
+  'Oat UI',
+  'Web Components',
+  'Docker 部署'
+]
 
 function applyHistoryQuery(term: string): void {
   webLibrarySearchQuery.value = term
@@ -462,18 +500,68 @@ onUnmounted((): void => {
             </div>
           </div>
 
-          <!-- 全局实时搜索框与历史记录栏 -->
+          <!-- 全局 ElSelect 搜索框 (支持可清空、可过滤、下拉历史与模态确认清空) -->
           <div class="web-library-global-search">
             <div class="search-input-row">
-              <el-input
+              <el-select
                 v-model="webLibrarySearchQuery"
-                placeholder="🔍 搜索 Web 组件/微应用/子页面 (如: 哔哩哔哩, 掘金, BOSS直聘, 动画, 地图... 按 Enter 保存历史)"
+                filterable
                 clearable
+                allow-create
+                default-first-option
+                placeholder="🔍 搜索 Web 组件/微应用/子页面 (支持关键词下拉推荐与历史记录)..."
                 size="small"
-                class="global-search-input"
-                @keyup.enter="saveSearchHistory(webLibrarySearchQuery)"
+                class="global-search-select"
+                @change="onSearchSelectChange"
                 @clear="webLibrarySearchQuery = ''"
-              />
+              >
+                <!-- 下拉顶部：历史记录统计与清空操作按钮 -->
+                <template #header>
+                  <div class="select-dropdown-header">
+                    <span class="header-text">
+                      {{ searchHistoryList.length ? `🕒 历史搜索记录 (${searchHistoryList.length})` : '💡 暂无历史记录，搜索后自动累积' }}
+                    </span>
+                    <el-button
+                      v-if="searchHistoryList.length > 0"
+                      type="danger"
+                      link
+                      size="small"
+                      class="clear-link-btn"
+                      @click.stop="confirmClearSearchHistory"
+                    >
+                      🗑️ 清空历史
+                    </el-button>
+                  </div>
+                </template>
+
+                <!-- 历史搜索记录 -->
+                <el-option-group v-if="searchHistoryList.length > 0" label="历史搜索">
+                  <el-option
+                    v-for="term in searchHistoryList"
+                    :key="`history-${term}`"
+                    :label="term"
+                    :value="term"
+                  >
+                    <div class="history-option-row">
+                      <span>🕒 {{ term }}</span>
+                      <span class="remove-history-icon" title="删除此条" @click.stop="removeHistoryItem(term)">✕</span>
+                    </div>
+                  </el-option>
+                </el-option-group>
+
+                <!-- 热门搜索推荐 -->
+                <el-option-group label="全站热搜推荐">
+                  <el-option
+                    v-for="rec in hotSearchRecommendations"
+                    :key="`rec-${rec}`"
+                    :label="rec"
+                    :value="rec"
+                  >
+                    🔥 {{ rec }}
+                  </el-option>
+                </el-option-group>
+              </el-select>
+
               <el-button
                 v-if="webLibrarySearchQuery.trim()"
                 type="primary"
@@ -503,7 +591,7 @@ onUnmounted((): void => {
                   {{ item }}
                 </el-tag>
               </div>
-              <button type="button" class="clear-history-btn" @click="clearSearchHistory" title="清空全部搜索历史">
+              <button type="button" class="clear-history-btn" @click="confirmClearSearchHistory" title="清空全部搜索历史">
                 🗑️ 清空历史
               </button>
             </div>
