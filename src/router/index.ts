@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteLocationNormalized } from 'vue-router'
 import BigScreen from '../views/bigScreen/index.vue'
 
@@ -439,12 +439,17 @@ const routes = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFoundCatchAll',
-    component: () => import('../views/error/404.vue')
+    redirect: (to: RouteLocationNormalized) => ({
+      path: '/404',
+      query: {
+        from: to.fullPath
+      }
+    })
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes
 })
 

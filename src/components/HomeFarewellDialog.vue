@@ -30,9 +30,37 @@
             <span>ALAPI 笑话接口</span>
             <strong>列表自动向上滚动</strong>
           </div>
-          <n-button size="small" secondary :disabled="!jokes.length" @click="copyAllJokes">
-            复制全部
-          </n-button>
+          <div class="joke-actions">
+            <div class="joke-count-presets" aria-label="选择笑话条数">
+              <n-button
+                v-for="preset in jokeCountPresets"
+                :key="preset"
+                size="small"
+                :type="jokeCount === preset ? 'primary' : 'default'"
+                secondary
+                @click="setJokeCount(preset)"
+              >
+                {{ preset }}
+              </n-button>
+            </div>
+            <n-input-number
+              v-model:value="jokeCount"
+              class="joke-count-input"
+              size="small"
+              :min="1"
+              :max="300"
+              :step="1"
+              :precision="0"
+              placeholder="条数"
+              aria-label="手动输入笑话条数"
+            />
+            <n-button size="small" secondary :loading="isLoading" @click="refreshJokes">
+              刷新列表
+            </n-button>
+            <n-button size="small" secondary :disabled="!jokes.length" @click="copyAllJokes">
+              复制全部
+            </n-button>
+          </div>
         </div>
 
         <n-spin :show="isLoading">
@@ -82,7 +110,7 @@
 <script setup lang="ts">
 import axios from 'axios'
 import $ from 'jquery'
-import { NAlert, NButton, NModal, NSpin } from 'naive-ui'
+import { NAlert, NButton, NInputNumber, NModal, NSpin } from 'naive-ui'
 import { resolveApiUrl } from '@/utils/resolveApiUrl'
 
 const props = defineProps<{
@@ -110,10 +138,12 @@ const dialogStyle = {
 const showDialog = ref<boolean>(false)
 const currentTimeText = ref<string>(formatTime(new Date()))
 const jokes = ref<JokeItem[]>([])
+const jokeCount = ref<number>(40)
 const isLoading = ref<boolean>(false)
 const errorText = ref<string>('')
 const copyStatus = ref<string>('')
 const jokeListRef = ref<HTMLElement | null>(null)
+const jokeCountPresets = [10, 40, 100]
 
 let clockTimer: number | undefined
 let jokeScrollTimer: number | undefined
@@ -215,9 +245,17 @@ function normalizeJokes(payload: unknown): JokeItem[] {
     .filter((item: JokeItem | null): item is JokeItem => Boolean(item))
 }
 
+function normalizeJokeCount(value: number | null): number {
+  const count = Number(value)
+  if (!Number.isFinite(count)) return 40
+  return Math.min(300, Math.max(1, Math.trunc(count)))
+}
+
 async function loadJokes(): Promise<void> {
   if (isLoading.value) return
 
+  const requestedCount = normalizeJokeCount(jokeCount.value)
+  jokeCount.value = requestedCount
   isLoading.value = true
   errorText.value = ''
 
@@ -225,10 +263,10 @@ async function loadJokes(): Promise<void> {
     const url = `${resolveApiUrl(JOKE_API_PATH)}?${buildQueryString({
       token: ALAPI_TOKEN,
       page: 1,
-      num: 30
+      num: requestedCount
     })}`
     const response = await axios.get<unknown>(url)
-    const nextJokes = normalizeJokes(response.data).slice(0, 30)
+    const nextJokes = normalizeJokes(response.data).slice(0, requestedCount)
     if (!nextJokes.length) {
       throw new Error('ALAPI 笑话接口没有返回可展示列表')
     }
@@ -241,6 +279,16 @@ async function loadJokes(): Promise<void> {
     isLoading.value = false
     void nextTick(startJokeScroll)
   }
+}
+
+function refreshJokes(): void {
+  hasRequestedJokes = true
+  void loadJokes()
+}
+
+function setJokeCount(count: number): void {
+  jokeCount.value = count
+  refreshJokes()
 }
 
 function stopJokeScroll(): void {
@@ -448,6 +496,25 @@ onUnmounted((): void => {
   gap: 12px;
 }
 
+.joke-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.joke-count-presets {
+  display: inline-flex;
+  gap: 6px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.joke-count-input {
+  width: 112px;
+}
+
 .joke-list {
   display: grid;
   gap: 10px;
@@ -517,6 +584,20 @@ onUnmounted((): void => {
 @media (max-width: 640px) {
   .farewell-status {
     grid-template-columns: 1fr;
+  }
+
+  .joke-heading,
+  .joke-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .joke-count-presets {
+    justify-content: center;
+  }
+
+  .joke-count-input {
+    width: 100%;
   }
 
   .mail-link {

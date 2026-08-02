@@ -44,6 +44,35 @@ test('Terminal has a direct route that selects the terminal category', () => {
   assert.match(appSource, /activeItem\.value\s*=\s*26/)
 })
 
+test('GitHub Pages production routing uses hash history and restores direct links to hash routes', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const indexSource = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+  const notFoundSource = readFileSync(new URL('../public/404.html', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /createWebHashHistory/)
+  assert.doesNotMatch(routerSource, /createWebHistory/)
+  assert.match(routerSource, /history:\s*createWebHashHistory\(import\.meta\.env\.BASE_URL\)/)
+  assert.match(notFoundSource, /\/\?\//)
+  assert.match(indexSource, /l\.pathname\s*\+\s*'#'\s*\+\s*decoded/)
+  assert.doesNotMatch(indexSource, /l\.pathname\.slice\(0,\s*-1\)\s*\+\s*decoded/)
+})
+
+test('Unknown SPA routes redirect to the redesigned 404 page with the original path preserved', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const notFoundPageSource = readFileSync(new URL('../src/views/error/404.vue', import.meta.url), 'utf8')
+  const notFoundStyleSource = readFileSync(new URL('../src/views/error/css/404.scss', import.meta.url), 'utf8')
+
+  assert.match(routerSource, /path:\s*'\/:pathMatch\(\.\*\)\*'/)
+  assert.match(routerSource, /redirect:\s*\(to:\s*RouteLocationNormalized\)\s*=>\s*\(\{/)
+  assert.match(routerSource, /path:\s*'\/404'/)
+  assert.match(routerSource, /from:\s*to\.fullPath/)
+  assert.match(notFoundPageSource, /const lostPath = computed/)
+  assert.match(notFoundPageSource, /这个页面没有找到/)
+  assert.match(notFoundPageSource, /刚才访问的是/)
+  assert.match(notFoundStyleSource, /\.not-found-card/)
+  assert.match(notFoundStyleSource, /prefers-reduced-motion:\s*reduce/)
+})
+
 test('Home farewell dialog opens only on the production homepage with live jokes and mail contact', () => {
   const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   const dialogSource = readFileSync(new URL('../src/components/HomeFarewellDialog.vue', import.meta.url), 'utf8')
@@ -56,6 +85,12 @@ test('Home farewell dialog opens only on the production homepage with live jokes
   assert.match(dialogSource, /const contactEmail = ['"]869710179@qq\.com['"]/)
   assert.match(dialogSource, /mailto:\$\{contactEmail\}/)
   assert.match(dialogSource, /const JOKE_API_PATH = ['"]\/api-alapi\/api\/joke['"]/)
+  assert.match(dialogSource, /NInputNumber/)
+  assert.match(dialogSource, /const jokeCount = ref<number>\(40\)/)
+  assert.match(dialogSource, /const jokeCountPresets = \[10, 40, 100\]/)
+  assert.match(dialogSource, /v-model:value=["']jokeCount["']/)
+  assert.match(dialogSource, /function setJokeCount\(count: number\): void/)
+  assert.match(dialogSource, /num:\s*requestedCount/)
   assert.match(dialogSource, /window\.setInterval[\s\S]*?formatTime\(new Date\(\)\)/)
   assert.match(dialogSource, /\.animate\(\{\s*scrollTop:\s*nextTop\s*\}/)
   assert.match(dialogSource, /navigator\.clipboard\?\.writeText/)
