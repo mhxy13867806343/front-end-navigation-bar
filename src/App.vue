@@ -11,6 +11,7 @@ import ApiToolbox from './components/ApiToolbox.vue'
 import BrowserSupportNotice from './components/BrowserSupportNotice.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
 import RefreshCountdownButton from './components/RefreshCountdownButton.vue'
+import HomeFarewellDialog from './components/HomeFarewellDialog.vue'
 import ShareButton from './components/ShareButton.vue'
 import type { SharePayload } from './composables/useShareRecords'
 import type { ToolItem } from './types/navigation'
@@ -3177,6 +3178,8 @@ watch(isDarkMode, () => {
         <div class="route-back-top">↑</div>
       </n-back-top>
     </div>
+
+    <HomeFarewellDialog v-if="isDyFormRoute && isProd" :route-path="route.path" />
 
     <AlapiBottomMusicPlayer v-if="isDyFormRoute" />
 

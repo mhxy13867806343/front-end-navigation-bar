@@ -9,6 +9,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 > **📢 【Project Archive & Notice】**
 > All planned features, UI Showcases (WebComponents, Oat UI, 1.0M Auth UI, 100 Shopping Carts, 63k Animations, Motion for Vue, Schedule-X Calendar, Three.js 3D Map, Docker Dual Deployment, Source Code Inspector) are **fully implemented**.
 > Development is now paused. Feel free to **Fork** this repository for custom modifications, or open an Issue / Discussion!
+> The production homepage now opens an archive notice dialog every time, with a live clock, clickable mail contact, ALAPI jokes, upward jQuery scrolling, and copy actions inspired by Naive UI Dialog.
 
 ## 🌐 Live Demo
 
@@ -40,6 +41,7 @@ A front-end AI tools navigation site built with Vue 3 + Vite, aggregating entrie
 
 ## 🆕 Recent Updates
 
+- 🛑 **Production homepage archive dialog**: Production builds and `npm run preview` open the archive dialog on every homepage visit, showing live time, a clickable email contact, ALAPI jokes, jQuery `animate(scrollTop)` upward scrolling, and copy actions.
 - 🧭 **Added internal news hub pages**: `/ai-xxx/:section`, `/jandan`, `/tophub`, `/ithome`, `/huxiu`, and `/github` are now route-backed internal pages with explicit loading states and disabled refresh/category/pagination controls while requests are pending.
 - ⚡ **Cnblogs Flash now uses real data**: `/flash` prefers a Cnblogs OpenAPI token and falls back to the legacy flash endpoint; login or authorization failures render a real-source status panel instead of mock feeds.
 - ♡ **Added item-level favorites**: New hub list cards, AI news/apps/tutorial lists, Juejin topic cards, and HelloWorld lists now include heart controls that feed into `/records-cache`; unfavorited items stay out of the records page, and removal uses a confirmation dialog.
@@ -96,6 +98,8 @@ npm run build
 # Preview the build
 npm run preview
 ```
+
+`npm run preview` serves the production build, so the homepage archive dialog follows the same production-only rule.
 
 ## ✅ Tests & Validation
 

@@ -57,7 +57,8 @@ const PROXY_MAP: Record<string, string> = {
   '/api-hellogithub-img': 'https://img.hellogithub.com',
   '/api-lolm-news': 'https://apps.game.qq.com',
   '/api-lolm': 'https://mlol.qt.qq.com',
-  '/api-oschina': 'https://www.oschina.net'
+  '/api-oschina': 'https://www.oschina.net',
+  '/api-apiv1-oschina': 'https://apiv1.oschina.net'
 }
 
 /**

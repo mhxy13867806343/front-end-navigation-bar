@@ -214,5 +214,9 @@ export const serverProxy: ServerProxyMap = {
   '/api-oschina': createProxyEntry('/api-oschina', 'https://www.oschina.net', {
     Origin: 'https://www.oschina.net',
     Referer: 'https://www.oschina.net/reading-list'
+  }),
+  '/api-apiv1-oschina': createProxyEntry('/api-apiv1-oschina', 'https://apiv1.oschina.net', {
+    Origin: 'https://www.oschina.net',
+    Referer: 'https://www.oschina.net/reading-list'
   })
 }
