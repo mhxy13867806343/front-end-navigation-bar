@@ -10,6 +10,7 @@ import AnalogClock from './components/AnalogClock.vue'
 import ApiToolbox from './components/ApiToolbox.vue'
 import BrowserSupportNotice from './components/BrowserSupportNotice.vue'
 import ComponentShowcase from './components/ComponentShowcase.vue'
+import GlobalAnimeMascot from './components/GlobalAnimeMascot.vue'
 import RefreshCountdownButton from './components/RefreshCountdownButton.vue'
 import HomeFarewellDialog from './components/HomeFarewellDialog.vue'
 import ShareButton from './components/ShareButton.vue'
@@ -3182,6 +3183,8 @@ watch(isDarkMode, () => {
     <HomeFarewellDialog v-if="isDyFormRoute && isProd" :route-path="route.path" />
 
     <AlapiBottomMusicPlayer v-if="isDyFormRoute" />
+
+    <GlobalAnimeMascot />
 
     <!-- 全局返回顶部 -->
     <n-back-top v-if="isDyFormRoute" :right="240" :bottom="30" :visibility-height="80">

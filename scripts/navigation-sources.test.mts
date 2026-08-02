@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import { menuItemsList } from '../src/utlis/menuItems.ts'
@@ -100,6 +100,40 @@ test('Home farewell dialog opens only on the production homepage with live jokes
   assert.match(dialogSource, /navigator\.clipboard\?\.writeText/)
   assert.match(dialogSource, /function isHomeFarewellRoute\(path: string\): boolean/)
   assert.match(dialogSource, /path === '\/dyform'/)
+})
+
+test('Global anime mascot loads local Live2D widget assets on every route', () => {
+  const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const packageSource = readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+  const mascotUrl = new URL('../src/components/GlobalAnimeMascot.vue', import.meta.url)
+  const vendorFiles = [
+    '../public/vendor/live2d-widgets/LICENSE',
+    '../public/vendor/live2d-widgets/dist/waifu.css',
+    '../public/vendor/live2d-widgets/dist/waifu-tips.js',
+    '../public/vendor/live2d-widgets/dist/waifu-tips.json',
+    '../public/vendor/live2d-widgets/dist/live2d.min.js',
+    '../public/vendor/live2d-widgets/dist/chunk/index.js',
+    '../public/vendor/live2d-widgets/dist/chunk/index2.js'
+  ]
+
+  assert.ok(existsSync(mascotUrl), 'GlobalAnimeMascot.vue should exist')
+  for (const vendorFile of vendorFiles) {
+    assert.ok(existsSync(new URL(vendorFile, import.meta.url)), `${vendorFile} should exist`)
+  }
+
+  const mascotSource = readFileSync(mascotUrl, 'utf8')
+  assert.match(packageSource, /"live2d-widgets":\s*"\^1\.0\.1"/)
+  assert.match(appSource, /import GlobalAnimeMascot from '\.\/components\/GlobalAnimeMascot\.vue'/)
+  assert.match(appSource, /<GlobalAnimeMascot\s*\/>/)
+  assert.match(mascotSource, /const LIVE2D_WIDGET_BASE = `\$\{import\.meta\.env\.BASE_URL\}vendor\/live2d-widgets\/dist\/`/)
+  assert.doesNotMatch(mascotSource, /fastly\.jsdelivr\.net\/npm\/live2d-widgets/)
+  assert.match(mascotSource, /const LIVE2D_MODEL_CDN/)
+  assert.match(mascotSource, /waifuPath:\s*`\$\{LIVE2D_WIDGET_BASE\}waifu-tips\.json`/)
+  assert.match(mascotSource, /cubism2Path:\s*`\$\{LIVE2D_WIDGET_BASE\}live2d\.min\.js`/)
+  assert.match(mascotSource, /window\.initWidget/)
+  assert.match(mascotSource, /showToggleAfterQuit:\s*true/)
+  assert.match(mascotSource, /tools:\s*\['photo', 'info', 'quit'\]/)
+  assert.match(mascotSource, /:global\(\.waifu\)/)
 })
 
 test('RunCode has a direct route and toolbox hub entry', () => {
