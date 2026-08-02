@@ -16,6 +16,7 @@ export const newPagesGroup: WebLibraryGroup = {
   title: '新建页面',
   icon: '🆕',
   items: [
+    { label: '🐙 个人开源项目库', command: '/my-github-projects' },
     { label: '🐾 百度风云榜/热榜', command: '/baidu-trending' },
     { label: '🎬 百度电影热榜', command: '/baidu-trending-movie' },
     { label: '📚 百度小说热榜', command: '/baidu-trending-novel' },

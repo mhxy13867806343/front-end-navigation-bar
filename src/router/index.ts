@@ -252,6 +252,11 @@ const routes = [
     component: () => import('../views/baiduTeleplay/index.vue')
   },
   {
+    path: '/my-github-projects',
+    name: 'MyGithubProjects',
+    component: () => import('../views/myGithubProjects/index.vue')
+  },
+  {
     path: '/big-screen',
     name: 'BigScreen',
     component: BigScreen
