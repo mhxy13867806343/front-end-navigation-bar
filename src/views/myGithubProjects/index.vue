@@ -88,7 +88,7 @@ const openGithubUrl = (url: string): void => {
           v-model="searchQuery"
           placeholder="🔍 搜索项目名称、技术栈 (如: Rust, Vue3, UniApp)..."
           clearable
-          size="medium"
+          size="small"
           class="project-search-input"
         />
       </div>
@@ -144,9 +144,12 @@ const openGithubUrl = (url: string): void => {
               </button>
             </div>
             <ShareButton
-              :title="`分享开源项目：${project.name}`"
-              :text="`${project.name} - ${project.description}`"
-              :url="project.githubUrl"
+              :payload="{
+                title: `分享开源项目：${project.name}`,
+                description: project.description,
+                url: project.githubUrl
+              }"
+              size="compact"
             />
           </div>
         </div>
