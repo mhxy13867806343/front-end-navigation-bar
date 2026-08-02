@@ -1099,3 +1099,23 @@ test('MyGithubProjects page provides 21 open source projects showcase with route
   assert.match(pageStyleSource, /\.suggestion-option-row/)
 })
 
+test('OSChina reading list page provides weekly and monthly hot articles from oschina.net', () => {
+  const routerSource = readFileSync(new URL('../src/router/index.ts', import.meta.url), 'utf8')
+  const appSource = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+  const pageSource = readFileSync(new URL('../src/views/oschina/index.vue', import.meta.url), 'utf8')
+  const pageStyleSource = readFileSync(new URL('../src/views/oschina/css/index.scss', import.meta.url), 'utf8')
+  const webLibrarySource = readWebLibrarySource()
+
+  assert.match(routerSource, /path:\s*'\/oschina'[\s\S]*?name:\s*'Oschina'/)
+  assert.match(appSource, /routeViewPaths:[\s\S]*?'\/oschina'/)
+  assert.match(webLibrarySource, /command:\s*'\/oschina'/)
+  assert.match(webLibrarySource, /开源中国阅读榜/)
+  assert.match(pageSource, /fetchReadingList/)
+  assert.match(pageSource, /oschina\.net\/reading-list/)
+  assert.match(pageSource, /activeTab/)
+  assert.match(pageSource, /周榜/)
+  assert.match(pageSource, /月榜/)
+  assert.match(pageStyleSource, /\.oschina-page/)
+  assert.match(pageStyleSource, /\.rank-badge/)
+  assert.match(pageStyleSource, /\.hot-score/)
+})

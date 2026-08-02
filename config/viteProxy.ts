@@ -210,5 +210,9 @@ export const serverProxy: ServerProxyMap = {
   '/api-hellogithub': createProxyEntry('/api-hellogithub', 'https://hellogithub.com', {
     Origin: 'https://hellogithub.com',
     Referer: 'https://hellogithub.com/periodical'
+  }),
+  '/api-oschina': createProxyEntry('/api-oschina', 'https://www.oschina.net', {
+    Origin: 'https://www.oschina.net',
+    Referer: 'https://www.oschina.net/reading-list'
   })
 }

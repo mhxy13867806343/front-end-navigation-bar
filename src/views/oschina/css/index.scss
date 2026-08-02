@@ -1,0 +1,411 @@
+@import '@/style/mixins.scss';
+
+.oschina-page {
+  min-height: 100vh;
+  padding: 28px;
+  background: #f5f6f8;
+  color: #1a1d23;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+}
+
+/* ── Header ── */
+.oschina-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e8ecf0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.oschina-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.oschina-logo-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.oschina-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: #1a1d23;
+}
+
+.hot-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  border-radius: 4px;
+  background: #e74c3c;
+  color: #fff;
+  letter-spacing: 0.5px;
+  vertical-align: top;
+  margin-top: 2px;
+}
+
+.oschina-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #7e8b99;
+  line-height: 1.5;
+}
+
+.oschina-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.visit-source-btn,
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.visit-source-btn {
+  background: #f0f7ff;
+  color: #1a80e5;
+  border: 1px solid #bdd9f9;
+
+  &:hover {
+    background: #1a80e5;
+    color: #fff;
+  }
+}
+
+.refresh-btn {
+  background: #fff;
+  color: #4a5568;
+  border: 1px solid #dde1e7;
+
+  &:hover:not(:disabled) {
+    background: #f0f7ff;
+    border-color: #1a80e5;
+    color: #1a80e5;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Tab Switcher ── */
+.oschina-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.oschina-tab-btn {
+  height: 36px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #dde1e7;
+  background: #fff;
+  color: #4a5568;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #1a80e5;
+    color: #1a80e5;
+  }
+
+  &.active {
+    background: #1a80e5;
+    border-color: #1a80e5;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(26, 128, 229, 0.35);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Loading ── */
+.oschina-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 20px;
+  color: #7e8b99;
+  font-size: 14px;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e8ecf0;
+  border-top-color: #1a80e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error ── */
+.oschina-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  text-align: center;
+  color: #7e8b99;
+}
+
+.error-icon {
+  font-size: 36px;
+}
+
+.error-link {
+  color: #1a80e5;
+  font-size: 13px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ── Article List ── */
+.oschina-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.list-header-row {
+  padding: 10px 20px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ea8b4;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.oschina-article-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid #e8ecf0;
+  border-radius: 0;
+  border-bottom: none;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+
+  &:first-of-type {
+    border-radius: 12px 12px 0 0;
+  }
+
+  &:last-of-type {
+    border-bottom: 1px solid #e8ecf0;
+    border-radius: 0 0 12px 12px;
+  }
+
+  &:only-of-type {
+    border-radius: 12px;
+    border-bottom: 1px solid #e8ecf0;
+  }
+
+  &:hover {
+    background: #fafbfd;
+    z-index: 1;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  &.top-three {
+    background: linear-gradient(135deg, #fffef8, #fff);
+  }
+}
+
+/* Rank column */
+.rank-col {
+  flex-shrink: 0;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  background: #f0f3f7;
+  color: #7e8b99;
+
+  &.rank-1 {
+    background: linear-gradient(135deg, #f6d365, #fda085);
+    color: #fff;
+    font-size: 14px;
+  }
+
+  &.rank-2 {
+    background: linear-gradient(135deg, #c0c0c0, #9e9e9e);
+    color: #fff;
+  }
+
+  &.rank-3 {
+    background: linear-gradient(135deg, #d4805a, #b06040);
+    color: #fff;
+  }
+}
+
+/* Article column */
+.article-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.article-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1d23;
+  text-decoration: none;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  @include line-clamp(2);
+
+  &:hover {
+    color: #1a80e5;
+  }
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #9ea8b4;
+}
+
+.meta-author {
+  font-weight: 600;
+  color: #5c6470;
+}
+
+.meta-stat,
+.meta-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.meta-icon {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* Hot score column */
+.hot-col {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #fff2f0;
+  border: 1px solid #ffd6d0;
+}
+
+.hot-flame {
+  font-size: 14px;
+}
+
+.hot-score {
+  font-size: 15px;
+  font-weight: 800;
+  color: #e74c3c;
+}
+
+.hot-label {
+  font-size: 11px;
+  color: #e74c3c;
+  opacity: 0.75;
+}
+
+/* Actions column */
+.actions-col {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Empty state */
+.oschina-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #9ea8b4;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .oschina-page {
+    padding: 16px;
+  }
+
+  .oschina-header {
+    flex-direction: column;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .oschina-title {
+    font-size: 20px;
+  }
+
+  .oschina-article-card {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .hot-col {
+    order: 3;
+  }
+
+  .actions-col {
+    order: 4;
+  }
+}

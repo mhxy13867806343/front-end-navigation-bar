@@ -40,6 +40,7 @@ export const newPagesGroup: WebLibraryGroup = {
     { label: '🔥 今日热榜 TopHub', command: '/tophub' },
     { label: '📰 IT之家', command: '/ithome' },
     { label: '🐯 虎嗅24小时', command: '/huxiu' },
+    { label: '🔴 开源中国阅读榜', command: '/oschina' },
     { label: '🐙 GitHub开源聚合', command: '/github' },
     { label: '♡ 记录缓存展示', command: '/records-cache' },
     { label: '↗ 分享记录展示', command: '/share-records' },

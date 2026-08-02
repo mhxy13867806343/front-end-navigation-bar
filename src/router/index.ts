@@ -113,6 +113,11 @@ const routes = [
     component: () => import('../views/huxiu/index.vue')
   },
   {
+    path: '/oschina',
+    name: 'Oschina',
+    component: () => import('../views/oschina/index.vue')
+  },
+  {
     path: '/github',
     name: 'Github',
     component: () => import('../views/github/index.vue')
