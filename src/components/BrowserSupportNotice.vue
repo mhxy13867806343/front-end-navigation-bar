@@ -604,6 +604,7 @@ onUnmounted((): void => {
     width="680px"
     destroy-on-close
     align-center
+    append-to-body
     class="browser-support-dialog"
     :before-close="handleDialogBeforeClose"
   >

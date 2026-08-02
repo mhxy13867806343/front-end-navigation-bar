@@ -808,15 +808,15 @@
 }
 
 /* 现代浏览器能力检测与项目运行说明 Dialog */
-.browser-support-dialog {
-  :deep(.el-dialog) {
-    border-radius: 12px;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-    color: var(--text-color);
-  }
+.browser-support-dialog,
+:deep(.browser-support-dialog) {
+  border-radius: 12px !important;
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
+  color: var(--text-color) !important;
 
+  .el-dialog__header,
   :deep(.el-dialog__header) {
     margin-right: 0;
     padding: 16px 20px;
@@ -829,6 +829,7 @@
     }
   }
 
+  .el-dialog__body,
   :deep(.el-dialog__body) {
     padding: 20px;
     color: var(--text-color);
@@ -836,6 +837,7 @@
     overflow-y: auto;
   }
 
+  .el-dialog__footer,
   :deep(.el-dialog__footer) {
     padding: 12px 20px;
     border-top: 1px solid var(--border-color);
